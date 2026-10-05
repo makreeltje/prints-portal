@@ -1,10 +1,12 @@
-import { Menu, Moon } from 'lucide-react';
+import { LogOut, Menu, Moon } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
+import { useAuth, useCurrentUser } from '../auth/context';
+import { Avatar } from '../components/Avatar';
 import { t, type MessageKey } from '../i18n/nl';
 import type { ThemePreference } from '../theme/theme';
 import { useTheme } from '../theme/useTheme';
-import { NAV_ITEMS, type NavItem } from './navigation';
+import { navItemsFor, type NavItem } from './navigation';
 
 const MAIN_ID = 'inhoud';
 
@@ -14,18 +16,22 @@ const THEME_LABELS: Record<ThemePreference, MessageKey> = {
   dark: 'settings.theme.dark',
 };
 
-/** Phone bottom bar: the first three main items, then "Meer" (AppShell spec). */
-const BOTTOM_ITEMS = NAV_ITEMS.filter((item) => item.group === 'main').slice(0, 3);
-
 /**
  * Operator frame from design-system/components/AppShell. Desktop shows the
  * sidebar; the tablet rail, phone bars and drawer are a temporary placeholder
- * for GAP-015 (the responsive rules live in styles/app.css). The user badge,
- * Uitloggen and LiveIndicator arrive with auth (M4) and real-time (M5).
+ * for GAP-015 (the responsive rules live in styles/ds-gap-015-appshell.css).
+ * Navigation follows the signed-in user's role. The LiveIndicator arrives
+ * with real-time updates (M5).
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const theme = useTheme();
+  const user = useCurrentUser();
+  const { logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const items = navItemsFor(user.role);
+  // Phone bottom bar: the first three main items, then "Meer" (AppShell spec).
+  const bottomItems = items.filter((item) => item.group === 'main').slice(0, 3);
+  const onLogout = () => void logout();
 
   return (
     <div className="app-frame">
@@ -35,10 +41,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="pp-app">
         <aside className="pp-side">
           <div className="pp-brand">{t('app.name')}</div>
-          <NavList withTooltips />
+          <NavList items={items} withTooltips />
           <div className="foot">
-            <div className="pp-row">
+            <Avatar name={user.displayName} role={user.role} />
+            <div className="pp-row app-shell-actions">
               <ThemeButton theme={theme.theme} onClick={theme.cycleTheme} small />
+              <LogoutButton onClick={onLogout} small />
             </div>
           </div>
         </aside>
@@ -66,7 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
 
         <nav className="pp-bottomnav app-bottomnav" aria-label={t('nav.main')}>
-          {BOTTOM_ITEMS.map((item) => (
+          {bottomItems.map((item) => (
             <NavLink key={item.path} to={item.path} end={item.path === '/'}>
               <item.icon className="pp-ico pp-ico-20" aria-hidden="true" />
               {t(item.label)}
@@ -102,16 +110,26 @@ export function AppShell({ children }: { children: ReactNode }) {
         }}
       >
         <div className="pp-brand">{t('app.name')}</div>
-        <NavList />
-        <div className="app-drawer-foot">
-          <ThemeButton theme={theme.theme} onClick={theme.cycleTheme} />
+        <NavList items={items} />
+        <div className="app-drawer-foot pp-col">
+          <Avatar name={user.displayName} role={user.role} />
+          <div className="pp-row">
+            <ThemeButton theme={theme.theme} onClick={theme.cycleTheme} />
+            <LogoutButton onClick={onLogout} />
+          </div>
         </div>
       </NavDrawer>
     </div>
   );
 }
 
-function NavList({ withTooltips = false }: { withTooltips?: boolean }) {
+function NavList({
+  items,
+  withTooltips = false,
+}: {
+  items: readonly NavItem[];
+  withTooltips?: boolean;
+}) {
   const render = (item: NavItem) => (
     <NavLink key={item.path} to={item.path} end={item.path === '/'}>
       <item.icon className="pp-ico pp-ico-20" aria-hidden="true" />
@@ -125,12 +143,13 @@ function NavList({ withTooltips = false }: { withTooltips?: boolean }) {
     </NavLink>
   );
 
+  const manage = items.filter((item) => item.group === 'manage');
   return (
     <nav className="pp-nav" aria-label={t('nav.main')}>
-      {NAV_ITEMS.filter((item) => item.group === 'main').map(render)}
-      <div className="grp">{t('nav.manage')}</div>
-      {NAV_ITEMS.filter((item) => item.group === 'manage').map(render)}
-      {NAV_ITEMS.filter((item) => item.group === 'footer').map(render)}
+      {items.filter((item) => item.group === 'main').map(render)}
+      {manage.length > 0 && <div className="grp">{t('nav.manage')}</div>}
+      {manage.map(render)}
+      {items.filter((item) => item.group === 'footer').map(render)}
     </nav>
   );
 }
@@ -147,12 +166,25 @@ function ThemeButton({
   return (
     <button
       type="button"
-      className={`pp-btn pp-btn-ghost${small ? ' pp-btn-sm' : ''} app-theme-button`}
+      className={`pp-btn pp-btn-ghost${small ? ' pp-btn-sm' : ''} app-foot-button`}
       onClick={onClick}
     >
       <Moon className="pp-ico" aria-hidden="true" />
       <span className="app-nav-label">{t('settings.theme')}</span>
       <span className="app-visually-hidden">: {t(THEME_LABELS[theme])}</span>
+    </button>
+  );
+}
+
+function LogoutButton({ onClick, small = false }: { onClick: () => void; small?: boolean }) {
+  return (
+    <button
+      type="button"
+      className={`pp-btn pp-btn-ghost${small ? ' pp-btn-sm' : ''} app-foot-button`}
+      onClick={onClick}
+    >
+      <LogOut className="pp-ico" aria-hidden="true" />
+      <span className="app-nav-label">{t('system.logout')}</span>
     </button>
   );
 }

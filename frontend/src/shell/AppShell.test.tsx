@@ -1,8 +1,7 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import { AppRoutes } from '../App';
+import { renderApp, signedIn } from '../test/render';
 
 const FULL_NAV = [
   'Dashboard',
@@ -16,11 +15,7 @@ const FULL_NAV = [
 ];
 
 function renderAt(path: string) {
-  return render(
-    <MemoryRouter initialEntries={[path]}>
-      <AppRoutes />
-    </MemoryRouter>,
-  );
+  return renderApp(path, signedIn('Admin'));
 }
 
 /** Sidebar, phone bottom bar and drawer all render; CSS decides which is visible. */

@@ -51,3 +51,157 @@ body {
 .app-main:focus {
   outline: none;
 }
+
+/* Shell footer: Thema and Uitloggen side by side (AppShell preview). */
+.app-shell-actions {
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+/* ScreenLogin. The card's maximum width waits for GAP-017. */
+.app-login-card {
+  width: 100%;
+  gap: var(--space-4);
+}
+
+.app-login-card .pp-brand {
+  padding: 0;
+}
+
+.app-login-form .pp-btn,
+.app-login-card > .pp-btn {
+  width: 100%;
+}
+
+.app-login-or {
+  flex-wrap: nowrap;
+  font-size: var(--text-sm);
+}
+
+.app-login-or > span {
+  flex: 1;
+  border-top: 1px solid var(--border);
+}
+
+/* Native <dialog> as a bare frame around .pp-dialog; the scrim is its backdrop. */
+.app-dialog {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.app-dialog[open] {
+  display: flex;
+  justify-content: center;
+}
+
+.app-dialog::backdrop {
+  background: var(--overlay);
+}
+
+.app-confirm-icon {
+  color: var(--unpaid);
+  display: flex;
+}
+
+/* Toasts stack bottom-right (Toast spec). */
+.app-toasts {
+  position: fixed;
+  right: var(--space-5);
+  bottom: var(--space-5);
+  gap: var(--space-2);
+  align-items: flex-end;
+}
+
+.app-toasts:empty {
+  display: none;
+}
+
+/* A text button that looks like .pp-link. */
+.app-link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* ErrorState (preview): a column alert with a larger title. */
+.app-error-state {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--space-6);
+  gap: var(--space-2);
+}
+
+.app-error-state .app-error-title {
+  gap: var(--space-2);
+  color: var(--text-strong);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.app-error-state .pp-btn {
+  margin-top: var(--space-2);
+}
+
+/* Last-admin guard: help under the disabled role select. */
+.app-cell-stack {
+  gap: var(--space-1);
+  align-items: flex-start;
+}
+
+.app-row-actions {
+  gap: var(--space-1);
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+.app-user-card {
+  gap: var(--space-1);
+}
+
+.app-user-card > b {
+  color: var(--text-strong);
+}
+
+/* A skeleton block the height of a table row with a control in it. */
+.app-skel-row {
+  height: var(--pp-control-h);
+}
+
+.app-bulk {
+  position: relative;
+  display: inline-block;
+}
+
+.app-bulk-menu {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  gap: 0;
+  padding: var(--space-1);
+  align-items: stretch;
+}
+
+.app-bulk-menu .pp-btn {
+  justify-content: flex-start;
+  white-space: nowrap;
+}
+
+/* Saved cell: a brief primary tint that fades out. */
+.pp-matrix td.app-saved {
+  animation: app-saved-tint var(--motion-base) var(--motion-ease) 1 both reverse;
+}
+
+@keyframes app-saved-tint {
+  from {
+    background: var(--surface);
+  }
+  to {
+    background: var(--primary-tint);
+  }
+}

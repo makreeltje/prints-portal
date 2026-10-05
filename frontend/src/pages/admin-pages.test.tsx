@@ -1,0 +1,182 @@
+import { screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { makeUser, renderWithAuth, stubFetch } from '../test/render';
+import { AccessPage } from './AccessPage';
+import { UsersPage } from './UsersPage';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+const owner = makeUser('Admin', { id: 'u-owner', displayName: 'owner@example.org' });
+const helper = makeUser('User', { id: 'u-helper', displayName: 'helper' });
+const editor = makeUser('Editor', { id: 'u-editor', displayName: 'Renate', origin: 'oidc' });
+
+function desktopTable() {
+  const table = document.querySelector('.app-desktop-only table');
+  if (!(table instanceof HTMLElement)) throw new Error('no table');
+  return within(table);
+}
+
+describe('UsersPage', () => {
+  it('lists users with role, origin and the last-Admin guard', async () => {
+    stubFetch({ 'GET /api/users': () => ({ json: { users: [owner, helper, editor] } }) });
+    renderWithAuth(<UsersPage />);
+    const table = await waitFor(desktopTable);
+    expect(table.getAllByRole('columnheader').map((th) => th.textContent)).toEqual([
+      'Gebruiker',
+      'Rol',
+      'Herkomst',
+      'Acties',
+    ]);
+    const ownerRole = table.getByRole('combobox', { name: 'Rol owner@example.org' });
+    expect(ownerRole).toBeDisabled();
+    expect(ownerRole).toHaveAccessibleDescription('Er moet minstens één Admin blijven.');
+    expect(table.getByRole('combobox', { name: 'Rol helper' })).toBeEnabled();
+    expect(table.getAllByText('Authentik')).toHaveLength(1);
+    expect(table.getAllByText('Lokaal')).toHaveLength(2);
+    expect(table.getByRole('button', { name: 'Verwijderen: owner@example.org' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+  });
+
+  it('saves a role change immediately', async () => {
+    const calls = stubFetch({
+      'GET /api/users': () => ({ json: { users: [owner, helper] } }),
+      'PATCH /api/users/u-helper': () => ({ json: { ...helper, role: 'Editor' } }),
+    });
+    renderWithAuth(<UsersPage />);
+    const select = await screen.findByRole('combobox', { name: 'Rol helper' });
+    await userEvent.selectOptions(select, 'Editor');
+    await screen.findByText('Opgeslagen');
+    expect(calls.at(-1)).toMatchObject({ method: 'PATCH', body: { role: 'Editor' } });
+    expect(select).toHaveValue('Editor');
+  });
+
+  it('rolls a failed role change back with an error toast', async () => {
+    stubFetch({
+      'GET /api/users': () => ({ json: { users: [owner, helper] } }),
+      'PATCH /api/users/u-helper': () => ({ status: 500, json: { error: 'boom' } }),
+    });
+    renderWithAuth(<UsersPage />);
+    const select = await screen.findByRole('combobox', { name: 'Rol helper' });
+    await userEvent.selectOptions(select, 'Admin');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Opslaan mislukt, de wijziging is teruggedraaid.',
+    );
+    expect(select).toHaveValue('User');
+  });
+
+  it('deletes a user after confirming, with Annuleren focused first', async () => {
+    stubFetch({
+      'GET /api/users': () => ({ json: { users: [owner, helper] } }),
+      'DELETE /api/users/u-helper': () => ({ status: 204 }),
+    });
+    renderWithAuth(<UsersPage />);
+    await userEvent.click(
+      await waitFor(() => desktopTable().getByRole('button', { name: 'Verwijderen: helper' })),
+    );
+    const dialog = screen.getByRole('alertdialog', { name: "Gebruiker 'helper' verwijderen?" });
+    expect(within(dialog).getByRole('button', { name: 'Annuleren' })).toHaveFocus();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Verwijderen' }));
+    await waitFor(() => {
+      expect(desktopTable().queryByText('helper')).toBeNull();
+    });
+  });
+
+  it('shows an error state with retry when loading fails', async () => {
+    let fail = true;
+    stubFetch({
+      'GET /api/users': () => (fail ? { status: 500 } : { json: { users: [owner] } }),
+    });
+    renderWithAuth(<UsersPage />);
+    const retry = await screen.findByRole('button', { name: 'Opnieuw proberen' });
+    fail = false;
+    await userEvent.click(retry);
+    await waitFor(desktopTable);
+  });
+});
+
+describe('AccessPage', () => {
+  const matrix = {
+    customers: ['Denise', 'Joey'],
+    users: [
+      { ...helper, customers: ['Joey'] },
+      { ...editor, customers: ['Denise', 'Joey'] },
+      { ...owner, customers: ['Denise', 'Joey'] },
+    ],
+  };
+
+  it('shows Users with their grants and Admins as always on; Editors wait for GAP-021', async () => {
+    stubFetch({ 'GET /api/access': () => ({ json: matrix }) });
+    renderWithAuth(<AccessPage />);
+    const table = await waitFor(desktopTable);
+    expect(table.getByRole('checkbox', { name: 'helper: Joey' })).toBeChecked();
+    expect(table.getByRole('checkbox', { name: 'helper: Denise' })).not.toBeChecked();
+    const adminCell = table.getByRole('checkbox', { name: 'owner@example.org · Admin: Denise' });
+    expect(adminCell).toBeChecked();
+    expect(adminCell).toBeDisabled();
+    expect(table.queryByText('Renate')).toBeNull();
+    expect(screen.getByText('Admin heeft altijd toegang.')).toBeInTheDocument();
+  });
+
+  it('saves a cell immediately', async () => {
+    const calls = stubFetch({
+      'GET /api/access': () => ({ json: matrix }),
+      'PATCH /api/access': () => ({ status: 204 }),
+    });
+    renderWithAuth(<AccessPage />);
+    const cell = await waitFor(() =>
+      desktopTable().getByRole('checkbox', { name: 'helper: Denise' }),
+    );
+    await userEvent.click(cell);
+    expect(cell).toBeChecked();
+    expect(calls.at(-1)?.body).toEqual({
+      changes: [{ userId: 'u-helper', customerFolder: 'Denise', granted: true }],
+    });
+  });
+
+  it('reverts a failed cell and shows a toast', async () => {
+    stubFetch({
+      'GET /api/access': () => ({ json: matrix }),
+      'PATCH /api/access': () => ({ status: 500 }),
+    });
+    renderWithAuth(<AccessPage />);
+    const cell = await waitFor(() =>
+      desktopTable().getByRole('checkbox', { name: 'helper: Joey' }),
+    );
+    await userEvent.click(cell);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Opslaan mislukt');
+    expect(cell).toBeChecked();
+  });
+
+  it('grants a whole column from its menu', async () => {
+    const calls = stubFetch({
+      'GET /api/access': () => ({ json: matrix }),
+      'PATCH /api/access': () => ({ status: 204 }),
+    });
+    renderWithAuth(<AccessPage />);
+    await userEvent.click(
+      await waitFor(() => desktopTable().getByRole('button', { name: 'Denise' })),
+    );
+    const select = screen.getByRole('button', { name: 'Alles selecteren' });
+    expect(select).toHaveFocus();
+    await userEvent.click(select);
+    expect(calls.at(-1)?.body).toEqual({
+      changes: [{ userId: 'u-helper', customerFolder: 'Denise', granted: true }],
+    });
+  });
+
+  it('moves between cells with the arrow keys', async () => {
+    stubFetch({ 'GET /api/access': () => ({ json: matrix }) });
+    renderWithAuth(<AccessPage />);
+    const first = await waitFor(() =>
+      desktopTable().getByRole('checkbox', { name: 'helper: Denise' }),
+    );
+    first.focus();
+    await userEvent.keyboard('{ArrowRight}');
+    expect(desktopTable().getByRole('checkbox', { name: 'helper: Joey' })).toHaveFocus();
+  });
+});

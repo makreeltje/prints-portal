@@ -14,6 +14,11 @@
   display: none; /* ds-gap: GAP-015 */
 } /* ds-gap: GAP-015 */
 
+/* Phone-only blocks (cards instead of tables); shown in the phone media query below. */
+.app-phone-only { /* ds-gap: GAP-015 */
+  display: none; /* ds-gap: GAP-015 */
+} /* ds-gap: GAP-015 */
+
 .app-drawer { /* ds-gap: GAP-015 */
   margin: 0; /* ds-gap: GAP-015 */
   padding: 0; /* ds-gap: GAP-015 */
@@ -107,9 +112,23 @@
     align-items: center; /* ds-gap: GAP-015 */
   } /* ds-gap: GAP-015 */
 
-  .pp-side .app-theme-button { /* ds-gap: GAP-015 */
+  .pp-side .app-foot-button { /* ds-gap: GAP-015 */
     width: var(--pp-tap); /* ds-gap: GAP-015 */
     padding: 0; /* ds-gap: GAP-015 */
+  } /* ds-gap: GAP-015 */
+
+  /* Avatar spec: initials only in a collapsed sidebar. */
+  .pp-side .pp-avatar > span:not(.pp-ini) { /* ds-gap: GAP-015 */
+    position: absolute; /* ds-gap: GAP-015 */
+    width: 1px; /* ds-gap: GAP-015 */
+    height: 1px; /* ds-gap: GAP-015 */
+    overflow: hidden; /* ds-gap: GAP-015 */
+    clip-path: inset(50%); /* ds-gap: GAP-015 */
+    white-space: nowrap; /* ds-gap: GAP-015 */
+  } /* ds-gap: GAP-015 */
+
+  .pp-side .app-shell-actions { /* ds-gap: GAP-015 */
+    flex-direction: column; /* ds-gap: GAP-015 */
   } /* ds-gap: GAP-015 */
 } /* ds-gap: GAP-015 */
 
@@ -144,5 +163,19 @@
     display: grid; /* ds-gap: GAP-015 */
     position: sticky; /* ds-gap: GAP-015 */
     bottom: 0; /* ds-gap: GAP-015 */
+  } /* ds-gap: GAP-015 */
+
+  /* ScreenLogin: full-width card with space-4 margins on phones. */
+  .app-login { /* ds-gap: GAP-015 */
+    padding: var(--space-4); /* ds-gap: GAP-015 */
+  } /* ds-gap: GAP-015 */
+
+  /* AccessMatrix and ScreenUsers: one card per user instead of the table. */
+  .app-desktop-only { /* ds-gap: GAP-015 */
+    display: none; /* ds-gap: GAP-015 */
+  } /* ds-gap: GAP-015 */
+
+  .app-phone-only { /* ds-gap: GAP-015 */
+    display: flex; /* ds-gap: GAP-015 */
   } /* ds-gap: GAP-015 */
 } /* ds-gap: GAP-015 */
