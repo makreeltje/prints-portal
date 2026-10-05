@@ -18,6 +18,8 @@ export const nl = {
   'nav.main': 'Hoofdmenu', // component copy: AppShell (aria-label)
 
   'system.skipToContent': 'Naar inhoud',
+  'system.menu': 'Menu',
+  'system.more': 'Meer',
 
   'settings.theme': 'Thema',
   'settings.theme.system': 'Systeem', // component copy: ScreenSettings

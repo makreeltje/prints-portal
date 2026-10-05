@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ESLint, Prettier and Vitest.
 - `/healthz` with database and prints-root checks (503 when the database is down).
 - SQLite, PostgreSQL and MariaDB/MySQL connections selected by `DATABASE_URL`.
-- App shell (desktop sidebar) and theme switch (Systeem, Licht, Donker) from the design system.
+- App shell from the design system (sidebar; tablet rail, phone bars and drawer as a temporary
+  placeholder for GAP-015) and theme switch (Systeem, Licht, Donker).
 - Docker image (non-root, healthcheck), `docker-compose.yml`, `.env.example` and CI.
 - Design system v1.1.
