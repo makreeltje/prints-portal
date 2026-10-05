@@ -36,7 +36,7 @@ export function LoadingRows({ rows = 3 }: { rows?: number }) {
 
   return (
     <div className="pp-col" aria-busy="true">
-      <span className="app-visually-hidden" role="status">
+      <span className="pp-sr" role="status">
         {t('common.loading')}
       </span>
       {visible &&

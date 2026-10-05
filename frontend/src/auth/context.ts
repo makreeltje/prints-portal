@@ -4,14 +4,18 @@ import type { AuthMethods, User } from './types';
 export type AuthState =
   | { status: 'loading' }
   | { status: 'error' }
-  | { status: 'signed-out'; methods: AuthMethods }
-  | { status: 'signed-in'; user: User; methods: AuthMethods };
+  /** `expired`: the session ended while in use, so the login card says so. */
+  | { status: 'signed-out'; methods: AuthMethods; expired: boolean }
+  /** `mustChangePassword`: signed in with a temporary password; only "Nieuw wachtwoord kiezen" is shown. */
+  | { status: 'signed-in'; user: User; methods: AuthMethods; mustChangePassword: boolean };
 
 export interface AuthContextValue {
   state: AuthState;
   /** Resolves on success; rejects with ApiError (401 wrong credentials, 429 too many attempts). */
   login: (login: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  /** Replaces a temporary password; rejects with ApiError (400 password_too_short …). */
+  changePassword: (newPassword: string) => Promise<void>;
   retry: () => void;
 }
 

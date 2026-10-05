@@ -27,8 +27,8 @@ const cellKey = (userId: string, customer: string) => `${userId}\u0000${customer
 
 /**
  * ScreenAccess (Admin only): Users × klanten. Each cell saves immediately
- * with a brief tint; a failure rolls back with a toast. Admin rows are
- * always on. Editor rows wait for GAP-021 and are not shown.
+ * with a brief tint; a failure rolls back with a toast. Editor and Admin
+ * rows are always on.
  */
 export function AccessPage() {
   const toast = useToast();
@@ -83,7 +83,11 @@ export function AccessPage() {
 
   const { customers, users } = load.matrix;
   const grantees = users.filter((user) => user.role === 'User');
-  const admins = users.filter((user) => user.role === 'Admin');
+  // Editors and Admins see every klant: shown checked and disabled, Editors first (AccessMatrix v1.2).
+  const allAccess = [
+    ...users.filter((user) => user.role === 'Editor'),
+    ...users.filter((user) => user.role === 'Admin'),
+  ];
 
   const apply = (changes: readonly Change[]) => {
     setLoad((current) => {
@@ -142,7 +146,8 @@ export function AccessPage() {
   return (
     <>
       {title}
-      <div className="pp-scroll app-desktop-only">
+      {/* One card per user at 480px and below waits for GAP-023; the table scrolls inside its box. */}
+      <div className="pp-scroll">
         <table className="pp-matrix" onKeyDown={moveBetweenCells}>
           <thead>
             <tr>
@@ -214,12 +219,12 @@ export function AccessPage() {
                 })}
               </tr>
             ))}
-            {admins.map((user) => {
-              const name = `${user.displayName} · ${t('role.Admin')}`;
+            {allAccess.map((user) => {
               return (
                 <tr key={user.id}>
                   <th scope="row">
-                    {user.displayName} <span className="pp-muted">· {t('role.Admin')}</span>
+                    {user.displayName}{' '}
+                    <span className="pp-muted app-role-note">· {t(`role.${user.role}`)}</span>
                   </th>
                   {customers.map((customer) => (
                     <td key={customer}>
@@ -229,7 +234,7 @@ export function AccessPage() {
                           className="pp-check"
                           checked
                           disabled
-                          aria-label={t('access.cell', { user: name, customer })}
+                          aria-label={t('access.cell', { user: user.displayName, customer })}
                         />
                       </label>
                     </td>
@@ -241,38 +246,7 @@ export function AccessPage() {
         </table>
       </div>
 
-      <div className="pp-col app-phone-only">
-        {grantees.map((user) => (
-          <div key={user.id} className="pp-card pp-sec app-user-card">
-            <b>{user.displayName}</b>
-            {customers.map((customer) => {
-              const key = cellKey(user.id, customer);
-              return (
-                <label key={customer} className="pp-opt">
-                  <input
-                    type="checkbox"
-                    className="pp-check"
-                    checked={user.customers.includes(customer)}
-                    disabled={busy.has(key)}
-                    onChange={(event) =>
-                      void save([
-                        {
-                          userId: user.id,
-                          customerFolder: customer,
-                          granted: event.target.checked,
-                        },
-                      ])
-                    }
-                  />
-                  {customer}
-                </label>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-
-      <span className="pp-help">{t('access.adminAlwaysNote')}</span>
+      <span className="pp-help">{t('access.allAccessRoles')}</span>
     </>
   );
 }

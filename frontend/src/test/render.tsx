@@ -22,7 +22,12 @@ export function makeUser(role: Role, overrides: Partial<User> = {}): User {
 }
 
 export function signedIn(role: Role = 'Admin'): AuthState {
-  return { status: 'signed-in', user: makeUser(role), methods: LOCAL_ONLY };
+  return {
+    status: 'signed-in',
+    user: makeUser(role),
+    methods: LOCAL_ONLY,
+    mustChangePassword: false,
+  };
 }
 
 /** Renders with a fixed auth state; login/logout are spies. */
@@ -42,6 +47,7 @@ export function renderWithAuth(
     state,
     login: vi.fn(() => Promise.resolve()),
     logout: vi.fn(() => Promise.resolve()),
+    changePassword: vi.fn(() => Promise.resolve()),
     retry: vi.fn(),
     ...auth,
   };

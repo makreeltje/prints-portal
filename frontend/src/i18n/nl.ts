@@ -4,7 +4,9 @@
  * component README because the copy deck has no key for them.
  */
 export const nl = {
+  'common.save': 'Opslaan',
   'common.cancel': 'Annuleren',
+  'common.create': 'Maken', // component copy: Dialog
   'common.delete': 'Verwijderen',
   'common.close': 'Sluiten',
   'common.retry': 'Opnieuw proberen',
@@ -27,17 +29,26 @@ export const nl = {
 
   'system.skipToContent': 'Naar inhoud',
   'system.goDashboard': 'Naar dashboard',
+  'system.forbiddenHelp': 'Je hebt geen toegang tot deze klant. Vraag een beheerder om toegang.',
   'system.errorBody': 'De pagina kon niet worden geladen. Probeer het opnieuw.',
-  'system.logout': 'Uitloggen', // component copy: AppShell
   'system.menu': 'Menu',
   'system.more': 'Meer',
 
   'auth.login': 'Inloggen',
-  'auth.email': 'E-mailadres',
+  'auth.identifier': 'E-mailadres of naam',
   'auth.password': 'Wachtwoord',
   'auth.or': 'of',
   'auth.authentik': 'Inloggen met Authentik',
-  'auth.wrong': 'Verkeerd e-mailadres of wachtwoord.',
+  'auth.wrong': 'Verkeerd e-mailadres, naam of wachtwoord.',
+  'auth.oidcFailed': 'Inloggen met Authentik is mislukt. Probeer het opnieuw.',
+  'auth.sessionExpired': 'Je sessie is verlopen. Log opnieuw in.',
+  'auth.newPasswordTitle': 'Nieuw wachtwoord kiezen',
+  'auth.newPasswordIntro':
+    'Je gebruikt een tijdelijk wachtwoord. Kies een eigen wachtwoord om verder te gaan.',
+  'auth.newPassword': 'Nieuw wachtwoord',
+  'auth.repeatPassword': 'Herhaal wachtwoord',
+  'auth.passwordHelp': 'Minstens 12 tekens.',
+  'auth.logout': 'Uitloggen',
   'auth.redirecting': 'Doorsturen naar Authentik…',
 
   'users.title': 'Gebruikers',
@@ -51,6 +62,9 @@ export const nl = {
   'users.actions': 'Acties', // component copy: ScreenUsers (table header)
   'users.resetPassword': 'Wachtwoord resetten',
   'users.tempPassword': 'Tijdelijk wachtwoord',
+  'users.tempPasswordHelp':
+    'Minstens 12 tekens. De gebruiker kiest bij de eerste keer inloggen een eigen wachtwoord.',
+  'users.resetTitle': "Wachtwoord resetten voor '{name}'",
   'users.lastAdmin': 'Er moet minstens één Admin blijven.',
 
   'role.Admin': 'Admin', // component copy: Avatar
@@ -58,14 +72,19 @@ export const nl = {
   'role.User': 'User', // component copy: Avatar
 
   'access.title': 'Toegang',
-  'access.adminAlways': 'Admin heeft altijd toegang',
-  'access.adminAlwaysNote': 'Admin heeft altijd toegang.', // component copy: ScreenAccess (note under the matrix)
+  'access.allAccessRoles': 'Admin en Editor hebben altijd toegang.',
   'access.cell': '{user}: {customer}', // component copy: AccessMatrix (checkbox label)
 
   'confirm.deleteUser': "Gebruiker '{name}' verwijderen?",
+  'confirm.deleteUserBody': 'Deze gebruiker kan daarna niet meer inloggen.',
 
   'error.generic': 'Er ging iets mis',
+  'error.noAccess': 'Geen toegang tot deze klant',
   'error.saveFailed': 'Opslaan mislukt, de wijziging is teruggedraaid.',
+  'error.passwordTooShort': 'Kies een wachtwoord van minstens 12 tekens.',
+  'error.passwordMismatch': 'De wachtwoorden zijn niet gelijk.',
+  'error.userExists': 'Deze gebruiker bestaat al.',
+  'error.required': 'Dit veld is verplicht.',
   'error.tooManyAttempts': 'Te veel pogingen, probeer het over een minuut opnieuw',
   'toast.saved': 'Opgeslagen',
 

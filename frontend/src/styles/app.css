@@ -1,6 +1,7 @@
 /*
- * App-level layout glue. Visual values come from design-system tokens only;
- * component styling lives in design-system/components/bundle.css.
+ * App-level glue. Visual values come from design-system tokens only;
+ * component and layout styling lives in design-system/components/bundle.css
+ * (including the body rule and the responsive app shell).
  */
 
 *,
@@ -9,30 +10,12 @@
   box-sizing: border-box;
 }
 
-html,
-body {
-  margin: 0;
-}
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
-}
-
-.app-frame {
+/* The shell fills the window (sidebar and rail run to the bottom). */
+.pp-app {
   min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
 }
 
-.app-frame > .pp-app {
-  flex: 1;
-}
-
-/* Hidden until focused (skip link) or always hidden but readable by screen readers. */
-.app-visually-hidden,
+/* Skip link: hidden until it receives keyboard focus. */
 .app-skip:not(:focus) {
   position: absolute;
   width: 1px;
@@ -52,35 +35,9 @@ body {
   outline: none;
 }
 
-/* Shell footer: Thema and Uitloggen side by side (AppShell preview). */
-.app-shell-actions {
-  gap: var(--space-2);
-  justify-content: space-between;
-}
-
-/* ScreenLogin. The card's maximum width waits for GAP-017. */
-.app-login-card {
-  width: 100%;
-  gap: var(--space-4);
-}
-
-.app-login-card .pp-brand {
-  padding: 0;
-}
-
-.app-login-form .pp-btn,
-.app-login-card > .pp-btn {
-  width: 100%;
-}
-
-.app-login-or {
-  flex-wrap: nowrap;
-  font-size: var(--text-sm);
-}
-
-.app-login-or > span {
-  flex: 1;
-  border-top: 1px solid var(--border);
+/* The drawer's nav is only a landmark; its links are laid out by .pp-drawer. */
+.app-drawer-nav {
+  display: contents;
 }
 
 /* Native <dialog> as a bare frame around .pp-dialog; the scrim is its backdrop. */
@@ -102,7 +59,8 @@ body {
   background: var(--overlay);
 }
 
-.app-confirm-icon {
+.app-confirm-icon,
+.app-state-error {
   color: var(--unpaid);
   display: flex;
 }
@@ -141,6 +99,7 @@ body {
   gap: var(--space-2);
   color: var(--text-strong);
   font-size: var(--text-lg);
+  line-height: var(--leading-lg);
   font-weight: 600;
 }
 
@@ -160,12 +119,9 @@ body {
   flex-wrap: nowrap;
 }
 
-.app-user-card {
-  gap: var(--space-1);
-}
-
-.app-user-card > b {
-  color: var(--text-strong);
+/* "· Admin" / "· Editor" after a name in the access matrix. */
+.app-role-note {
+  font-weight: 400;
 }
 
 /* A skeleton block the height of a table row with a control in it. */

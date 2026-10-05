@@ -14,7 +14,7 @@ const helper = makeUser('User', { id: 'u-helper', displayName: 'helper' });
 const editor = makeUser('Editor', { id: 'u-editor', displayName: 'Renate', origin: 'oidc' });
 
 function desktopTable() {
-  const table = document.querySelector('.app-desktop-only table');
+  const table = document.querySelector('.pp-scroll table');
   if (!(table instanceof HTMLElement)) throw new Error('no table');
   return within(table);
 }
@@ -22,7 +22,7 @@ function desktopTable() {
 describe('UsersPage', () => {
   it('lists users with role, origin and the last-Admin guard', async () => {
     stubFetch({ 'GET /api/users': () => ({ json: { users: [owner, helper, editor] } }) });
-    renderWithAuth(<UsersPage />);
+    renderWithAuth(<UsersPage localLogin />);
     const table = await waitFor(desktopTable);
     expect(table.getAllByRole('columnheader').map((th) => th.textContent)).toEqual([
       'Gebruiker',
@@ -36,6 +36,9 @@ describe('UsersPage', () => {
     expect(table.getByRole('combobox', { name: 'Rol helper' })).toBeEnabled();
     expect(table.getAllByText('Authentik')).toHaveLength(1);
     expect(table.getAllByText('Lokaal')).toHaveLength(2);
+    // Wachtwoord resetten for local users only.
+    expect(table.getByRole('button', { name: 'Wachtwoord resetten: helper' })).toBeInTheDocument();
+    expect(table.queryByRole('button', { name: 'Wachtwoord resetten: Renate' })).toBeNull();
     expect(table.getByRole('button', { name: 'Verwijderen: owner@example.org' })).toHaveAttribute(
       'aria-disabled',
       'true',
@@ -47,7 +50,7 @@ describe('UsersPage', () => {
       'GET /api/users': () => ({ json: { users: [owner, helper] } }),
       'PATCH /api/users/u-helper': () => ({ json: { ...helper, role: 'Editor' } }),
     });
-    renderWithAuth(<UsersPage />);
+    renderWithAuth(<UsersPage localLogin />);
     const select = await screen.findByRole('combobox', { name: 'Rol helper' });
     await userEvent.selectOptions(select, 'Editor');
     await screen.findByText('Opgeslagen');
@@ -60,7 +63,7 @@ describe('UsersPage', () => {
       'GET /api/users': () => ({ json: { users: [owner, helper] } }),
       'PATCH /api/users/u-helper': () => ({ status: 500, json: { error: 'boom' } }),
     });
-    renderWithAuth(<UsersPage />);
+    renderWithAuth(<UsersPage localLogin />);
     const select = await screen.findByRole('combobox', { name: 'Rol helper' });
     await userEvent.selectOptions(select, 'Admin');
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -74,11 +77,13 @@ describe('UsersPage', () => {
       'GET /api/users': () => ({ json: { users: [owner, helper] } }),
       'DELETE /api/users/u-helper': () => ({ status: 204 }),
     });
-    renderWithAuth(<UsersPage />);
+    renderWithAuth(<UsersPage localLogin />);
     await userEvent.click(
       await waitFor(() => desktopTable().getByRole('button', { name: 'Verwijderen: helper' })),
     );
     const dialog = screen.getByRole('alertdialog', { name: "Gebruiker 'helper' verwijderen?" });
+    expect(dialog).toHaveAccessibleDescription('Deze gebruiker kan daarna niet meer inloggen.');
+    expect(dialog.querySelector('.pp-dialog.sm')).not.toBeNull();
     expect(within(dialog).getByRole('button', { name: 'Annuleren' })).toHaveFocus();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Verwijderen' }));
     await waitFor(() => {
@@ -91,11 +96,94 @@ describe('UsersPage', () => {
     stubFetch({
       'GET /api/users': () => (fail ? { status: 500 } : { json: { users: [owner] } }),
     });
-    renderWithAuth(<UsersPage />);
+    renderWithAuth(<UsersPage localLogin />);
     const retry = await screen.findByRole('button', { name: 'Opnieuw proberen' });
     fail = false;
     await userEvent.click(retry);
     await waitFor(desktopTable);
+  });
+});
+
+describe('UsersPage dialogs', () => {
+  it('creates a user with a name, role and temporary password', async () => {
+    const calls = stubFetch({
+      'GET /api/users': () => ({ json: { users: [owner] } }),
+      'POST /api/users': (body) => ({
+        status: 201,
+        json: makeUser('Editor', { id: 'u-new', displayName: (body as { login: string }).login }),
+      }),
+    });
+    renderWithAuth(<UsersPage localLogin />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Gebruiker maken' }));
+    const dialog = screen.getByRole('dialog', { name: 'Gebruiker maken' });
+    const name = within(dialog).getByLabelText('E-mailadres of naam');
+    expect(name).toHaveFocus();
+    await userEvent.type(name, 'helper2');
+    await userEvent.selectOptions(within(dialog).getByLabelText('Rol'), 'Editor');
+    const password = within(dialog).getByLabelText('Tijdelijk wachtwoord');
+    expect(password).toHaveAccessibleDescription(
+      'Minstens 12 tekens. De gebruiker kiest bij de eerste keer inloggen een eigen wachtwoord.',
+    );
+    await userEvent.type(password, 'temporary-password{Enter}');
+    expect(calls.at(-1)).toMatchObject({
+      method: 'POST',
+      body: { login: 'helper2', role: 'Editor', password: 'temporary-password' },
+    });
+    await waitFor(() => {
+      expect(desktopTable().getByText('helper2')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('dialog', { name: 'Gebruiker maken' })).toBeNull();
+  });
+
+  it('shows "user exists" and "too short" as field errors', async () => {
+    stubFetch({
+      'GET /api/users': () => ({ json: { users: [owner] } }),
+      'POST /api/users': () => ({ status: 409, json: { error: 'login_taken' } }),
+    });
+    renderWithAuth(<UsersPage localLogin />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Gebruiker maken' }));
+    const dialog = screen.getByRole('dialog', { name: 'Gebruiker maken' });
+    await userEvent.type(within(dialog).getByLabelText('E-mailadres of naam'), 'owner@example.org');
+    await userEvent.type(within(dialog).getByLabelText('Tijdelijk wachtwoord'), 'short{Enter}');
+    expect(within(dialog).getByLabelText('Tijdelijk wachtwoord')).toHaveAccessibleDescription(
+      'Kies een wachtwoord van minstens 12 tekens.',
+    );
+    await userEvent.clear(within(dialog).getByLabelText('Tijdelijk wachtwoord'));
+    await userEvent.type(
+      within(dialog).getByLabelText('Tijdelijk wachtwoord'),
+      'temporary-password{Enter}',
+    );
+    await waitFor(() => {
+      expect(within(dialog).getByLabelText('E-mailadres of naam')).toHaveAccessibleDescription(
+        'Deze gebruiker bestaat al.',
+      );
+    });
+  });
+
+  it('hides "Gebruiker maken" when local sign-in is off', async () => {
+    stubFetch({ 'GET /api/users': () => ({ json: { users: [owner] } }) });
+    renderWithAuth(<UsersPage localLogin={false} />);
+    await waitFor(desktopTable);
+    expect(screen.queryByRole('button', { name: 'Gebruiker maken' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Wachtwoord resetten/ })).toBeNull();
+  });
+
+  it('resets a password with a temporary one typed by the Admin', async () => {
+    const calls = stubFetch({
+      'GET /api/users': () => ({ json: { users: [owner, helper] } }),
+      'POST /api/users/u-helper/password': () => ({ status: 204 }),
+    });
+    renderWithAuth(<UsersPage localLogin />);
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Wachtwoord resetten: helper' }),
+    );
+    const dialog = screen.getByRole('dialog', { name: "Wachtwoord resetten voor 'helper'" });
+    const field = within(dialog).getByLabelText('Tijdelijk wachtwoord');
+    expect(field).toHaveFocus();
+    await userEvent.type(field, 'reset-by-admin-pw');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Opslaan' }));
+    expect(calls.at(-1)).toMatchObject({ body: { password: 'reset-by-admin-pw' } });
+    expect(await screen.findByText('Opgeslagen')).toBeInTheDocument();
   });
 });
 
@@ -109,17 +197,21 @@ describe('AccessPage', () => {
     ],
   };
 
-  it('shows Users with their grants and Admins as always on; Editors wait for GAP-021', async () => {
+  it('shows Users with their grants, and Editors and Admins as always on', async () => {
     stubFetch({ 'GET /api/access': () => ({ json: matrix }) });
     renderWithAuth(<AccessPage />);
     const table = await waitFor(desktopTable);
     expect(table.getByRole('checkbox', { name: 'helper: Joey' })).toBeChecked();
     expect(table.getByRole('checkbox', { name: 'helper: Denise' })).not.toBeChecked();
-    const adminCell = table.getByRole('checkbox', { name: 'owner@example.org · Admin: Denise' });
-    expect(adminCell).toBeChecked();
-    expect(adminCell).toBeDisabled();
-    expect(table.queryByText('Renate')).toBeNull();
-    expect(screen.getByText('Admin heeft altijd toegang.')).toBeInTheDocument();
+    for (const name of ['owner@example.org: Denise', 'Renate: Denise']) {
+      const cell = table.getByRole('checkbox', { name });
+      expect(cell).toBeChecked();
+      expect(cell).toBeDisabled();
+    }
+    expect(
+      table.getAllByRole('rowheader').map((th) => th.textContent.replace(/\s+/g, ' ').trim()),
+    ).toEqual(['helper', 'Renate · Editor', 'owner@example.org · Admin']);
+    expect(screen.getByText('Admin en Editor hebben altijd toegang.')).toBeInTheDocument();
   });
 
   it('saves a cell immediately', async () => {

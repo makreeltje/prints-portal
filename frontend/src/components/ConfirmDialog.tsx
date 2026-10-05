@@ -54,6 +54,7 @@ export function ConfirmDialog({
       title={title}
       onClose={close}
       busy={busy}
+      size="sm"
       alert={destructive}
       describedBy={body === undefined ? undefined : bodyId}
       icon={

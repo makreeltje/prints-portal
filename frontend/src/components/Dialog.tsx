@@ -17,6 +17,8 @@ export function Dialog({
   icon,
   describedBy,
   closeLabel,
+  size,
+  onSubmit,
 }: {
   open: boolean;
   title: string;
@@ -30,6 +32,10 @@ export function Dialog({
   describedBy?: string;
   /** aria-label for a close button in the header; omitted when not given. */
   closeLabel?: string;
+  /** `sm`: the 380px panel for confirmations (pp-dialog sm). */
+  size?: 'sm';
+  /** Makes the panel a form, so Enter submits. */
+  onSubmit?: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -65,7 +71,7 @@ export function Dialog({
       }}
     >
       {open && (
-        <div className="pp-dialog">
+        <Panel size={size} onSubmit={onSubmit}>
           <header>
             {icon}
             <h2 id={titleId}>{title}</h2>
@@ -83,8 +89,34 @@ export function Dialog({
           </header>
           {children !== undefined && <div className="pp-body pp-col">{children}</div>}
           <footer>{footer}</footer>
-        </div>
+        </Panel>
       )}
     </dialog>
+  );
+}
+
+function Panel({
+  size,
+  onSubmit,
+  children,
+}: {
+  size?: 'sm';
+  onSubmit?: () => void;
+  children: ReactNode;
+}) {
+  // `sheet`: full width with top corners only at 480px and below (Dialog spec).
+  const className = size === 'sm' ? 'pp-dialog sm sheet' : 'pp-dialog sheet';
+  if (onSubmit === undefined) return <div className={className}>{children}</div>;
+  return (
+    <form
+      className={className}
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+    >
+      {children}
+    </form>
   );
 }
