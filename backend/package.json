@@ -10,7 +10,8 @@
     "start": "node dist/server.js",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "inspect": "tsx src/cli/inspect.ts"
   },
   "dependencies": {
     "@fastify/static": "^10.1.5",
