@@ -128,6 +128,22 @@ export interface SessionTable {
   expires_at: string;
 }
 
+export interface TagTable {
+  id: string;
+  /** As typed (trimmed, single spaces). */
+  name: string;
+  /** Lower-cased name, unique. */
+  name_key: string;
+  /** #rrggbb, or null for a chip without colour. */
+  colour: string | null;
+  created_at: string;
+}
+
+export interface PrintTagTable {
+  print_record_id: string;
+  tag_id: string;
+}
+
 export interface Database {
   print_records: PrintRecordTable;
   print_assets: PrintAssetTable;
@@ -136,4 +152,6 @@ export interface Database {
   users: UserTable;
   customer_access: CustomerAccessTable;
   sessions: SessionTable;
+  tags: TagTable;
+  print_tags: PrintTagTable;
 }

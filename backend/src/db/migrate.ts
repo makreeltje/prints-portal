@@ -2,11 +2,13 @@ import { Migrator, NO_MIGRATIONS, type Migration, type MigrationProvider } from 
 import type { AppDatabase } from './connection.js';
 import * as m0001 from './migrations/0001_print_index.js';
 import * as m0002 from './migrations/0002_auth.js';
+import * as m0003 from './migrations/0003_tags.js';
 
 /** Migrations are listed explicitly so the compiled app needs no directory scanning. */
 const MIGRATIONS: Record<string, Migration> = {
   '0001_print_index': m0001,
   '0002_auth': m0002,
+  '0003_tags': m0003,
 };
 
 const provider: MigrationProvider = {
