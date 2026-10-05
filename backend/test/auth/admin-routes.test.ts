@@ -54,14 +54,14 @@ describe.each(TEST_DATABASES)('users and access on $name', ({ url }) => {
     const response = await t.as(admin, { url: '/api/users' });
     expect(response.statusCode).toBe(200);
     const { users } = response.json<{ users: Record<string, unknown>[] }>();
-    expect(users.map((u) => u.email)).toEqual([
+    expect(users.map((u) => u.login)).toEqual([
       'editor@example.org',
       'helper@example.org',
       'owner@example.org',
     ]);
     expect(users[0]).toEqual({
       id: ids.editor,
-      email: 'editor@example.org',
+      login: 'editor@example.org',
       displayName: 'editor@example.org',
       role: 'Editor',
       origin: 'local',
@@ -74,25 +74,25 @@ describe.each(TEST_DATABASES)('users and access on $name', ({ url }) => {
     const created = await t.as(admin, {
       method: 'POST',
       url: '/api/users',
-      payload: { email: 'New@Example.org', role: 'User', password: 'temporary-password' },
+      payload: { login: 'New@Example.org', role: 'User', password: 'temporary-password' },
     });
     expect(created.statusCode).toBe(201);
-    expect(created.json()).toMatchObject({ email: 'new@example.org', role: 'User' });
+    expect(created.json()).toMatchObject({ login: 'new@example.org', role: 'User' });
     await t.login('new@example.org', 'temporary-password');
 
     const duplicate = await t.as(admin, {
       method: 'POST',
       url: '/api/users',
-      payload: { email: 'new@example.org', role: 'User', password: 'temporary-password' },
+      payload: { login: 'new@example.org', role: 'User', password: 'temporary-password' },
     });
     expect(duplicate.statusCode).toBe(409);
-    expect(duplicate.json()).toEqual({ error: 'email_taken' });
+    expect(duplicate.json()).toEqual({ error: 'login_taken' });
   });
 
   it.each([
-    [{ email: 'a@example.org', role: 'User', password: 'short' }, 'password_too_short'],
-    [{ email: 'not-an-address', role: 'User', password: 'temporary-password' }, undefined],
-    [{ email: 'a@example.org', role: 'Owner', password: 'temporary-password' }, undefined],
+    [{ login: 'a@example.org', role: 'User', password: 'short' }, 'password_too_short'],
+    [{ login: '   ', role: 'User', password: 'temporary-password' }, undefined],
+    [{ login: 'a@example.org', role: 'Owner', password: 'temporary-password' }, undefined],
   ])('rejects %j', async (payload, error) => {
     const response = await t.as(admin, { method: 'POST', url: '/api/users', payload });
     expect(response.statusCode).toBe(400);
@@ -193,10 +193,10 @@ describe.each(TEST_DATABASES)('users and access on $name', ({ url }) => {
     const response = await t.as(admin, { url: '/api/access' });
     const body = response.json<{
       customers: string[];
-      users: { email: string; customers: string[] }[];
+      users: { login: string; customers: string[] }[];
     }>();
     expect(body.customers).toEqual(['Joey', 'Wouter']);
-    expect(body.users.map((u) => [u.email, u.customers])).toEqual([
+    expect(body.users.map((u) => [u.login, u.customers])).toEqual([
       ['editor@example.org', ['Joey', 'Wouter']],
       ['helper@example.org', ['Joey']],
       ['owner@example.org', ['Joey', 'Wouter']],
@@ -271,7 +271,7 @@ describe('creating local users with OIDC on', () => {
         {
           method: 'POST',
           url: '/api/users',
-          payload: { email: 'a@example.org', role: 'User', password: 'temporary-password' },
+          payload: { login: 'a@example.org', role: 'User', password: 'temporary-password' },
         },
       );
       expect(response.statusCode).toBe(409);

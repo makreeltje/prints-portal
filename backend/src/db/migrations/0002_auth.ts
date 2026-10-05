@@ -12,13 +12,16 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     db.schema
       .createTable('users')
       .addColumn('id', 'varchar(36)', (c) => c.primaryKey())
-      // Stored lower-case, so a case-sensitive unique index is enough on every engine.
-      .addColumn('email', 'varchar(320)', (c) => c.notNull().unique())
+      // Sign-in name: an e-mail address or a plain name. Stored lower-case, so a
+      // case-sensitive unique index is enough on every engine.
+      .addColumn('login', 'varchar(320)', (c) => c.notNull().unique())
       .addColumn('display_name', 'varchar(255)', (c) => c.notNull())
       .addColumn('role', 'varchar(16)', (c) => c.notNull())
       .addColumn('password_hash', 'varchar(255)')
       .addColumn('oidc_subject', 'varchar(255)', (c) => c.unique())
       .addColumn('role_from_group', 'integer', (c) => c.notNull().defaultTo(0))
+      // 1 after an Admin set a temporary password; the user must choose their own first.
+      .addColumn('must_change_password', 'integer', (c) => c.notNull().defaultTo(0))
       .addColumn('created_at', 'varchar(30)', (c) => c.notNull())
       .addColumn('last_login_at', 'varchar(30)'),
   ).execute();

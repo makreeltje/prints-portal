@@ -30,8 +30,8 @@ export interface TestApp {
   config: AppConfig;
   clock: TestClock;
   /** Inserts a local user with TEST_PASSWORD. */
-  addUser(email: string, role: Role): Promise<string>;
-  login(email: string, password?: string): Promise<Session>;
+  addUser(login: string, role: Role, options?: { mustChangePassword?: boolean }): Promise<string>;
+  login(login: string, password?: string): Promise<Session>;
   /** Injects with the session cookie and, for changing methods, the CSRF header. */
   as(session: Session | null, options: InjectOptions): Promise<LightMyRequestResponse>;
   close(): Promise<void>;
@@ -59,19 +59,19 @@ export async function startTestApp(
     db,
     config,
     clock,
-    async addUser(email, role) {
+    async addUser(login, role, options = {}) {
       const user = await createUser(
         db,
-        { email, role, passwordHash: await passwordHash },
+        { login, role, passwordHash: await passwordHash, ...options },
         clock.now(),
       );
       return user.id;
     },
-    async login(email, password = TEST_PASSWORD) {
+    async login(login, password = TEST_PASSWORD) {
       const response = await app.inject({
         method: 'POST',
         url: '/api/auth/login',
-        payload: { email, password },
+        payload: { login, password },
       });
       if (response.statusCode !== 200) {
         throw new Error(`login failed: ${String(response.statusCode)} ${response.body}`);

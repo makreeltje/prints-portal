@@ -24,6 +24,15 @@ const ENDPOINTS: {
     request: () => ({ url: '/api/auth/session' }),
     allowed: ['User', 'Editor', 'Admin'],
   },
+  {
+    name: 'POST /api/auth/password',
+    request: () => ({
+      method: 'POST',
+      url: '/api/auth/password',
+      payload: { currentPassword: 'wrong-password!!', newPassword: 'a-brand-new-password' },
+    }),
+    allowed: ['User', 'Editor', 'Admin'],
+  },
   { name: 'GET /api/users', request: () => ({ url: '/api/users' }), allowed: ['Admin'] },
   {
     name: 'POST /api/users',
@@ -31,7 +40,7 @@ const ENDPOINTS: {
       method: 'POST',
       url: '/api/users',
       payload: {
-        email: `n${String(Math.random()).slice(2)}@example.org`,
+        login: `n${String(Math.random()).slice(2)}@example.org`,
         role: 'User',
         password: 'temporary-password',
       },

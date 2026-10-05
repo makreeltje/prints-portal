@@ -43,10 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       state.status === 'signed-in' || state.status === 'signed-out' ? state.methods : null;
     return {
       state,
-      login: async (email, password) => {
+      login: async (login, password) => {
         const session = await api<SessionResponse>('/api/auth/login', {
           method: 'POST',
-          body: { email, password },
+          body: { login, password },
           quiet401: true,
         });
         setCsrfToken(session.csrfToken);

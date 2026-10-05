@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { BootstrapError, ensureBootstrapAdmin } from '../../src/auth/bootstrap.js';
 import { verifyPassword } from '../../src/auth/passwords.js';
-import { createUser, findUserByEmail } from '../../src/auth/users.js';
+import { createUser, findUserByLogin } from '../../src/auth/users.js';
 import { loadConfig } from '../../src/config/config.js';
 import type { AppDatabase } from '../../src/db/connection.js';
 import { TEST_SESSION_SECRET } from '../helpers/app.js';
@@ -29,19 +29,19 @@ describe('ensureBootstrapAdmin', () => {
       config({ ADMIN_EMAIL: 'Owner@Example.org', ADMIN_PASSWORD: STRONG }),
       silent,
     );
-    const admin = await findUserByEmail(db, 'owner@example.org');
+    const admin = await findUserByLogin(db, 'owner@example.org');
     expect(admin?.role).toBe('Admin');
     expect(await verifyPassword(admin?.password_hash ?? null, STRONG)).toBe(true);
   });
 
   it('does nothing once an Admin exists and never resets the password', async () => {
-    await createUser(db, { email: 'owner@example.org', role: 'Admin' }, new Date());
+    await createUser(db, { login: 'owner@example.org', role: 'Admin' }, new Date());
     await ensureBootstrapAdmin(
       db,
       config({ ADMIN_EMAIL: 'owner@example.org', ADMIN_PASSWORD: STRONG }),
       silent,
     );
-    expect((await findUserByEmail(db, 'owner@example.org'))?.password_hash).toBeNull();
+    expect((await findUserByLogin(db, 'owner@example.org'))?.password_hash).toBeNull();
   });
 
   it.each([
@@ -63,7 +63,7 @@ describe('ensureBootstrapAdmin', () => {
       info: () => undefined,
       warn: (message) => warnings.push(message),
     });
-    expect((await findUserByEmail(db, 'admin@localhost'))?.role).toBe('Admin');
+    expect((await findUserByLogin(db, 'admin@localhost'))?.role).toBe('Admin');
     expect(warnings.join('\n')).toMatch(/admin@localhost/);
   });
 

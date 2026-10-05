@@ -24,11 +24,11 @@ describe.each(TEST_DATABASES)('local login on $name', ({ url }) => {
     const response = await t.app.inject({
       method: 'POST',
       url: '/api/auth/login',
-      payload: { email: ' Helper@Example.org ', password: TEST_PASSWORD },
+      payload: { login: ' Helper@Example.org ', password: TEST_PASSWORD },
     });
     expect(response.statusCode).toBe(200);
     expect(response.json()).toMatchObject({
-      user: { email: 'helper@example.org', role: 'User', origin: 'local' },
+      user: { login: 'helper@example.org', role: 'User', origin: 'local' },
       csrfToken: expect.any(String) as string,
     });
     expect(response.json()).not.toHaveProperty('user.passwordHash');
@@ -43,8 +43,8 @@ describe.each(TEST_DATABASES)('local login on $name', ({ url }) => {
 
   it('refuses a wrong password or unknown user with the same answer', async () => {
     for (const payload of [
-      { email: 'helper@example.org', password: 'wrong password!' },
-      { email: 'nobody@example.org', password: TEST_PASSWORD },
+      { login: 'helper@example.org', password: 'wrong password!' },
+      { login: 'nobody@example.org', password: TEST_PASSWORD },
     ]) {
       const response = await t.app.inject({ method: 'POST', url: '/api/auth/login', payload });
       expect(response.statusCode).toBe(401);
@@ -58,7 +58,7 @@ describe.each(TEST_DATABASES)('local login on $name', ({ url }) => {
       method: 'POST',
       url: '/api/auth/login',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      payload: 'email=helper%40example.org&password=x',
+      payload: 'login=helper%40example.org&password=x',
     });
     expect(response.statusCode).toBe(415);
   });
@@ -68,7 +68,7 @@ describe.each(TEST_DATABASES)('local login on $name', ({ url }) => {
     const response = await t.as(session, { url: '/api/auth/session' });
     expect(response.statusCode).toBe(200);
     expect(response.json()).toMatchObject({
-      user: { email: 'helper@example.org' },
+      user: { login: 'helper@example.org' },
       csrfToken: session.csrfToken,
     });
     expect((await t.as(null, { url: '/api/auth/session' })).statusCode).toBe(401);
@@ -124,7 +124,7 @@ describe.each(TEST_DATABASES)('local login on $name', ({ url }) => {
 
   it('ends sessions when the user is removed', async () => {
     const session = await t.login('helper@example.org');
-    await t.db.deleteFrom('users').where('email', '=', 'helper@example.org').execute();
+    await t.db.deleteFrom('users').where('login', '=', 'helper@example.org').execute();
     expect((await t.as(session, { url: '/api/auth/session' })).statusCode).toBe(401);
   });
 
@@ -150,7 +150,7 @@ describe('login rate limit', () => {
       t.app.inject({
         method: 'POST',
         url: '/api/auth/login',
-        payload: { email: 'nobody@example.org', password: 'guess' },
+        payload: { login: 'nobody@example.org', password: 'guess' },
       });
     for (let i = 0; i < 3; i++) expect((await attempt()).statusCode).toBe(401);
     const limited = await attempt();

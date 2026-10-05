@@ -11,6 +11,8 @@ export type AuthRequirement = 'public' | 'signed-in' | readonly Role[];
 declare module 'fastify' {
   interface FastifyContextConfig {
     auth?: AuthRequirement;
+    /** Reachable while the user still has to replace a temporary password. */
+    allowWithTemporaryPassword?: boolean;
   }
   interface FastifyRequest {
     /** The signed-in session, resolved for every /api request. */
@@ -80,6 +82,12 @@ export function registerAuthGuard(app: FastifyInstance, sessions: SessionStore):
       if (typeof header !== 'string' || !tokensEqual(header, session.csrfToken)) {
         return reply.code(403).send({ error: 'csrf' });
       }
+    }
+    if (
+      session.user.must_change_password === 1 &&
+      request.routeOptions.config.allowWithTemporaryPassword !== true
+    ) {
+      return reply.code(403).send({ error: 'password_change_required' });
     }
     if (requirement !== 'signed-in' && !requirement.includes(session.user.role)) {
       return reply.code(403).send({ error: 'forbidden' });

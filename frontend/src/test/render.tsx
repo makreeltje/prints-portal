@@ -12,7 +12,7 @@ export const LOCAL_ONLY: AuthMethods = { local: true, oidc: false };
 export function makeUser(role: Role, overrides: Partial<User> = {}): User {
   return {
     id: `id-${role.toLowerCase()}`,
-    email: `${role.toLowerCase()}@example.org`,
+    login: `${role.toLowerCase()}@example.org`,
     displayName: `${role.toLowerCase()}@example.org`,
     role,
     origin: 'local',

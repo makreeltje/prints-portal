@@ -67,7 +67,7 @@ describe('routing by sign-in state and role', () => {
 
 describe('LoginPage', () => {
   const renderLogin = (
-    login: (email: string, password: string) => Promise<void>,
+    login: (name: string, password: string) => Promise<void>,
     methods = LOCAL_ONLY,
     path = '/login',
   ) =>

@@ -80,12 +80,13 @@ export class SessionStore {
     }
     const user: UserRow = {
       id: row.id,
-      email: row.email,
+      login: row.login,
       display_name: row.display_name,
       role: row.role,
       password_hash: row.password_hash,
       oidc_subject: row.oidc_subject,
       role_from_group: row.role_from_group,
+      must_change_password: row.must_change_password,
       created_at: row.created_at,
       last_login_at: row.last_login_at,
     };

@@ -5,7 +5,7 @@ import type { Role } from '../db/schema.js';
 import { hasAllCustomerAccess, listCustomerFolders } from './access.js';
 import { hashPassword, MAX_PASSWORD_LENGTH, passwordProblem } from './passwords.js';
 import type { SessionStore } from './sessions.js';
-import { createUser, findUserByEmail, findUserById, ROLES, toPublicUser } from './users.js';
+import { createUser, findUserById, findUserByLogin, ROLES, toPublicUser } from './users.js';
 
 const ADMIN_ONLY = { auth: ['Admin'] as const };
 const idParams = {
@@ -39,17 +39,18 @@ export function registerAdminRoutes(
     };
   });
 
-  app.post<{ Body: { email: string; role: Role; password: string } }>(
+  app.post<{ Body: { login: string; role: Role; password: string } }>(
     '/api/users',
     {
       config: ADMIN_ONLY,
       schema: {
         body: {
           type: 'object',
-          required: ['email', 'role', 'password'],
+          required: ['login', 'role', 'password'],
           additionalProperties: false,
           properties: {
-            email: { type: 'string', pattern: '^\\s*[^\\s@]+@[^\\s@]+\\s*$', maxLength: 320 },
+            // "E-mailadres of naam": any visible text; stored trimmed and lower-case.
+            login: { type: 'string', pattern: '\\S', maxLength: 320 },
             role: { type: 'string', enum: ROLES },
             password: passwordSchema,
           },
@@ -58,15 +59,16 @@ export function registerAdminRoutes(
     },
     async (request, reply) => {
       if (!localLogin) return reply.code(409).send({ error: 'local_login_disabled' });
-      const { email, role, password } = request.body;
+      const { login, role, password } = request.body;
       const rejected = sendPasswordProblem(reply, password);
       if (rejected !== null) return rejected;
-      if ((await findUserByEmail(db, email)) !== undefined) {
-        return reply.code(409).send({ error: 'email_taken' });
+      if ((await findUserByLogin(db, login)) !== undefined) {
+        return reply.code(409).send({ error: 'login_taken' });
       }
       const user = await createUser(
         db,
-        { email, role, passwordHash: await hashPassword(password) },
+        // The password is temporary: the user chooses their own at the first sign-in.
+        { login, role, passwordHash: await hashPassword(password), mustChangePassword: true },
         now(),
       );
       return reply.code(201).send(toPublicUser(user));
@@ -138,7 +140,7 @@ export function registerAdminRoutes(
       if (rejected !== null) return rejected;
       await db
         .updateTable('users')
-        .set({ password_hash: await hashPassword(request.body.password) })
+        .set({ password_hash: await hashPassword(request.body.password), must_change_password: 1 })
         .where('id', '=', user.id)
         .execute();
       // Whoever knew the old password is signed out (the Admin keeps their own session).

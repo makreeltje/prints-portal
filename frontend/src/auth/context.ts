@@ -10,7 +10,7 @@ export type AuthState =
 export interface AuthContextValue {
   state: AuthState;
   /** Resolves on success; rejects with ApiError (401 wrong credentials, 429 too many attempts). */
-  login: (email: string, password: string) => Promise<void>;
+  login: (login: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   retry: () => void;
 }

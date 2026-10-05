@@ -38,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   switched off; first Admin from `ADMIN_EMAIL`/`ADMIN_PASSWORD`; roles Admin, Editor and User;
   Admins manage roles, remove users and grant Users access per customer; `TRUSTED_PROXIES` and
   `CORS_ORIGINS`. Screens: login, Gebruikers (list, role, remove) and Toegang (access matrix).
+  Local users sign in with an e-mail address or a name; a password set by an Admin is temporary
+  and must be replaced at the next sign-in; everyone can change their own password
+  (`POST /api/auth/password`).
 
 ### Changed
 

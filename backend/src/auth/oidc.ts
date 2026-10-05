@@ -4,7 +4,7 @@ import type { OidcConfig } from '../config/config.js';
 import type { AppDatabase } from '../db/connection.js';
 import { isSecureRequest, setSessionCookie } from './guard.js';
 import type { SessionStore } from './sessions.js';
-import { createUser, normalizeEmail, type UserRow } from './users.js';
+import { createUser, normalizeLogin, type UserRow } from './users.js';
 
 const FLOW_COOKIE = 'pp_oidc';
 const FLOW_COOKIE_PATH = '/api/auth/oidc';
@@ -76,7 +76,7 @@ export class OidcClient {
     const userInfo = await client.fetchUserInfo(config, tokens.access_token, idClaims.sub);
     const claims: Record<string, unknown> = { ...userInfo, ...idClaims };
 
-    const email = typeof claims.email === 'string' ? normalizeEmail(claims.email) : '';
+    const email = typeof claims.email === 'string' ? normalizeLogin(claims.email) : '';
     if (email === '') throw new Error('the provider returned no e-mail address');
     const name =
       typeof claims.name === 'string' && claims.name.trim() !== ''
@@ -134,7 +134,7 @@ export async function provisionOidcUser(
     (await db
       .selectFrom('users')
       .selectAll()
-      .where('email', '=', identity.email)
+      .where('login', '=', identity.email)
       .where('oidc_subject', 'is', null)
       .executeTakeFirst());
 
@@ -142,7 +142,7 @@ export async function provisionOidcUser(
     const created = await createUser(
       db,
       {
-        email: identity.email,
+        login: identity.email,
         displayName: identity.name ?? identity.email,
         role: isAdmin ? 'Admin' : 'User',
         oidcSubject: identity.subject,
@@ -160,20 +160,21 @@ export async function provisionOidcUser(
 
   const role = isAdmin ? 'Admin' : existing.role_from_group === 1 ? 'User' : existing.role;
   const emailTaken =
-    identity.email !== existing.email &&
+    identity.email !== existing.login &&
     (await db
       .selectFrom('users')
       .select('id')
-      .where('email', '=', identity.email)
+      .where('login', '=', identity.email)
       .executeTakeFirst()) !== undefined;
   const changes = {
     oidc_subject: identity.subject,
-    email: emailTaken ? existing.email : identity.email,
+    login: emailTaken ? existing.login : identity.email,
     display_name: identity.name ?? existing.display_name,
     role,
     role_from_group: isAdmin ? 1 : 0,
     // The identity provider owns the credentials from now on.
     password_hash: null,
+    must_change_password: 0,
     last_login_at: now.toISOString(),
   };
   await db.updateTable('users').set(changes).where('id', '=', existing.id).execute();

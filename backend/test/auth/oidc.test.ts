@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, afterEach, describe, expect, it } from 'vitest';
-import { findUserByEmail } from '../../src/auth/users.js';
+import { findUserByLogin } from '../../src/auth/users.js';
 import { startTestApp, type TestApp } from '../helpers/app.js';
 import { TEST_DATABASES } from '../helpers/databases.js';
 import { FakeOidcProvider, type FakeUser } from '../helpers/oidc-provider.js';
@@ -72,7 +72,7 @@ describe.each(TEST_DATABASES)('OIDC sign-in on $name', ({ url }) => {
     const login = await t.app.inject({
       method: 'POST',
       url: '/api/auth/login',
-      payload: { email: 'owner@example.org', password: 'correct horse battery' },
+      payload: { login: 'owner@example.org', password: 'correct horse battery' },
     });
     expect(login.statusCode).toBe(404);
   });
@@ -88,21 +88,21 @@ describe.each(TEST_DATABASES)('OIDC sign-in on $name', ({ url }) => {
       headers: { cookie: sessionCookie(response) },
     });
     expect(session.json()).toMatchObject({
-      user: { email: 'helper@example.org', displayName: 'Helper', role: 'User', origin: 'oidc' },
+      user: { login: 'helper@example.org', displayName: 'Helper', role: 'User', origin: 'oidc' },
     });
   });
 
   it('makes members of the admin group Admin, and demotes them when they leave it', async () => {
     await signIn({ sub: 's-2', email: 'owner@example.org', groups: [ADMIN_GROUP] });
-    expect((await findUserByEmail(t.db, 'owner@example.org'))?.role).toBe('Admin');
+    expect((await findUserByLogin(t.db, 'owner@example.org'))?.role).toBe('Admin');
     await signIn({ sub: 's-2', email: 'owner@example.org', groups: [] });
-    expect((await findUserByEmail(t.db, 'owner@example.org'))?.role).toBe('User');
+    expect((await findUserByLogin(t.db, 'owner@example.org'))?.role).toBe('User');
   });
 
   it('reads groups from userinfo when the ID token has none', async () => {
     provider.groupsInUserinfoOnly = true;
     await signIn({ sub: 's-3', email: 'owner@example.org', groups: [ADMIN_GROUP] });
-    expect((await findUserByEmail(t.db, 'owner@example.org'))?.role).toBe('Admin');
+    expect((await findUserByLogin(t.db, 'owner@example.org'))?.role).toBe('Admin');
   });
 
   it('keeps a role an Admin set by hand', async () => {
@@ -113,14 +113,14 @@ describe.each(TEST_DATABASES)('OIDC sign-in on $name', ({ url }) => {
       .where('oidc_subject', '=', 's-4')
       .execute();
     await signIn({ sub: 's-4', email: 'editor@example.org', name: 'Renamed' });
-    const user = await findUserByEmail(t.db, 'editor@example.org');
+    const user = await findUserByLogin(t.db, 'editor@example.org');
     expect(user).toMatchObject({ role: 'Editor', display_name: 'Renamed' });
   });
 
   it('takes over an existing local account with the same e-mail address', async () => {
     const id = await t.addUser('owner@example.org', 'Admin');
     await signIn({ sub: 's-5', email: 'owner@example.org' });
-    const user = await findUserByEmail(t.db, 'owner@example.org');
+    const user = await findUserByLogin(t.db, 'owner@example.org');
     expect(user).toMatchObject({ id, oidc_subject: 's-5', role: 'Admin', password_hash: null });
   });
 
@@ -141,7 +141,7 @@ describe.each(TEST_DATABASES)('OIDC sign-in on $name', ({ url }) => {
     const response = await signIn({ sub: 's-6', email: 'x@example.org' }, tamper);
     expect(response.headers.location).toBe('/login?error=oidc');
     expect(response.cookies.find((c) => c.name === 'pp_session')).toBeUndefined();
-    expect(await findUserByEmail(t.db, 'x@example.org')).toBeUndefined();
+    expect(await findUserByLogin(t.db, 'x@example.org')).toBeUndefined();
   });
 
   it('refuses a callback without the signed flow cookie', async () => {

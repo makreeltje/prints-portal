@@ -56,12 +56,13 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
       .insertInto('users')
       .values({
         id: 'u1',
-        email: 'helper@example.org',
+        login: 'helper@example.org',
         display_name: 'helper',
         role: 'User',
         password_hash: null,
         oidc_subject: null,
         role_from_group: 0,
+        must_change_password: 0,
         created_at: now,
         last_login_at: null,
       })

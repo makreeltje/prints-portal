@@ -2,9 +2,9 @@ import type { FastifyInstance } from 'fastify';
 import type { AppConfig } from '../config/config.js';
 import type { AppDatabase } from '../db/connection.js';
 import { clearSessionCookie, setSessionCookie } from './guard.js';
-import { verifyPassword } from './passwords.js';
-import type { SessionStore } from './sessions.js';
-import { findUserByEmail, toPublicUser } from './users.js';
+import { hashPassword, MAX_PASSWORD_LENGTH, passwordProblem, verifyPassword } from './passwords.js';
+import type { ActiveSession, SessionStore } from './sessions.js';
+import { findUserByLogin, toPublicUser, type UserRow } from './users.js';
 
 export interface AuthRouteDependencies {
   config: AppConfig;
@@ -13,7 +13,18 @@ export interface AuthRouteDependencies {
   now: () => Date;
 }
 
-/** /api/auth: which methods are enabled, the current session, local login and logout. */
+/** What the client learns about its session. */
+function sessionBody(user: UserRow, csrfToken: string, expiresAt: Date) {
+  return {
+    user: toPublicUser(user),
+    csrfToken,
+    expiresAt: expiresAt.toISOString(),
+    // A temporary password set by an Admin must be replaced before anything else works.
+    mustChangePassword: user.must_change_password === 1,
+  };
+}
+
+/** /api/auth: which methods are enabled, the current session, local login, logout and own password. */
 export function registerAuthRoutes(
   app: FastifyInstance,
   { config, db, sessions, now }: AuthRouteDependencies,
@@ -25,18 +36,12 @@ export function registerAuthRoutes(
     oidc: config.auth.oidc !== null,
   }));
 
-  app.get('/api/auth/session', (request) => {
-    // The guard guarantees a session here.
-    const session = request.auth;
-    if (session === null) throw new Error('session missing after guard');
-    return {
-      user: toPublicUser(session.user),
-      csrfToken: session.csrfToken,
-      expiresAt: session.expiresAt.toISOString(),
-    };
+  app.get('/api/auth/session', { config: { allowWithTemporaryPassword: true } }, (request) => {
+    const session = signedIn(request.auth);
+    return sessionBody(session.user, session.csrfToken, session.expiresAt);
   });
 
-  app.post<{ Body: { email: string; password: string } }>(
+  app.post<{ Body: { login: string; password: string } }>(
     '/api/auth/login',
     {
       config: {
@@ -46,10 +51,11 @@ export function registerAuthRoutes(
       schema: {
         body: {
           type: 'object',
-          required: ['email', 'password'],
+          required: ['login', 'password'],
           additionalProperties: false,
           properties: {
-            email: { type: 'string', minLength: 1, maxLength: 320 },
+            // An e-mail address or a plain name.
+            login: { type: 'string', minLength: 1, maxLength: 320 },
             password: { type: 'string', minLength: 1, maxLength: 1024 },
           },
         },
@@ -62,10 +68,10 @@ export function registerAuthRoutes(
         return reply.code(415).send({ error: 'unsupported_media_type' });
       }
 
-      const user = await findUserByEmail(db, request.body.email);
+      const user = await findUserByLogin(db, request.body.login);
       const valid = await verifyPassword(user?.password_hash ?? null, request.body.password);
       if (user === undefined || !valid) {
-        request.log.info({ email: request.body.email }, 'failed login');
+        request.log.info({ login: request.body.login }, 'failed login');
         return reply.code(401).send({ error: 'invalid_credentials' });
       }
 
@@ -77,17 +83,75 @@ export function registerAuthRoutes(
         .where('id', '=', user.id)
         .execute();
       setSessionCookie(request, reply, created.token, created.expiresAt);
-      return {
-        user: toPublicUser(user),
-        csrfToken: created.csrfToken,
-        expiresAt: created.expiresAt.toISOString(),
-      };
+      return sessionBody(user, created.csrfToken, created.expiresAt);
     },
   );
 
-  app.post('/api/auth/logout', async (request, reply) => {
-    if (request.auth !== null) await sessions.destroy(request.auth.idHash);
-    clearSessionCookie(request, reply);
-    return reply.code(204).send();
-  });
+  app.post<{ Body: { currentPassword: string; newPassword: string } }>(
+    '/api/auth/password',
+    {
+      config: {
+        allowWithTemporaryPassword: true,
+        // Guessing the current password through this endpoint is limited like a login.
+        rateLimit: { max: config.auth.loginRateLimit, timeWindow: '1 minute' },
+      },
+      schema: {
+        body: {
+          type: 'object',
+          required: ['currentPassword', 'newPassword'],
+          additionalProperties: false,
+          properties: {
+            currentPassword: { type: 'string', minLength: 1, maxLength: 1024 },
+            newPassword: { type: 'string', minLength: 1, maxLength: MAX_PASSWORD_LENGTH },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const session = signedIn(request.auth);
+      const { user } = session;
+      if (!localLogin || user.oidc_subject !== null) {
+        return reply.code(409).send({ error: 'not_local' });
+      }
+      if (!(await verifyPassword(user.password_hash, request.body.currentPassword))) {
+        return reply.code(400).send({ error: 'wrong_current_password' });
+      }
+      const problem = passwordProblem(request.body.newPassword);
+      if (problem !== null) return reply.code(400).send({ error: `password_${problem}` });
+      if (request.body.newPassword === request.body.currentPassword) {
+        return reply.code(400).send({ error: 'password_unchanged' });
+      }
+      await db
+        .updateTable('users')
+        .set({
+          password_hash: await hashPassword(request.body.newPassword),
+          must_change_password: 0,
+        })
+        .where('id', '=', user.id)
+        .execute();
+      // Other devices signed in with the old password are signed out.
+      await sessions.destroyForUser(user.id, session.idHash);
+      return sessionBody(
+        { ...user, must_change_password: 0 },
+        session.csrfToken,
+        session.expiresAt,
+      );
+    },
+  );
+
+  app.post(
+    '/api/auth/logout',
+    { config: { allowWithTemporaryPassword: true } },
+    async (request, reply) => {
+      if (request.auth !== null) await sessions.destroy(request.auth.idHash);
+      clearSessionCookie(request, reply);
+      return reply.code(204).send();
+    },
+  );
+}
+
+/** The guard guarantees a session on routes that are not public. */
+function signedIn(session: ActiveSession | null): ActiveSession {
+  if (session === null) throw new Error('session missing after guard');
+  return session;
 }

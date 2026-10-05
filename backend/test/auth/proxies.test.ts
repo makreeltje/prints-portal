@@ -17,7 +17,7 @@ describe('forwarded headers', () => {
       url: '/api/auth/login',
       remoteAddress,
       headers: { 'x-forwarded-proto': 'https', 'x-forwarded-for': '203.0.113.9' },
-      payload: { email: 'helper@example.org', password: 'correct horse battery' },
+      payload: { login: 'helper@example.org', password: 'correct horse battery' },
     });
     expect(response.statusCode).toBe(200);
     return response.cookies.find((c) => c.name === 'pp_session');
@@ -49,7 +49,7 @@ describe('forwarded headers', () => {
         url: '/api/auth/login',
         remoteAddress: '10.0.0.1',
         headers: { 'x-forwarded-for': client },
-        payload: { email: 'nobody@example.org', password: 'guess' },
+        payload: { login: 'nobody@example.org', password: 'guess' },
       });
     expect((await attempt('203.0.113.1'))?.statusCode).toBe(401);
     expect((await attempt('203.0.113.1'))?.statusCode).toBe(429);

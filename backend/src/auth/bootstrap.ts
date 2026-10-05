@@ -2,7 +2,7 @@ import type { AppConfig } from '../config/config.js';
 import { checkBootstrapPassword } from '../core/secrets.js';
 import type { AppDatabase } from '../db/connection.js';
 import { hashPassword } from './passwords.js';
-import { countAdmins, createUser, findUserByEmail } from './users.js';
+import { countAdmins, createUser, findUserByLogin } from './users.js';
 
 export class BootstrapError extends Error {
   override name = 'BootstrapError';
@@ -48,14 +48,19 @@ export async function ensureBootstrapAdmin(
   for (const warning of check.warnings) logger.warn(warning);
 
   const passwordHash = await hashPassword(password ?? '');
-  const existing = await findUserByEmail(db, email);
+  const existing = await findUserByLogin(db, email);
   if (existing === undefined) {
-    await createUser(db, { email, role: 'Admin', passwordHash }, now);
+    await createUser(db, { login: email, role: 'Admin', passwordHash }, now);
   } else {
     // An existing account with this address is promoted rather than duplicated.
     await db
       .updateTable('users')
-      .set({ role: 'Admin', password_hash: passwordHash, role_from_group: 0 })
+      .set({
+        role: 'Admin',
+        password_hash: passwordHash,
+        role_from_group: 0,
+        must_change_password: 0,
+      })
       .where('id', '=', existing.id)
       .execute();
   }
