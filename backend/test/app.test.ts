@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app.js';
 import { loadConfig } from '../src/config/config.js';
 import { createDatabase } from '../src/db/connection.js';
+import { TEST_SESSION_SECRET } from './helpers/app.js';
 
 let tempDir: string;
 let app: FastifyInstance | undefined;
@@ -21,7 +22,12 @@ afterEach(async () => {
 });
 
 async function start(env: Record<string, string>): Promise<FastifyInstance> {
-  const config = loadConfig({ NODE_ENV: 'test', DATA_DIR: tempDir, ...env });
+  const config = loadConfig({
+    NODE_ENV: 'test',
+    DATA_DIR: tempDir,
+    SESSION_SECRET: TEST_SESSION_SECRET,
+    ...env,
+  });
   const db = await createDatabase(config.database);
   app = await buildApp({ config, db });
   return app;
@@ -71,7 +77,7 @@ describe('GET /healthz', () => {
 });
 
 describe('SPA hosting', () => {
-  it('serves index.html for client-side routes and keeps API 404s as JSON', async () => {
+  it('serves index.html for client-side routes and keeps API paths JSON', async () => {
     const staticDir = path.join(tempDir, 'dist');
     await mkdir(staticDir);
     await writeFile(path.join(staticDir, 'index.html'), '<!doctype html><title>test</title>');
@@ -86,9 +92,10 @@ describe('SPA hosting', () => {
     expect(page.headers['content-type']).toContain('text/html');
     expect(page.body).toContain('<title>test</title>');
 
+    // Anonymous callers cannot probe which API paths exist.
     const api = await server.inject({ method: 'GET', url: '/api/unknown' });
-    expect(api.statusCode).toBe(404);
-    expect(api.json()).toEqual({ error: 'Not Found' });
+    expect(api.statusCode).toBe(401);
+    expect(api.json()).toEqual({ error: 'unauthorized' });
 
     const asset = await server.inject({
       method: 'GET',
