@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/check-design-tokens.sh --hook",
+            "timeout": 30,
+            "statusMessage": "Checking design-system tokens"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Edit(design-system/tokens.css)",
+      "Edit(design-system/tokens.json)",
+      "Edit(design-system/components/**)",
+      "Edit(design-system/screens/**)",
+      "Edit(design-system/VERSION)",
+      "Edit(scripts/check-design-tokens.sh)",
+      "Edit(.claude/settings.json)"
+    ]
+  }
+}
