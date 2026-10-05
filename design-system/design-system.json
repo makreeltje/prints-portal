@@ -1,0 +1,25 @@
+{
+ "v": 3,
+ "assetGroups": {},
+ "blobs": {},
+ "createdOnFiles": {
+  "at": "2026-10-05T12:32:44Z",
+  "v": 1
+ },
+ "docs": {
+  "readme": "project/README.md",
+  "sections": []
+ },
+ "groups": [],
+ "lastChange": {
+  "by": "Rick",
+  "at": "2026-10-05T12:46:45Z",
+  "via": "Claude",
+  "note": "Components: 42 components, bundle.css, copy deck, do/don't"
+ },
+ "layout": "files",
+ "libraries": [],
+ "namespace": "PrintsPortal",
+ "sections": {},
+ "title": "3D Prints Portal"
+}
