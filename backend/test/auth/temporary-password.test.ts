@@ -82,6 +82,21 @@ describe.each(TEST_DATABASES)('sign-in names and temporary passwords on $name', 
     });
   });
 
+  it('accepts a new password without the temporary one, but not for a normal password', async () => {
+    await create('joey');
+    const session = await t.login('joey', 'temporary-password');
+    const withoutCurrent = (s: Session) =>
+      t.as(s, {
+        method: 'POST',
+        url: '/api/auth/password',
+        payload: { newPassword: 'my-own-long-password' },
+      });
+    expect((await withoutCurrent(session)).statusCode).toBe(200);
+    const again = await withoutCurrent(session);
+    expect(again.statusCode).toBe(400);
+    expect(again.json()).toEqual({ error: 'current_password_required' });
+  });
+
   it('lets anyone change their own password and signs out their other sessions', async () => {
     await t.addUser('helper@example.org', 'User');
     const here = await t.login('helper@example.org');

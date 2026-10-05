@@ -87,7 +87,7 @@ export function registerAuthRoutes(
     },
   );
 
-  app.post<{ Body: { currentPassword: string; newPassword: string } }>(
+  app.post<{ Body: { currentPassword?: string; newPassword: string } }>(
     '/api/auth/password',
     {
       config: {
@@ -98,7 +98,9 @@ export function registerAuthRoutes(
       schema: {
         body: {
           type: 'object',
-          required: ['currentPassword', 'newPassword'],
+          // The current password may be left out only while the password is temporary:
+          // the user proved it by signing in, and the "Nieuw wachtwoord kiezen" card does not ask again.
+          required: ['newPassword'],
           additionalProperties: false,
           properties: {
             currentPassword: { type: 'string', minLength: 1, maxLength: 1024 },
@@ -113,12 +115,20 @@ export function registerAuthRoutes(
       if (!localLogin || user.oidc_subject !== null) {
         return reply.code(409).send({ error: 'not_local' });
       }
-      if (!(await verifyPassword(user.password_hash, request.body.currentPassword))) {
+      const { currentPassword } = request.body;
+      if (currentPassword === undefined) {
+        if (user.must_change_password !== 1) {
+          return reply.code(400).send({ error: 'current_password_required' });
+        }
+      } else if (!(await verifyPassword(user.password_hash, currentPassword))) {
         return reply.code(400).send({ error: 'wrong_current_password' });
       }
       const problem = passwordProblem(request.body.newPassword);
       if (problem !== null) return reply.code(400).send({ error: `password_${problem}` });
-      if (request.body.newPassword === request.body.currentPassword) {
+      if (
+        user.password_hash !== null &&
+        (await verifyPassword(user.password_hash, request.body.newPassword))
+      ) {
         return reply.code(400).send({ error: 'password_unchanged' });
       }
       await db
