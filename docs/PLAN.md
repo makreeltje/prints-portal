@@ -42,6 +42,7 @@ References like §6 point to the original build brief; A1–H6 and C1–C3 to th
 | Ignored | Dot files and dot folders (`.thumbs`, `.thumbnails`, `.DS_Store`, `._*`), `__MACOSX`, `Thumbs.db`, `desktop.ini`, `*.part`, `~$*`, Nextcloud temporary-upload files. Configurable. |
 | Asset types | §2.2, case-insensitive extensions. `.step` and `.cxprj` are Other; a `.cxprj` plate image is the last-resort thumbnail. |
 | Thumbnail order | Embedded G-code PNG → 3MF plate image → server-rendered STL → `.cxprj` image → none. |
+| Timelapses | Display only (owner, after M2): listed with the recording date from the name when present; never linked to G-code and never used for cost, print date or times printed. No file-date fallback. The `Nog te printen` rule stays; the owner moves or flips files themselves. |
 | Printer profiles | Edited in Settings (`AppSetting`): key, display name, aliases (e.g. `Creality K1 Max`, `K1 Max`), video prefixes, watts. Seeded with the K1 family. Longest alias match first. Electricity printer comes from G-code `printer_model`, never from a video prefix. |
 | Projects without G-code/3MF | Shown with "Kosten ontbreken". |
 
@@ -155,6 +156,7 @@ Every milestone ends with: format, lint, type check, all tests (all three databa
 - **Status:** done. nl-NL formatting lives in `backend/src/core/format.ts`; whether the frontend imports it or gets a shared package is decided in M5.
 
 ### M3: Data and indexing
+- **Status:** done. Deviation: each milestone adds its own tables in a new migration (M3 has the print index only), instead of creating every table up front; the reindex endpoint moves to M5, behind admin auth.
 - **Scope:** schema and migrations (records, assets, plates, slot usages, financials incl. write-off and payment audit fields, tags, users, access, share links, settings, customer settings, invoices, invoice lines, invoice sequence, sessions); dialect selection from `DATABASE_URL`; global "not deleted" query helper; scanner; indexer (upsert, archive/unarchive, soft-delete skip, auto-exclusions, duplicate flags, aggregates); watcher with per-project debounce; startup full scan; startup warning for a non-writable data dir.
 - **Tests:** migrations on SQLite/Postgres/MariaDB; soft delete surviving re-index; archive and return; subfolder handling; ignore rules; auto-exclude rules; debounce behaviour with a temp directory.
 - **Verify:** point `PRINTS_ROOT` at a test tree and watch the log; inspect the SQLite file.

@@ -26,6 +26,31 @@ jobs:
 
   backend:
     runs-on: ubuntu-latest
+    # Database tests run on SQLite and on these two engines.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: pp
+          POSTGRES_PASSWORD: pp
+          POSTGRES_DB: pp
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U pp" --health-interval 5s --health-timeout 5s --health-retries 10
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: pp
+          MARIADB_USER: pp
+          MARIADB_PASSWORD: pp
+          MARIADB_DATABASE: pp
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      TEST_POSTGRES_URL: postgres://pp:pp@127.0.0.1:5432/pp
+      TEST_MYSQL_URL: mysql://pp:pp@127.0.0.1:3306/pp
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6

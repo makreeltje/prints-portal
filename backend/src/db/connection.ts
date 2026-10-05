@@ -1,9 +1,8 @@
 import { Kysely, MysqlDialect, PostgresDialect, SqliteDialect, sql, type Dialect } from 'kysely';
 import type { DatabaseTarget } from './database-url.js';
+import type { Database } from './schema.js';
 
-/** Table types are added with the schema in milestone 3. */
-export type Database = Record<string, never>;
-
+export type { Database } from './schema.js';
 export type AppDatabase = Kysely<Database>;
 
 const CONNECT_TIMEOUT_MS = 5_000;
@@ -27,6 +26,8 @@ async function createDialect(target: DatabaseTarget): Promise<Dialect> {
     }
     case 'postgres': {
       const { default: pg } = await import('pg');
+      // BIGINT columns (sizes, seconds) are safe as JavaScript numbers; pg returns strings by default.
+      pg.types.setTypeParser(pg.types.builtins.INT8, (value: string) => Number(value));
       return new PostgresDialect({
         pool: new pg.Pool({
           connectionString: target.connectionString,

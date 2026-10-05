@@ -2,7 +2,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildApp } from './app.js';
 import { ConfigError, loadConfig, type AppConfig } from './config/config.js';
+import { checkDataDir } from './config/data-dir.js';
 import { createDatabase } from './db/connection.js';
+import { migrateToLatest } from './db/migrate.js';
+import { Indexer } from './indexing/indexer.js';
+import { PrintsWatcher } from './indexing/watcher.js';
 
 /** The built SPA sits next to the backend in the repo and in the image: <root>/frontend/dist. */
 const defaultStaticDir = path.resolve(
@@ -22,12 +26,41 @@ async function main(): Promise<void> {
     throw error;
   }
 
+  const dataDirProblem = await checkDataDir(config.dataDir);
+
+  // Migrations run before anything listens; a failure stops the app loudly.
   const db = await createDatabase(config.database);
   const app = await buildApp({ config, db, logger: { level: config.logLevel } });
+  if (dataDirProblem !== null) app.log.warn(dataDirProblem);
+  const applied = await migrateToLatest(db);
+  if (applied.length > 0) app.log.info({ migrations: applied }, 'database migrated');
+
+  const indexer = new Indexer({
+    db,
+    printsRoot: config.printsRoot,
+    logger: app.log,
+    onEvent: (event) => {
+      app.log.debug(event, 'print changed');
+    },
+  });
+  const watcher = config.indexing.watch
+    ? new PrintsWatcher({
+        root: config.printsRoot,
+        indexer,
+        debounceMs: config.indexing.debounceMs,
+        usePolling: config.indexing.polling,
+        pollIntervalMs: config.indexing.pollIntervalMs,
+        logger: app.log,
+      })
+    : null;
 
   const shutdown = (signal: string): void => {
     app.log.info({ signal }, 'shutting down');
-    app.close().then(
+    (async () => {
+      await watcher?.close();
+      await indexer.idle();
+      await app.close();
+    })().then(
       () => process.exit(0),
       (error: unknown) => {
         app.log.error({ err: error }, 'error during shutdown');
@@ -47,6 +80,24 @@ async function main(): Promise<void> {
     },
     'prints portal started',
   );
+
+  // The watcher starts first so nothing changed during the initial scan is missed;
+  // both go through the indexer's queue.
+  try {
+    await watcher?.start();
+    if (watcher !== null)
+      app.log.info({ polling: config.indexing.polling }, 'watching prints folder');
+  } catch (error) {
+    app.log.warn(
+      { err: error },
+      'could not watch the prints folder; changes are picked up at the next start',
+    );
+  }
+  if (config.indexing.onStartup) {
+    indexer.indexAll().catch((error: unknown) => {
+      app.log.error({ err: error }, 'initial index failed');
+    });
+  }
 }
 
 main().catch((error: unknown) => {

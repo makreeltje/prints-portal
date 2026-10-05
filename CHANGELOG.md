@@ -26,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   default prices; customer price; duplicate detection; nl-NL formats; path containment;
   weak-secret checks.
 - `inspect` command that prints what the parsers read from any file or folder.
+- Print index (M3): database schema and migrations (run at startup; the app stops if one fails) on
+  SQLite, PostgreSQL and MariaDB; indexer that keeps prints, files, plates and filament slots in
+  step with the prints folder, parses only changed files, keeps user decisions, archives prints
+  whose folder disappeared, never revives deleted prints, applies the "Nog te printen"/"Test" and
+  "3MF next to G-code" exclusions, flags possible duplicates and keeps totals; full scan at startup
+  and a file watcher with a quiet period per print; warning when the data folder is not writable.
 
 ### Changed
 

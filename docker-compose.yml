@@ -27,6 +27,12 @@ services:
       #   mysql://user:password@host:3306/prints_portal   (MariaDB too)
       DATABASE_URL: ${DATABASE_URL:-sqlite:///data/prints-portal.db}
 
+      # Indexing (defaults shown). Set WATCH_POLLING to true if file changes are not picked up.
+      # INDEX_ON_STARTUP: 'true'
+      # WATCH_ENABLED: 'true'
+      # WATCH_DEBOUNCE_MS: '2000'
+      # WATCH_POLLING: 'false'
+
       # --- Planned settings (they take effect in later releases) ---
       # PUBLIC_URL: https://prints.example.com
       # SESSION_SECRET: ${SESSION_SECRET}
