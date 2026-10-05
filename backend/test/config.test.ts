@@ -15,7 +15,40 @@ describe('loadConfig', () => {
       database: { dialect: 'sqlite', filename: '/data/prints-portal.db' },
       logLevel: 'info',
       staticDir: null,
+      indexing: {
+        onStartup: true,
+        watch: true,
+        debounceMs: 2000,
+        polling: false,
+        pollIntervalMs: 5000,
+      },
     });
+  });
+
+  it('reads the indexing settings', () => {
+    expect(
+      loadConfig({
+        INDEX_ON_STARTUP: 'false',
+        WATCH_ENABLED: 'no',
+        WATCH_DEBOUNCE_MS: '500',
+        WATCH_POLLING: 'TRUE',
+        WATCH_POLL_INTERVAL_MS: '10000',
+      }).indexing,
+    ).toEqual({
+      onStartup: false,
+      watch: false,
+      debounceMs: 500,
+      polling: true,
+      pollIntervalMs: 10_000,
+    });
+  });
+
+  it.each([
+    ['WATCH_ENABLED', 'maybe'],
+    ['WATCH_DEBOUNCE_MS', '10'],
+    ['WATCH_POLL_INTERVAL_MS', '1.5'],
+  ])('rejects %s=%s', (key, value) => {
+    expect(() => loadConfig({ [key]: value })).toThrow(ConfigError);
   });
 
   it('places the default SQLite file in DATA_DIR', () => {

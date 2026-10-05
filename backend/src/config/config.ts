@@ -16,6 +16,16 @@ export interface AppConfig {
   logLevel: LogLevel;
   /** Directory with the built SPA; null when the frontend is not served by this process. */
   staticDir: string | null;
+  indexing: {
+    /** Full scan when the app starts. */
+    onStartup: boolean;
+    watch: boolean;
+    /** Quiet period per print before it is re-indexed after a change. */
+    debounceMs: number;
+    /** Poll instead of file-system events (for mounts that do not report changes). */
+    polling: boolean;
+    pollIntervalMs: number;
+  };
 }
 
 export class ConfigError extends Error {
@@ -76,6 +86,22 @@ export function loadConfig(
     problems.push(`LOG_LEVEL must be one of ${LOG_LEVELS.join(', ')} (got "${logLevelText}")`);
   }
 
+  const indexOnStartup = parseBoolean(read('INDEX_ON_STARTUP'), true, 'INDEX_ON_STARTUP', problems);
+  const watchEnabled = parseBoolean(read('WATCH_ENABLED'), true, 'WATCH_ENABLED', problems);
+  const watchPolling = parseBoolean(read('WATCH_POLLING'), false, 'WATCH_POLLING', problems);
+  const debounceMs = parseMilliseconds(
+    read('WATCH_DEBOUNCE_MS'),
+    2000,
+    'WATCH_DEBOUNCE_MS',
+    problems,
+  );
+  const pollIntervalMs = parseMilliseconds(
+    read('WATCH_POLL_INTERVAL_MS'),
+    5000,
+    'WATCH_POLL_INTERVAL_MS',
+    problems,
+  );
+
   const staticDirText = read('STATIC_DIR');
   const staticDir = staticDirText === undefined ? defaults.staticDir : path.resolve(staticDirText);
 
@@ -90,7 +116,48 @@ export function loadConfig(
     database,
     logLevel: logLevel ?? 'info',
     staticDir,
+    indexing: {
+      onStartup: indexOnStartup,
+      watch: watchEnabled,
+      debounceMs,
+      polling: watchPolling,
+      pollIntervalMs,
+    },
   };
+}
+
+const TRUE_WORDS = new Set(['true', '1', 'yes', 'on']);
+const FALSE_WORDS = new Set(['false', '0', 'no', 'off']);
+
+function parseBoolean(
+  value: string | undefined,
+  fallback: boolean,
+  name: string,
+  problems: string[],
+): boolean {
+  if (value === undefined) return fallback;
+  const lower = value.toLowerCase();
+  if (TRUE_WORDS.has(lower)) return true;
+  if (FALSE_WORDS.has(lower)) return false;
+  problems.push(`${name} must be true or false (got "${value}")`);
+  return fallback;
+}
+
+function parseMilliseconds(
+  value: string | undefined,
+  fallback: number,
+  name: string,
+  problems: string[],
+): number {
+  if (value === undefined) return fallback;
+  const ms = Number(value);
+  if (!Number.isInteger(ms) || ms < 100 || ms > 600_000) {
+    problems.push(
+      `${name} must be a whole number of milliseconds between 100 and 600000 (got "${value}")`,
+    );
+    return fallback;
+  }
+  return ms;
 }
 
 function parseEnvironment(value: string | undefined): AppEnvironment {
