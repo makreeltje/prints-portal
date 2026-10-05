@@ -32,7 +32,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 
 <!-- Newest at the bottom. Never renumber. -->
 
-## GAP-001 [open] No screen designs, screen copy or invoice layout
+## GAP-001 [resolved in v1.1] No screen designs, screen copy or invoice layout
 - **Type:** missing screen
 - **Found while:** importing design system v1.0
 - **Where needed:** every page: Login, app shell, Dashboard, Print detail, invoice export dialog, Openstaand, Deel-links, Toegang, Gebruikers, Instellingen, API-docs, public share page, the A4 invoice and reminder PDF, and system states (error, 403, offline, first run).
@@ -69,7 +69,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-004 [open] No "partially paid" payment status
+## GAP-004 [resolved in v1.1] No "partially paid" payment status
 - **Type:** missing state
 - **Found while:** clarifying payment rules (decision: a partially paid print stays open for the remainder)
 - **Where needed:** StatusBadge (payment), PaymentPanel, PrintCard, PrintRow, OutstandingGroup lines, share page, invoice/overview PDF status column.
@@ -80,7 +80,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-005 [open] Per-slot filament usage (multi-colour prints)
+## GAP-005 [resolved in v1.1] Per-slot filament usage (multi-colour prints)
 - **Type:** missing state
 - **Found while:** clarifying requirements before milestone planning
 - **Where needed:** AssetListItem, SpoolPicker trigger, CostBreakdown sub-rows, PrintCard/PrintRow thumbnail tint, SpoolSwatch
@@ -91,7 +91,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-006 [open] "Aantal keer geprint" (times printed) per file
+## GAP-006 [resolved in v1.1] "Aantal keer geprint" (times printed) per file
 - **Type:** missing state
 - **Found while:** clarifying requirements before milestone planning
 - **Where needed:** AssetListItem (G-code and 3MF plate rows), CostBreakdown sub-rows
@@ -102,7 +102,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-007 [open] Duplicate file warning
+## GAP-007 [resolved in v1.1] Duplicate file warning
 - **Type:** missing state
 - **Found while:** clarifying requirements before milestone planning
 - **Where needed:** AssetListItem, print detail header, possibly PrintCard/PrintRow
@@ -113,7 +113,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-008 [open] 3MF plates as separate rows
+## GAP-008 [resolved in v1.1] 3MF plates as separate rows
 - **Type:** missing state
 - **Found while:** clarifying requirements before milestone planning
 - **Where needed:** AssetListItem, CostBreakdown sub-rows, Viewer3D/thumbnail selection
@@ -124,7 +124,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-009 [open] Manual inputs for price per kg, grams and print time
+## GAP-009 [resolved in v1.1] Manual inputs for price per kg, grams and print time
 - **Type:** missing component
 - **Found while:** clarifying requirements before milestone planning
 - **Where needed:** Print detail (CostBreakdown or a new editor), AssetListItem / slot rows
@@ -135,7 +135,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-010 [open] "Niet factureren" customers
+## GAP-010 [resolved in v1.1] "Niet factureren" customers
 - **Type:** missing state
 - **Found while:** clarifying requirements before milestone planning
 - **Where needed:** Settings (customer list), PrintCard, PrintRow, print detail, PaymentPanel, share page
@@ -146,7 +146,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-011 [open] Write-off states in PaymentPanel
+## GAP-011 [resolved in v1.1] Write-off states in PaymentPanel
 - **Type:** missing state
 - **Found while:** clarifying requirements before milestone planning
 - **Where needed:** PaymentPanel, StatusBadge, OutstandingGroup
@@ -157,7 +157,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-012 [open] Invoice register, finalise step and credit notes
+## GAP-012 [resolved in v1.1] Invoice register, finalise step and credit notes
 - **Type:** missing screen
 - **Found while:** clarifying requirements before milestone planning
 - **Where needed:** New page "Facturen", invoice export dialog, print detail
@@ -167,3 +167,25 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** Invoice register UI and finalise/credit flows in the UI. Backend and the placeholder PDF (GAP-001) are not blocked.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
+
+## GAP-013 [open] Deel-link for "niet factureren" customers
+- **Type:** conflict
+- **Found while:** importing design system v1.1
+- **Where needed:** ScreenShareLinks (create dialog), ScreenSharePage, DocOverview, copy deck
+- **What is missing or wrong:** v1.1 says a klant flagged Niet factureren cannot get a Deel-link (the create dialog disables Maken with an info alert). The owner decided the opposite: such a klant may get a link that shows the print list only. The share page and Overzicht have no variant without prices, payment status and PDF buttons.
+- **Why it matters:** The owner wants to share print overviews with non-billed klanten (e.g. family) without showing any amount.
+- **Proposal:** Remove the disabled state from the create dialog. Add a share-page variant for niet-factureren klanten: table columns Print, Project, Datum only; no amount column, no payment badges, no PDF buttons; an intro line such as "Hier zie je de prints die voor je gemaakt zijn." Copy keys share.notBilledIntro and the variant name.
+- **Blocked:** Creating links for niet-factureren klanten in the UI and the share-page variant. Backend (link allowed, no prices returned) is not blocked.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.1
+
+## GAP-014 [open] "Nooit" as share-link expiry
+- **Type:** conflict
+- **Found while:** importing design system v1.1
+- **Where needed:** ScreenShareLinks (create dialog), ShareLinkRow, copy deck
+- **What is missing or wrong:** v1.1 offers only Over 7 / 30 / 90 dagen and states that Nooit is not offered. The owner decided that a link may never expire.
+- **Why it matters:** Family members and regular klanten use one long-lived link.
+- **Proposal:** Add a fourth option "Nooit" to Verloopt; ShareLinkRow shows "Verloopt niet" in `muted` instead of a date. Copy keys share.expiresNever ("Nooit") and share.noExpiry ("Verloopt niet").
+- **Blocked:** The Nooit option in the create dialog and its display in ShareLinkRow. Backend (nullable expiry) is not blocked.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.1
