@@ -93,6 +93,20 @@ export class SessionStore {
     return { idHash, csrfToken: row.session_csrf_token, expiresAt, user };
   }
 
+  /** Session hashes (from `candidates`) that are still valid; never extends a session. */
+  async activeAmong(candidates: readonly string[]): Promise<Set<string>> {
+    if (candidates.length === 0) return new Set();
+    const now = this.now();
+    const rows = await this.db
+      .selectFrom('sessions')
+      .select('id_hash')
+      .where('id_hash', 'in', [...candidates])
+      .where('expires_at', '>', now.toISOString())
+      .where('last_seen_at', '>', new Date(now.getTime() - SESSION_IDLE_MS).toISOString())
+      .execute();
+    return new Set(rows.map((row) => row.id_hash));
+  }
+
   async destroy(idHash: string): Promise<void> {
     await this.db.deleteFrom('sessions').where('id_hash', '=', idHash).execute();
   }

@@ -4,6 +4,7 @@ import fastifyCookie from '@fastify/cookie';
 import fastifyCors from '@fastify/cors';
 import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyStatic from '@fastify/static';
+import fastifyWebsocket from '@fastify/websocket';
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
 import { registerAdminRoutes } from './auth/admin-routes.js';
 import { registerAuthGuard } from './auth/guard.js';
@@ -13,6 +14,23 @@ import { SessionStore } from './auth/sessions.js';
 import type { AppConfig } from './config/config.js';
 import type { AppDatabase } from './db/connection.js';
 import { checkHealth } from './health/health.js';
+import { Indexer } from './indexing/indexer.js';
+import { registerPrintRoutes } from './prints/routes.js';
+import { RealtimeHub } from './realtime/hub.js';
+import { registerLiveRoute } from './realtime/routes.js';
+import { ThumbnailService } from './thumbnails/service.js';
+
+/** Long-lived services the server also needs (watcher, startup scan, shutdown). */
+export interface AppServices {
+  indexer: Indexer;
+  hub: RealtimeHub;
+}
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    services: AppServices;
+  }
+}
 
 export interface AppDependencies {
   config: AppConfig;
@@ -37,6 +55,7 @@ export async function buildApp({
 
   await app.register(fastifyCookie, { secret: config.auth.sessionSecret });
   await app.register(fastifyRateLimit, { global: false });
+  await app.register(fastifyWebsocket, { options: { maxPayload: 64 * 1024 } });
   if (corsOrigins.length > 0) {
     await app.register(fastifyCors, { origin: [...corsOrigins], credentials: true });
   }
@@ -45,6 +64,31 @@ export async function buildApp({
   registerAuthGuard(app, sessions);
   registerAuthRoutes(app, { config, db, sessions, now });
   registerAdminRoutes(app, { config, db, sessions, now });
+
+  const hub = new RealtimeHub(db, app.log);
+  const indexer = new Indexer({
+    db,
+    printsRoot: config.printsRoot,
+    logger: app.log,
+    now,
+    // Every indexer change goes out live (the shared broadcast path).
+    onEvent: (event) => {
+      hub.broadcast({
+        type: event.type,
+        printId: event.printRecordId,
+        customerFolder: event.customerFolder,
+      });
+    },
+  });
+  const thumbnails = new ThumbnailService({
+    db,
+    printsRoot: config.printsRoot,
+    cacheDir: path.join(config.dataDir, 'thumbnails'),
+    logger: app.log,
+  });
+  app.decorate('services', { indexer, hub });
+  registerPrintRoutes(app, { db, printsRoot: config.printsRoot, indexer, hub, thumbnails, now });
+  registerLiveRoute(app, { config, hub, sessions });
   const { oidc, publicUrl } = config.auth;
   if (oidc !== null && publicUrl !== null) {
     registerOidcRoutes(app, { db, sessions, oidc, publicUrl, now });

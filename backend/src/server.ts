@@ -6,7 +6,6 @@ import { ConfigError, loadConfig, type AppConfig } from './config/config.js';
 import { checkDataDir } from './config/data-dir.js';
 import { createDatabase } from './db/connection.js';
 import { migrateToLatest } from './db/migrate.js';
-import { Indexer } from './indexing/indexer.js';
 import { PrintsWatcher } from './indexing/watcher.js';
 
 /** The built SPA sits next to the backend in the repo and in the image: <root>/frontend/dist. */
@@ -47,14 +46,7 @@ async function main(): Promise<void> {
     throw error;
   }
 
-  const indexer = new Indexer({
-    db,
-    printsRoot: config.printsRoot,
-    logger: app.log,
-    onEvent: (event) => {
-      app.log.debug(event, 'print changed');
-    },
-  });
+  const { indexer } = app.services;
   const watcher = config.indexing.watch
     ? new PrintsWatcher({
         root: config.printsRoot,

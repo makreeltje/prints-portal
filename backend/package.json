@@ -17,7 +17,9 @@
     "@fastify/cookie": "^11.1.2",
     "@fastify/cors": "^11.3.0",
     "@fastify/rate-limit": "^11.2.0",
+    "@fastify/send": "^4.1.1",
     "@fastify/static": "^10.1.5",
+    "@fastify/websocket": "^11.3.3",
     "@node-rs/argon2": "^2.2.1",
     "better-sqlite3": "^13.0.3",
     "chokidar": "^5.0.0",
@@ -26,6 +28,7 @@
     "mysql2": "^3.24.5",
     "openid-client": "^6.8.8",
     "pg": "^8.23.1",
+    "pngjs": "^7.0.0",
     "yauzl": "^3.4.0"
   },
   "devDependencies": {
@@ -33,6 +36,8 @@
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^24.19.1",
     "@types/pg": "^8.23.1",
+    "@types/pngjs": "^6.0.5",
+    "@types/ws": "^8.18.2",
     "@types/yauzl": "^3.4.0",
     "@types/yazl": "^3.3.1",
     "eslint": "^10.12.0",
