@@ -1,5 +1,6 @@
 import { sql, type ExpressionBuilder, type SelectQueryBuilder } from 'kysely';
 import { scopeAllows, type CustomerScope } from '../auth/access.js';
+import { tagInkColor } from '../core/tags.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { Database } from '../db/schema.js';
 import type {
@@ -336,10 +337,19 @@ export async function tagsFor(
     .execute();
   for (const row of rows) {
     const list = result.get(row.print_record_id) ?? [];
-    list.push({ id: row.id, name: row.name, colour: row.colour });
+    list.push(toTagDto(row));
     result.set(row.print_record_id, list);
   }
   return result;
+}
+
+export function toTagDto(row: { id: string; name: string; colour: string | null }): TagDto {
+  return {
+    id: row.id,
+    name: row.name,
+    colour: row.colour,
+    ink: row.colour === null ? null : tagInkColor(row.colour),
+  };
 }
 
 function toBool(value: unknown): boolean {

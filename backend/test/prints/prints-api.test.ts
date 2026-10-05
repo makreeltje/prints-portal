@@ -302,14 +302,16 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
       url: `/api/tags/${gift.id}`,
       payload: { name: 'Gift', colour: null },
     });
-    expect(renamed.json()).toEqual({ id: gift.id, name: 'Gift', colour: null });
+    expect(renamed.json()).toEqual({ id: gift.id, name: 'Gift', colour: null, ink: null });
     expect((await t.as(editor, { method: 'DELETE', url: `/api/tags/${gift.id}` })).statusCode).toBe(
       204,
     );
     const tags = (await t.as(helper, { url: '/api/tags' })).json<{
       tags: { name: string; printCount: number }[];
     }>();
-    expect(tags.tags).toEqual([{ id: prio.id, name: 'prio', colour: '#e11d48', printCount: 2 }]);
+    expect(tags.tags).toEqual([
+      { id: prio.id, name: 'prio', colour: '#e11d48', ink: '#ffffff', printCount: 2 },
+    ]);
   });
 
   it('starts a re-index for Admins only', async () => {

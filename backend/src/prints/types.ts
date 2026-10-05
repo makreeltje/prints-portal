@@ -7,6 +7,8 @@ export interface TagDto {
   name: string;
   /** #rrggbb or null (chip without colour). */
   colour: string | null;
+  /** Chip text colour for `colour` (TagChip: whichever has the higher contrast); null without colour. */
+  ink: string | null;
 }
 
 /** One print in a list (dashboard card or row). */

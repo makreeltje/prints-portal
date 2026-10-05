@@ -1,5 +1,6 @@
 import { normalizeHexColor, normalizeTagName, tagKey } from '../core/tags.js';
 import type { AppDatabase } from '../db/connection.js';
+import { toTagDto } from './queries.js';
 import type { TagDto } from './types.js';
 
 /**
@@ -134,12 +135,7 @@ export async function listTags(db: AppDatabase): Promise<(TagDto & { printCount:
     .groupBy(['tags.id', 'tags.name', 'tags.colour', 'tags.name_key'])
     .orderBy('tags.name_key')
     .execute();
-  return rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    colour: row.colour,
-    printCount: Number(row.count),
-  }));
+  return rows.map((row) => ({ ...toTagDto(row), printCount: Number(row.count) }));
 }
 
 export async function createTag(
@@ -160,7 +156,7 @@ export async function createTag(
     .insertInto('tags')
     .values({ ...tag, name_key: key, created_at: now.toISOString() })
     .execute();
-  return tag;
+  return toTagDto(tag);
 }
 
 export async function updateTag(
@@ -182,7 +178,7 @@ export async function updateTag(
   }
   const colour = input.colour === undefined ? current.colour : normalizeHexColor(input.colour);
   await db.updateTable('tags').set({ name, name_key: key, colour }).where('id', '=', id).execute();
-  return { id, name, colour };
+  return toTagDto({ id, name, colour });
 }
 
 /** Removes a tag; returns the prints that carried it (for live updates). */
