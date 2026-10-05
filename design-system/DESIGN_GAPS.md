@@ -168,7 +168,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-013 [open] Deel-link for "niet factureren" customers
+## GAP-013 [resolved in v1.2] Deel-link for "niet factureren" customers
 - **Type:** conflict
 - **Found while:** importing design system v1.1
 - **Where needed:** ScreenShareLinks (create dialog), ScreenSharePage, DocOverview, copy deck
@@ -179,7 +179,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-05), lines marked `ds-gap: GAP-013`
 - **Design system version:** 1.1
 
-## GAP-014 [open] "Nooit" as share-link expiry
+## GAP-014 [resolved in v1.2] "Nooit" as share-link expiry
 - **Type:** conflict
 - **Found while:** importing design system v1.1
 - **Where needed:** ScreenShareLinks (create dialog), ShareLinkRow, copy deck
@@ -190,7 +190,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-05), lines marked `ds-gap: GAP-014`
 - **Design system version:** 1.1
 
-## GAP-015 [open] AppShell has no responsive CSS for tablet rail, phone layout and drawer
+## GAP-015 [resolved in v1.2] AppShell has no responsive CSS for tablet rail, phone layout and drawer
 - **Type:** missing component
 - **Found while:** M1, implementing AppShell
 - **Where needed:** AppShell (every operator page), and every screen that relies on the `.phone` context class (e.g. `.phone .pp-stats`)
@@ -201,7 +201,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-05), lines marked `ds-gap: GAP-015`
 - **Design system version:** 1.1
 
-## GAP-016 [open] No line-height tokens or base page typography
+## GAP-016 [resolved in v1.2] No line-height tokens or base page typography
 - **Type:** missing token
 - **Found while:** M1, page base styles
 - **Where needed:** `body` and any running text outside a component (page intros, help text in screens)
@@ -212,7 +212,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.1
 
-## GAP-017 [open] Raw sizes in the login and system-state layouts
+## GAP-017 [resolved in v1.2] Raw sizes in the login and system-state layouts
 - **Type:** missing token
 - **Found while:** M4, building ScreenLogin and the 403 state
 - **Where needed:** ScreenLogin (`/login`), ScreenSystemStates (403, error, first run), ScreenUsers (role select)
@@ -223,7 +223,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.1
 
-## GAP-018 [open] Local sign-in by name or by e-mail address
+## GAP-018 [resolved in v1.2] Local sign-in by name or by e-mail address
 - **Type:** conflict
 - **Found while:** M4, ScreenUsers create dialog
 - **Where needed:** ScreenUsers ("Gebruiker maken" dialog), ScreenLogin, copy deck
@@ -234,7 +234,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.1
 
-## GAP-019 [open] Choosing your own password after a temporary one
+## GAP-019 [resolved in v1.2] Choosing your own password after a temporary one
 - **Type:** missing screen
 - **Found while:** M4, ScreenUsers create dialog
 - **Where needed:** after local sign-in with a temporary password; ScreenUsers ("Wachtwoord resetten")
@@ -245,7 +245,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.1
 
-## GAP-020 [open] "Rol wijzigen" on phones
+## GAP-020 [resolved in v1.2] "Rol wijzigen" on phones
 - **Type:** unclear spec
 - **Found while:** M4, ScreenUsers phone layout
 - **Where needed:** ScreenUsers at 480px and below
@@ -256,7 +256,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.1
 
-## GAP-021 [open] Editor rows in the access matrix
+## GAP-021 [resolved in v1.2] Editor rows in the access matrix
 - **Type:** conflict
 - **Found while:** M4, ScreenAccess
 - **Where needed:** AccessMatrix, ScreenAccess, copy deck
@@ -267,7 +267,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.1
 
-## GAP-022 [open] Error copy for sign-in and user management
+## GAP-022 [resolved in v1.2] Error copy for sign-in and user management
 - **Type:** missing state
 - **Found while:** M4, ScreenLogin and ScreenUsers
 - **Where needed:** ScreenLogin, "Gebruiker maken" dialog, copy deck
@@ -277,3 +277,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** those messages; until then the screens show `error.generic`, and the delete confirmation shows its title only.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.1
+
+## GAP-023 [open] No class to switch tables to phone cards
+- **Type:** missing component
+- **Found while:** M4, moving ScreenUsers and ScreenAccess to v1.2
+- **Where needed:** ScreenUsers ("Phone: one card per user"), AccessMatrix/ScreenAccess ("At 480px and below it switches to one card per user"), ScreenLogin ("On phones the card is full width with `space-4` margins"); later every screen with a table/card pair (Openstaand, Facturen, Deel-links).
+- **What is missing or wrong:** v1.2 moved the app-shell breakpoints into `bundle.css`, but there is still no class that shows one block only above 480px and another only at 480px and below, and `.pp-center` keeps `space-6` padding on phones (the login preview uses an inline `padding:16px`). App code may not write its own breakpoints, so the phone cards cannot be switched in, and the login card keeps 24px margins on phones.
+- **Why it matters:** on phones the Users table and the access matrix are shown as tables that scroll sideways inside their box instead of the designed cards; the login card margins differ from the design.
+- **Proposal:** two utility classes in `bundle.css`, e.g. `.pp-only-wide` (hidden at 480px and below) and `.pp-only-phone` (hidden above 480px, `display:flex` column below), and `.pp-center` padding `space-4` at 480px and below. Temporary placeholder: the same two classes and padding rule in a separate app stylesheet marked `ds-gap: GAP-023`.
+- **Blocked:** phone cards on Gebruikers and Toegang, and the login card's phone margins. Until then the tables scroll inside their box on phones (no horizontal page scroll).
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.2
