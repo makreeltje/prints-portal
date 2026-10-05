@@ -23,7 +23,7 @@ design-system/
 └── IMPORTING.md         ← this file
 ```
 
-`screens/` doesn't exist yet. See GAP-001.
+Since v1.1 the screens and documents are delivered as component folders, not a `screens/` folder: `components/Screen*` (pages), `components/AppShell` and `components/Doc*` (invoice, reminder and overview PDFs). These are the screen layouts referred to in `CLAUDE.md`. The export's own changelog is `changelog.md`.
 
 ## Using it in the app
 
@@ -41,3 +41,4 @@ design-system/
 ## Changelog
 
 - **1.0**: initial export: tokens, 42 components plus `bundle.css`, copy deck (component copy), contrast report, do/don't. Open gaps: GAP-001, GAP-002, GAP-003.
+- **1.1**: 17 screen and document specs (`components/Screen*`, `components/Doc*`), new components AppShell, CostOverrideDialog and WriteOffDialog, ten changed components, about 150 new copy keys, no token changes (details in `changelog.md`). Resolves GAP-001, GAP-004, GAP-005, GAP-006, GAP-007, GAP-008, GAP-009, GAP-010, GAP-011 and GAP-012.

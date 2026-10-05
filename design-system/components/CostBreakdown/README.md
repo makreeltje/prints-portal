@@ -1,11 +1,11 @@
 CostBreakdown explains how the Totaalkosten of a print are built from Materiaal and Stroom, with the source of every value.
 
-**Anatomy.** Table with columns Post, Berekening, Bron, Bedrag. Rows: Materiaal (grams × €/kg), Stroom (time × W × tarief → kWh → €), Totaalkosten (bold, top border). Per-asset sub-rows are indented. Source is a small neutral badge: Spoolman, Handmatig, Geschat. A missing input shows a `warning` alert above the table with an action, and the affected row shows "—" instead of a number; the total says "Onvolledig".
+**Anatomy.** Header row with the title and an "Aanpassen" ghost button (editors; opens CostOverrideDialog). Table columns Post, Berekening, Bron, Bedrag. Rows: Materiaal, then one sub-row per counted file and, for multi-colour files, one deeper sub-row per slot ("Slot 2 · 1,65 g × € 24,00/kg"); Stroom; Totaalkosten (bold, top rule). Times printed multiplies the calculation text: "2 × 87 g × € 22,50/kg". Source is a neutral badge: Spoolman, Handmatig, Geschat. A missing input shows a `warning` alert above the table and "—" in the affected row; the total reads "Onvolledig". Excluded files are listed once as a muted line "Niet meegeteld: 2 bestanden" with the reasons in the asset list. For a customer that is niet factureren the title reads "Kosten" and no price or margin appears. Users with the User role never see this table.
 
 **Tokens.** `surface-2` (head), `border`, `border-strong` (total rule), `muted`, `warning`, `warning-tint`, `info`.
 
-**States.** Complete, missing printerprofiel (Stroom "—", alert), missing spool (Materiaal "—"), loading (Skeleton rows).
+**States.** Complete, missing printerprofiel, missing spool, manual override (Handmatig badge), loading (Skeleton rows).
 
-**Accessibility.** Real `<table>`; amounts right-aligned with tabular figures; the warning is `role="status"`; the calculation text is visible, not hidden in a tooltip.
+**Accessibility.** Real `<table>`; amounts right-aligned with tabular figures; the warning is `role="status"`; the calculation text is visible, not hidden in a tooltip; sub-rows use `aria-level` or indentation plus a visually hidden "onderdeel van".
 
-**Dutch copy.** Materiaal | 87 g × € 22,50/kg | Spoolman | € 2,18 | Stroom | 1 u 20 min × 350 W = 0,47 kWh | Geschat | € 0,12 | Totaalkosten | € 2,30 | Geen printerprofiel, stroomkosten ontbreken.
+**Dutch copy.** Materiaal | 2 × 87 g × € 22,50/kg | Spoolman | € 3,92 | Slot 2 · 1,65 g × € 24,00/kg | Stroom | 1,05 kWh × € 0,25/kWh | Geschat | € 0,26 | Totaalkosten | € 4,26 | Aanpassen | Niet meegeteld: 2 bestanden | Geen printerprofiel, stroomkosten ontbreken.

@@ -1,6 +1,6 @@
 # Dutch copy deck
 
-Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Component copy only; screen copy is added with the screens.
+Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Component and screen copy.
 
 | Key | Text |
 |---|---|
@@ -129,3 +129,150 @@ Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Co
 | format.duration | 1 u 20 min |
 | format.weight | 87 g |
 | format.energy | 0,42 kWh |
+| status.partiallyPaid | Deels betaald |
+| status.remaining | Nog {amount} open |
+| status.notBilled | Niet factureren |
+| status.onInvoice | Op factuur {number} |
+| status.concept | Concept |
+| status.final | Definitief |
+| status.creditNote | Creditnota |
+| money.of | van {amount} |
+| money.cost | Kosten |
+| asset.timesPrinted | Aantal keer geprint |
+| asset.timesPrintedShort | × {count} |
+| asset.duplicate | Mogelijk dubbel |
+| asset.duplicateHint | Zelfde bestand als {fileName}. Gebruik liever Aantal keer geprint. |
+| asset.plate | Plaat {n} |
+| asset.slot | Slot {n} |
+| asset.slicerHint | slicer |
+| asset.pickSpool | Kies een spoel |
+| asset.excludedReason.duplicate | Telt niet mee: dubbel met G-code |
+| asset.excludedReason.folder | Telt niet mee: map {folder} |
+| asset.plates | {count} platen |
+| cost.adjust | Aanpassen |
+| cost.notCounted | Niet meegeteld: {count} bestanden |
+| cost.adjustTitle | Kosten aanpassen |
+| cost.pricePerKg | Prijs per kg |
+| cost.weight | Gewicht |
+| cost.printTime | Printtijd |
+| cost.manualSource | Waarden die je invult krijgen de bron Handmatig. |
+| cost.spoolmanPrice | Prijs komt uit Spoolman. |
+| cost.resetToComputed | Terug naar berekend |
+| pay.paidOf | Betaald € {paid} van € {total} |
+| pay.writeOffReason | Reden |
+| pay.writeOffReasonHelp | Optioneel. Zichtbaar voor beheerders. |
+| pay.undoWriteOff | Afschrijving ongedaan maken |
+| pay.notBilledNote | Deze klant wordt niet gefactureerd. |
+| pay.lockedHelp | Staat op een definitieve factuur en kan niet meer worden gewijzigd. |
+| pay.userNote | Je ziet alleen prijs en status. |
+| pay.adminOnly | Alleen zichtbaar voor beheerders. |
+| confirm.writeOffPartial | Afschrijven ({amount})? |
+| confirm.writeOffBody | De rest van '{name}' ({amount}) wordt afgeschreven. |
+| confirm.writeOffPaid | Al betaald: {amount}. Alleen de rest wordt afgeschreven. |
+| confirm.undoWriteOff | Afschrijving ongedaan maken? |
+| confirm.undoPayment | Betaling ongedaan maken? |
+| confirm.finalize | Definitief maken? |
+| confirm.finalizeBody | Je maakt een factuur voor {customer} met {count} prints, totaal {amount}. De factuur krijgt nummer {number} en de regels worden vergrendeld. |
+| records.showDeleted | Toon verwijderde |
+| records.showArchived | Gearchiveerd tonen |
+| records.deletedOn | Verwijderd op {date}. |
+| records.archivedNote | Gearchiveerd. De bestanden staan niet meer op schijf. |
+| invoice.title | Factuur |
+| invoice.registerTitle | Facturen |
+| invoice.number | Nummer |
+| invoice.type | Type |
+| invoice.createFor | Factuur maken voor {customer} |
+| invoice.from | Van |
+| invoice.to | Tot en met |
+| invoice.onlyOutstanding | Alleen openstaand |
+| invoice.preview | Voorbeeld |
+| invoice.lines | Regels |
+| invoice.total | Totaal |
+| invoice.paid | Betaald |
+| invoice.outstanding | Openstaand |
+| invoice.omitted | {count} prints zonder verkoopprijs zijn weggelaten: {names}. |
+| invoice.conceptDownload | Concept downloaden |
+| invoice.finalize | Definitief maken |
+| invoice.noLines | Geen regels in deze periode. |
+| invoice.conceptBand | CONCEPT — nog niet definitief |
+| invoice.conceptNumber | wordt toegekend bij definitief maken |
+| invoice.date | Factuurdatum |
+| invoice.period | Periode |
+| invoice.relatesTo | Betreft factuur {number} |
+| invoice.creditNoteCorrects | Deze creditnota corrigeert factuur {number}. |
+| invoice.createCredit | Creditnota maken |
+| invoice.createCreditFor | Creditnota maken voor factuur {number} |
+| invoice.pickLines | Kies de regels die je wilt crediteren. |
+| invoice.empty | Nog geen facturen |
+| invoice.emptyHint | Maak een factuur vanaf het dashboard. |
+| invoice.payInstruction | Graag {amount} overmaken naar IBAN {iban} t.n.v. {name}, onder vermelding van {reference}. |
+| invoice.page | Pagina {n} van {m} |
+| reminder.title | Herinnering |
+| reminder.sub | Openstaande prints |
+| reminder.body | Beste {customer}, volgens onze administratie staan de onderstaande prints nog open. Wil je het bedrag overmaken? Heb je al betaald, dan kun je deze herinnering negeren. Alvast bedankt! |
+| reminder.total | Totaal openstaand |
+| overview.title | Overzicht |
+| overview.for | Overzicht voor {customer} |
+| overview.validUntil | Geldig tot |
+| overview.notInvoice | Dit is een overzicht, geen factuur. |
+| overview.download | Download overzicht |
+| overview.downloadTitle | Overzicht downloaden |
+| overview.expiryNotice | Deze link verloopt over {days} dagen ({date}) |
+| overview.footnote | Prijzen in euro. Prints zonder prijs staan niet in de totalen. |
+| overview.nothingOpen | Er staat niets open. |
+| outstanding.empty | Niets openstaand |
+| outstanding.emptyHint | Alle prints zijn betaald. |
+| share.noShareLink | Geen Deel-link mogelijk. |
+| share.notBilled | {customer} wordt niet gefactureerd, dus er is niets om te delen. |
+| share.empty | Nog geen Deel-links |
+| share.askNew | Vraag degene die je de link stuurde om een nieuwe. |
+| customers.notBilled | Niet factureren |
+| customers.notBilledHelp | Voor een klant die niet wordt gefactureerd (bijvoorbeeld je eigen prints) zie je alleen de kosten. |
+| settings.general | Algemeen |
+| settings.reindex | Opnieuw indexeren |
+| settings.reindexProgress | Indexeren… {done} van {total} bestanden |
+| settings.reindexDone | Klaar. |
+| settings.theme | Thema |
+| settings.pricing | Prijzen |
+| settings.defaultMarkup | Standaardmarge |
+| settings.company | Bedrijfsgegevens |
+| settings.companyHelp | Deze gegevens staan op facturen, herinneringen en overzichten. |
+| settings.name | Naam |
+| settings.iban | IBAN |
+| settings.address | Adres |
+| settings.emailOptional | E-mailadres (optioneel) |
+| settings.phoneOptional | Telefoon (optioneel) |
+| settings.logoUpload | Logo uploaden |
+| settings.logoHelp | PNG of SVG. Vervangt de naam op het scherm en op documenten. |
+| settings.customers | Klanten |
+| settings.spoolman | Spoolman |
+| settings.connected | Verbonden |
+| users.title | Gebruikers |
+| users.create | Gebruiker maken |
+| users.role | Rol |
+| users.origin | Herkomst |
+| users.local | Lokaal |
+| users.authentik | Authentik |
+| users.resetPassword | Wachtwoord resetten |
+| users.tempPassword | Tijdelijk wachtwoord |
+| users.lastAdmin | Er moet minstens één Admin blijven. |
+| auth.login | Inloggen |
+| auth.email | E-mailadres |
+| auth.password | Wachtwoord |
+| auth.or | of |
+| auth.authentik | Inloggen met Authentik |
+| auth.wrong | Verkeerd e-mailadres of wachtwoord. |
+| auth.redirecting | Doorsturen naar Authentik… |
+| system.goDashboard | Naar dashboard |
+| system.forbiddenHelp | Je hebt geen toegang tot deze klant. Vraag een beheerder om toegang. |
+| system.errorBody | De pagina kon niet worden geladen. Probeer het opnieuw. |
+| system.reconnected | Verbonden |
+| system.firstRunBody | Zet je bestanden in mappen per klant en project, en start daarna een index. |
+| system.folderCustomer | klant |
+| system.folderProject | project |
+| system.skipToContent | Naar inhoud |
+| system.menu | Menu |
+| system.more | Meer |
+| system.apiDocsError | API-docs konden niet worden geladen. |
+| nav.manage | Beheer |
+| nav.invoices | Facturen |

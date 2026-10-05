@@ -1,0 +1,49 @@
+# 3D Prints Portal
+#
+# Usage:
+#   cp .env.example .env    # then fill in real values
+#   docker compose up -d
+#
+# The prints folder is mounted read-only; the app never writes to it.
+# Everything the app stores (database, sessions, thumbnails, invoices) lives in
+# the named volume "data".
+
+services:
+  prints-portal:
+    image: ghcr.io/makreeltje/prints-portal:latest
+    build: .
+    container_name: prints-portal
+    restart: unless-stopped
+    ports:
+      - '${PORT:-8080}:8080'
+    volumes:
+      - '${PRINTS_ROOT:?Set PRINTS_ROOT in .env to the folder that holds your customer folders}:/prints:ro'
+      - data:/data
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Default: SQLite on the data volume. Alternatives:
+      #   postgres://user:password@host:5432/prints_portal
+      #   mysql://user:password@host:3306/prints_portal   (MariaDB too)
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///data/prints-portal.db}
+
+      # --- Planned settings (they take effect in later releases) ---
+      # PUBLIC_URL: https://prints.example.com
+      # SESSION_SECRET: ${SESSION_SECRET}
+      # ADMIN_EMAIL: ${ADMIN_EMAIL}
+      # ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+      # Spoolman (optional; leave empty to hide Spoolman features)
+      # SPOOLMAN_URL: http://spoolman:8000
+
+      # OIDC, e.g. Authentik (optional; local login is disabled when set)
+      # OIDC_ISSUER: https://auth.example.com/application/o/prints-portal/
+      # OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
+      # OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
+      # OIDC_ADMIN_GROUP: authentik Admins
+
+      # Reverse proxy: only these addresses may set X-Forwarded-* headers
+      # TRUSTED_PROXIES: 172.18.0.0/16,10.0.0.5
+
+volumes:
+  data:

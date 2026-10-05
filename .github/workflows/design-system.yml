@@ -1,0 +1,28 @@
+name: Design system
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tokens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Only design-system tokens and components are used
+        run: scripts/check-design-tokens.sh
+      - name: design-system/ is only changed by imports
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --depth=1 origin "${{ github.base_ref }}"
+          changed="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD -- design-system/ \
+            | grep -vE '^design-system/(DESIGN_GAPS|FEEDBACK_PROMPT)\.md$' || true)"
+          if [ -n "$changed" ] && ! git log --format=%s "origin/${{ github.base_ref }}"..HEAD | grep -q '^design-system: import v'; then
+            echo "design-system/ changed outside an import commit ('design-system: import vX.Y'):"
+            echo "$changed"
+            exit 1
+          fi
