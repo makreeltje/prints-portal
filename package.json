@@ -1,0 +1,29 @@
+{
+  "name": "prints-portal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted portal that indexes 3D print files, prices them and shares status pages with customers.",
+  "type": "module",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "build": "npm run build -w frontend && npm run build -w backend",
+    "lint": "npm run lint --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test --workspaces",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check:design": "scripts/check-design-tokens.sh",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run check:design"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.9"
+  }
+}

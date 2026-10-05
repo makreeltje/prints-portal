@@ -1,0 +1,9 @@
+design-system/
+docs/design-feedback/
+node_modules/
+dist/
+coverage/
+package-lock.json
+CLAUDE.md
+SETUP.md
+docs/PLAN.md
