@@ -1,12 +1,12 @@
 # Implementation plan
 
-Status: **draft, awaiting approval**. This file records the decisions taken during the clarification rounds and the milestone plan. It is a developer document (English). It will be kept up to date as milestones land.
+Status: **draft, awaiting approval** (updated for design system v1.1). This file records the decisions taken during the clarification rounds and the milestone plan. It is a developer document (English). It will be kept up to date as milestones land.
 
 ---
 
 ## 1. Decisions
 
-References like §6 point to the original build brief; A1–H6 to the clarification rounds.
+References like §6 point to the original build brief; A1–H6 and C1–C3 to the clarification rounds.
 
 ### Product and business rules
 
@@ -20,9 +20,10 @@ References like §6 point to the original build brief; A1–H6 to the clarificat
 | Mark paid | Requires an amount; pre-filled with the customer price when there is one. |
 | Days open | From the final invoice date if any, else from when the sale price was set, else `discoveredAt`. |
 | VAT | Dropped completely (hobby, not a business): no VAT toggle, rate, VAT number or KvK. |
-| Invoice numbering (§6) | Persisted `YYYY-NNN`, reset yearly, assigned only at "Definitief maken". Concepts are unnumbered. Finalising stores the PDF and a data snapshot on `/data` and locks the lines (sale price and grams). A print can be on at most one final invoice; finalising only takes prints not yet on one, earlier lines are listed for information only. Credit notes: negative invoice referencing the original, same sequence; the only correction route after finalising is write-off + credit note. Reminders and share-page PDFs get no number; share-page PDFs are titled "Overzicht". |
+| Invoice numbering (§6) | Persisted `YYYY-NNN`, reset yearly, assigned only at "Definitief maken". Concepts are unnumbered. Finalising stores the PDF and a data snapshot on `/data` and locks the lines (sale price and grams). A print can be on at most one final invoice; finalising only takes prints not yet on one, earlier lines are listed for information only. Credit notes: negative invoice referencing the original, same sequence, created by Admins only, for the whole invoice or chosen lines (v1.1). A credited print becomes Afgeschreven for the credited amount, with the credit note as reason (C3); this is the only correction route after finalising. Reminders and share-page PDFs get no number; share-page PDFs are titled "Overzicht". Concept PDFs are not stored. The Facturen register is visible to Admin and Editor. |
 | Invoice content | Date column = print date (mtime of the most recent counted G-code); the date-range filter uses the same date. Prints without a customer price are left out and the export dialog lists them. Full invoices include paid prints marked Betaald, totals show total, paid and remaining. Company details: name, address, IBAN, optional contact; from admin settings only. |
-| "Niet factureren" | Per-customer flag. Cost is tracked and shown; no sale price, no payment panel, never in Openstaand, invoices or share-page invoices. Share link allowed (print list only). |
+| "Niet factureren" | Per-customer flag. Cost is tracked and shown; no sale price, no payment panel, never in Openstaand, invoices or share-page invoices. Share link allowed, showing the print list only without amounts (C1; v1.1 says otherwise, GAP-013). |
+| Share-link expiry | Optional: Over 7 / 30 / 90 dagen or Nooit (C2; v1.1 has no Nooit, GAP-014). |
 | Roles (§9.4) | Editors see all customers; only Users need per-customer grants. Users see customer price and status only: no internal cost, breakdown or notes. |
 
 ### Files and parsing
@@ -78,9 +79,11 @@ References like §6 point to the original build brief; A1–H6 to the clarificat
 
 | Topic | Decision |
 |---|---|
-| Screens | Blocked by GAP-001 until v1.1. Milestones 1–8 build backend, API and component-level UI only. |
-| PDFs | Design rules apply. Placeholder layout marked `ds-gap: GAP-001` until v1.1. |
-| Open gaps | GAP-001, GAP-004 … GAP-012 (see `design-system/DESIGN_GAPS.md`). |
+| Version | v1.1 imported. Screens and documents are `components/Screen*`, `components/AppShell` and `components/Doc*`; tablet and wide layouts are specified in text only. |
+| Screens | Built together with the milestone that delivers their API (see §4). |
+| PDFs | Built from `DocInvoice`, `DocReminder` and `DocOverview`; no placeholder needed. |
+| Adopted from v1.1 | Undo paid Admin only; manual price disabled when Spoolman supplies one; duplicate warning as visible text; no VAT anywhere. |
+| Open gaps | GAP-013 (Deel-link for niet-factureren klanten), GAP-014 (Nooit as expiry). Only those UI parts wait. |
 
 ---
 
@@ -140,9 +143,9 @@ Dockerfile, docker-compose.yml, .env.example, CHANGELOG.md, DEVELOPMENT.md
 Every milestone ends with: format, lint, type check, all tests (all three databases where relevant), `scripts/check-design-tokens.sh` once `frontend/src` exists, a commit per logical change, a PR, and a short summary (what was built, how to try it, what is open).
 
 ### M1: Skeleton
-- **Scope:** npm workspaces (`backend`, `frontend`); TypeScript strict; ESLint, Prettier, Vitest in both; Fastify app with config loading, pino, `/healthz` (DB, prints root; Spoolman added in M6); React + Vite shell importing `design-system/tokens.css` and `components/bundle.css` directly; Dockerfile (multi-stage, non-root, `HEALTHCHECK` with `node`); `docker-compose.yml` (`${PRINTS_ROOT:?…}`, read-only mount, named `/data` volume, commented OIDC/Spoolman/proxy examples); `.env.example` with obvious placeholders; CI (backend lint/type/test; frontend lint/type/test/build; design-system job already present; Docker build).
+- **Scope:** npm workspaces (`backend`, `frontend`); TypeScript strict; ESLint, Prettier, Vitest in both; Fastify app with config loading, pino, `/healthz` (DB, prints root; Spoolman added in M6); React + Vite app importing `design-system/tokens.css` and `components/bundle.css` directly, with AppShell (sidebar, rail, top/bottom bar, drawer), routing and theme switch (system/light/dark per browser); Dockerfile (multi-stage, non-root, `HEALTHCHECK` with `node`); `docker-compose.yml` (`${PRINTS_ROOT:?…}`, read-only mount, named `/data` volume, commented OIDC/Spoolman/proxy examples); `.env.example` with obvious placeholders; CI (backend lint/type/test; frontend lint/type/test/build; design-system job already present; Docker build).
 - **Tests:** config parsing; `/healthz` 200/503; one frontend smoke test.
-- **Verify:** `npm ci && npm test`; `docker compose up` → `curl :8080/healthz`; `docker inspect` shows the healthcheck passing.
+- **Verify:** `npm ci && npm test`; `docker compose up` → `curl :8080/healthz`; `docker inspect` shows the healthcheck passing; the empty AppShell renders in light and dark, phone and desktop.
 
 ### M2: Parsing and costing core (pure, no I/O)
 - **Scope:** G-code head/tail parser (Orca and Creality Print formats, grams total-vs-slots, time, printer model, slot colours/materials, embedded thumbnails); file-name and video-name parsers with copy suffixes and timestamp names; 3MF metadata parser (slice_info plates, embedded plate G-code via streaming, plate images); asset classifier and ignore rules; printer registry (aliases, longest match, prefixes); cost calculator (slots, times printed, price precedence, electricity, manual overrides, rounding); customer-price function; tag name/colour normalisation and text-colour pick; path-containment helper; money/duration/date formatting for nl-NL; weak-secret checks.
@@ -155,33 +158,32 @@ Every milestone ends with: format, lint, type check, all tests (all three databa
 - **Verify:** point `PRINTS_ROOT` at a test tree and watch the log; inspect the SQLite file.
 
 ### M4: Auth and access
-- **Scope:** sessions (cookie, CSRF, sliding/absolute expiry, persisted on `/data` or DB); local login with argon2id and rate limit; OIDC code + PKCE with group → Admin mapping; local login disabled when OIDC is configured; bootstrap admin with weak-secret checks; roles; one access service; user management; access matrix; trusted proxies and CORS.
+- **Scope:** sessions (cookie, CSRF, sliding/absolute expiry, persisted on `/data` or DB); local login with argon2id and rate limit; OIDC code + PKCE with group → Admin mapping; local login disabled when OIDC is configured; bootstrap admin with weak-secret checks; roles; one access service; user management; access matrix; trusted proxies and CORS. Screens: ScreenLogin, ScreenUsers, ScreenAccess (AccessMatrix), the 403 state from ScreenSystemStates.
 - **Tests:** authorisation matrix (anonymous/User/Editor/Admin × every endpoint group so far); login 429; OIDC against a mock provider; weak-secret startup failures; forwarded headers only from configured proxies.
 - **Verify:** log in locally; with a mock or real Authentik, log in via OIDC.
 
 ### M5: Prints API, thumbnails and real-time
-- **Scope:** list (filters: customer, tags AND, search, archived, admin "show deleted"; pagination), detail, assets, download/stream with range, thumbnails (order in §1, tint by spool or slicer colour, disk cache keyed by print × colour), STL rasteriser, delete/restore (print, project, customer), tags CRUD, reindex endpoint, WebSocket hub with per-customer subscriptions and the shared broadcast helper. Component-level UI: PrintCard, PrintRow, TagChip, FilterBar, SearchField, StatusBadge, LiveIndicator, Viewer3D (lazy), API client and auth hooks.
+- **Scope:** list (filters: customer, tags AND, search, archived, admin "show deleted"; pagination), detail, assets, download/stream with range, thumbnails (order in §1, tint by spool or slicer colour, disk cache keyed by print × colour), STL rasteriser, delete/restore (print, project, customer), tags CRUD, reindex endpoint, WebSocket hub with per-customer subscriptions and the shared broadcast helper. Screens: ScreenDashboard (cards/list, filters, Toon verwijderde, Gearchiveerd tonen), ScreenPrintDetail (header, Viewer3D lazy, AssetListItem with slots/plates/duplicates, tag editor, delete), with their components, API client and auth hooks.
 - **Tests:** endpoint × role; range requests; path containment on every file endpoint; subscription access checks; broadcast payload shape; component tests.
 - **Verify:** `curl` the API; open the component preview route.
 
 ### M6: Financials and Spoolman
-- **Scope:** Spoolman client (cache, timeout, status), field mapping verified against v0.27.0; spool assignment per slot (snapshot); manual price per kg; manual grams/time overrides; times printed; exclusion toggles; recalculation on every change; sale price; markup suggestion; payments (partial, undo for Admin); write-off (partial, undo for Admin); "niet factureren" flag; bulk actions with per-item results; Settings API (printer profiles, tariff, material defaults, markup, company details); calculate endpoint. Component-level UI: SpoolPicker, SpoolSwatch, CostBreakdown, PaymentPanel, BulkActionBar, NumberInput, ConfirmDialog.
+- **Scope:** Spoolman client (cache, timeout, status), field mapping verified against v0.27.0; spool assignment per slot (snapshot); manual price per kg; manual grams/time overrides; times printed; exclusion toggles; recalculation on every change; sale price; markup suggestion; payments (partial, undo for Admin); write-off (partial, undo for Admin); "niet factureren" flag; bulk actions with per-item results; Settings API (printer profiles, tariff, material defaults, markup, company details); calculate endpoint. UI: SpoolPicker, SpoolSwatch, CostBreakdown, CostOverrideDialog, PaymentPanel, WriteOffDialog, BulkActionBar on the dashboard and print detail; ScreenSettings (reindex, theme, Prijzen, Bedrijfsgegevens, Klanten/Niet factureren, Spoolman status, printer profiles, material defaults).
 - **Tests:** cost math through the API; recalculation triggers; write-off/payment rules; bulk results; Spoolman mocked (timeout, down → hidden, never broken); component tests for spool picker, payment panel, cost breakdown, bulk bar.
 - **Verify:** with your Spoolman URL, assign a spool and see the breakdown.
 
 ### M7: Invoices and Outstanding
-- **Scope:** Openstaand API (groups, oldest days, totals; mark one/all paid; write-off); concept invoice PDF; "Definitief maken" with transactional per-year numbering, stored PDF and JSON snapshot, line locking; credit notes; invoice register API; reminder PDF; company settings and logo upload (PNG/SVG, size limit, SVG sanitised); PDF placeholder layout marked `ds-gap: GAP-001`. Component-level UI: OutstandingGroup, MoneyDisplay, StatTile.
+- **Scope:** Openstaand API (groups, oldest days, totals; mark one/all paid; write-off); concept invoice PDF; "Definitief maken" with transactional per-year numbering, stored PDF and JSON snapshot, line locking; credit notes; invoice register API; reminder PDF; company settings and logo upload (PNG/SVG, size limit, SVG sanitised); PDF layouts from DocInvoice (Factuur, Concept, Creditnota) and DocReminder. Screens: ScreenOutstanding, ScreenInvoiceExport, ScreenInvoices (finalise and credit-note dialogs).
 - **Tests:** numbering (sequence, yearly reset, concurrent finalise), locking, one-final-invoice rule, credit note totals, excluded-without-price list, niet-factureren exclusion, safe ASCII file names, PDF text content checks.
 - **Verify:** download a concept and a final invoice; finalise twice and see the second refuse already-invoiced prints.
 
 ### M8: Share links
-- **Scope:** admin CRUD (32 random bytes base64url, SHA-256 stored, shown once), public share API (customer price only, Prijs volgt, written-off and deleted hidden), public "Overzicht" PDF (only-unpaid toggle; everything else fixed server-side), identical 404 for unknown/expired/revoked, rate limit. Component-level UI: ShareLinkRow, TokenReveal.
+- **Scope:** admin CRUD (32 random bytes base64url, SHA-256 stored, shown once), public share API (customer price only, Prijs volgt, written-off and deleted hidden), public "Overzicht" PDF (only-unpaid toggle; everything else fixed server-side), identical 404 for unknown/expired/revoked, rate limit. PDF layout from DocOverview. Screens: ScreenShareLinks, ScreenSharePage; the niet-factureren variant and the Nooit option wait for GAP-013/GAP-014.
 - **Tests:** create/list without token/revoke/expire → 404; raw cost never in share responses; extra invoice parameters ignored; 429.
 - **Verify:** create a link and open it in a private window.
 
-### M9: Screens (needs design system v1.1)
-- **Scope:** implement the screens from `design-system/screens/` once GAP-001 and the other gaps are resolved; empty/loading/error states; mobile layouts; accessibility pass; final PDF layouts.
-- **Blocked until:** v1.1 is imported. Until then I report status and keep backend work moving.
+### M9: Frontend polish
+- **Scope:** ScreenSystemStates (error, offline, first run), ScreenApiDocs (`/api-docs` with session injection), tablet and wide layouts from the text specs, empty/loading/error states on every screen, accessibility pass, side-by-side check of every screen against its spec in light/dark × phone/desktop, any open gaps resolved by a newer export.
 
 ### M10: Docs, security review, release
 - **Scope:** README, USAGE (Dutch), CONFIGURATION, AUTH, DEPLOYMENT (Caddy/Traefik/Nginx with WebSocket upgrade, backups, Postgres/MariaDB, Authentik confidential-client setup, upgrades), ARCHITECTURE (checked against real class names), DEVELOPMENT, CHANGELOG; full security review of the diff and fixes; release workflow (multi-arch image to GHCR on tags); `v1.0.0`.
@@ -193,4 +195,4 @@ Every milestone ends with: format, lint, type check, all tests (all three databa
 - **Real data:** fixtures are trimmed from a sample; other customers' files may hold new variants. The inspect CLI (M2) lets the owner check any file before a full index.
 - **inotify in LXC + Docker:** expected to work on a local disk; if events go missing, a polling fallback is added behind a setting.
 - **Spoolman v0.27.0:** fields are verified against that version's API before M6 code is written.
-- **Screens:** M9 depends on the design-system export; nothing user-facing beyond components can be finished before it.
+- **Screens:** tablet and wide layouts are described in text, not drawn; where the text is ambiguous I log a gap instead of guessing.
