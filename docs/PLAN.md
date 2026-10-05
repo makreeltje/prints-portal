@@ -1,0 +1,196 @@
+# Implementation plan
+
+Status: **draft, awaiting approval**. This file records the decisions taken during the clarification rounds and the milestone plan. It is a developer document (English). It will be kept up to date as milestones land.
+
+---
+
+## 1. Decisions
+
+References like §6 point to the original build brief; A1–H6 to the clarification rounds.
+
+### Product and business rules
+
+| Topic | Decision |
+|---|---|
+| Soft delete (§2.5) | `status = Deleted` hidden by one global filter. Admin-only "show deleted" filter on the dashboard; restore mirrors delete: one print, one project or one whole customer. Delete applies per record; a new project under a "deleted" customer shows up. |
+| Archived (§2.4) | Folder gone → Archived (assets removed, financials kept). Folder back → same record becomes Indexed. Archived prints show on the dashboard (filterable), in Openstaand and on invoices with a `Gearchiveerd` badge. |
+| Write-off (§5.4) | Explicit `writtenOffAt`, `writtenOffBy`, `writtenOffAmount`, optional reason. Partially paid → only the remainder. Undo: Admin only, with confirmation. Written-off lines leave Openstaand and do not appear on the share page or new invoices. On a final invoice they are corrected with a credit note. |
+| Undo paid (§5.3) | Yes, Admin only, with confirmation; record who and when. |
+| Partial payment | `amountPaid < price` stays open for the remainder (UI: GAP-004). |
+| Mark paid | Requires an amount; pre-filled with the customer price when there is one. |
+| Days open | From the final invoice date if any, else from when the sale price was set, else `discoveredAt`. |
+| VAT | Dropped completely (hobby, not a business): no VAT toggle, rate, VAT number or KvK. |
+| Invoice numbering (§6) | Persisted `YYYY-NNN`, reset yearly, assigned only at "Definitief maken". Concepts are unnumbered. Finalising stores the PDF and a data snapshot on `/data` and locks the lines (sale price and grams). A print can be on at most one final invoice; finalising only takes prints not yet on one, earlier lines are listed for information only. Credit notes: negative invoice referencing the original, same sequence; the only correction route after finalising is write-off + credit note. Reminders and share-page PDFs get no number; share-page PDFs are titled "Overzicht". |
+| Invoice content | Date column = print date (mtime of the most recent counted G-code); the date-range filter uses the same date. Prints without a customer price are left out and the export dialog lists them. Full invoices include paid prints marked Betaald, totals show total, paid and remaining. Company details: name, address, IBAN, optional contact; from admin settings only. |
+| "Niet factureren" | Per-customer flag. Cost is tracked and shown; no sale price, no payment panel, never in Openstaand, invoices or share-page invoices. Share link allowed (print list only). |
+| Roles (§9.4) | Editors see all customers; only Users need per-customer grants. Users see customer price and status only: no internal cost, breakdown or notes. |
+
+### Files and parsing
+
+| Topic | Decision |
+|---|---|
+| Slicers | OrcaSlicer now; Creality Print 5.1 for older prints. |
+| G-code metadata | Read head and tail windows (default 64 KB each). Grams: `total filament used [g]` if present, else the sum of the per-slot `filament used [g]` values; never both; never the `[mm]`/`[cm3]` lines. Time: comment wins over file name. Printer: `printer_model` comment. Thumbnails: embedded PNG blocks. |
+| File-name rule | `<part>_<material>_<time>.gcode`, tolerant of copy suffixes after the time (`_2`, ` copy 2`, ` - Copy`, `(1)`, ` 2`, `-2`, …). Videos: `<prefix>_<part>_<material>_<time>.gcode_<dd-MM-yyyy>_<HH>h<mm>[ (n)].mp4|mkv`; other video names are listed, and pure Unix-timestamp names give a recording date. |
+| 3MF | A plate counts for cost only if the 3MF has slice data (Bambu/Orca `slice_info` weight/prediction, or embedded `Metadata/plate_N.gcode`) **and** the project has no counted loose G-code; otherwise auto-excluded (reason shown, user can flip). Each sliced plate is its own line (exclude, slots, times printed). |
+| Multi-colour | Per-slot usage rows (slot, grams, slicer colour, slicer material, optional spool and price). Material cost = Σ slots grams × price/kg. Slicer slot colour tints thumbnails when no spool is assigned. |
+| Times printed | Per G-code/plate count, default 1, multiplies grams, time and cost. |
+| Duplicates | Same project + same size + identical slicer metadata → "Mogelijk dubbel" warning, also for existing copies. Existing copies still count once each. |
+| Auto-exclude | Duplicate-3MF rule above; files under configurable subfolder names (`Nog te printen`, `Test`). User can always flip. |
+| Subfolders | Everything below `customer/project/` belongs to that project's record; the subfolder path is shown. `Board Games/Spirit Island` is project "Board Games". |
+| Ignored | Dot files and dot folders (`.thumbs`, `.thumbnails`, `.DS_Store`, `._*`), `__MACOSX`, `Thumbs.db`, `desktop.ini`, `*.part`, `~$*`, Nextcloud temporary-upload files. Configurable. |
+| Asset types | §2.2, case-insensitive extensions. `.step` and `.cxprj` are Other; a `.cxprj` plate image is the last-resort thumbnail. |
+| Thumbnail order | Embedded G-code PNG → 3MF plate image → server-rendered STL → `.cxprj` image → none. |
+| Printer profiles | Edited in Settings (`AppSetting`): key, display name, aliases (e.g. `Creality K1 Max`, `K1 Max`), video prefixes, watts. Seeded with the K1 family. Longest alias match first. Electricity printer comes from G-code `printer_model`, never from a video prefix. |
+| Projects without G-code/3MF | Shown with "Kosten ontbreken". |
+
+### Cost
+
+| Topic | Decision |
+|---|---|
+| Price per kg | Spoolman snapshot > manual (print, file or slot) > default per material (Settings, "Geschat"). Slicer `filament_cost` is ignored. |
+| Spoolman | v0.27.0. Price/kg = spool price ÷ spool initial filament weight, else filament price. Field names verified against that version before implementing. Snapshot at assignment. |
+| Manual overrides | Editors can override grams and print time per print ("Handmatig") for incomplete legacy projects. |
+| Wattage, tariff | Settings (`AppSetting`); env values only seed the first start. |
+| Rounding | Money 2 decimals away from zero; energy 3 decimals. |
+
+### Auth and security
+
+| Topic | Decision |
+|---|---|
+| Session | httpOnly, Secure, SameSite=Lax cookie + CSRF protection. Server runs the OIDC code + PKCE flow (confidential client) and issues the same cookie for local and OIDC users. 60 min idle sliding, 12 h absolute. |
+| OIDC testing | Mock provider in CI; Authentik verified manually by the owner. |
+
+### Operations
+
+| Topic | Decision |
+|---|---|
+| Databases | SQLite (default), PostgreSQL, MariaDB/MySQL via one `DATABASE_URL`; all three in the CI test matrix. No MongoDB. |
+| Configuration | Plain env vars (H6); no local override file; business settings in the DB. |
+| Image | `ghcr.io/makreeltje/prints-portal`, `linux/amd64` + `linux/arm64`. |
+| Host | i5-8400 under Proxmox (LXC), prints root on the same disk inside a Nextcloud data folder. |
+| Time zone | Europe/Amsterdam for display and days open; UTC stored. |
+| License | Private repository. |
+| Old app | No import, do not use the old repository. |
+| Git | One PR per milestone from the session branch. |
+
+### Design system
+
+| Topic | Decision |
+|---|---|
+| Screens | Blocked by GAP-001 until v1.1. Milestones 1–8 build backend, API and component-level UI only. |
+| PDFs | Design rules apply. Placeholder layout marked `ds-gap: GAP-001` until v1.1. |
+| Open gaps | GAP-001, GAP-004 … GAP-012 (see `design-system/DESIGN_GAPS.md`). |
+
+---
+
+## 2. Stack
+
+| Part | Choice |
+|---|---|
+| Runtime / API | Node.js (current LTS), Fastify, TypeBox schemas, `@fastify/swagger` + one UI at `/api-docs` |
+| Database | Kysely + Kysely migrations; `better-sqlite3`, `pg`, `mysql2` |
+| Auth | `argon2` (argon2id), `openid-client`, `@fastify/cookie`, `@fastify/csrf-protection`, `@fastify/rate-limit` |
+| Real-time | `@fastify/websocket` |
+| Files | `chokidar` (watcher), `yauzl` (streaming zip for 3MF), `fast-xml-parser` |
+| PDF | PDFKit |
+| STL thumbnails | Own software rasteriser in TypeScript → PNG via `pngjs` |
+| Frontend | React, Vite, TypeScript, React Router, TanStack Query, `lucide-react`, three.js (lazy chunk) |
+| Quality | Vitest, Testing Library, ESLint flat config + `typescript-eslint` strict, Prettier, `tsc --noEmit` |
+| Logging | pino (structured JSON to stdout) |
+
+Each dependency's licence is checked when it is added and listed in `docs/ARCHITECTURE.md`.
+
+### Configuration (env)
+
+`PRINTS_ROOT`, `DATA_DIR` (default `/data`), `PORT` (default `8080`), `PUBLIC_URL`, `DATABASE_URL` (default `sqlite:///data/prints-portal.db`), `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_ADMIN_GROUP`, `SPOOLMAN_URL`, `TRUSTED_PROXIES`, `CORS_ORIGINS`, `INDEX_ON_STARTUP`, `WATCH_ENABLED`, `WATCH_DEBOUNCE_MS`, `RATE_LIMIT_LOGIN`, `RATE_LIMIT_SHARE`, `LOG_LEVEL`, `TZ`. Seed-only: `ELECTRICITY_TARIFF_EUR_PER_KWH`. Final list and defaults are documented in `docs/CONFIGURATION.md`.
+
+---
+
+## 3. Repository layout
+
+```
+backend/                 Fastify API (TypeScript)
+  src/
+    config/              env parsing and validation, weak-secret checks
+    core/                pure logic: parsing, cost, pricing, paths, tags, money (no I/O)
+    db/                  Kysely setup, dialect selection, migrations, global filters
+    indexing/            scanner, file classifier, metadata extraction, indexer, watcher
+    auth/                sessions, CSRF, local login, OIDC, bootstrap admin, access service
+    api/                 route modules per endpoint group
+    realtime/            WebSocket hub and the shared broadcast helper
+    financials/          recalculation, payments, write-offs, Spoolman client
+    invoices/            invoice model, numbering, PDF rendering, snapshots
+    thumbnails/          extraction, STL rasteriser, disk cache
+  test/                  unit, integration (fastify.inject), fixtures
+frontend/                React SPA (TypeScript); DS_SRC_DIR = frontend/src
+  src/
+    components/          one-to-one implementations of design-system components (pp- classes)
+    api/                 typed client, CSRF/401 interceptors
+    hooks/               auth, real-time, queries
+    i18n/                nl.ts: every user-facing string (copy deck keys first)
+docs/                    PLAN, ARCHITECTURE, CONFIGURATION, AUTH, DEPLOYMENT, USAGE
+Dockerfile, docker-compose.yml, .env.example, CHANGELOG.md, DEVELOPMENT.md
+```
+
+---
+
+## 4. Milestones
+
+Every milestone ends with: format, lint, type check, all tests (all three databases where relevant), `scripts/check-design-tokens.sh` once `frontend/src` exists, a commit per logical change, a PR, and a short summary (what was built, how to try it, what is open).
+
+### M1: Skeleton
+- **Scope:** npm workspaces (`backend`, `frontend`); TypeScript strict; ESLint, Prettier, Vitest in both; Fastify app with config loading, pino, `/healthz` (DB, prints root; Spoolman added in M6); React + Vite shell importing `design-system/tokens.css` and `components/bundle.css` directly; Dockerfile (multi-stage, non-root, `HEALTHCHECK` with `node`); `docker-compose.yml` (`${PRINTS_ROOT:?…}`, read-only mount, named `/data` volume, commented OIDC/Spoolman/proxy examples); `.env.example` with obvious placeholders; CI (backend lint/type/test; frontend lint/type/test/build; design-system job already present; Docker build).
+- **Tests:** config parsing; `/healthz` 200/503; one frontend smoke test.
+- **Verify:** `npm ci && npm test`; `docker compose up` → `curl :8080/healthz`; `docker inspect` shows the healthcheck passing.
+
+### M2: Parsing and costing core (pure, no I/O)
+- **Scope:** G-code head/tail parser (Orca and Creality Print formats, grams total-vs-slots, time, printer model, slot colours/materials, embedded thumbnails); file-name and video-name parsers with copy suffixes and timestamp names; 3MF metadata parser (slice_info plates, embedded plate G-code via streaming, plate images); asset classifier and ignore rules; printer registry (aliases, longest match, prefixes); cost calculator (slots, times printed, price precedence, electricity, manual overrides, rounding); customer-price function; tag name/colour normalisation and text-colour pick; path-containment helper; money/duration/date formatting for nl-NL; weak-secret checks.
+- **Tests:** every parser rule (fixtures trimmed from the owner's files, neutral names, plus a synthetic Bambu 3MF); rounding, nulls and fallbacks; traversal, sibling prefix and absolute paths; registry matching (`K1 Max` vs `K1`); duplicate fingerprint.
+- **Verify:** `npm test -w backend`; a small CLI `npm run inspect -- <file>` prints parsed metadata for any file.
+
+### M3: Data and indexing
+- **Scope:** schema and migrations (records, assets, plates, slot usages, financials incl. write-off and payment audit fields, tags, users, access, share links, settings, customer settings, invoices, invoice lines, invoice sequence, sessions); dialect selection from `DATABASE_URL`; global "not deleted" query helper; scanner; indexer (upsert, archive/unarchive, soft-delete skip, auto-exclusions, duplicate flags, aggregates); watcher with per-project debounce; startup full scan; startup warning for a non-writable data dir.
+- **Tests:** migrations on SQLite/Postgres/MariaDB; soft delete surviving re-index; archive and return; subfolder handling; ignore rules; auto-exclude rules; debounce behaviour with a temp directory.
+- **Verify:** point `PRINTS_ROOT` at a test tree and watch the log; inspect the SQLite file.
+
+### M4: Auth and access
+- **Scope:** sessions (cookie, CSRF, sliding/absolute expiry, persisted on `/data` or DB); local login with argon2id and rate limit; OIDC code + PKCE with group → Admin mapping; local login disabled when OIDC is configured; bootstrap admin with weak-secret checks; roles; one access service; user management; access matrix; trusted proxies and CORS.
+- **Tests:** authorisation matrix (anonymous/User/Editor/Admin × every endpoint group so far); login 429; OIDC against a mock provider; weak-secret startup failures; forwarded headers only from configured proxies.
+- **Verify:** log in locally; with a mock or real Authentik, log in via OIDC.
+
+### M5: Prints API, thumbnails and real-time
+- **Scope:** list (filters: customer, tags AND, search, archived, admin "show deleted"; pagination), detail, assets, download/stream with range, thumbnails (order in §1, tint by spool or slicer colour, disk cache keyed by print × colour), STL rasteriser, delete/restore (print, project, customer), tags CRUD, reindex endpoint, WebSocket hub with per-customer subscriptions and the shared broadcast helper. Component-level UI: PrintCard, PrintRow, TagChip, FilterBar, SearchField, StatusBadge, LiveIndicator, Viewer3D (lazy), API client and auth hooks.
+- **Tests:** endpoint × role; range requests; path containment on every file endpoint; subscription access checks; broadcast payload shape; component tests.
+- **Verify:** `curl` the API; open the component preview route.
+
+### M6: Financials and Spoolman
+- **Scope:** Spoolman client (cache, timeout, status), field mapping verified against v0.27.0; spool assignment per slot (snapshot); manual price per kg; manual grams/time overrides; times printed; exclusion toggles; recalculation on every change; sale price; markup suggestion; payments (partial, undo for Admin); write-off (partial, undo for Admin); "niet factureren" flag; bulk actions with per-item results; Settings API (printer profiles, tariff, material defaults, markup, company details); calculate endpoint. Component-level UI: SpoolPicker, SpoolSwatch, CostBreakdown, PaymentPanel, BulkActionBar, NumberInput, ConfirmDialog.
+- **Tests:** cost math through the API; recalculation triggers; write-off/payment rules; bulk results; Spoolman mocked (timeout, down → hidden, never broken); component tests for spool picker, payment panel, cost breakdown, bulk bar.
+- **Verify:** with your Spoolman URL, assign a spool and see the breakdown.
+
+### M7: Invoices and Outstanding
+- **Scope:** Openstaand API (groups, oldest days, totals; mark one/all paid; write-off); concept invoice PDF; "Definitief maken" with transactional per-year numbering, stored PDF and JSON snapshot, line locking; credit notes; invoice register API; reminder PDF; company settings and logo upload (PNG/SVG, size limit, SVG sanitised); PDF placeholder layout marked `ds-gap: GAP-001`. Component-level UI: OutstandingGroup, MoneyDisplay, StatTile.
+- **Tests:** numbering (sequence, yearly reset, concurrent finalise), locking, one-final-invoice rule, credit note totals, excluded-without-price list, niet-factureren exclusion, safe ASCII file names, PDF text content checks.
+- **Verify:** download a concept and a final invoice; finalise twice and see the second refuse already-invoiced prints.
+
+### M8: Share links
+- **Scope:** admin CRUD (32 random bytes base64url, SHA-256 stored, shown once), public share API (customer price only, Prijs volgt, written-off and deleted hidden), public "Overzicht" PDF (only-unpaid toggle; everything else fixed server-side), identical 404 for unknown/expired/revoked, rate limit. Component-level UI: ShareLinkRow, TokenReveal.
+- **Tests:** create/list without token/revoke/expire → 404; raw cost never in share responses; extra invoice parameters ignored; 429.
+- **Verify:** create a link and open it in a private window.
+
+### M9: Screens (needs design system v1.1)
+- **Scope:** implement the screens from `design-system/screens/` once GAP-001 and the other gaps are resolved; empty/loading/error states; mobile layouts; accessibility pass; final PDF layouts.
+- **Blocked until:** v1.1 is imported. Until then I report status and keep backend work moving.
+
+### M10: Docs, security review, release
+- **Scope:** README, USAGE (Dutch), CONFIGURATION, AUTH, DEPLOYMENT (Caddy/Traefik/Nginx with WebSocket upgrade, backups, Postgres/MariaDB, Authentik confidential-client setup, upgrades), ARCHITECTURE (checked against real class names), DEVELOPMENT, CHANGELOG; full security review of the diff and fixes; release workflow (multi-arch image to GHCR on tags); `v1.0.0`.
+
+---
+
+## 5. Known risks
+
+- **Real data:** fixtures are trimmed from a sample; other customers' files may hold new variants. The inspect CLI (M2) lets the owner check any file before a full index.
+- **inotify in LXC + Docker:** expected to work on a local disk; if events go missing, a polling fallback is added behind a setting.
+- **Spoolman v0.27.0:** fields are verified against that version's API before M6 code is written.
+- **Screens:** M9 depends on the design-system export; nothing user-facing beyond components can be finished before it.
