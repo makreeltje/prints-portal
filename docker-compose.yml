@@ -33,16 +33,17 @@ services:
       # WATCH_DEBOUNCE_MS: '2000'
       # WATCH_POLLING: 'false'
 
-      # --- Planned settings (they take effect in later releases) ---
+      # Sign-in. SESSION_SECRET is required; ADMIN_* create the first Admin (local login).
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env (openssl rand -base64 48)}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       # PUBLIC_URL: https://prints.example.com
-      # SESSION_SECRET: ${SESSION_SECRET}
-      # ADMIN_EMAIL: ${ADMIN_EMAIL}
-      # ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # RATE_LIMIT_LOGIN: '5'
 
       # Spoolman (optional; leave empty to hide Spoolman features)
       # SPOOLMAN_URL: http://spoolman:8000
 
-      # OIDC, e.g. Authentik (optional; local login is disabled when set)
+      # OIDC, e.g. Authentik (optional; local login is disabled when set; needs PUBLIC_URL)
       # OIDC_ISSUER: https://auth.example.com/application/o/prints-portal/
       # OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
       # OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
@@ -50,6 +51,8 @@ services:
 
       # Reverse proxy: only these addresses may set X-Forwarded-* headers
       # TRUSTED_PROXIES: 172.18.0.0/16,10.0.0.5
+      # Other origins that may call the API with cookies (rarely needed)
+      # CORS_ORIGINS: https://tools.example.com
 
 volumes:
   data:
