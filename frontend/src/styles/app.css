@@ -119,6 +119,20 @@
   flex-wrap: nowrap;
 }
 
+/* Phone cards (ScreenUsers, ScreenAccess previews). */
+.app-user-card,
+.app-card-actions {
+  gap: var(--space-2);
+}
+
+.app-access-card {
+  gap: var(--space-1);
+}
+
+.app-access-card > b {
+  color: var(--text-strong);
+}
+
 /* "· Admin" / "· Editor" after a name in the access matrix. */
 .app-role-note {
   font-weight: 400;

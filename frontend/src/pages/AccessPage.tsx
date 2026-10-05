@@ -146,107 +146,166 @@ export function AccessPage() {
   return (
     <>
       {title}
-      {/* One card per user at 480px and below waits for GAP-023; the table scrolls inside its box. */}
-      <div className="pp-scroll">
-        <table className="pp-matrix" onKeyDown={moveBetweenCells}>
-          <thead>
-            <tr>
-              <th scope="col">{t('users.user')}</th>
-              {customers.map((customer) => (
-                <th key={customer} scope="col">
-                  <BulkMenu
-                    label={customer}
-                    disabled={grantees.length === 0}
-                    onAll={() => {
-                      setColumn(customer, true);
-                    }}
-                    onNone={() => {
-                      setColumn(customer, false);
-                    }}
-                  />
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {grantees.map((user, row) => (
-              <tr key={user.id}>
-                <th scope="row">
-                  <BulkMenu
-                    label={user.displayName}
-                    disabled={customers.length === 0}
-                    onAll={() => {
-                      setRow(user, true);
-                    }}
-                    onNone={() => {
-                      setRow(user, false);
-                    }}
-                  />
-                </th>
-                {customers.map((customer, column) => {
-                  const key = cellKey(user.id, customer);
-                  return (
-                    <td
-                      key={customer}
-                      className={saved.has(key) ? 'app-saved' : undefined}
-                      onAnimationEnd={() => {
-                        setSaved((current) => new Set([...current].filter((k) => k !== key)));
+      <div className="pp-only-wide">
+        <div className="pp-scroll">
+          <table className="pp-matrix" onKeyDown={moveBetweenCells}>
+            <thead>
+              <tr>
+                <th scope="col">{t('users.user')}</th>
+                {customers.map((customer) => (
+                  <th key={customer} scope="col">
+                    <BulkMenu
+                      label={customer}
+                      disabled={grantees.length === 0}
+                      onAll={() => {
+                        setColumn(customer, true);
                       }}
-                    >
-                      <label className="pp-opt">
-                        <input
-                          type="checkbox"
-                          className="pp-check"
-                          data-row={row}
-                          data-column={column}
-                          aria-label={t('access.cell', { user: user.displayName, customer })}
-                          checked={user.customers.includes(customer)}
-                          disabled={busy.has(key)}
-                          aria-busy={busy.has(key)}
-                          onChange={(event) =>
-                            void save([
-                              {
-                                userId: user.id,
-                                customerFolder: customer,
-                                granted: event.target.checked,
-                              },
-                            ])
-                          }
-                        />
-                      </label>
-                    </td>
-                  );
-                })}
+                      onNone={() => {
+                        setColumn(customer, false);
+                      }}
+                    />
+                  </th>
+                ))}
               </tr>
-            ))}
-            {allAccess.map((user) => {
-              return (
+            </thead>
+            <tbody>
+              {grantees.map((user, row) => (
                 <tr key={user.id}>
                   <th scope="row">
-                    {user.displayName}{' '}
-                    <span className="pp-muted app-role-note">· {t(`role.${user.role}`)}</span>
+                    <BulkMenu
+                      label={user.displayName}
+                      disabled={customers.length === 0}
+                      onAll={() => {
+                        setRow(user, true);
+                      }}
+                      onNone={() => {
+                        setRow(user, false);
+                      }}
+                    />
                   </th>
-                  {customers.map((customer) => (
-                    <td key={customer}>
-                      <label className="pp-opt">
-                        <input
-                          type="checkbox"
-                          className="pp-check"
-                          checked
-                          disabled
-                          aria-label={t('access.cell', { user: user.displayName, customer })}
-                        />
-                      </label>
-                    </td>
-                  ))}
+                  {customers.map((customer, column) => {
+                    const key = cellKey(user.id, customer);
+                    return (
+                      <td
+                        key={customer}
+                        className={saved.has(key) ? 'app-saved' : undefined}
+                        onAnimationEnd={() => {
+                          setSaved((current) => new Set([...current].filter((k) => k !== key)));
+                        }}
+                      >
+                        <label className="pp-opt">
+                          <input
+                            type="checkbox"
+                            className="pp-check"
+                            data-row={row}
+                            data-column={column}
+                            aria-label={t('access.cell', { user: user.displayName, customer })}
+                            checked={user.customers.includes(customer)}
+                            disabled={busy.has(key)}
+                            aria-busy={busy.has(key)}
+                            onChange={(event) =>
+                              void save([
+                                {
+                                  userId: user.id,
+                                  customerFolder: customer,
+                                  granted: event.target.checked,
+                                },
+                              ])
+                            }
+                          />
+                        </label>
+                      </td>
+                    );
+                  })}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+              {allAccess.map((user) => {
+                return (
+                  <tr key={user.id}>
+                    <th scope="row">
+                      {user.displayName}{' '}
+                      <span className="pp-muted app-role-note">· {t(`role.${user.role}`)}</span>
+                    </th>
+                    {customers.map((customer) => (
+                      <td key={customer}>
+                        <label className="pp-opt">
+                          <input
+                            type="checkbox"
+                            className="pp-check"
+                            checked
+                            disabled
+                            aria-label={t('access.cell', { user: user.displayName, customer })}
+                          />
+                        </label>
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <span className="pp-help">{t('access.allAccessRoles')}</span>
       </div>
 
-      <span className="pp-help">{t('access.allAccessRoles')}</span>
+      {/* Phone (480px and below): one card per user with a list of klant checkboxes. */}
+      <div className="pp-only-phone">
+        <div className="pp-col">
+          {grantees.map((user) => (
+            <div key={user.id} className="pp-card pp-sec app-access-card">
+              <b>{user.displayName}</b>
+              {customers.map((customer) => {
+                const key = cellKey(user.id, customer);
+                return (
+                  <label key={customer} className="pp-opt">
+                    <input
+                      type="checkbox"
+                      className="pp-check"
+                      // The card heading names the user; the label names it too for screen readers.
+                      aria-label={t('access.cell', { user: user.displayName, customer })}
+                      checked={user.customers.includes(customer)}
+                      disabled={busy.has(key)}
+                      aria-busy={busy.has(key)}
+                      onChange={(event) =>
+                        void save([
+                          {
+                            userId: user.id,
+                            customerFolder: customer,
+                            granted: event.target.checked,
+                          },
+                        ])
+                      }
+                    />
+                    {customer}
+                  </label>
+                );
+              })}
+            </div>
+          ))}
+          {allAccess.map((user) => (
+            <div key={user.id} className="pp-card pp-sec app-access-card">
+              <b>
+                {user.displayName}{' '}
+                <span className="pp-muted app-role-note">· {t(`role.${user.role}`)}</span>
+              </b>
+              {customers.map((customer) => (
+                <label key={customer} className="pp-opt">
+                  <input
+                    type="checkbox"
+                    className="pp-check"
+                    checked
+                    disabled
+                    aria-label={t('access.cell', { user: user.displayName, customer })}
+                  />
+                  {customer}
+                </label>
+              ))}
+            </div>
+          ))}
+          <span className="pp-help">{t('access.allAccessRoles')}</span>
+        </div>
+      </div>
     </>
   );
 }

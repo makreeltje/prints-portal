@@ -18,6 +18,7 @@ const MIN_PASSWORD_LENGTH = 12;
  * ScreenUsers (Admin only, v1.2): role changes save immediately; the last
  * Admin cannot be demoted or removed; "Gebruiker maken" and "Wachtwoord
  * resetten" set a temporary password the user replaces at the next sign-in.
+ * Table above 480px, one card per user below (pp-only-wide / pp-only-phone).
  */
 export function UsersPage({ localLogin }: { localLogin: boolean }) {
   const toast = useToast();
@@ -128,62 +129,107 @@ export function UsersPage({ localLogin }: { localLogin: boolean }) {
   return (
     <>
       {header}
-      <div className="pp-scroll">
-        <table className="pp-table">
-          <thead>
-            <tr>
-              <th scope="col">{t('users.user')}</th>
-              <th scope="col">{t('users.role')}</th>
-              <th scope="col">{t('users.origin')}</th>
-              <th scope="col" className="r">
-                {t('users.actions')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>
-                  <Avatar name={user.displayName} />
-                </td>
-                <td>
-                  <RoleSelect
-                    user={user}
-                    lastAdmin={isLastAdmin(user)}
-                    saving={saving === user.id}
-                    onChange={(role) => void changeRole(user, role)}
-                  />
-                </td>
-                <td>
-                  <OriginBadge user={user} />
-                </td>
-                <td className="r">
-                  <div className="pp-row app-row-actions">
-                    {canReset(user) && (
-                      <button
-                        type="button"
-                        className="pp-btn pp-btn-ghost pp-btn-sm"
-                        aria-label={`${t('users.resetPassword')}: ${user.displayName}`}
-                        onClick={() => {
-                          setResetting(user);
-                        }}
-                      >
-                        {t('users.resetPassword')}
-                      </button>
-                    )}
-                    <DeleteButton
-                      user={user}
-                      disabled={isLastAdmin(user)}
-                      onClick={() => {
-                        setDeleting(user);
-                      }}
-                    />
-                  </div>
-                </td>
+      <div className="pp-only-wide">
+        <div className="pp-scroll">
+          <table className="pp-table">
+            <thead>
+              <tr>
+                <th scope="col">{t('users.user')}</th>
+                <th scope="col">{t('users.role')}</th>
+                <th scope="col">{t('users.origin')}</th>
+                <th scope="col" className="r">
+                  {t('users.actions')}
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>
+                    <Avatar name={user.displayName} />
+                  </td>
+                  <td>
+                    <RoleSelect
+                      user={user}
+                      lastAdmin={isLastAdmin(user)}
+                      saving={saving === user.id}
+                      onChange={(role) => void changeRole(user, role)}
+                    />
+                  </td>
+                  <td>
+                    <OriginBadge user={user} />
+                  </td>
+                  <td className="r">
+                    <div className="pp-row app-row-actions">
+                      {canReset(user) && (
+                        <button
+                          type="button"
+                          className="pp-btn pp-btn-ghost pp-btn-sm"
+                          aria-label={`${t('users.resetPassword')}: ${user.displayName}`}
+                          onClick={() => {
+                            setResetting(user);
+                          }}
+                        >
+                          {t('users.resetPassword')}
+                        </button>
+                      )}
+                      <DeleteButton
+                        user={user}
+                        disabled={isLastAdmin(user)}
+                        onClick={() => {
+                          setDeleting(user);
+                        }}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Phone (480px and below): one card per user, the same native role select inside. */}
+      <div className="pp-only-phone">
+        <div className="pp-col">
+          {users.map((user) => (
+            <div key={user.id} className="pp-card pp-sec app-user-card">
+              <Avatar name={user.displayName} />
+              <div className="pp-row">
+                <OriginBadge user={user} />
+              </div>
+              <RoleSelect
+                user={user}
+                lastAdmin={isLastAdmin(user)}
+                saving={saving === user.id}
+                layout="card"
+                onChange={(role) => void changeRole(user, role)}
+              />
+              <div className="pp-row app-card-actions">
+                {canReset(user) && (
+                  <button
+                    type="button"
+                    className="pp-btn pp-btn-ghost"
+                    aria-label={`${t('users.resetPassword')}: ${user.displayName}`}
+                    onClick={() => {
+                      setResetting(user);
+                    }}
+                  >
+                    {t('users.resetPassword')}
+                  </button>
+                )}
+                <DeleteButton
+                  user={user}
+                  disabled={isLastAdmin(user)}
+                  layout="card"
+                  onClick={() => {
+                    setDeleting(user);
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <CreateUserDialog
@@ -222,24 +268,33 @@ export function UsersPage({ localLogin }: { localLogin: boolean }) {
   );
 }
 
+type Layout = 'table' | 'card';
+
+/** Table: compact select with an aria-label. Card: a labelled FormField "Rol" (ScreenUsers phone). */
 function RoleSelect({
   user,
   lastAdmin,
   saving,
+  layout = 'table',
   onChange,
 }: {
   user: User;
   lastAdmin: boolean;
   saving: boolean;
+  layout?: Layout;
   onChange: (role: Role) => void;
 }) {
+  const card = layout === 'card';
+  const selectId = `role-${user.id}-${layout}`;
   return (
-    <div className="pp-col app-cell-stack">
-      <div className="pp-iwrap compact">
+    <div className={card ? 'pp-field' : 'pp-col app-cell-stack'}>
+      {card && <label htmlFor={selectId}>{t('users.role')}</label>}
+      <div className={card ? 'pp-iwrap' : 'pp-iwrap compact'}>
         <select
+          id={selectId}
           className="pp-input pp-select"
           aria-label={t('users.roleFor', { name: user.displayName })}
-          aria-describedby={lastAdmin ? lastAdminHelpId(user) : undefined}
+          aria-describedby={lastAdmin ? lastAdminHelpId(user, layout) : undefined}
           aria-busy={saving}
           value={user.role}
           disabled={lastAdmin || saving}
@@ -256,7 +311,7 @@ function RoleSelect({
         <ChevronDown className="pp-ico r" aria-hidden="true" />
       </div>
       {lastAdmin && (
-        <span id={lastAdminHelpId(user)} className="pp-help">
+        <span id={lastAdminHelpId(user, layout)} className="pp-help">
           {t('users.lastAdmin')}
         </span>
       )}
@@ -264,8 +319,8 @@ function RoleSelect({
   );
 }
 
-function lastAdminHelpId(user: User): string {
-  return `last-admin-${user.id}`;
+function lastAdminHelpId(user: User, layout: Layout): string {
+  return `last-admin-${user.id}-${layout}`;
 }
 
 function OriginBadge({ user }: { user: User }) {
@@ -282,28 +337,35 @@ function OriginBadge({ user }: { user: User }) {
   );
 }
 
-/** Icon button (v1.2); a disabled one explains why through aria-disabled and the help text. */
+/**
+ * Table: icon button. Card: ghost button with icon and label. A disabled one
+ * explains why through aria-disabled and the last-Admin help text.
+ */
 function DeleteButton({
   user,
   disabled,
+  layout = 'table',
   onClick,
 }: {
   user: User;
   disabled: boolean;
+  layout?: Layout;
   onClick: () => void;
 }) {
+  const card = layout === 'card';
   return (
     <button
       type="button"
-      className="pp-btn pp-btn-ghost pp-btn-sm pp-btn-icon"
+      className={card ? 'pp-btn pp-btn-ghost' : 'pp-btn pp-btn-ghost pp-btn-sm pp-btn-icon'}
       aria-disabled={disabled || undefined}
       aria-label={`${t('common.delete')}: ${user.displayName}`}
-      aria-describedby={disabled ? lastAdminHelpId(user) : undefined}
+      aria-describedby={disabled ? lastAdminHelpId(user, layout) : undefined}
       onClick={() => {
         if (!disabled) onClick();
       }}
     >
       <Trash2 className="pp-ico" aria-hidden="true" />
+      {card && t('common.delete')}
     </button>
   );
 }

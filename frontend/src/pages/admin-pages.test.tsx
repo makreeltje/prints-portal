@@ -14,9 +14,16 @@ const helper = makeUser('User', { id: 'u-helper', displayName: 'helper' });
 const editor = makeUser('Editor', { id: 'u-editor', displayName: 'Renate', origin: 'oidc' });
 
 function desktopTable() {
-  const table = document.querySelector('.pp-scroll table');
+  const table = document.querySelector('.pp-only-wide table');
   if (!(table instanceof HTMLElement)) throw new Error('no table');
   return within(table);
+}
+
+/** Both layouts are in the DOM; CSS shows one (pp-only-wide above 480px, pp-only-phone below). */
+function layout(which: 'wide' | 'phone') {
+  const element = document.querySelector(`.pp-only-${which}`);
+  if (!(element instanceof HTMLElement)) throw new Error(`no ${which} layout`);
+  return within(element);
 }
 
 describe('UsersPage', () => {
@@ -51,7 +58,9 @@ describe('UsersPage', () => {
       'PATCH /api/users/u-helper': () => ({ json: { ...helper, role: 'Editor' } }),
     });
     renderWithAuth(<UsersPage localLogin />);
-    const select = await screen.findByRole('combobox', { name: 'Rol helper' });
+    const select = await waitFor(() =>
+      desktopTable().getByRole('combobox', { name: 'Rol helper' }),
+    );
     await userEvent.selectOptions(select, 'Editor');
     await screen.findByText('Opgeslagen');
     expect(calls.at(-1)).toMatchObject({ method: 'PATCH', body: { role: 'Editor' } });
@@ -64,7 +73,9 @@ describe('UsersPage', () => {
       'PATCH /api/users/u-helper': () => ({ status: 500, json: { error: 'boom' } }),
     });
     renderWithAuth(<UsersPage localLogin />);
-    const select = await screen.findByRole('combobox', { name: 'Rol helper' });
+    const select = await waitFor(() =>
+      desktopTable().getByRole('combobox', { name: 'Rol helper' }),
+    );
     await userEvent.selectOptions(select, 'Admin');
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Opslaan mislukt, de wijziging is teruggedraaid.',
@@ -175,7 +186,9 @@ describe('UsersPage dialogs', () => {
     });
     renderWithAuth(<UsersPage localLogin />);
     await userEvent.click(
-      await screen.findByRole('button', { name: 'Wachtwoord resetten: helper' }),
+      await waitFor(() =>
+        desktopTable().getByRole('button', { name: 'Wachtwoord resetten: helper' }),
+      ),
     );
     const dialog = screen.getByRole('dialog', { name: "Wachtwoord resetten voor 'helper'" });
     const field = within(dialog).getByLabelText('Tijdelijk wachtwoord');
@@ -211,7 +224,7 @@ describe('AccessPage', () => {
     expect(
       table.getAllByRole('rowheader').map((th) => th.textContent.replace(/\s+/g, ' ').trim()),
     ).toEqual(['helper', 'Renate · Editor', 'owner@example.org · Admin']);
-    expect(screen.getByText('Admin en Editor hebben altijd toegang.')).toBeInTheDocument();
+    expect(layout('wide').getByText('Admin en Editor hebben altijd toegang.')).toBeInTheDocument();
   });
 
   it('saves a cell immediately', async () => {
@@ -270,5 +283,60 @@ describe('AccessPage', () => {
     first.focus();
     await userEvent.keyboard('{ArrowRight}');
     expect(desktopTable().getByRole('checkbox', { name: 'helper: Joey' })).toHaveFocus();
+  });
+});
+
+describe('phone cards', () => {
+  it('shows one card per user with a labelled role select and the actions', async () => {
+    stubFetch({ 'GET /api/users': () => ({ json: { users: [owner, helper, editor] } }) });
+    renderWithAuth(<UsersPage localLogin />);
+    await waitFor(desktopTable);
+    const phone = layout('phone');
+    expect(phone.getAllByLabelText('Rol')).toHaveLength(3);
+    expect(phone.getByRole('combobox', { name: 'Rol owner@example.org' })).toBeDisabled();
+    expect(phone.getByRole('button', { name: 'Verwijderen: helper' })).toHaveTextContent(
+      'Verwijderen',
+    );
+    expect(phone.getByRole('button', { name: 'Wachtwoord resetten: helper' })).toBeInTheDocument();
+    expect(phone.queryByRole('button', { name: 'Wachtwoord resetten: Renate' })).toBeNull();
+  });
+
+  it('changes a role from a card', async () => {
+    const calls = stubFetch({
+      'GET /api/users': () => ({ json: { users: [owner, helper] } }),
+      'PATCH /api/users/u-helper': () => ({ json: { ...helper, role: 'Editor' } }),
+    });
+    renderWithAuth(<UsersPage localLogin />);
+    await waitFor(desktopTable);
+    await userEvent.selectOptions(
+      layout('phone').getByRole('combobox', { name: 'Rol helper' }),
+      'Editor',
+    );
+    expect(calls.at(-1)).toMatchObject({ method: 'PATCH', body: { role: 'Editor' } });
+  });
+
+  it('shows access as one card per user with klant checkboxes', async () => {
+    const calls = stubFetch({
+      'GET /api/access': () => ({
+        json: {
+          customers: ['Denise', 'Joey'],
+          users: [
+            { ...helper, customers: ['Joey'] },
+            { ...editor, customers: ['Denise', 'Joey'] },
+          ],
+        },
+      }),
+      'PATCH /api/access': () => ({ status: 204 }),
+    });
+    renderWithAuth(<AccessPage />);
+    await waitFor(desktopTable);
+    const phone = layout('phone');
+    expect(phone.getByRole('checkbox', { name: 'Renate: Denise' })).toBeDisabled();
+    const cell = phone.getByRole('checkbox', { name: 'helper: Denise' });
+    await userEvent.click(cell);
+    expect(calls.at(-1)?.body).toEqual({
+      changes: [{ userId: 'u-helper', customerFolder: 'Denise', granted: true }],
+    });
+    expect(phone.getByText('Admin en Editor hebben altijd toegang.')).toBeInTheDocument();
   });
 });
