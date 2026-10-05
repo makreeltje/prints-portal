@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
@@ -51,12 +52,17 @@ export function renderWithAuth(
     retry: vi.fn(),
     ...auth,
   };
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, staleTime: Infinity } },
+  });
   const result = render(
-    <AuthContext.Provider value={value}>
-      <ToastProvider dismissLabel="Sluiten">
-        <MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>
-      </ToastProvider>
-    </AuthContext.Provider>,
+    <QueryClientProvider client={queryClient}>
+      <AuthContext.Provider value={value}>
+        <ToastProvider dismissLabel="Sluiten">
+          <MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>
+        </ToastProvider>
+      </AuthContext.Provider>
+    </QueryClientProvider>,
   );
   return { ...result, auth: value };
 }
@@ -80,7 +86,7 @@ export function stubFetch(
       body,
       headers: (init.headers ?? {}) as Record<string, string>,
     });
-    const route = routes[`${method} ${input}`];
+    const route = routes[`${method} ${input}`] ?? routes[`${method} ${input.split('?')[0] ?? ''}`];
     if (route === undefined) throw new Error(`unexpected request ${method} ${input}`);
     const { status = 200, json } = route(body);
     return Promise.resolve(

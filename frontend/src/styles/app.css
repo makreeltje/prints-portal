@@ -175,3 +175,222 @@
     background: var(--primary-tint);
   }
 }
+
+/* Lists that are lists for screen readers but not visually. */
+.app-plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ScreenDashboard: customer strip (amounts and Factuur arrive with M6/M7). */
+.app-customer-strip {
+  align-items: stretch;
+}
+
+.app-customer-card {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.app-customer-head {
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.app-customer-head > b {
+  color: var(--text-strong);
+  font-size: var(--text-md);
+  line-height: var(--leading-base);
+}
+
+.app-customer-head > .pp-muted {
+  font-size: var(--text-sm);
+}
+
+/* PrintCard: the name link covers the card; other controls sit above it. */
+.pp-grid .pp-print {
+  width: 100%;
+}
+
+.app-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-card-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.app-above-link {
+  position: relative;
+}
+
+.app-card-place,
+.app-breadcrumb {
+  font-size: var(--text-sm);
+}
+
+.app-tag-row {
+  gap: var(--space-1);
+}
+
+.pp-thumb {
+  overflow: hidden;
+}
+
+.app-thumb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.app-thumb-none {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+/* PrintRow */
+.app-row-link {
+  color: var(--text-strong);
+  text-decoration: none;
+}
+
+.app-row-link:hover {
+  text-decoration: underline;
+}
+
+.app-row-place {
+  font-weight: 400;
+}
+
+.app-material {
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+}
+
+/* FilterBar */
+.app-filter-block {
+  gap: var(--space-2);
+}
+
+.app-filter-phone {
+  gap: var(--space-3);
+}
+
+.app-filter-phone-row {
+  justify-content: space-between;
+}
+
+.app-filter-summary {
+  gap: var(--space-2);
+}
+
+.app-filter-count {
+  margin-left: auto;
+  font-size: var(--text-sm);
+}
+
+.app-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  gap: var(--space-1);
+}
+
+.app-tag-pop {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  gap: 0;
+  padding: var(--space-2) var(--space-3);
+  align-items: flex-start;
+  white-space: nowrap;
+}
+
+.app-search-clear {
+  position: absolute;
+  right: var(--space-1);
+}
+
+/* ScreenPrintDetail */
+.app-detail-head {
+  gap: var(--space-2);
+}
+
+.app-alert-row {
+  gap: var(--space-3);
+}
+
+.app-no-model {
+  gap: var(--space-3);
+}
+
+.app-detail-thumb {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.app-viewer {
+  overflow: hidden;
+}
+
+.app-viewer-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.app-viewer-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* AssetListItem (read-only in M5) */
+.app-assetlist {
+  overflow: hidden;
+}
+
+.app-assetlist-head {
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-assetlist-head > h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: var(--text-md);
+  line-height: var(--leading-base);
+}
+
+.app-assetlist-head > .pp-muted {
+  font-size: var(--text-sm);
+}
+
+.app-min0 {
+  min-width: 0;
+}
+
+.app-reason-warning {
+  color: var(--warning);
+}
+
+.app-times,
+.app-strong {
+  color: var(--text-strong);
+}

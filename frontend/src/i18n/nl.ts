@@ -88,6 +88,87 @@ export const nl = {
   'error.tooManyAttempts': 'Te veel pogingen, probeer het over een minuut opnieuw',
   'toast.saved': 'Opgeslagen',
 
+  'common.restore': 'Herstellen',
+  'common.download': 'Downloaden',
+  'common.loadMore': 'Meer laden',
+  'common.count': '{shown} van {total} prints',
+  'common.allLoaded': 'Alle prints geladen',
+  'common.clearFilters': 'Filters wissen',
+  'common.search.placeholder': 'Zoek op naam, klant of tag',
+  'common.search.label': 'Zoeken',
+  'common.search.clear': 'Wis zoekopdracht',
+
+  'view.cards': 'Kaarten',
+  'view.list': 'Lijst',
+  'view.label': 'Weergave',
+
+  'status.archived': 'Gearchiveerd',
+  'status.deleted': 'Verwijderd',
+
+  'tags.label': 'Tags',
+  'tags.labelCount': 'Tags ({count})', // component copy: FilterBar preview
+  'tags.add': 'Tag toevoegen',
+  'tags.remove': '{tag} verwijderen',
+  'tags.andHint': 'Toont prints met alle gekozen tags (EN)',
+  'tags.edit': 'Tags bewerken',
+  'tags.removedFromFilter': '{tag} verwijderd uit filter', // component copy: FilterBar (announcement)
+
+  'filters.allCustomers': 'Alle klanten', // component copy: FilterBar
+  'filters.customer': 'Klant', // component copy: FilterBar preview (aria-label)
+  'filters.button': 'Filters', // component copy: ScreenDashboard (phone)
+
+  'records.showDeleted': 'Toon verwijderde',
+  'records.showArchived': 'Gearchiveerd tonen',
+  'records.deletedOn': 'Verwijderd op {date}.',
+  'records.archivedNote': 'Gearchiveerd. De bestanden staan niet meer op schijf.',
+
+  'customers.prints': '{count} prints', // component copy: ScreenDashboard preview ("12 prints")
+
+  'print.select': 'Selecteer {name}', // component copy: PrintCard preview (aria-label)
+  'print.noPreview': 'Geen voorbeeld', // component copy: PrintCard
+  'print.name': 'Naam', // component copy: PrintRow
+  'print.material': 'Materiaal', // component copy: PrintRow
+  'print.time': 'Tijd', // component copy: PrintRow
+  'print.weight': 'Gewicht', // component copy: PrintRow
+  'print.status': 'Status', // component copy: PrintRow
+  'print.files': 'Bestanden', // component copy: ScreenPrintDetail
+  'print.fileCount': '{count} bestanden', // component copy: ScreenPrintDetail preview
+  'print.noWeightOrTime': 'geen gewicht of tijd', // component copy: ScreenPrintDetail preview
+  'print.userView': 'Je ziet alleen prijs en status.', // component copy: ScreenPrintDetail
+
+  'asset.timesPrintedShort': '× {count}',
+  'asset.duplicate': 'Mogelijk dubbel',
+  'asset.duplicateHint': 'Zelfde bestand als {fileName}. Gebruik liever Aantal keer geprint.',
+  'asset.plate': 'Plaat {n}',
+  'asset.plates': '{count} platen',
+  'asset.slot': 'Slot {n}',
+  'asset.slicerHint': 'slicer',
+  'asset.excluded': 'Telt niet mee in kosten',
+  'asset.excludedReason.duplicate': 'Telt niet mee: dubbel met G-code',
+  'asset.excludedReason.folder': 'Telt niet mee: map {folder}',
+  'asset.missingFile': 'Bestand ontbreekt',
+
+  'viewer.loading': 'Model laden…',
+  'viewer.hint': 'Sleep om te draaien, scroll om te zoomen',
+  'viewer.error': 'Model kon niet worden geladen',
+  'viewer.none': 'Geen 3D-model beschikbaar',
+  'viewer.label': '3D-voorbeeld van {name}', // component copy: Viewer3D (aria-label)
+
+  'live.connected': 'Live',
+  'live.reconnecting': 'Verbinding verbroken — opnieuw verbinden…',
+  'system.reconnected': 'Verbonden',
+
+  'empty.noPrints.title': 'Nog geen prints',
+  'empty.noPrints.body': 'Zet je bestanden in klant/project-mappen en start een index.',
+  'empty.noResults.title': 'Geen resultaten',
+  'empty.noResults.body': 'Pas je filters aan of wis ze.',
+  'empty.unreachable.title': 'Prints-map niet bereikbaar',
+  'empty.unreachable.body': 'Controleer of de map gekoppeld is.',
+  'empty.reindex': 'Opnieuw indexeren', // component copy: EmptyState
+
+  'confirm.deletePrint': "Print '{name}' verwijderen?",
+  'confirm.deletePrintBody': 'Verwijderen verbergt de print, maar bewaart de financiële gegevens.',
+
   'settings.theme': 'Thema',
   'settings.theme.system': 'Systeem', // component copy: ScreenSettings
   'settings.theme.light': 'Licht', // component copy: ScreenSettings
