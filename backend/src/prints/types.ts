@@ -25,6 +25,12 @@ export interface PrintSummary {
   tags: TagDto[];
   /** False when no file can give a preview image. */
   hasThumbnail: boolean;
+  /**
+   * Tint for the thumbnail and 3D model (SpoolSwatch tint rule): the slicer
+   * colour of the first used slot of the newest counted file; spools (M6) will
+   * come first. Null: no tint.
+   */
+  colour: string | null;
   /** Changes whenever the print changes; part of thumbnail URLs for cache busting. */
   version: string;
 }

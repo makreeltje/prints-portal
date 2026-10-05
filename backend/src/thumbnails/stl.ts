@@ -62,12 +62,15 @@ function parseAscii(text: string): StlMesh {
 export interface RenderOptions {
   width: number;
   height: number;
-  /** Model colour as #rrggbb; null renders a neutral grey. */
+  /** Model colour as #rrggbb; null renders the light neutral grey used for thumbnails. */
   colour: string | null;
 }
 
-/** Neutral model colour when the slicer reported none. */
-const NEUTRAL: [number, number, number] = [176, 180, 192];
+/**
+ * Default model colour: a light neutral grey. The UI draws the print's colour
+ * behind the image (.pp-thumb.tinted), so a light model reads on any tint.
+ */
+const NEUTRAL: [number, number, number] = [236, 238, 244];
 const SUPERSAMPLE = 2;
 /** View: turned 45° around the vertical axis, camera 35° above the horizon. */
 const YAW = (-45 * Math.PI) / 180;

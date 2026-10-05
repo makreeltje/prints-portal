@@ -12,13 +12,13 @@ import { parseStl, renderStl } from './stl.js';
  * Preview image per print, in this order (plan, "Thumbnail order"):
  *   1. an image embedded in a G-code file (newest first),
  *   2. a 3MF plate or project image,
- *   3. an STL rendered on the server, in the colour of the print's first slot,
+ *   3. an STL rendered on the server (light grey on transparent),
  *   4. the image inside a Creality .cxprj project.
- * Embedded slicer images are served as they are: the slicer already drew them
- * in the filament colours. Results are cached on disk per print, keyed by the
- * source file (size and date) and the colour, so a changed file or colour
- * makes a new image. When the files are gone (archived print) the last
- * cached image is still served.
+ * The print's colour is not burnt into the image: the UI draws it behind the
+ * image (.pp-thumb.tinted, SpoolSwatch tint rule), so the API returns it with
+ * the print. Results are cached on disk per print, keyed by the source file
+ * (size and date). When the files are gone (archived print) the last cached
+ * image is still served.
  */
 export interface Thumbnail {
   data: Buffer;
@@ -63,17 +63,11 @@ export class ThumbnailService {
 
   /** The preview for a print, or null when there is none. */
   async get(recordId: string): Promise<Thumbnail | null> {
-    const [candidates, colour] = await Promise.all([
-      this.candidates(recordId),
-      this.firstSlotColour(recordId),
-    ]);
-    for (const candidate of candidates) {
-      const key = cacheKey(candidate, candidate.kind === 'stl' ? colour : null);
+    for (const candidate of await this.candidates(recordId)) {
+      const key = cacheKey(candidate);
       const cached = await this.readCache(recordId, key);
       if (cached !== null) return cached;
-      const made = await this.once(`${recordId}/${key}`, () =>
-        this.make(recordId, key, candidate, colour),
-      );
+      const made = await this.once(`${recordId}/${key}`, () => this.make(recordId, key, candidate));
       if (made !== null) return made;
     }
     // No usable source (e.g. archived: the files are gone): last image made for this print.
@@ -126,33 +120,10 @@ export class ThumbnailService {
     );
   }
 
-  /** Slicer colour of the first used slot of the newest counted line (tint rule, SpoolSwatch). */
-  private async firstSlotColour(recordId: string): Promise<string | null> {
-    const row = await this.options.db
-      .selectFrom('line_slots as s')
-      .innerJoin('print_lines as l', 'l.id', 's.line_id')
-      .innerJoin('print_assets as a', 'a.id', 'l.asset_id')
-      .select('s.colour')
-      .where('a.print_record_id', '=', recordId)
-      .where('s.colour', 'is not', null)
-      .where((eb) =>
-        eb.or([
-          eb('l.user_excluded', '=', 0),
-          eb.and([eb('l.user_excluded', 'is', null), eb('l.auto_excluded', '=', 0)]),
-        ]),
-      )
-      .orderBy('a.last_write_utc', 'desc')
-      .orderBy('l.plate_index')
-      .orderBy('s.slot')
-      .executeTakeFirst();
-    return row?.colour ?? null;
-  }
-
   private async make(
     recordId: string,
     key: string,
     candidate: Candidate,
-    colour: string | null,
   ): Promise<Thumbnail | null> {
     let absolute: string;
     try {
@@ -178,7 +149,10 @@ export class ThumbnailService {
         const info = await stat(absolute);
         if (info.size <= MAX_STL_BYTES) {
           const mesh = parseStl(await readFile(absolute));
-          image = { data: renderStl(mesh, { ...STL_SIZE, colour }), contentType: 'image/png' };
+          image = {
+            data: renderStl(mesh, { ...STL_SIZE, colour: null }),
+            contentType: 'image/png',
+          };
         }
       }
       if (image === null) return null;
@@ -272,16 +246,10 @@ const EXTENSIONS: [string, Thumbnail['contentType']][] = [
   ['jpg', 'image/jpeg'],
 ];
 
-function cacheKey(candidate: Candidate, colour: string | null): string {
+function cacheKey(candidate: Candidate): string {
   return createHash('sha256')
     .update(
-      [
-        RENDER_VERSION,
-        candidate.assetId,
-        candidate.sizeBytes,
-        candidate.lastWriteUtc,
-        colour ?? '',
-      ].join('|'),
+      [RENDER_VERSION, candidate.assetId, candidate.sizeBytes, candidate.lastWriteUtc].join('|'),
     )
     .digest('hex')
     .slice(0, 32);

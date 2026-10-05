@@ -90,6 +90,28 @@ function applyFilter(query: RecordQuery, filter: PrintFilter): RecordQuery {
   return q;
 }
 
+/** Slicer colour of the first used slot of the newest counted line (tint rule). */
+function colourExpression(eb: ExpressionBuilder<Database, 'print_records'>) {
+  return eb
+    .selectFrom('line_slots as s')
+    .innerJoin('print_lines as l', 'l.id', 's.line_id')
+    .innerJoin('print_assets as a', 'a.id', 'l.asset_id')
+    .select('s.colour')
+    .whereRef('a.print_record_id', '=', 'print_records.id')
+    .where('s.colour', 'is not', null)
+    .where((inner) =>
+      inner.or([
+        inner('l.user_excluded', '=', 0),
+        inner.and([inner('l.user_excluded', 'is', null), inner('l.auto_excluded', '=', 0)]),
+      ]),
+    )
+    .orderBy('a.last_write_utc', 'desc')
+    .orderBy('l.plate_index')
+    .orderBy('s.slot')
+    .limit(1)
+    .as('colour');
+}
+
 /** Records with a file that can give a preview image (embedded image, 3MF image or STL). */
 function hasThumbnailExpression(eb: ExpressionBuilder<Database, 'print_records'>) {
   return eb
@@ -121,7 +143,7 @@ export async function listPrints(
     base.select((eb) => eb.fn.countAll<number | string>().as('count')).executeTakeFirstOrThrow(),
     base
       .selectAll('print_records')
-      .select((eb) => hasThumbnailExpression(eb))
+      .select((eb) => [hasThumbnailExpression(eb), colourExpression(eb)])
       // Newest print first; prints without a print date by discovery date.
       .orderBy(sql`coalesce(print_records.print_date, print_records.discovered_at)`, 'desc')
       .orderBy('print_records.id')
@@ -135,7 +157,9 @@ export async function listPrints(
   );
   return {
     total: Number(countRow.count),
-    items: rows.map((row) => toSummary(row, tags.get(row.id) ?? [], toBool(row.has_thumbnail))),
+    items: rows.map((row) =>
+      toSummary(row, tags.get(row.id) ?? [], toBool(row.has_thumbnail), row.colour),
+    ),
   };
 }
 
@@ -178,7 +202,7 @@ export async function getPrintDetail(
   const row = await db
     .selectFrom('print_records')
     .selectAll('print_records')
-    .select((eb) => hasThumbnailExpression(eb))
+    .select((eb) => [hasThumbnailExpression(eb), colourExpression(eb)])
     .where('print_records.id', '=', id)
     .executeTakeFirst();
   if (row === undefined) return null;
@@ -196,7 +220,7 @@ export async function getPrintDetail(
   ]);
   const hasModel = assets.some((asset) => asset.type === 'stl' || asset.type === '3mf');
   const detail: PrintDetail = {
-    ...toSummary(row, tags.get(row.id) ?? [], toBool(row.has_thumbnail)),
+    ...toSummary(row, tags.get(row.id) ?? [], toBool(row.has_thumbnail), row.colour),
     printerModel: row.printer_model,
     archivedAt: row.archived_at,
     hasModel: hasModel && row.status !== 'archived',
@@ -340,6 +364,7 @@ function toSummary(
   },
   tags: TagDto[],
   hasThumbnail: boolean,
+  colour: string | null,
 ): PrintSummary {
   return {
     id: row.id,
@@ -355,6 +380,7 @@ function toSummary(
     deletedAt: row.deleted_at,
     tags,
     hasThumbnail,
+    colour,
     version: row.updated_at,
   };
 }

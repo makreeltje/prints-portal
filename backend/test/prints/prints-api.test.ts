@@ -67,6 +67,9 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
     );
     const lock = body.items.find((item) => item.name === 'Babybox locks');
     expect(lock).toMatchObject({ customerFolder: 'Joey', grams: 173.49, hasThumbnail: true });
+    // Tint: slicer colour of the first slot of the counted G-code (the excluded 3MF does not count).
+    expect(lock?.colour).toMatch(/^#[0-9a-f]{6}$/);
+    expect(body.items.find((item) => item.name === 'Empty')?.colour).toBeNull();
     expect(body.items.find((item) => item.name === 'Empty')?.hasThumbnail).toBe(false);
   });
 
