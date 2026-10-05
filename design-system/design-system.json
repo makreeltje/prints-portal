@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-05T20:40:00Z",
+  "at": "2026-10-05T20:55:00Z",
   "via": "Claude",
-  "note": "v1.2: resolves GAP-013 to GAP-022 (responsive shell, leading tokens, auth screens, share variants)"
+  "note": "v1.2.1: resolves GAP-023 (pp-only-wide / pp-only-phone, 16px phone page padding)"
  },
  "layout": "files",
  "libraries": [],

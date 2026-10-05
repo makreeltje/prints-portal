@@ -381,3 +381,12 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-main>h1{margin:0;font:650 var(--text-xl)/var(--leading-xl) var(--font-sans);color:var(--text-strong)}
 .pp-device.rail{min-height:640px}
 .pp-drawer .foot .pp-btn{justify-content:flex-start}
+/* ===== v1.2.1 table / card swap and phone page padding (GAP-023) =====
+   Put BOTH layouts in the DOM, each in a wrapper (no display of its own): <div class="pp-only-wide">table</div> and
+   <div class="pp-only-phone">cards</div>. Above 480px only the first shows, at 480px and below only the second.
+   The wide table keeps its own .pp-scroll box as a fallback. */
+.pp-only-phone{display:none}
+@media (max-width:480px){.pp-only-wide{display:none}.pp-only-phone{display:block}.pp-center{padding:var(--space-4)}}
+.pp-device.phone .pp-only-wide{display:none}
+.pp-device.phone .pp-only-phone{display:block}
+.pp-device.phone .pp-center{padding:var(--space-4)}
