@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint -w backend
+      - run: npm run typecheck -w backend
+      - run: npm run test -w backend
+      - run: npm run build -w backend
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint -w frontend
+      - run: npm run typecheck -w frontend
+      - run: npm run test -w frontend
+      - run: npm run build -w frontend
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: prints-portal:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Container becomes healthy
+        run: |
+          mkdir -p "$RUNNER_TEMP/prints"
+          docker run -d --name pp -v "$RUNNER_TEMP/prints:/prints:ro" \
+            --health-interval=2s --health-start-period=2s prints-portal:ci
+          for _ in $(seq 1 30); do
+            status="$(docker inspect -f '{{.State.Health.Status}}' pp)"
+            [ "$status" = healthy ] && exit 0
+            sleep 2
+          done
+          docker logs pp
+          echo "container did not become healthy (last status: $status)"
+          exit 1
