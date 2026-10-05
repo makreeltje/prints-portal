@@ -43,6 +43,18 @@ npm run build         # frontend, then backend
 `scripts/check-design-tokens.sh` also runs after every Claude Code edit and in CI. It resolves paths
 relative to the current directory, so run it from the repository root.
 
+## Inspect print files
+
+The parsers can be run on any file or folder, which prints one JSON object per file with what
+the app reads from it (name, slicer comments, slots, plates, thumbnails):
+
+```bash
+npm run inspect -- "/path/to/3D prints/Joey/Babybox locks"
+docker exec prints-portal node backend/dist/cli/inspect.js "/prints/Joey/Babybox locks"
+```
+
+Folders are walked with the same ignore rules as the indexer.
+
 ## Docker
 
 ```bash

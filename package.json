@@ -14,6 +14,7 @@
   "scripts": {
     "dev:backend": "npm run dev -w backend",
     "dev:frontend": "npm run dev -w frontend",
+    "inspect": "npm run inspect -w backend --",
     "build": "npm run build -w frontend && npm run build -w backend",
     "lint": "npm run lint --workspaces",
     "typecheck": "npm run typecheck --workspaces",

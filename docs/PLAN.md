@@ -152,6 +152,8 @@ Every milestone ends with: format, lint, type check, all tests (all three databa
 - **Tests:** every parser rule (fixtures trimmed from the owner's files, neutral names, plus a synthetic Bambu 3MF); rounding, nulls and fallbacks; traversal, sibling prefix and absolute paths; registry matching (`K1 Max` vs `K1`); duplicate fingerprint.
 - **Verify:** `npm test -w backend`; a small CLI `npm run inspect -- <file>` prints parsed metadata for any file.
 
+- **Status:** done. nl-NL formatting lives in `backend/src/core/format.ts`; whether the frontend imports it or gets a shared package is decided in M5.
+
 ### M3: Data and indexing
 - **Scope:** schema and migrations (records, assets, plates, slot usages, financials incl. write-off and payment audit fields, tags, users, access, share links, settings, customer settings, invoices, invoice lines, invoice sequence, sessions); dialect selection from `DATABASE_URL`; global "not deleted" query helper; scanner; indexer (upsert, archive/unarchive, soft-delete skip, auto-exclusions, duplicate flags, aggregates); watcher with per-project debounce; startup full scan; startup warning for a non-writable data dir.
 - **Tests:** migrations on SQLite/Postgres/MariaDB; soft delete surviving re-index; archive and return; subfolder handling; ignore rules; auto-exclude rules; debounce behaviour with a temp directory.
