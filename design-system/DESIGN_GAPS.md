@@ -278,7 +278,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.1
 
-## GAP-023 [open] No class to switch tables to phone cards
+## GAP-023 [resolved in v1.2.1] No class to switch tables to phone cards
 - **Type:** missing component
 - **Found while:** M4, moving ScreenUsers and ScreenAccess to v1.2
 - **Where needed:** ScreenUsers ("Phone: one card per user"), AccessMatrix/ScreenAccess ("At 480px and below it switches to one card per user"), ScreenLogin ("On phones the card is full width with `space-4` margins"); later every screen with a table/card pair (Openstaand, Facturen, Deel-links).
