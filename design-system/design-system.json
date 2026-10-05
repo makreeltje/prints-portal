@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-05T12:46:45Z",
+  "at": "2026-10-05T14:30:00Z",
   "via": "Claude",
-  "note": "Components: 42 components, bundle.css, copy deck, do/don't"
+  "note": "v1.1: resolves GAP-001, 004-012 (screens, documents, new states)"
  },
  "layout": "files",
  "libraries": [],
