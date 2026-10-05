@@ -4,7 +4,6 @@ import { createRoot } from 'react-dom/client';
 import '../../design-system/tokens.css';
 import '../../design-system/components/bundle.css';
 import './styles/app.css';
-import './styles/ds-gap-015-appshell.css'; // ds-gap: GAP-015
 import { App } from './App';
 
 const container = document.getElementById('root');

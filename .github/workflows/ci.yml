@@ -95,6 +95,8 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/prints"
           docker run -d --name pp -v "$RUNNER_TEMP/prints:/prints:ro" \
+            -e SESSION_SECRET="$(openssl rand -base64 48)" \
+            -e ADMIN_EMAIL=ci@example.org -e ADMIN_PASSWORD="$(openssl rand -base64 24)" \
             --health-interval=2s --health-start-period=2s prints-portal:ci
           for _ in $(seq 1 30); do
             status="$(docker inspect -f '{{.State.Health.Status}}' pp)"
@@ -104,6 +106,12 @@ jobs:
           docker logs pp
           echo "container did not become healthy (last status: $status)"
           exit 1
+      - name: Container refuses to start without a session secret
+        run: |
+          if docker run --rm -v "$RUNNER_TEMP/prints:/prints:ro" prints-portal:ci; then
+            echo "the container started without SESSION_SECRET"
+            exit 1
+          fi
 
   # Publishes to GitHub Packages after every green push to main.
   # Tags: <package.json version>-<run number> (e.g. 0.1.0-42), sha-<commit> and latest.

@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildApp } from './app.js';
+import { BootstrapError, ensureBootstrapAdmin } from './auth/bootstrap.js';
 import { ConfigError, loadConfig, type AppConfig } from './config/config.js';
 import { checkDataDir } from './config/data-dir.js';
 import { createDatabase } from './db/connection.js';
@@ -31,9 +32,20 @@ async function main(): Promise<void> {
   // Migrations run before anything listens; a failure stops the app loudly.
   const db = await createDatabase(config.database);
   const app = await buildApp({ config, db, logger: { level: config.logLevel } });
+  for (const warning of config.warnings) app.log.warn(warning);
   if (dataDirProblem !== null) app.log.warn(dataDirProblem);
   const applied = await migrateToLatest(db);
   if (applied.length > 0) app.log.info({ migrations: applied }, 'database migrated');
+  try {
+    await ensureBootstrapAdmin(db, config, app.log);
+  } catch (error) {
+    if (error instanceof BootstrapError) {
+      app.log.fatal(error.message);
+      await app.close();
+      process.exit(1);
+    }
+    throw error;
+  }
 
   const indexer = new Indexer({
     db,

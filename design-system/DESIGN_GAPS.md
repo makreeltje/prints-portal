@@ -168,7 +168,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.0
 
-## GAP-013 [open] Deel-link for "niet factureren" customers
+## GAP-013 [resolved in v1.2] Deel-link for "niet factureren" customers
 - **Type:** conflict
 - **Found while:** importing design system v1.1
 - **Where needed:** ScreenShareLinks (create dialog), ScreenSharePage, DocOverview, copy deck
@@ -179,7 +179,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-05), lines marked `ds-gap: GAP-013`
 - **Design system version:** 1.1
 
-## GAP-014 [open] "Nooit" as share-link expiry
+## GAP-014 [resolved in v1.2] "Nooit" as share-link expiry
 - **Type:** conflict
 - **Found while:** importing design system v1.1
 - **Where needed:** ScreenShareLinks (create dialog), ShareLinkRow, copy deck
@@ -190,7 +190,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-05), lines marked `ds-gap: GAP-014`
 - **Design system version:** 1.1
 
-## GAP-015 [open] AppShell has no responsive CSS for tablet rail, phone layout and drawer
+## GAP-015 [resolved in v1.2] AppShell has no responsive CSS for tablet rail, phone layout and drawer
 - **Type:** missing component
 - **Found while:** M1, implementing AppShell
 - **Where needed:** AppShell (every operator page), and every screen that relies on the `.phone` context class (e.g. `.phone .pp-stats`)
@@ -201,7 +201,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-05), lines marked `ds-gap: GAP-015`
 - **Design system version:** 1.1
 
-## GAP-016 [open] No line-height tokens or base page typography
+## GAP-016 [resolved in v1.2] No line-height tokens or base page typography
 - **Type:** missing token
 - **Found while:** M1, page base styles
 - **Where needed:** `body` and any running text outside a component (page intros, help text in screens)
@@ -211,3 +211,80 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** body line-height. No component is affected.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.1
+
+## GAP-017 [resolved in v1.2] Raw sizes in the login and system-state layouts
+- **Type:** missing token
+- **Found while:** M4, building ScreenLogin and the 403 state
+- **Where needed:** ScreenLogin (`/login`), ScreenSystemStates (403, error, first run), ScreenUsers (role select)
+- **What is missing or wrong:** the previews size things with inline raw values that have no token or class: login card `max-width:380px` and `gap:16px`; state pages `h1` at `650 22px/28px` (no 22px size token; `--text-xl` is 20px, `.pp-ph h1` is 24px/32px) and text `max-width:36ch`/`44ch`; the role select `width:130px`; ConfirmDialog panels `max-width:380px` (the `.pp-dialog` class is 440px). App code may not write these values.
+- **Why it matters:** without a class or token the login card stretches across a desktop screen and the state headings get a size that differs from the design.
+- **Proposal:** add classes to `bundle.css`: `.pp-auth` (centred card, max width 380px, `gap: var(--space-4)`), `.pp-state` (centred column, `h1` at the 22px/28px style, paragraph max 36ch) and a width modifier for compact selects; or size tokens for them. Temporary placeholder: login card `max-width: calc(var(--space-8) * 9.5)` (= 380px), state headings use `.pp-ph h1`, role select without a fixed width.
+- **Blocked:** the login card width and the state-page heading size. Everything else on those screens is not blocked.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.1
+
+## GAP-018 [resolved in v1.2] Local sign-in by name or by e-mail address
+- **Type:** conflict
+- **Found while:** M4, ScreenUsers create dialog
+- **Where needed:** ScreenUsers ("Gebruiker maken" dialog), ScreenLogin, copy deck
+- **What is missing or wrong:** the create dialog label is "E-mailadres of naam" (preview value `helper2`), so a local user may have a plain name. The login form only offers "E-mailadres" (`auth.email`), so such a user would type a name into an e-mail field.
+- **Why it matters:** decides what a local user signs in with and what the backend stores and validates.
+- **Proposal:** accept either: the login field becomes "E-mailadres of naam" (copy key `auth.identifier`), `type="text"`, `autocomplete="username"`. Backend stores a lower-cased login name that may be an e-mail address or a name.
+- **Blocked:** the "Gebruiker maken" dialog's identifier field and the login field label. The backend currently requires an e-mail address.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.1
+
+## GAP-019 [resolved in v1.2] Choosing your own password after a temporary one
+- **Type:** missing screen
+- **Found while:** M4, ScreenUsers create dialog
+- **Where needed:** after local sign-in with a temporary password; ScreenUsers ("Wachtwoord resetten")
+- **What is missing or wrong:** the dialog's help text says "De gebruiker kiest bij de eerste keer inloggen een eigen wachtwoord.", but there is no screen, state or copy for choosing a new password, and "Wachtwoord resetten" has no dialog design (does the admin type a new temporary password?).
+- **Why it matters:** without it a temporary password stays the user's password forever, and the help text promises something that does not happen.
+- **Proposal:** (1) after signing in with a temporary password, show a card like ScreenLogin with heading "Nieuw wachtwoord kiezen", fields "Nieuw wachtwoord" and "Herhaal wachtwoord" (`autocomplete="new-password"`), button "Opslaan", errors "Kies een wachtwoord van minstens 12 tekens." and "De wachtwoorden zijn niet gelijk."; nothing else is reachable until it is done. (2) "Wachtwoord resetten" opens a small Dialog with one field "Tijdelijk wachtwoord", the same help text, and Annuleren/Opslaan.
+- **Blocked:** the help text in "Gebruiker maken", the "Wachtwoord resetten" dialog and the forced change. The backend can already reset a password.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.1
+
+## GAP-020 [resolved in v1.2] "Rol wijzigen" on phones
+- **Type:** unclear spec
+- **Found while:** M4, ScreenUsers phone layout
+- **Where needed:** ScreenUsers at 480px and below
+- **What is missing or wrong:** the phone cards show a secondary button "Rol wijzigen" instead of the role select, but nothing says what it opens.
+- **Why it matters:** the role cannot be changed on a phone without it.
+- **Proposal:** use the same native role Select inside the card (as on desktop; native selects work well on phones) and drop the button; or "Rol wijzigen" opens a small Dialog with the Rol select and Annuleren/Opslaan.
+- **Blocked:** changing roles on phones.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.1
+
+## GAP-021 [resolved in v1.2] Editor rows in the access matrix
+- **Type:** conflict
+- **Found while:** M4, ScreenAccess
+- **Where needed:** AccessMatrix, ScreenAccess, copy deck
+- **What is missing or wrong:** the owner decided that Editors see every customer (only Users need grants). The matrix only designs Admin rows as "always access" ("Admin heeft altijd toegang."); an Editor row would look like a User row with checkboxes that do nothing.
+- **Why it matters:** an Admin would tick boxes for an Editor that have no effect.
+- **Proposal:** Editor rows look like Admin rows (disabled, checked, "· Editor" after the name), and the note reads "Admin en Editor hebben altijd toegang." (copy key `access.allAccessRoles`).
+- **Blocked:** Editor rows in the matrix (they are left out until this is resolved). User and Admin rows are not blocked.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.1
+
+## GAP-022 [resolved in v1.2] Error copy for sign-in and user management
+- **Type:** missing state
+- **Found while:** M4, ScreenLogin and ScreenUsers
+- **Where needed:** ScreenLogin, "Gebruiker maken" dialog, copy deck
+- **What is missing or wrong:** no copy for: sign-in through Authentik failed (the provider sends the browser back to `/login`); temporary password too short (the backend requires at least 12 characters); e-mail address or name already in use; the consequence sentence ConfirmDialog asks for under "Gebruiker '{name}' verwijderen?".
+- **Why it matters:** these errors would otherwise show the generic "Er ging iets mis", which does not tell the user what to fix.
+- **Proposal:** `auth.oidcFailed` "Inloggen met Authentik is mislukt. Probeer het opnieuw." (unpaid alert above the buttons), `error.passwordTooShort` "Kies een wachtwoord van minstens 12 tekens." (field error), `error.userExists` "Deze gebruiker bestaat al." (field error), `confirm.deleteUserBody` "Deze gebruiker kan daarna niet meer inloggen."
+- **Blocked:** those messages; until then the screens show `error.generic`, and the delete confirmation shows its title only.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.1
+
+## GAP-023 [resolved in v1.2.1] No class to switch tables to phone cards
+- **Type:** missing component
+- **Found while:** M4, moving ScreenUsers and ScreenAccess to v1.2
+- **Where needed:** ScreenUsers ("Phone: one card per user"), AccessMatrix/ScreenAccess ("At 480px and below it switches to one card per user"), ScreenLogin ("On phones the card is full width with `space-4` margins"); later every screen with a table/card pair (Openstaand, Facturen, Deel-links).
+- **What is missing or wrong:** v1.2 moved the app-shell breakpoints into `bundle.css`, but there is still no class that shows one block only above 480px and another only at 480px and below, and `.pp-center` keeps `space-6` padding on phones (the login preview uses an inline `padding:16px`). App code may not write its own breakpoints, so the phone cards cannot be switched in, and the login card keeps 24px margins on phones.
+- **Why it matters:** on phones the Users table and the access matrix are shown as tables that scroll sideways inside their box instead of the designed cards; the login card margins differ from the design.
+- **Proposal:** two utility classes in `bundle.css`, e.g. `.pp-only-wide` (hidden at 480px and below) and `.pp-only-phone` (hidden above 480px, `display:flex` column below), and `.pp-center` padding `space-4` at 480px and below. Temporary placeholder: the same two classes and padding rule in a separate app stylesheet marked `ds-gap: GAP-023`.
+- **Blocked:** phone cards on Gebruikers and Toegang, and the login card's phone margins. Until then the tables scroll inside their box on phones (no horizontal page scroll).
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.2

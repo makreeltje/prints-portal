@@ -1,16 +1,80 @@
-import { BrowserRouter, Route, Routes } from 'react-router';
-import { PageTitle } from './pages/PageTitle';
+import type { ReactNode } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
+import { AuthProvider } from './auth/AuthContext';
+import { useAuth } from './auth/context';
+import { LoginPage } from './auth/LoginPage';
+import type { AuthMethods } from './auth/types';
+import { NewPasswordPage } from './auth/NewPasswordPage';
+import { ToastProvider } from './components/Toasts';
+import { t } from './i18n/nl';
+import { AccessPage } from './pages/AccessPage';
+import { DocumentTitle, PageTitle } from './pages/PageTitle';
+import { GlobalErrorState } from './pages/StatePages';
+import { UsersPage } from './pages/UsersPage';
 import { AppShell } from './shell/AppShell';
-import { NAV_ITEMS } from './shell/navigation';
+import { canSee, NAV_ITEMS } from './shell/navigation';
 
-/** Each page is an empty frame for now; the milestones fill them in. */
+/** Pages built so far; the others are empty frames that later milestones fill in. */
+const pages = (methods: AuthMethods): Partial<Record<string, ReactNode>> => ({
+  '/gebruikers': (
+    <>
+      <DocumentTitle title="nav.users" />
+      <UsersPage localLogin={methods.local} />
+    </>
+  ),
+  '/toegang': (
+    <>
+      <DocumentTitle title="nav.access" />
+      <AccessPage />
+    </>
+  ),
+});
+
+/** Signed out: only the login page. Signed in: the shell with the pages the role may see. */
 export function AppRoutes() {
+  const { state, retry } = useAuth();
+
+  if (state.status === 'loading') return null;
+  if (state.status === 'error') {
+    return (
+      <main className="pp-center">
+        <GlobalErrorState onRetry={retry} withDashboard={false} />
+      </main>
+    );
+  }
+  if (state.status === 'signed-out') {
+    return (
+      <Routes>
+        <Route
+          path="/login"
+          element={<LoginPage methods={state.methods} expired={state.expired} />}
+        />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+  // A temporary password must be replaced before anything else (ScreenLogin, new password).
+  if (state.mustChangePassword) return <NewPasswordPage />;
+
+  const { role } = state.user;
+  const built = pages(state.methods);
   return (
     <AppShell>
       <Routes>
         {NAV_ITEMS.map((item) => (
-          <Route key={item.path} path={item.path} element={<PageTitle title={item.label} />} />
+          <Route
+            key={item.path}
+            path={item.path}
+            element={
+              canSee(item, role) ? (
+                (built[item.path] ?? <PageTitle title={item.label} />)
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
         ))}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppShell>
   );
@@ -18,8 +82,12 @@ export function AppRoutes() {
 
 export function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <AuthProvider>
+      <ToastProvider dismissLabel={t('common.close')}>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </ToastProvider>
+    </AuthProvider>
   );
 }

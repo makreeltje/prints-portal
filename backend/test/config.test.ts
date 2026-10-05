@@ -1,11 +1,17 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ConfigError, loadConfig } from '../src/config/config.js';
+import { ConfigError, loadConfig, parseTrustedProxies } from '../src/config/config.js';
 import { parseDatabaseUrl } from '../src/db/database-url.js';
 
+/** A session secret that passes the weak-secret rules; required outside development. */
+const SECRET = 'q7Vb2mXc9LkP4tRw8ZyN3sHd6FgJ1aUe';
+
+/** loadConfig with the minimum a production start needs, plus overrides. */
+const load = (env: Record<string, string> = {}) => loadConfig({ SESSION_SECRET: SECRET, ...env });
+
 describe('loadConfig', () => {
-  it('uses defaults when nothing is set', () => {
-    const config = loadConfig({});
+  it('uses defaults when nothing else is set', () => {
+    const config = load();
     expect(config).toEqual({
       environment: 'production',
       host: '0.0.0.0',
@@ -22,12 +28,21 @@ describe('loadConfig', () => {
         polling: false,
         pollIntervalMs: 5000,
       },
+      auth: {
+        sessionSecret: SECRET,
+        publicUrl: null,
+        bootstrapAdmin: { email: null, password: null },
+        oidc: null,
+        loginRateLimit: 5,
+      },
+      http: { trustedProxies: [], corsOrigins: [] },
+      warnings: [],
     });
   });
 
   it('reads the indexing settings', () => {
     expect(
-      loadConfig({
+      load({
         INDEX_ON_STARTUP: 'false',
         WATCH_ENABLED: 'no',
         WATCH_DEBOUNCE_MS: '500',
@@ -48,11 +63,11 @@ describe('loadConfig', () => {
     ['WATCH_DEBOUNCE_MS', '10'],
     ['WATCH_POLL_INTERVAL_MS', '1.5'],
   ])('rejects %s=%s', (key, value) => {
-    expect(() => loadConfig({ [key]: value })).toThrow(ConfigError);
+    expect(() => load({ [key]: value })).toThrow(ConfigError);
   });
 
   it('places the default SQLite file in DATA_DIR', () => {
-    const config = loadConfig({ DATA_DIR: '/srv/portal' });
+    const config = load({ DATA_DIR: '/srv/portal' });
     expect(config.database).toEqual({
       dialect: 'sqlite',
       filename: path.join('/srv/portal', 'prints-portal.db'),
@@ -60,7 +75,7 @@ describe('loadConfig', () => {
   });
 
   it('reads every supported variable', () => {
-    const config = loadConfig({
+    const config = load({
       NODE_ENV: 'development',
       HOST: '127.0.0.1',
       PORT: '3000',
@@ -82,17 +97,17 @@ describe('loadConfig', () => {
   });
 
   it('treats empty values as unset', () => {
-    expect(loadConfig({ PORT: '', DATABASE_URL: '  ' }).port).toBe(8080);
+    expect(load({ PORT: '', DATABASE_URL: '  ' }).port).toBe(8080);
   });
 
   it('treats an unknown NODE_ENV as production', () => {
-    expect(loadConfig({ NODE_ENV: 'staging' }).environment).toBe('production');
+    expect(load({ NODE_ENV: 'staging' }).environment).toBe('production');
   });
 
   it('reports every problem at once', () => {
     let caught: unknown;
     try {
-      loadConfig({ PORT: 'eighty', DATABASE_URL: 'mongodb://db/portal', LOG_LEVEL: 'loud' });
+      load({ PORT: 'eighty', DATABASE_URL: 'mongodb://db/portal', LOG_LEVEL: 'loud' });
     } catch (error) {
       caught = error;
     }
@@ -101,7 +116,108 @@ describe('loadConfig', () => {
   });
 
   it.each(['0', '65536', '80.5', '-1'])('rejects PORT=%s', (port) => {
-    expect(() => loadConfig({ PORT: port })).toThrow(ConfigError);
+    expect(() => load({ PORT: port })).toThrow(ConfigError);
+  });
+});
+
+describe('loadConfig: auth', () => {
+  const problemsOf = (env: Record<string, string>): readonly string[] => {
+    try {
+      loadConfig(env);
+    } catch (error) {
+      if (error instanceof ConfigError) return error.problems;
+      throw error;
+    }
+    return [];
+  };
+
+  it.each([
+    ['missing', {}],
+    ['short', { SESSION_SECRET: 'tooShort' }],
+    ['placeholder', { SESSION_SECRET: 'CHANGE-ME-to-a-long-random-string-of-48-chars' }],
+  ])('refuses a %s SESSION_SECRET outside development', (_label, env) => {
+    expect(problemsOf(env).join('\n')).toMatch(/SESSION_SECRET/);
+    expect(problemsOf({ ...env, NODE_ENV: 'test' }).join('\n')).toMatch(/SESSION_SECRET/);
+  });
+
+  it('generates a session secret in development and warns', () => {
+    const config = loadConfig({ NODE_ENV: 'development' });
+    expect(config.auth.sessionSecret.length).toBeGreaterThanOrEqual(32);
+    expect(config.warnings.join('\n')).toMatch(/SESSION_SECRET is not set/);
+  });
+
+  it('reads the bootstrap admin and normalises the e-mail address', () => {
+    const config = load({ ADMIN_EMAIL: ' Admin@Example.org ', ADMIN_PASSWORD: 'x' });
+    expect(config.auth.bootstrapAdmin).toEqual({ email: 'admin@example.org', password: 'x' });
+    expect(problemsOf({ SESSION_SECRET: SECRET, ADMIN_EMAIL: 'admin' })).toHaveLength(1);
+  });
+
+  const oidcEnv = {
+    OIDC_ISSUER: 'https://auth.example.org/application/o/prints/',
+    OIDC_CLIENT_ID: 'prints',
+    OIDC_CLIENT_SECRET: 'client-secret',
+    OIDC_ADMIN_GROUP: 'prints-admins',
+    PUBLIC_URL: 'https://prints.example.org/',
+  };
+
+  it('enables OIDC when every OIDC variable and PUBLIC_URL are set', () => {
+    const { auth } = load(oidcEnv);
+    expect(auth.publicUrl).toBe('https://prints.example.org');
+    expect(auth.oidc).toEqual({
+      issuer: new URL(oidcEnv.OIDC_ISSUER),
+      clientId: 'prints',
+      clientSecret: 'client-secret',
+      adminGroup: 'prints-admins',
+    });
+  });
+
+  it.each([
+    ['OIDC_CLIENT_SECRET', /missing: OIDC_CLIENT_SECRET/],
+    ['OIDC_ADMIN_GROUP', /missing: OIDC_ADMIN_GROUP/],
+    ['PUBLIC_URL', /PUBLIC_URL is required with OIDC/],
+  ])('refuses OIDC without %s', (key, message) => {
+    const env: Record<string, string> = { ...oidcEnv, SESSION_SECRET: SECRET };
+    env[key] = '';
+    expect(problemsOf(env).join('\n')).toMatch(message);
+  });
+
+  it.each(['prints.example.org', 'https://example.org/prints', 'https://example.org/?a=1'])(
+    'rejects PUBLIC_URL=%s',
+    (value) => {
+      expect(problemsOf({ SESSION_SECRET: SECRET, PUBLIC_URL: value })).toHaveLength(1);
+    },
+  );
+
+  it('rejects an issuer that is not an http(s) address', () => {
+    expect(problemsOf({ ...oidcEnv, SESSION_SECRET: SECRET, OIDC_ISSUER: 'auth' })).toHaveLength(1);
+  });
+
+  it.each(['0', '1001', 'many'])('rejects RATE_LIMIT_LOGIN=%s', (value) => {
+    expect(() => load({ RATE_LIMIT_LOGIN: value })).toThrow(ConfigError);
+  });
+
+  it('reads trusted proxies and CORS origins', () => {
+    const config = load({
+      TRUSTED_PROXIES: '10.0.0.1, 172.16.0.0/12, ::1, fd00::/8, loopback',
+      CORS_ORIGINS: 'https://a.example.org, http://localhost:5173/',
+    });
+    expect(config.http).toEqual({
+      trustedProxies: ['10.0.0.1', '172.16.0.0/12', '::1', 'fd00::/8', 'loopback'],
+      corsOrigins: ['https://a.example.org', 'http://localhost:5173'],
+    });
+  });
+
+  it.each(['10.0.0.0/33', 'proxy.local', '10.0.0.1/8/2', '::1/129', '*'])(
+    'rejects the trusted proxy %s',
+    (proxy) => {
+      const problems: string[] = [];
+      parseTrustedProxies(proxy, problems);
+      expect(problems).toHaveLength(1);
+    },
+  );
+
+  it('rejects a CORS origin with a path', () => {
+    expect(() => load({ CORS_ORIGINS: 'https://a.example.org/app' })).toThrow(ConfigError);
   });
 });
 

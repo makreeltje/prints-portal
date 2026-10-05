@@ -96,7 +96,6 @@ Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Co
 | share.hint | Deel via WhatsApp of mail |
 | share.notFound | Deze link is verlopen of ingetrokken |
 | access.title | Toegang |
-| access.adminAlways | Admin heeft altijd toegang |
 | live.connected | Live |
 | live.reconnecting | Verbinding verbroken — opnieuw verbinden… |
 | viewer.loading | Model laden… |
@@ -222,8 +221,6 @@ Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Co
 | overview.nothingOpen | Er staat niets open. |
 | outstanding.empty | Niets openstaand |
 | outstanding.emptyHint | Alle prints zijn betaald. |
-| share.noShareLink | Geen Deel-link mogelijk. |
-| share.notBilled | {customer} wordt niet gefactureerd, dus er is niets om te delen. |
 | share.empty | Nog geen Deel-links |
 | share.askNew | Vraag degene die je de link stuurde om een nieuwe. |
 | customers.notBilled | Niet factureren |
@@ -257,11 +254,10 @@ Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Co
 | users.tempPassword | Tijdelijk wachtwoord |
 | users.lastAdmin | Er moet minstens één Admin blijven. |
 | auth.login | Inloggen |
-| auth.email | E-mailadres |
 | auth.password | Wachtwoord |
 | auth.or | of |
 | auth.authentik | Inloggen met Authentik |
-| auth.wrong | Verkeerd e-mailadres of wachtwoord. |
+| auth.wrong | Verkeerd e-mailadres, naam of wachtwoord. |
 | auth.redirecting | Doorsturen naar Authentik… |
 | system.goDashboard | Naar dashboard |
 | system.forbiddenHelp | Je hebt geen toegang tot deze klant. Vraag een beheerder om toegang. |
@@ -276,3 +272,31 @@ Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Co
 | system.apiDocsError | API-docs konden niet worden geladen. |
 | nav.manage | Beheer |
 | nav.invoices | Facturen |
+
+## Added in 1.2
+
+| Key | Dutch |
+|---|---|
+| share.expiresNever | Nooit |
+| share.noExpiry | Verloopt niet |
+| share.neverHelp | De link blijft werken tot je hem intrekt. |
+| share.notBilledHint | Deze klant wordt niet gefactureerd. De link toont alleen de printlijst, zonder bedragen. |
+| share.notBilledIntro | Hier zie je de prints die voor je gemaakt zijn. |
+| auth.identifier | E-mailadres of naam |
+| auth.oidcFailed | Inloggen met Authentik is mislukt. Probeer het opnieuw. |
+| auth.sessionExpired | Je sessie is verlopen. Log opnieuw in. |
+| auth.newPasswordTitle | Nieuw wachtwoord kiezen |
+| auth.newPasswordIntro | Je gebruikt een tijdelijk wachtwoord. Kies een eigen wachtwoord om verder te gaan. |
+| auth.newPassword | Nieuw wachtwoord |
+| auth.repeatPassword | Herhaal wachtwoord |
+| auth.passwordHelp | Minstens 12 tekens. |
+| auth.logout | Uitloggen |
+| error.passwordTooShort | Kies een wachtwoord van minstens 12 tekens. |
+| error.passwordMismatch | De wachtwoorden zijn niet gelijk. |
+| error.userExists | Deze gebruiker bestaat al. |
+| confirm.deleteUserBody | Deze gebruiker kan daarna niet meer inloggen. |
+| users.resetTitle | Wachtwoord resetten voor '{name}' |
+| users.tempPasswordHelp | Minstens 12 tekens. De gebruiker kiest bij de eerste keer inloggen een eigen wachtwoord. |
+| access.allAccessRoles | Admin en Editor hebben altijd toegang. |
+
+Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (replaced by `access.allAccessRoles`), `auth.email` (replaced by `auth.identifier`). Changed text: `auth.wrong`.

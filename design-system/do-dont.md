@@ -12,7 +12,7 @@
 
 **Do (added in 1.1)**
 - Show a partial payment as Deels betaald with the remaining amount; Afschrijven only covers the remainder.
-- Show cost only ("Kosten") for klanten that are niet factureren; never a price, payment or invoice.
+- Show cost only ("Kosten") for klanten that are niet factureren; never a price, payment or invoice. Their Deel-link lists prints only.
 - Give every document a plain-text status word so it survives black-and-white printing.
 - Hide controls a role cannot use instead of disabling them (User never sees cost or notes).
 
@@ -27,3 +27,14 @@
 - Don't move scroll position or focus when a live update arrives; flash the changed item instead.
 - Don't add VAT, BTW or KvK anywhere in the UI or documents.
 - Don't number a Concept invoice or a Herinnering, and don't show internal cost on an Overzicht.
+
+**Do (added in 1.2)**
+- Write line heights with the `leading-*` tokens and page structure with the shell classes; never type a raw pixel value in the app.
+- Give icon-only items (rail, icon buttons) an accessible name and a tooltip that also shows on keyboard focus.
+- Show "Verloopt niet" for links without expiry and leave the expiry notice off the share page.
+- Disable and check every Admin and Editor row in Toegang; only User rows have grants.
+
+**Don't (added in 1.2)**
+- Don't set a `.phone` class in the app; use the media queries.
+- Don't show amounts, payment status or PDF buttons on the share page of a niet-factureren klant.
+- Don't leave a temporary password in place: force "Nieuw wachtwoord kiezen" at the first sign-in.

@@ -1,12 +1,15 @@
-import { Menu, Moon } from 'lucide-react';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { LogOut, Menu, Moon } from 'lucide-react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
+import { useAuth, useCurrentUser } from '../auth/context';
+import { Avatar } from '../components/Avatar';
 import { t, type MessageKey } from '../i18n/nl';
 import type { ThemePreference } from '../theme/theme';
 import { useTheme } from '../theme/useTheme';
-import { NAV_ITEMS, type NavItem } from './navigation';
+import { navItemsFor, type NavItem } from './navigation';
 
 const MAIN_ID = 'inhoud';
+const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const THEME_LABELS: Record<ThemePreference, MessageKey> = {
   system: 'settings.theme.system',
@@ -14,45 +17,76 @@ const THEME_LABELS: Record<ThemePreference, MessageKey> = {
   dark: 'settings.theme.dark',
 };
 
-/** Phone bottom bar: the first three main items, then "Meer" (AppShell spec). */
-const BOTTOM_ITEMS = NAV_ITEMS.filter((item) => item.group === 'main').slice(0, 3);
-
 /**
- * Operator frame from design-system/components/AppShell. Desktop shows the
- * sidebar; the tablet rail, phone bars and drawer are a temporary placeholder
- * for GAP-015 (the responsive rules live in styles/app.css). The user badge,
- * Uitloggen and LiveIndicator arrive with auth (M4) and real-time (M5).
+ * Operator frame from design-system/components/AppShell (v1.2): one DOM for
+ * every size; bundle.css switches between sidebar, 56px icon rail and the
+ * phone bars with drawer. Navigation follows the signed-in user's role. The
+ * LiveIndicator arrives with real-time updates (M5).
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const theme = useTheme();
+  const user = useCurrentUser();
+  const { logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const items = navItemsFor(user.role);
+  // Phone bottom bar: the first three main items, then "Meer" (AppShell spec).
+  const bottomItems = items.filter((item) => item.group === 'main').slice(0, 3);
+  const onLogout = () => void logout();
+  const openDrawer = () => {
+    setDrawerOpen(true);
+  };
+  const themeLabel = `${t('settings.theme')}: ${t(THEME_LABELS[theme.theme])}`;
 
   return (
-    <div className="app-frame">
+    <>
       <a className="app-skip pp-btn pp-btn-secondary" href={`#${MAIN_ID}`}>
         {t('system.skipToContent')}
       </a>
       <div className="pp-app">
-        <aside className="pp-side">
-          <div className="pp-brand">{t('app.name')}</div>
-          <NavList withTooltips />
+        {/* While the drawer is open the rest of the shell is inert (modal drawer). */}
+        <aside className="pp-side" inert={drawerOpen}>
+          <div className="pp-brand">
+            <span className="ini" aria-hidden="true">
+              {t('app.name').charAt(0)}
+            </span>
+            <span className="full">{t('app.name')}</span>
+          </div>
+          <nav className="pp-nav" aria-label={t('nav.main')}>
+            <NavItems items={items} />
+          </nav>
           <div className="foot">
+            <Avatar name={user.displayName} role={user.role} />
             <div className="pp-row">
-              <ThemeButton theme={theme.theme} onClick={theme.cycleTheme} small />
+              <button
+                type="button"
+                className="pp-btn pp-btn-ghost pp-btn-sm"
+                aria-label={themeLabel}
+                onClick={theme.cycleTheme}
+              >
+                <Moon className="pp-ico" aria-hidden="true" />
+                <span className="lbl">{t('settings.theme')}</span>
+              </button>
+              <button
+                type="button"
+                className="pp-btn pp-btn-ghost pp-btn-sm"
+                aria-label={t('auth.logout')}
+                onClick={onLogout}
+              >
+                <LogOut className="pp-ico" aria-hidden="true" />
+                <span className="lbl">{t('auth.logout')}</span>
+              </button>
             </div>
           </div>
         </aside>
 
-        <header className="pp-phone-top app-phone-top">
+        <header className="pp-phone-top" inert={drawerOpen}>
           <button
             type="button"
             className="pp-btn pp-btn-ghost pp-btn-icon"
             aria-label={t('system.menu')}
             aria-haspopup="dialog"
             aria-expanded={drawerOpen}
-            onClick={() => {
-              setDrawerOpen(true);
-            }}
+            onClick={openDrawer}
           >
             <Menu className="pp-ico pp-ico-20" aria-hidden="true" />
           </button>
@@ -61,12 +95,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span />
         </header>
 
-        <main id={MAIN_ID} className="pp-main app-main" tabIndex={-1}>
+        <main id={MAIN_ID} className="pp-main app-main" tabIndex={-1} inert={drawerOpen}>
           {children}
         </main>
 
-        <nav className="pp-bottomnav app-bottomnav" aria-label={t('nav.main')}>
-          {BOTTOM_ITEMS.map((item) => (
+        <nav className="pp-bottomnav" aria-label={t('nav.main')} inert={drawerOpen}>
+          {bottomItems.map((item) => (
             <NavLink key={item.path} to={item.path} end={item.path === '/'}>
               <item.icon className="pp-ico pp-ico-20" aria-hidden="true" />
               {t(item.label)}
@@ -80,12 +114,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-expanded={drawerOpen}
             onClick={(event) => {
               event.preventDefault();
-              setDrawerOpen(true);
+              openDrawer();
             }}
             onKeyDown={(event) => {
               if (event.key === ' ') {
                 event.preventDefault();
-                setDrawerOpen(true);
+                openDrawer();
               }
             }}
           >
@@ -93,73 +127,62 @@ export function AppShell({ children }: { children: ReactNode }) {
             {t('system.more')}
           </a>
         </nav>
-      </div>
 
-      <NavDrawer
-        open={drawerOpen}
-        onClose={() => {
-          setDrawerOpen(false);
-        }}
-      >
-        <div className="pp-brand">{t('app.name')}</div>
-        <NavList />
-        <div className="app-drawer-foot">
-          <ThemeButton theme={theme.theme} onClick={theme.cycleTheme} />
-        </div>
-      </NavDrawer>
-    </div>
+        <NavDrawer
+          open={drawerOpen}
+          onClose={() => {
+            setDrawerOpen(false);
+          }}
+        >
+          <div className="pp-brand">{t('app.name')}</div>
+          <nav className="app-drawer-nav" aria-label={t('nav.main')}>
+            <NavItems items={items} />
+          </nav>
+          <div className="foot">
+            <Avatar name={user.displayName} role={user.role} />
+            <button
+              type="button"
+              className="pp-btn pp-btn-ghost"
+              aria-label={themeLabel}
+              onClick={theme.cycleTheme}
+            >
+              <Moon className="pp-ico" aria-hidden="true" />
+              {t('settings.theme')}
+            </button>
+            <button type="button" className="pp-btn pp-btn-ghost" onClick={onLogout}>
+              <LogOut className="pp-ico" aria-hidden="true" />
+              {t('auth.logout')}
+            </button>
+          </div>
+        </NavDrawer>
+      </div>
+    </>
   );
 }
 
-function NavList({ withTooltips = false }: { withTooltips?: boolean }) {
+/** Nav links in the AppShell markup: icon, `.lbl` label and `data-tip` for the rail tooltip. */
+function NavItems({ items }: { items: readonly NavItem[] }) {
   const render = (item: NavItem) => (
-    <NavLink key={item.path} to={item.path} end={item.path === '/'}>
+    <NavLink key={item.path} to={item.path} end={item.path === '/'} data-tip={t(item.label)}>
       <item.icon className="pp-ico pp-ico-20" aria-hidden="true" />
-      <span className="app-nav-label">{t(item.label)}</span>
-      {withTooltips && (
-        // Visual aid for the tablet icon rail only; the link name already says the same.
-        <span className="pp-tip app-rail-tip" aria-hidden="true">
-          {t(item.label)}
-        </span>
-      )}
+      <span className="lbl">{t(item.label)}</span>
     </NavLink>
   );
-
+  const manage = items.filter((item) => item.group === 'manage');
   return (
-    <nav className="pp-nav" aria-label={t('nav.main')}>
-      {NAV_ITEMS.filter((item) => item.group === 'main').map(render)}
-      <div className="grp">{t('nav.manage')}</div>
-      {NAV_ITEMS.filter((item) => item.group === 'manage').map(render)}
-      {NAV_ITEMS.filter((item) => item.group === 'footer').map(render)}
-    </nav>
-  );
-}
-
-function ThemeButton({
-  theme,
-  onClick,
-  small = false,
-}: {
-  theme: ThemePreference;
-  onClick: () => void;
-  small?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      className={`pp-btn pp-btn-ghost${small ? ' pp-btn-sm' : ''} app-theme-button`}
-      onClick={onClick}
-    >
-      <Moon className="pp-ico" aria-hidden="true" />
-      <span className="app-nav-label">{t('settings.theme')}</span>
-      <span className="app-visually-hidden">: {t(THEME_LABELS[theme])}</span>
-    </button>
+    <>
+      {items.filter((item) => item.group === 'main').map(render)}
+      {manage.length > 0 && <div className="grp">{t('nav.manage')}</div>}
+      {manage.map(render)}
+      {items.filter((item) => item.group === 'footer').map(render)}
+    </>
   );
 }
 
 /**
- * Phone drawer as a native modal dialog: the browser provides the focus trap,
- * inert background and Esc. Closes on backdrop click and after navigation.
+ * Phone drawer: `.pp-drawer-backdrop[hidden] > .pp-drawer[role=dialog]`.
+ * Focus moves in on open, Tab stays inside, Esc and a backdrop click close
+ * it, focus returns to the trigger, and it closes after navigation.
  */
 function NavDrawer({
   open,
@@ -170,35 +193,67 @@ function NavDrawer({
   onClose: () => void;
   children: ReactNode;
 }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
   const location = useLocation();
   const openedAt = useRef(location.key);
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (dialog === null) return;
-    if (open && !dialog.open) {
+    if (open) {
       openedAt.current = location.key;
-      dialog.showModal();
-    } else if (open && location.key !== openedAt.current) {
-      onClose();
-    } else if (!open && dialog.open) {
-      dialog.close();
+      returnFocus.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      drawerRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    } else {
+      returnFocus.current?.focus();
+      returnFocus.current = null;
     }
+    // Runs on open/close only; navigation is handled below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    if (open && location.key !== openedAt.current) onClose();
   }, [open, location.key, onClose]);
 
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+    if (event.key !== 'Tab' || drawerRef.current === null) return;
+    const focusable = [...drawerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)];
+    const first = focusable.at(0);
+    const last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
+  };
+
   return (
-    <dialog
-      ref={dialogRef}
-      className="app-drawer"
-      aria-label={t('nav.main')}
-      onClose={onClose}
+    <div
+      className="pp-drawer-backdrop"
+      hidden={!open}
       onClick={(event) => {
-        // A click on the dialog element itself (not its content) is a click on the backdrop.
+        // A click on the backdrop itself (not the drawer) closes it.
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="app-drawer-panel">{children}</div>
-    </dialog>
+      <div
+        ref={drawerRef}
+        className="pp-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('system.menu')}
+        onKeyDown={onKeyDown}
+      >
+        {children}
+      </div>
+    </div>
   );
 }

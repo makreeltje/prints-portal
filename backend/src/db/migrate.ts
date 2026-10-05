@@ -1,10 +1,12 @@
 import { Migrator, NO_MIGRATIONS, type Migration, type MigrationProvider } from 'kysely/migration';
 import type { AppDatabase } from './connection.js';
 import * as m0001 from './migrations/0001_print_index.js';
+import * as m0002 from './migrations/0002_auth.js';
 
 /** Migrations are listed explicitly so the compiled app needs no directory scanning. */
 const MIGRATIONS: Record<string, Migration> = {
   '0001_print_index': m0001,
+  '0002_auth': m0002,
 };
 
 const provider: MigrationProvider = {

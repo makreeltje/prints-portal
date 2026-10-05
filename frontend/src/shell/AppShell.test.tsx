@@ -1,8 +1,7 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import { AppRoutes } from '../App';
+import { renderApp, signedIn } from '../test/render';
 
 const FULL_NAV = [
   'Dashboard',
@@ -16,11 +15,7 @@ const FULL_NAV = [
 ];
 
 function renderAt(path: string) {
-  return render(
-    <MemoryRouter initialEntries={[path]}>
-      <AppRoutes />
-    </MemoryRouter>,
-  );
+  return renderApp(path, signedIn('Admin'));
 }
 
 /** Sidebar, phone bottom bar and drawer all render; CSS decides which is visible. */
@@ -30,16 +25,24 @@ function sidebar() {
   return within(aside);
 }
 
-function drawer() {
-  const dialog = document.querySelector('dialog.app-drawer');
-  if (!(dialog instanceof HTMLDialogElement)) throw new Error('drawer missing');
-  return dialog;
+function backdrop() {
+  const element = document.querySelector('.pp-app > .pp-drawer-backdrop');
+  if (!(element instanceof HTMLElement)) throw new Error('drawer missing');
+  return element;
 }
+
+function drawer() {
+  const element = backdrop().querySelector('.pp-drawer[role="dialog"]');
+  if (!(element instanceof HTMLElement)) throw new Error('drawer missing');
+  return element;
+}
+
+const isOpen = () => !backdrop().hidden;
 
 function linkLabels(container: HTMLElement) {
   return within(container)
     .getAllByRole('link', { hidden: true })
-    .map((link) => link.querySelector('.app-nav-label')?.textContent ?? link.textContent);
+    .map((link) => link.querySelector('.lbl')?.textContent ?? link.textContent);
 }
 
 describe('AppShell sidebar', () => {
@@ -62,10 +65,28 @@ describe('AppShell sidebar', () => {
     expect(document.title).toBe('Openstaand · 3D Prints Portal');
   });
 
-  it('keeps the link name when the tablet rail hides the label', () => {
+  it('follows the AppShell markup: .lbl labels, data-tip for the rail, brand initial', () => {
     renderAt('/');
     const link = sidebar().getByRole('link', { name: 'Instellingen' });
-    expect(link.querySelector('.app-rail-tip')).toHaveAttribute('aria-hidden', 'true');
+    expect(link).toHaveAttribute('data-tip', 'Instellingen');
+    expect(link.querySelector('.lbl')).toHaveTextContent('Instellingen');
+    expect(document.querySelector('.pp-side .pp-brand .ini')).toHaveTextContent('3');
+    expect(document.querySelector('.pp-side .pp-brand .full')).toHaveTextContent(
+      '3D Prints Portal',
+    );
+    // Every part of the shell is a child of .pp-app (one DOM for every size).
+    const app = document.querySelector('.pp-app');
+    expect(
+      [...(app?.children ?? [])].map(
+        (child) => `${child.tagName.toLowerCase()}.${child.className}`,
+      ),
+    ).toEqual([
+      'aside.pp-side',
+      'header.pp-phone-top',
+      'main.pp-main app-main',
+      'nav.pp-bottomnav',
+      'div.pp-drawer-backdrop',
+    ]);
   });
 
   it('offers a skip link to the main content', () => {
@@ -108,7 +129,7 @@ describe('theme switch', () => {
 describe('phone bars and drawer', () => {
   it('has a bottom bar with Dashboard, Openstaand, Facturen and Meer', () => {
     renderAt('/facturen');
-    const bar = document.querySelector('nav.app-bottomnav');
+    const bar = document.querySelector('nav.pp-bottomnav');
     if (!(bar instanceof HTMLElement)) throw new Error('bottom bar missing');
     expect(
       within(bar)
@@ -125,45 +146,62 @@ describe('phone bars and drawer', () => {
   it('opens the drawer from Meer with the full navigation', async () => {
     const user = userEvent.setup();
     renderAt('/');
-    expect(drawer().open).toBe(false);
+    expect(isOpen()).toBe(false);
 
     const more = screen.getByRole('button', { name: 'Meer' });
     await user.click(more);
-    expect(drawer().open).toBe(true);
+    expect(isOpen()).toBe(true);
+    expect(drawer()).toHaveAttribute('aria-modal', 'true');
     expect(more).toHaveAttribute('aria-expanded', 'true');
     expect(linkLabels(drawer())).toEqual(FULL_NAV);
+    // Focus moves in; the rest of the shell is inert while the drawer is open.
+    expect(drawer()).toContainElement(document.activeElement as HTMLElement);
+    expect(document.querySelector('main')).toHaveAttribute('inert');
   });
 
   it('opens from the menu button and closes after navigating', async () => {
     const user = userEvent.setup();
     renderAt('/');
     await user.click(screen.getByRole('button', { name: 'Menu' }));
-    expect(drawer().open).toBe(true);
+    expect(isOpen()).toBe(true);
 
     await user.click(within(drawer()).getByRole('link', { name: 'Instellingen' }));
-    expect(drawer().open).toBe(false);
+    expect(isOpen()).toBe(false);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Instellingen');
   });
 
-  it('closes when the browser closes the dialog (Esc) and can open again', async () => {
+  it('closes with Esc, returns focus to the trigger and can open again', async () => {
+    const user = userEvent.setup();
+    renderAt('/');
+    const more = screen.getByRole('button', { name: 'Meer' });
+    await user.click(more);
+    await user.keyboard('{Escape}');
+    expect(isOpen()).toBe(false);
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    expect(more).toHaveFocus();
+
+    await user.click(more);
+    expect(isOpen()).toBe(true);
+  });
+
+  it('keeps Tab inside the drawer', async () => {
     const user = userEvent.setup();
     renderAt('/');
     await user.click(screen.getByRole('button', { name: 'Meer' }));
-    act(() => {
-      drawer().close();
-    });
-    expect(screen.getByRole('button', { name: 'Meer' })).toHaveAttribute('aria-expanded', 'false');
-
-    await user.click(screen.getByRole('button', { name: 'Meer' }));
-    expect(drawer().open).toBe(true);
+    const focusable = drawer().querySelectorAll<HTMLElement>('a[href], button');
+    focusable[focusable.length - 1]?.focus();
+    await user.tab();
+    expect(document.activeElement).toBe(focusable[0]);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(focusable[focusable.length - 1]);
   });
 
   it('closes on a backdrop click', async () => {
     const user = userEvent.setup();
     renderAt('/');
     await user.click(screen.getByRole('button', { name: 'Meer' }));
-    await user.click(drawer());
-    expect(drawer().open).toBe(false);
+    await user.click(backdrop());
+    expect(isOpen()).toBe(false);
   });
 
   it('opens Meer with the Space key', async () => {
@@ -171,6 +209,6 @@ describe('phone bars and drawer', () => {
     renderAt('/');
     screen.getByRole('button', { name: 'Meer' }).focus();
     await user.keyboard(' ');
-    expect(drawer().open).toBe(true);
+    expect(isOpen()).toBe(true);
   });
 });

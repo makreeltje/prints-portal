@@ -93,9 +93,47 @@ export interface LineSlotTable {
   material: string | null;
 }
 
+export type Role = 'User' | 'Editor' | 'Admin';
+
+export interface UserTable {
+  id: string;
+  /** Lower-case sign-in name: an e-mail address or a plain name (OIDC: the e-mail address). */
+  login: string;
+  display_name: string;
+  role: Role;
+  /** argon2id hash; null for users who sign in through OIDC. */
+  password_hash: string | null;
+  oidc_subject: string | null;
+  /** 1 when the role was set by OIDC_ADMIN_GROUP at the last sign-in. */
+  role_from_group: number;
+  /** 1 while the user still has a temporary password set by an Admin. */
+  must_change_password: number;
+  created_at: string;
+  last_login_at: string | null;
+}
+
+/** Customer folders a User may see; Editors and Admins see every customer. */
+export interface CustomerAccessTable {
+  user_id: string;
+  customer_folder: string;
+  granted_at: string;
+}
+
+export interface SessionTable {
+  id_hash: string;
+  user_id: string;
+  csrf_token: string;
+  created_at: string;
+  last_seen_at: string;
+  expires_at: string;
+}
+
 export interface Database {
   print_records: PrintRecordTable;
   print_assets: PrintAssetTable;
   print_lines: PrintLineTable;
   line_slots: LineSlotTable;
+  users: UserTable;
+  customer_access: CustomerAccessTable;
+  sessions: SessionTable;
 }

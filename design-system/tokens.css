@@ -145,6 +145,14 @@
   --text-xl: 20px;
   --text-2xl: 24px;
   --text-3xl: 32px;
+  --leading-xs: 16px;
+  --leading-sm: 20px;
+  --leading-base: 22px;
+  --leading-md: 24px;
+  --leading-lg: 26px;
+  --leading-xl: 28px;
+  --leading-2xl: 32px;
+  --leading-3xl: 40px;
   --motion-fast: 120ms;
   --motion-base: 180ms;
   --motion-ease: cubic-bezier(0.2, 0, 0, 1);

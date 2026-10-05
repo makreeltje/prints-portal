@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker image (non-root, healthcheck), `docker-compose.yml`, `.env.example` and CI.
 - Image published to GitHub Packages on every green push to `main`, tagged
   `<package.json version>-<run number>`, `sha-<commit>` and `latest`.
-- Design system v1.1.
+- Design system v1.1, then v1.2 (responsive app shell from the design system, line-height
+  tokens, sign-in and user-management states).
 - Parsing and costing core (M2): G-code comments from OrcaSlicer and Creality Print 5/6
   (grams per slot, print time, printer, thumbnails) read from the head and tail only; 3MF plates
   from embedded G-code or slice data; file-name rules including copy suffixes and timelapse
@@ -32,7 +33,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   whose folder disappeared, never revives deleted prints, applies the "Nog te printen"/"Test" and
   "3MF next to G-code" exclusions, flags possible duplicates and keeps totals; full scan at startup
   and a file watcher with a quiet period per print; warning when the data folder is not writable.
+- Sign-in and access (M4): server-side sessions in an httpOnly cookie (60 minutes idle, 12 hours at
+  most) with CSRF protection; local login with argon2id and a per-address rate limit; OIDC sign-in
+  (e.g. Authentik) with PKCE, where members of `OIDC_ADMIN_GROUP` become Admin and local login is
+  switched off; first Admin from `ADMIN_EMAIL`/`ADMIN_PASSWORD`; roles Admin, Editor and User;
+  Admins manage roles, remove users and grant Users access per customer; `TRUSTED_PROXIES` and
+  `CORS_ORIGINS`. Screens: login (with "Nieuw wachtwoord kiezen"), Gebruikers (create, role,
+  reset password, remove), Toegang (access matrix) and the 403 state.
+  Local users sign in with an e-mail address or a name; a password set by an Admin is temporary
+  and must be replaced at the next sign-in; everyone can change their own password
+  (`POST /api/auth/password`).
 
 ### Changed
+
+- The app now needs `SESSION_SECRET`, and `ADMIN_EMAIL`/`ADMIN_PASSWORD` until a first Admin
+  exists; it refuses to start without them outside development.
+- Every `/api` path needs a signed-in user unless it is explicitly public.
 
 - CI actions moved to versions that run on Node 24.
