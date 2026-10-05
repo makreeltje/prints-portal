@@ -16,4 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - App shell from the design system (sidebar; tablet rail, phone bars and drawer as a temporary
   placeholder for GAP-015) and theme switch (Systeem, Licht, Donker).
 - Docker image (non-root, healthcheck), `docker-compose.yml`, `.env.example` and CI.
+- Image published to GitHub Packages on every green push to `main`, tagged
+  `<package.json version>-<run number>`, `sha-<commit>` and `latest`.
 - Design system v1.1.

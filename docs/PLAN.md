@@ -68,7 +68,7 @@ References like §6 point to the original build brief; A1–H6 and C1–C3 to th
 |---|---|
 | Databases | SQLite (default), PostgreSQL, MariaDB/MySQL via one `DATABASE_URL`; all three in the CI test matrix. No MongoDB. |
 | Configuration | Plain env vars (H6); no local override file; business settings in the DB. |
-| Image | `ghcr.io/makreeltje/prints-portal`, `linux/amd64` + `linux/arm64`. |
+| Image | `ghcr.io/makreeltje/prints-portal`, `linux/amd64` + `linux/arm64`, published from CI on every green push to `main` with tags `<package.json version>-<run number>`, `sha-<commit>` and `latest` (owner decision during M1). |
 | Host | i5-8400 under Proxmox (LXC), prints root on the same disk inside a Nextcloud data folder. |
 | Time zone | Europe/Amsterdam for display and days open; UTC stored. |
 | License | Private repository. |
@@ -186,7 +186,7 @@ Every milestone ends with: format, lint, type check, all tests (all three databa
 - **Scope:** ScreenSystemStates (error, offline, first run), ScreenApiDocs (`/api-docs` with session injection), tablet and wide layouts from the text specs, empty/loading/error states on every screen, accessibility pass, side-by-side check of every screen against its spec in light/dark × phone/desktop, any open gaps resolved by a newer export.
 
 ### M10: Docs, security review, release
-- **Scope:** README, USAGE (Dutch), CONFIGURATION, AUTH, DEPLOYMENT (Caddy/Traefik/Nginx with WebSocket upgrade, backups, Postgres/MariaDB, Authentik confidential-client setup, upgrades), ARCHITECTURE (checked against real class names), DEVELOPMENT, CHANGELOG; full security review of the diff and fixes; release workflow (multi-arch image to GHCR on tags); `v1.0.0`.
+- **Scope:** README, USAGE (Dutch), CONFIGURATION, AUTH, DEPLOYMENT (Caddy/Traefik/Nginx with WebSocket upgrade, backups, Postgres/MariaDB, Authentik confidential-client setup, upgrades), ARCHITECTURE (checked against real class names), DEVELOPMENT, CHANGELOG; full security review of the diff and fixes; set the `package.json` version to `1.0.0` (images are already published from `main` since M1).
 
 ---
 

@@ -3,7 +3,9 @@
 ARG NODE_VERSION=24
 
 # ---- build: install all dependencies, build frontend and backend ----
-FROM node:${NODE_VERSION}-bookworm-slim AS build
+# The build output is plain JavaScript, so this stage always runs on the build machine
+# (fast multi-arch builds); only the deps stage installs native modules per platform.
+FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-bookworm-slim AS build
 # Build tools are only a fallback for native modules without a prebuilt binary.
 RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ \

@@ -50,6 +50,18 @@ docker build -t prints-portal .
 PRINTS_ROOT=/path/to/prints docker compose up
 ```
 
+## Publishing
+
+Every push to `main` that passes CI publishes a multi-arch image (`linux/amd64`, `linux/arm64`) to
+GitHub Packages as `ghcr.io/makreeltje/prints-portal` with three tags:
+
+- `<version>-<run number>`, e.g. `0.1.0-42`, where the version comes from the root `package.json`
+  (bump it for bigger steps);
+- `sha-<short commit>`;
+- `latest`.
+
+Pull requests only build and health-check the image; they never push.
+
 ## Configuration
 
 | Variable       | Default                                | Meaning                                                      |
