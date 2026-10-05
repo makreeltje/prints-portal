@@ -38,8 +38,55 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
     expect(await migrateToLatest(db)).toEqual([]);
     const tables = (await db.introspection.getTables()).map((t) => t.name);
     expect(tables).toEqual(
-      expect.arrayContaining(['print_records', 'print_assets', 'print_lines', 'line_slots']),
+      expect.arrayContaining([
+        'print_records',
+        'print_assets',
+        'print_lines',
+        'line_slots',
+        'users',
+        'customer_access',
+        'sessions',
+      ]),
     );
+  });
+
+  it('removes sessions and grants with their user', async () => {
+    db = await openTestDatabase(url);
+    await db
+      .insertInto('users')
+      .values({
+        id: 'u1',
+        email: 'helper@example.org',
+        display_name: 'helper',
+        role: 'User',
+        password_hash: null,
+        oidc_subject: null,
+        role_from_group: 0,
+        created_at: now,
+        last_login_at: null,
+      })
+      .execute();
+    await db
+      .insertInto('customer_access')
+      .values([
+        { user_id: 'u1', customer_folder: 'Joey', granted_at: now },
+        { user_id: 'u1', customer_folder: 'joey', granted_at: now },
+      ])
+      .execute();
+    await db
+      .insertInto('sessions')
+      .values({
+        id_hash: 'h',
+        user_id: 'u1',
+        csrf_token: 'c',
+        created_at: now,
+        last_seen_at: now,
+        expires_at: now,
+      })
+      .execute();
+    await db.deleteFrom('users').where('id', '=', 'u1').execute();
+    expect(await db.selectFrom('customer_access').selectAll().execute()).toEqual([]);
+    expect(await db.selectFrom('sessions').selectAll().execute()).toEqual([]);
   });
 
   it('treats folder names case-sensitively and keeps numbers as numbers', async () => {
@@ -125,5 +172,6 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
     await migrateToEmpty(db);
     const tables = (await db.introspection.getTables()).map((t) => t.name);
     expect(tables).not.toContain('print_records');
+    expect(tables).not.toContain('users');
   });
 });
