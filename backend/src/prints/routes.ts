@@ -361,7 +361,7 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
   );
 
   // Full re-index of the prints folder (Instellingen, "Opnieuw indexeren").
-  app.post<{ Body: { force?: boolean } | undefined }>(
+  app.post<{ Body: { force?: boolean; wait?: boolean } | undefined }>(
     '/api/admin/reindex',
     {
       config: { auth: ADMIN },
@@ -371,7 +371,7 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
             {
               type: 'object',
               additionalProperties: false,
-              properties: { force: { type: 'boolean' } },
+              properties: { force: { type: 'boolean' }, wait: { type: 'boolean' } },
             },
             { type: 'null' },
           ],
@@ -380,6 +380,11 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
     },
     async (request, reply) => {
       const force = request.body?.force === true;
+      // "Opnieuw indexeren" in Instellingen waits for the summary to say "Klaar.".
+      if (request.body?.wait === true) {
+        const summary = await indexer.indexAll(force);
+        return reply.code(200).send({ started: true, summary });
+      }
       indexer.indexAll(force).then(
         (summary) => {
           request.log.info({ summary, force }, 'reindex finished');
