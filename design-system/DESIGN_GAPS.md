@@ -394,3 +394,38 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
+## GAP-033 [open] Instellingen has no sections for printer profiles, tariff and material prices
+- **Type:** missing screen
+- **Found while:** M6 planning
+- **Where needed:** ScreenSettings (`/instellingen`), section(s) next to "Prijzen"
+- **What is missing or wrong:** the plan keeps printer profiles (name, aliases, timelapse prefixes, watts), the electricity tariff (€/kWh) and the default price per kg per material ("Geschat") in Instellingen, but ScreenSettings only has Standaardmarge under Prijzen. CostBreakdown already refers to them ("Geen printerprofiel, stroomkosten zijn niet meegerekend.", Tooltip "Voeg eerst een printerprofiel toe voor stroomkosten.").
+- **Why it matters:** without them electricity costs stay missing (no watts) and estimated material prices cannot be set from the UI.
+- **Proposal:** under Prijzen: NumberInput "Stroomtarief" (`€/kWh`), a small table "Materiaalprijzen" (Materiaal, €/kg, add and remove rows); a section "Printers" with one row per profile (Naam, Watt as NumberInput, aliases as chips), and "Printer toevoegen".
+- **Blocked:** editing these values in the UI. The API (`/api/settings/pricing`, `/api/settings/printers`) is built; the K1 family is seeded and the tariff is seeded from `ELECTRICITY_TARIFF_EUR_PER_KWH`.
+- **Owner decision (2026-10-06):** API now, the UI waits for the design system.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.3
+
+## GAP-034 [open] Bulk dialogs for "Spoel toewijzen" and "Prijs instellen"
+- **Type:** missing component
+- **Found while:** M6 planning
+- **Where needed:** BulkActionBar on the dashboard
+- **What is missing or wrong:** BulkActionBar names the actions, but nothing specifies what opens: which spool picker for many prints (whole print or per slot), and for "Prijs instellen" whether one price applies to each print or a total is split, and how per-print results (some failed, e.g. locked or niet factureren) are shown.
+- **Why it matters:** these bulk actions cannot be offered.
+- **Proposal:** "Spoel toewijzen": a Dialog with the SpoolPicker that sets the spool for the whole print on every selected print; "Prijs instellen": a Dialog with one Verkoopprijs NumberInput applied to every selected print, plus "Voorstel uit marge" per print. Results: a toast "{ok} van {totaal} bijgewerkt" and, on failures, an alert listing the prints and reasons.
+- **Blocked:** those two buttons. The bulk API with per-print results is built; Markeer als betaald, Tags and Verwijderen are offered.
+- **Owner decision (2026-10-06):** wait for the design system.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.3
+
+## GAP-035 [open] Screens for several orders in one print (Nabestelling)
+- **Type:** missing screen
+- **Found while:** M6, owner decision on repeat orders
+- **Where needed:** ScreenPrintDetail, PaymentPanel, AssetListItem, PrintCard/PrintRow status, CostBreakdown, copy deck
+- **What is missing or wrong:** the owner decided that a print can have several orders: when a klant wants more of a project or a part broke, a "Nabestelling" gets its own items (files or plates with their own times printed; the same file may be reprinted), sale price, payments, write-off and later invoice line. Order 1 is the current single order. Nothing in the design system covers: the list of orders on the detail page, a PaymentPanel and CostBreakdown per order, the "Nabestelling maken" flow (tick files, times printed per order), files that are not in any order yet (new files after order 1 was priced or paid), and how the dashboard summarises several orders (least settled status, total and open amount).
+- **Why it matters:** repeat orders cannot be created or paid from the UI; new files after an order is priced do not count until they are in an order.
+- **Proposal:** on the detail page a section per order ("Bestelling 1", "Nabestelling 2 · {datum}") with its items, CostBreakdown and PaymentPanel; a secondary button "Nabestelling maken" opening a Dialog with checkbox rows per file/plate and an "Aantal keer geprint" NumberInput; AssetListItem badge "Niet in een bestelling" with the hint "Nieuw bestand. Voeg het toe aan een nabestelling."; PrintCard shows the summed price and the least settled badge, with "{n} bestellingen" in the meta line.
+- **Blocked:** making a Nabestelling and showing more than one order. The data model, API and status rules are built; the screens show order 1 as designed.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.3
+
