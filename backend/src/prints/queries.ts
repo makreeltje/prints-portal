@@ -1,9 +1,12 @@
 import { sql, type ExpressionBuilder, type SelectQueryBuilder } from 'kysely';
 import { scopeAllows, type CustomerScope } from '../auth/access.js';
 import { isTagPaletteKey, tagInkColor } from '../core/tags.js';
-import { itemKey, timesPerLine } from '../finance/orders.js';
+import { printFinance } from '../finance/dto.js';
+import { ordersWithMoney, spoolTints, summariseMoney } from '../finance/read.js';
+import { readSettings } from '../finance/settings.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { Database } from '../db/schema.js';
+import type { PrintMoneyDto } from '../finance/read.js';
 import type {
   AssetDto,
   CustomerSummary,
@@ -28,6 +31,8 @@ export interface PrintFilter {
   includeDeleted?: boolean;
   offset?: number;
   limit?: number;
+  /** Admin and Editor see the internal cost. */
+  withCost?: boolean;
 }
 
 type RecordQuery = SelectQueryBuilder<Database, 'print_records', object>;
@@ -153,14 +158,22 @@ export async function listPrints(
       .offset(offset)
       .execute(),
   ]);
-  const tags = await tagsFor(
-    db,
-    rows.map((row) => row.id),
-  );
+  const ids = rows.map((row) => row.id);
+  const [tags, money, tints] = await Promise.all([
+    tagsFor(db, ids),
+    ordersWithMoney(db, ids),
+    spoolTints(db, rows),
+  ]);
   return {
     total: Number(countRow.count),
     items: rows.map((row) =>
-      toSummary(row, tags.get(row.id) ?? [], toBool(row.has_thumbnail), row.colour),
+      toSummary(
+        row,
+        tags.get(row.id) ?? [],
+        toBool(row.has_thumbnail),
+        tints.get(row.id) ?? row.colour,
+        summariseMoney(money.get(row.id) ?? [], { withCost: filter.withCost === true }),
+      ),
     ),
   };
 }
@@ -169,7 +182,7 @@ export async function listPrints(
 export async function listCustomers(
   db: AppDatabase,
   scope: CustomerScope,
-  options: { includeArchived?: boolean; includeDeleted?: boolean },
+  options: { includeArchived?: boolean; includeDeleted?: boolean; withMoney?: boolean },
 ): Promise<CustomerSummary[]> {
   const rows = await applyScope(db.selectFrom('print_records'), scope, options)
     .select([
@@ -184,12 +197,46 @@ export async function listCustomers(
     ])
     .groupBy('print_records.customer_folder')
     .execute();
+  const flags = await db
+    .selectFrom('customers')
+    .select(['customer_folder', 'no_billing'])
+    .execute();
+  const noBilling = new Set(flags.filter((f) => f.no_billing === 1).map((f) => f.customer_folder));
+  const open = new Map<string, number>();
+  if (options.withMoney === true && rows.length > 0) {
+    // Openstaand: what is still to pay on prints that are not deleted.
+    const records = await applyScope(db.selectFrom('print_records'), scope, options)
+      .select(['print_records.id', 'print_records.customer_folder'])
+      .where('print_records.status', '!=', 'deleted')
+      .execute();
+    const money = await ordersWithMoney(
+      db,
+      records.map((r) => r.id),
+    );
+    for (const record of records) {
+      for (const { money: m } of money.get(record.id) ?? []) {
+        if (m.remainingCents === null) continue;
+        open.set(
+          record.customer_folder,
+          (open.get(record.customer_folder) ?? 0) + m.remainingCents,
+        );
+      }
+    }
+  }
   return rows
-    .map((row) => ({
-      folder: row.customer_folder,
-      printCount: Number(row.count),
-      deleted: Number(row.alive) === 0,
-    }))
+    .map((row) => {
+      const flagged = noBilling.has(row.customer_folder);
+      return {
+        folder: row.customer_folder,
+        printCount: Number(row.count),
+        deleted: Number(row.alive) === 0,
+        noBilling: flagged,
+        openAmount:
+          options.withMoney === true && !flagged
+            ? (open.get(row.customer_folder) ?? 0) / 100
+            : null,
+      };
+    })
     .sort((a, b) => a.folder.localeCompare(b.folder, 'nl'));
 }
 
@@ -201,6 +248,7 @@ export async function getPrintDetail(
   id: string,
   options: { includeDeleted: boolean; withAssets: boolean },
 ): Promise<PrintDetail | null> {
+  // withAssets doubles as "Admin or Editor": files, costs and payments.
   const row = await db
     .selectFrom('print_records')
     .selectAll('print_records')
@@ -221,12 +269,31 @@ export async function getPrintDetail(
       .execute(),
   ]);
   const hasModel = assets.some((asset) => asset.type === 'stl' || asset.type === '3mf');
+  const settings = await readSettings(db);
+  const [money, tints, finance] = await Promise.all([
+    ordersWithMoney(db, [row.id], settings),
+    spoolTints(db, [row]),
+    printFinance(db, row.id, {
+      full: options.withAssets,
+      fileNames: new Map(assets.map((asset) => [asset.id, asset.file_name])),
+    }),
+  ]);
   const detail: PrintDetail = {
-    ...toSummary(row, tags.get(row.id) ?? [], toBool(row.has_thumbnail), row.colour),
+    ...toSummary(
+      row,
+      tags.get(row.id) ?? [],
+      toBool(row.has_thumbnail),
+      tints.get(row.id) ?? row.colour,
+      summariseMoney(money.get(row.id) ?? [], { withCost: options.withAssets }),
+    ),
     printerModel: row.printer_model,
     archivedAt: row.archived_at,
     hasModel: hasModel && row.status !== 'archived',
     assets: null,
+    noBilling: finance.noBilling,
+    markupPercent: options.withAssets ? finance.markupPercent : null,
+    spool: options.withAssets ? finance.spool : null,
+    orders: finance.orders,
   };
   if (!options.withAssets) return detail;
 
@@ -251,7 +318,6 @@ export async function getPrintDetail(
           .orderBy('slot')
           .execute();
 
-  const times = await timesPerLine(db, row.id);
   const fileByAsset = new Map(assets.map((asset) => [asset.id, asset.file_name]));
   const byFingerprint = new Map<string, string[]>();
   for (const line of lines) {
@@ -278,6 +344,7 @@ export async function getPrintDetail(
             ? (byFingerprint.get(line.duplicate_fingerprint) ?? []).find((a) => a !== asset.id)
             : undefined;
         const excluded = (line.user_excluded ?? line.auto_excluded) === 1;
+        const lineFinance = finance.lines.get(line.id);
         return {
           id: line.id,
           plateIndex: line.plate_index,
@@ -290,7 +357,10 @@ export async function getPrintDetail(
             line.user_excluded === null && line.auto_excluded === 1
               ? line.auto_exclusion_reason
               : null,
-          timesPrinted: times.get(itemKey(asset.path_hash, line.plate_index)) ?? 0,
+          timesPrinted: lineFinance?.timesPrinted ?? 0,
+          inOrder: lineFinance?.inOrder ?? false,
+          spool: lineFinance?.spool ?? null,
+          manualPricePerKg: lineFinance?.manualPricePerKg ?? null,
           possibleDuplicate: line.possible_duplicate === 1,
           duplicateOf: other === undefined ? null : (fileByAsset.get(other) ?? null),
           slots: slots
@@ -300,6 +370,8 @@ export async function getPrintDetail(
               grams: slot.grams,
               colour: slot.colour,
               material: slot.material,
+              spool: lineFinance?.slots.get(slot.slot)?.spool ?? null,
+              manualPricePerKg: lineFinance?.slots.get(slot.slot)?.manualPricePerKg ?? null,
             })),
         };
       }),
@@ -378,6 +450,7 @@ function toSummary(
   tags: TagDto[],
   hasThumbnail: boolean,
   colour: string | null,
+  money: PrintMoneyDto | null,
 ): PrintSummary {
   return {
     id: row.id,
@@ -394,6 +467,7 @@ function toSummary(
     tags,
     hasThumbnail,
     colour,
+    money,
     version: row.updated_at,
   };
 }

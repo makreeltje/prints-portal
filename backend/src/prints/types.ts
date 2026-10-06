@@ -1,5 +1,8 @@
 import type { AssetType } from '../core/files.js';
 import type { RecordStatus } from '../db/schema.js';
+import type { OrderDto } from '../finance/dto.js';
+import type { PrintMoneyDto } from '../finance/read.js';
+import type { SpoolSnapshot } from '../finance/spools.js';
 
 /** What every role may see of a tag. */
 export interface TagDto {
@@ -31,11 +34,13 @@ export interface PrintSummary {
   /** False when no file can give a preview image. */
   hasThumbnail: boolean;
   /**
-   * Tint for the thumbnail and 3D model (SpoolSwatch tint rule): the slicer
-   * colour of the first used slot of the newest counted file; spools (M6) will
-   * come first. Null: no tint.
+   * Tint for the thumbnail and 3D model (SpoolSwatch tint rule): the first
+   * assigned spool's colour, else the slicer colour of the first used slot of
+   * the newest counted file. Null: no tint.
    */
   colour: string | null;
+  /** Price, payment status and (Admin/Editor) cost, summed over the print's orders. */
+  money: PrintMoneyDto | null;
   /** Changes whenever the print changes; part of thumbnail URLs for cache busting. */
   version: string;
 }
@@ -45,6 +50,9 @@ export interface SlotDto {
   grams: number;
   colour: string | null;
   material: string | null;
+  /** Spool assigned to this slot (snapshot), and a manual €/kg. */
+  spool: SpoolSnapshot | null;
+  manualPricePerKg: number | null;
 }
 
 /** A counted unit: a G-code file, or one plate of a sliced 3MF. */
@@ -59,7 +67,11 @@ export interface LineDto {
   excluded: boolean;
   /** "folder:<name>" or "gcode-present" when the exclusion is automatic and not overridden. */
   autoExclusionReason: string | null;
+  /** Over all orders; 0 when the file is in no order yet (new after an order was priced). */
   timesPrinted: number;
+  inOrder: boolean;
+  spool: SpoolSnapshot | null;
+  manualPricePerKg: number | null;
   possibleDuplicate: boolean;
   /** Another file in this print with the same fingerprint. */
   duplicateOf: string | null;
@@ -90,6 +102,14 @@ export interface PrintDetail extends PrintSummary {
   hasModel: boolean;
   /** Null for Users. */
   assets: AssetDto[] | null;
+  /** "Niet factureren" klant: cost only, no price or payment. */
+  noBilling: boolean;
+  /** Standaardmarge (Admin/Editor); null for Users or when not set. */
+  markupPercent: number | null;
+  /** "Spoel voor de hele print" (Admin/Editor). */
+  spool: SpoolSnapshot | null;
+  /** Order 1 first; Users get number, status and price only. */
+  orders: OrderDto[];
 }
 
 export interface CustomerSummary {
@@ -98,4 +118,7 @@ export interface CustomerSummary {
   printCount: number;
   /** True when every print of the customer is deleted (shown only with "Toon verwijderde"). */
   deleted: boolean;
+  noBilling: boolean;
+  /** Openstaand over the visible prints, euros; null for Users or niet factureren. */
+  openAmount: number | null;
 }

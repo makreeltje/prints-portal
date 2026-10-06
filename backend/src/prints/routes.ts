@@ -57,7 +57,8 @@ const tagBody = {
   properties: {
     name: { type: 'string', minLength: 1, maxLength: 200 },
     // New colours are palette keys only (design system v1.3); null clears the colour.
-    colour: { anyOf: [{ type: 'string', enum: TAG_PALETTE }, { type: 'null' }] },
+    // A union, not anyOf: with type coercion anyOf would turn null into "".
+    colour: { type: ['string', 'null'], enum: [...TAG_PALETTE, null] },
   },
 } as const;
 
@@ -109,6 +110,7 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
       customers: await listCustomers(db, await scopeOf(request), {
         includeArchived: request.query.archived === true,
         includeDeleted: request.query.deleted === true && isAdmin(request),
+        withMoney: sessionUser(request).role !== 'User',
       }),
     }),
   );
@@ -151,6 +153,7 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
         includeDeleted: query.deleted === true && isAdmin(request),
         offset: query.offset,
         limit: query.limit,
+        withCost: sessionUser(request).role !== 'User',
       });
     },
   );

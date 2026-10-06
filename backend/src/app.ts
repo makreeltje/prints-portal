@@ -13,6 +13,8 @@ import { registerAuthRoutes } from './auth/routes.js';
 import { SessionStore } from './auth/sessions.js';
 import type { AppConfig } from './config/config.js';
 import type { AppDatabase } from './db/connection.js';
+import { registerFinanceRoutes } from './finance/routes.js';
+import { SpoolmanClient } from './finance/spoolman.js';
 import { checkHealth } from './health/health.js';
 import { Indexer } from './indexing/indexer.js';
 import { registerPrintRoutes } from './prints/routes.js';
@@ -24,6 +26,7 @@ import { ThumbnailService } from './thumbnails/service.js';
 export interface AppServices {
   indexer: Indexer;
   hub: RealtimeHub;
+  spoolman: SpoolmanClient;
 }
 
 declare module 'fastify' {
@@ -38,6 +41,8 @@ export interface AppDependencies {
   logger?: FastifyServerOptions['logger'];
   /** Clock for session expiry; tests move it forward. */
   now?: () => Date;
+  /** Replaces the network for Spoolman requests (tests). */
+  spoolmanFetch?: typeof fetch;
 }
 
 export async function buildApp({
@@ -45,6 +50,7 @@ export async function buildApp({
   db,
   logger = false,
   now = () => new Date(),
+  spoolmanFetch,
 }: AppDependencies): Promise<FastifyInstance> {
   const { trustedProxies, corsOrigins } = config.http;
   const app = Fastify({
@@ -86,8 +92,14 @@ export async function buildApp({
     cacheDir: path.join(config.dataDir, 'thumbnails'),
     logger: app.log,
   });
-  app.decorate('services', { indexer, hub });
+  const spoolman = new SpoolmanClient({
+    ...config.spoolman,
+    now,
+    ...(spoolmanFetch === undefined ? {} : { fetch: spoolmanFetch }),
+  });
+  app.decorate('services', { indexer, hub, spoolman });
   registerPrintRoutes(app, { db, printsRoot: config.printsRoot, indexer, hub, thumbnails, now });
+  registerFinanceRoutes(app, { db, indexer, hub, spoolman, now });
   registerLiveRoute(app, { config, hub, sessions });
   const { oidc, publicUrl } = config.auth;
   if (oidc !== null && publicUrl !== null) {
