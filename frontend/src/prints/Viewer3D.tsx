@@ -1,4 +1,4 @@
-import { RotateCw } from 'lucide-react';
+import { Maximize, Minimize, RotateCw } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import {
   AmbientLight,
@@ -26,7 +26,8 @@ type State = 'loading' | 'ready' | 'error';
  * Viewer3D (lazy chunk): STL or 3MF from /api/prints/:id/model, in the
  * print's colour (tint rule) or the `muted` token when there is none.
  * Drag rotates, scroll zooms; keyboard: arrows rotate, +/- zoom, 0 resets.
- * Never rotates by itself (reduced motion is respected by default).
+ * "Volledig scherm" (top right) fills the screen; Esc exits. Never rotates
+ * by itself (reduced motion is respected by default).
  */
 export default function Viewer3D({
   url,
@@ -37,8 +38,10 @@ export default function Viewer3D({
   name: string;
   colour: string | null;
 }) {
+  const frame = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<State>('loading');
+  const [fullscreen, setFullscreen] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const controlsRef = useRef<{
     rotate: (dx: number, dy: number) => void;
@@ -175,6 +178,26 @@ export default function Viewer3D({
     };
   }, [url, colour, attempt]);
 
+  useEffect(() => {
+    const onChange = () => {
+      setFullscreen(
+        document.fullscreenElement !== null && document.fullscreenElement === frame.current,
+      );
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onChange);
+    };
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement === null) {
+      void frame.current?.requestFullscreen().catch(() => undefined);
+    } else {
+      void document.exitFullscreen().catch(() => undefined);
+    }
+  };
+
   const onKeyDown = (event: KeyboardEvent) => {
     const controls = controlsRef.current;
     if (controls === null) return;
@@ -213,14 +236,16 @@ export default function Viewer3D({
   };
 
   return (
-    <div
-      ref={host}
-      className="pp-viewer app-viewer"
-      role="img"
-      aria-label={t('viewer.label', { name })}
-      tabIndex={0}
-      onKeyDown={onKeyDown}
-    >
+    <div ref={frame} className="pp-viewer">
+      {/* The drawing surface is the image; the button and hint sit on top of it. */}
+      <div
+        ref={host}
+        className="app-viewer-stage"
+        role="img"
+        aria-label={t('viewer.label', { name })}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+      />
       {state === 'loading' && (
         <span className="app-viewer-state">
           <span className="pp-spin" aria-hidden="true" />
@@ -241,6 +266,20 @@ export default function Viewer3D({
             {t('common.retry')}
           </button>
         </span>
+      )}
+      {document.fullscreenEnabled && (
+        <button
+          type="button"
+          className="pp-btn pp-btn-ghost pp-btn-icon full"
+          aria-label={fullscreen ? t('viewer.exitFullscreen') : t('viewer.fullscreen')}
+          onClick={toggleFullscreen}
+        >
+          {fullscreen ? (
+            <Minimize className="pp-ico" aria-hidden="true" />
+          ) : (
+            <Maximize className="pp-ico" aria-hidden="true" />
+          )}
+        </button>
       )}
       {state === 'ready' && <span className="hint">{t('viewer.hint')}</span>}
     </div>

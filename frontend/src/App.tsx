@@ -16,6 +16,7 @@ import { UsersPage } from './pages/UsersPage';
 import { DashboardPage } from './prints/DashboardPage';
 import { LiveProvider } from './prints/live';
 import { PrintDetailPage } from './prints/PrintDetailPage';
+import { TagsPage } from './prints/TagsPage';
 import { AppShell } from './shell/AppShell';
 import { canSee, NAV_ITEMS } from './shell/navigation';
 
@@ -26,6 +27,12 @@ const pages = (methods: AuthMethods): Partial<Record<string, ReactNode>> => ({
     <>
       <DocumentTitle title="nav.users" />
       <UsersPage localLogin={methods.local} />
+    </>
+  ),
+  '/tags': (
+    <>
+      <DocumentTitle title="nav.tags" />
+      <TagsPage />
     </>
   ),
   '/toegang': (

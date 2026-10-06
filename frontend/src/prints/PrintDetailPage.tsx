@@ -13,6 +13,7 @@ import { ForbiddenState, GlobalErrorState } from '../pages/StatePages';
 import { deletePrint, fetchPrint, keys, modelUrl, restorePrint, setPrintTags } from './api';
 import { RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList } from './AssetList';
+import { TagEditor } from './TagEditor';
 import { placeOf } from './filter';
 import { Meta } from './PrintCard';
 import type { PrintDetail } from './types';
@@ -20,10 +21,12 @@ import type { PrintDetail } from './types';
 const Viewer3D = lazy(() => import('./Viewer3D'));
 
 /**
- * ScreenPrintDetail (M5 part): breadcrumb, name, record badge, tags,
- * Verwijderen (Admins and Editors), the archived and deleted alerts,
+ * ScreenPrintDetail (M5 part): breadcrumb, name, record badge, tags with the
+ * TagEditor and Verwijderen (Admins and Editors), the archived and deleted alerts,
  * Viewer3D and the file list. Spool, costs and payment arrive with M6.
  * Users see name, status, tags and the model, no files (owner decision).
+ * One column until M6 brings the right-hand column (spool, costs, payment);
+ * the viewer becomes `pp-viewer fluid` in that two-column layout.
  */
 export function PrintDetailPage() {
   const { id = '' } = useParams();
@@ -74,8 +77,8 @@ export function PrintDetailPage() {
 
   return (
     <>
-      <div className="pp-col app-detail-head">
-        <span className="pp-muted app-breadcrumb">{placeOf(detail)}</span>
+      <div className="pp-col pp-gap-2">
+        <span className="pp-crumb">{placeOf(detail)}</span>
         <div className="pp-ph">
           <h1>{detail.name}</h1>
           {canManage && detail.status !== 'deleted' && (
@@ -91,7 +94,7 @@ export function PrintDetailPage() {
             </button>
           )}
         </div>
-        <div className="pp-row app-tag-row">
+        <div className="pp-tags">
           <RecordBadge print={detail} />
           {detail.tags.map((tag) => (
             <TagChip
@@ -100,6 +103,7 @@ export function PrintDetailPage() {
               onRemove={canManage ? () => void removeTag(tag.id) : undefined}
             />
           ))}
+          {canManage && <TagEditor printId={detail.id} current={detail.tags} />}
         </div>
         <Meta print={detail} />
       </div>

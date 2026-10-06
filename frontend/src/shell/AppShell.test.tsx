@@ -7,6 +7,7 @@ const FULL_NAV = [
   'Dashboard',
   'Openstaand',
   'Facturen',
+  'Tags',
   'Deel-links',
   'Toegang',
   'Gebruikers',

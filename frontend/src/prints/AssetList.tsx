@@ -35,10 +35,12 @@ const ICONS: Record<AssetType, typeof File> = {
  */
 export function AssetList({ assets }: { assets: readonly Asset[] }) {
   return (
-    <section className="pp-card pp-assetlist app-assetlist" aria-labelledby="files-title">
-      <div className="pp-row app-assetlist-head">
-        <h2 id="files-title">{t('print.files')}</h2>
-        <span className="pp-muted">{t('print.fileCount', { count: assets.length })}</span>
+    <section className="pp-card pp-assetlist pp-flush" aria-labelledby="files-title">
+      <div className="pp-card-hd rule">
+        <h2 id="files-title" className="app-card-heading">
+          <b>{t('print.files')}</b>
+        </h2>
+        <span className="sub">{t('print.fileCount', { count: assets.length })}</span>
       </div>
       <ul className="app-plain-list">
         {assets.map((asset) => (
@@ -61,7 +63,7 @@ function AssetRow({ asset }: { asset: Asset }) {
         <span className="pp-muted">
           <Icon className="pp-ico pp-ico-20" aria-hidden="true" />
         </span>
-        <div className="app-min0">
+        <div className="body">
           <FileName name={asset.fileName} path={asset.subPath} />
           <div className="pp-meta">
             <span className="pp-mono">{formatFileSize(asset.sizeBytes)}</span>
@@ -97,7 +99,7 @@ function AssetRow({ asset }: { asset: Asset }) {
                 <span className="pp-muted">
                   <Layers className="pp-ico pp-ico-20" aria-hidden="true" />
                 </span>
-                <div className="app-min0">
+                <div className="body">
                   <div className="fn">
                     <span className="a">{t('asset.plate', { n: plate.plateIndex })}</span>
                   </div>
@@ -139,7 +141,7 @@ function LineMeta({ line }: { line: Line }) {
         {parts.length === 0 ? t('print.noWeightOrTime') : parts.join(' · ')}
       </span>
       {line.timesPrinted > 1 && (
-        <b className="app-times">{t('asset.timesPrintedShort', { count: line.timesPrinted })}</b>
+        <b className="pp-strong">{t('asset.timesPrintedShort', { count: line.timesPrinted })}</b>
       )}
     </>
   );
@@ -166,7 +168,7 @@ function Slots({ line }: { line: Line }) {
     <ul className="app-plain-list">
       {line.slots.map((slot) => (
         <li key={slot.slot} className="pp-slot">
-          <b className="app-strong">{t('asset.slot', { n: slot.slot })}</b>
+          <b className="pp-strong">{t('asset.slot', { n: slot.slot })}</b>
           <span className="pp-num">{formatGrams(slot.grams)}</span>
           <span className="sw">
             {slot.colour === null ? (
