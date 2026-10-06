@@ -55,6 +55,8 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
         'print_orders',
         'order_items',
         'payments',
+        'invoices',
+        'invoice_lines',
       ]),
     );
   });

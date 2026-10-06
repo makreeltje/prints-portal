@@ -16,7 +16,8 @@ export type FinanceErrorCode =
   | 'no_payment'
   | 'not_written_off'
   | 'not_in_order'
-  | 'archived';
+  | 'archived'
+  | 'locked';
 
 /** A business rule refused the change; `code` is the API's error code. */
 export class FinanceError extends Error {
@@ -36,6 +37,11 @@ async function orderById(db: Db, orderId: string): Promise<PrintOrderTable> {
   return order;
 }
 
+/** An order on a final invoice keeps its price, grams and items (correct it with a credit note). */
+function assertUnlocked(order: PrintOrderTable): void {
+  if (order.invoice_id !== null) throw new FinanceError('locked');
+}
+
 async function moneyOf(db: Db, order: PrintOrderTable) {
   const all = await ordersWithMoney(db, [order.print_record_id]);
   const found = all.get(order.print_record_id)?.find((o) => o.order.id === order.id);
@@ -53,6 +59,7 @@ export async function setSalePrice(
 ): Promise<PrintOrderTable> {
   return db.transaction().execute(async (trx) => {
     const order = await orderById(trx, orderId);
+    assertUnlocked(order);
     const { money, noBilling } = await moneyOf(trx, order);
     if (noBilling) throw new FinanceError('not_billed');
     if (cents !== null && cents < money.paidCents + money.writtenOffCents) {
@@ -217,6 +224,7 @@ export async function setOrderOverrides(
 ): Promise<PrintOrderTable> {
   return db.transaction().execute(async (trx) => {
     const order = await orderById(trx, orderId);
+    assertUnlocked(order);
     await trx
       .updateTable('print_orders')
       .set({
@@ -353,7 +361,7 @@ export async function setTimesPrinted(
     let query = trx
       .selectFrom('order_items as i')
       .innerJoin('print_orders as o', 'o.id', 'i.order_id')
-      .select(['i.order_id'])
+      .select(['i.order_id', 'o.invoice_id'])
       .where('o.print_record_id', '=', recordId)
       .where('i.path_hash', '=', key.path_hash)
       .where('i.plate_index', '=', key.plate_index)
@@ -361,6 +369,7 @@ export async function setTimesPrinted(
     if (orderId !== null) query = query.where('i.order_id', '=', orderId);
     const item = await query.executeTakeFirst();
     if (item === undefined) throw new FinanceError('not_in_order');
+    if (item.invoice_id !== null) throw new FinanceError('locked');
     await trx
       .updateTable('order_items')
       .set({ times_printed: times })

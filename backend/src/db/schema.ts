@@ -201,6 +201,8 @@ export interface PrintOrderTable {
   /** Comma-separated MissingInput values from the last calculation. */
   cost_missing: string | null;
   updated_at: string;
+  /** The final invoice this order is on; set means price and items are locked. */
+  invoice_id: string | null;
 }
 
 /** A file or plate in an order, with how often it was printed for that order. */
@@ -222,6 +224,51 @@ export interface PaymentTable {
   undone_by: string | null;
 }
 
+export type InvoiceKind = 'invoice' | 'credit';
+
+/** A final invoice or credit note (YYYY-NNN, one sequence per year). */
+export interface InvoiceTable {
+  id: string;
+  number: string;
+  year: number;
+  sequence: number;
+  kind: InvoiceKind;
+  customer_folder: string;
+  /** YYYY-MM-DD in Europe/Amsterdam. */
+  issued_on: string;
+  period_from: string | null;
+  period_to: string | null;
+  only_open: number;
+  /** For a credit note: the invoice it corrects. */
+  credits_invoice_id: string | null;
+  total_cents: number;
+  paid_cents: number;
+  open_cents: number;
+  reference: string;
+  /** File name under DATA_DIR/invoices. */
+  pdf_file: string;
+  /** JSON of the document as issued (company, klant, lines, totals). */
+  snapshot: string;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface InvoiceLineTable {
+  id: string;
+  invoice_id: string;
+  position: number;
+  order_id: string;
+  print_record_id: string;
+  description: string;
+  project: string | null;
+  line_date: string | null;
+  grams: number | null;
+  /** Negative on a credit note. */
+  amount_cents: number;
+  paid_cents: number;
+  status: 'paid' | 'open' | 'partial' | null;
+}
+
 export interface Database {
   print_records: PrintRecordTable;
   print_assets: PrintAssetTable;
@@ -238,4 +285,6 @@ export interface Database {
   print_orders: PrintOrderTable;
   order_items: OrderItemTable;
   payments: PaymentTable;
+  invoices: InvoiceTable;
+  invoice_lines: InvoiceLineTable;
 }

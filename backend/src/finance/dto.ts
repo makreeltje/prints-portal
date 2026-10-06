@@ -75,6 +75,8 @@ export interface OrderDto {
   overrides?: { pricePerKg: number | null; grams: number | null; printSeconds: number | null };
   cost?: CostDto;
   items?: { lineId: string | null; timesPrinted: number }[];
+  /** "Op factuur {nummer}": the final invoice that locks this order. */
+  invoice?: { id: string; number: string } | null;
 }
 
 export interface LineFinanceDto {
@@ -147,6 +149,20 @@ export async function printFinance(
   for (const { order } of money)
     if (order.written_off_by !== null) userIds.add(order.written_off_by);
   const names = await userNames(db, [...userIds]);
+  const invoiceIds = [
+    ...new Set(money.flatMap(({ order }) => (order.invoice_id === null ? [] : [order.invoice_id]))),
+  ];
+  const invoiceNumbers = new Map(
+    invoiceIds.length === 0 || !options.full
+      ? []
+      : (
+          await db
+            .selectFrom('invoices')
+            .select(['id', 'number'])
+            .where('id', 'in', invoiceIds)
+            .execute()
+        ).map((row) => [row.id, row.number]),
+  );
   const nameOf = (id: string | null) => (id === null ? null : (names.get(id) ?? null));
 
   const orders: OrderDto[] = money.map(({ order, money: m }) => {
@@ -189,6 +205,10 @@ export async function printFinance(
         undoneAt: p.undone_at,
         undoneBy: nameOf(p.undone_by),
       })),
+      invoice:
+        order.invoice_id === null
+          ? null
+          : { id: order.invoice_id, number: invoiceNumbers.get(order.invoice_id) ?? '' },
       overrides: {
         pricePerKg: order.manual_price_per_kg,
         grams: order.manual_grams,
