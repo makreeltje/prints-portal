@@ -429,3 +429,15 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
+## GAP-036 [open] M6 component previews still use inline sizes without tokens or classes
+- **Type:** missing token
+- **Found while:** M6, building PaymentPanel, CostBreakdown, CostOverrideDialog and ScreenSettings
+- **Where needed:** PaymentPanel, CostBreakdown, CostOverrideDialog, ScreenSettings
+- **What is missing or wrong:** the v1.3 inline audit covered the dashboard, print detail and asset list, not these previews. Most of their inline values match tokens and are built from them (amount `text-xl`, history `text-sm`, gaps `space-*`). These have no token or class: CostBreakdown slot rows indented 48px (the largest space token is 40px); PaymentPanel's written-off details use `pp-kv` with a 110px label column (the class has 140px); CostOverrideDialog's two print-time inputs are 120px wide; ScreenSettings has a reindex progress bar (8px track, inline), a logo box of 72×40 px, Klanten rows with an inline separator and padding, Bedrijfsgegevens fields in an inline two-column grid, and the Standaardmarge field limited to 200px.
+- **Why it matters:** these details cannot be matched without inventing values.
+- **Proposal:** a `space-9` (48px) token or a `.pp-cost tr.slot` rule; a `.pp-kv.narrow` variant; `.pp-time` for the two time inputs; `.pp-progress` (track and bar); `.pp-logo-box`; `.pp-setrow` for settings list rows.
+- **Blocked:** those details only. Until then: slot rows are indented like file rows, `pp-kv` keeps its 140px column, the time inputs keep their normal width, the reindex shows a spinner and "Klaar." instead of a progress bar, Klanten rows have no separators, the Bedrijfsgegevens fields are in one column and the Standaardmarge field is full width. The logo upload is M7.
+- **Owner decision (2026-10-06):** wait for the design system, no placeholder.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.3
+

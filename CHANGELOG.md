@@ -50,6 +50,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   API for prints, customers, tags, thumbnails (embedded image, 3MF image, server-rendered STL,
   .cxprj image; cached on the data volume), model files and downloads with Range; WebSocket
   `/api/live` with per-customer subscriptions; Admin re-index.
+- Financials (M6): costs per print from the files, spools and settings (Spoolman v0.27.0 with
+  snapshots at assignment, manual €/kg per file or slot, "Kosten aanpassen", times printed and
+  exclusions; recalculated on every change), sale price with the markup suggestion, partial
+  payments, write-offs, undo for Admins, "niet factureren" per klant, repeat orders inside a
+  print (API; the screens follow the design system), bulk actions with a result per print, and
+  the Instellingen page (re-index, theme, Standaardmarge, company details, klanten, Spoolman).
 - Design system v1.3: "Klant verwijderen" on customer cards and on phones (customer chips),
   the tag editor on the print detail page, the Tags page (`/tags`) to create, rename, recolour
   and delete tags, a fullscreen button on the 3D viewer, dimmed deleted and archived prints and a

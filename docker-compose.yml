@@ -41,7 +41,9 @@ services:
       # RATE_LIMIT_LOGIN: '5'
 
       # Spoolman (optional; leave empty to hide Spoolman features)
-      # SPOOLMAN_URL: http://spoolman:8000
+      # SPOOLMAN_URL: http://spoolman:7912
+      # Electricity tariff in €/kWh, used only on the first start
+      # ELECTRICITY_TARIFF_EUR_PER_KWH: '0.25'
 
       # OIDC, e.g. Authentik (optional; local login is disabled when set; needs PUBLIC_URL)
       # OIDC_ISSUER: https://auth.example.com/application/o/prints-portal/
