@@ -491,3 +491,25 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** the placement only; the card works as before.
 - **Temporary placeholder approved:** no (shown at the proposed place, marked `ds-gap: GAP-040`, pending your answer)
 - **Design system version:** 1.4
+
+## GAP-041 [open] Openstaand: "Markeer als betaald" per line asks an amount, but there is no dialog
+- **Type:** missing component
+- **Found while:** M7, building ScreenOutstanding
+- **Where needed:** ScreenOutstanding / OutstandingGroup line action, `frontend/src/finance/OutstandingPage.tsx`
+- **What is missing or wrong:** the README says the line action "asks the amount, default the remainder", but no dialog or inline field is drawn and the copy deck has no title for it. Also not drawn: how a Nabestelling line is named (the preview only has order-1 lines).
+- **Why it matters:** the amount question would be improvised.
+- **Proposal:** a small Dialog (`pp-dialog sm`) titled "Markeer als betaald" with the PaymentPanel field "Betaald bedrag" (€ prefix, default the remainder, same overpayment error `error.overpay`) and the primary "Markeer als betaald". A Nabestelling line is named "{print} (nabestelling {n})", as on the invoice PDF.
+- **Blocked:** the per-line amount question and the Nabestelling line name.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
+
+## GAP-042 [open] "Factuur maken" on phones
+- **Type:** missing state
+- **Found while:** M7, wiring the invoice export dialog
+- **Where needed:** ScreenDashboard on phones (CustomerChips toolbar), ScreenInvoiceExport
+- **What is missing or wrong:** the export dialog opens from CustomerCard's "Factuur" button, which is `pp-only-wide`. On phones (CustomerChips) there is no "Factuur" action, though the export dialog has a phone (sheet) layout.
+- **Why it matters:** invoices cannot be made on a phone.
+- **Proposal:** a secondary "Factuur" button in the `.pp-toolbar` while one klant is selected (next to "Klant verwijderen"), hidden for niet-factureren klanten.
+- **Blocked:** making an invoice on phones.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
