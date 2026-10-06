@@ -288,6 +288,11 @@ const ENDPOINTS: {
     }),
     allowed: MANAGE,
   },
+  {
+    name: 'DELETE /api/orders/:orderId',
+    request: () => ({ method: 'DELETE', url: `/api/orders/${UNKNOWN}` }),
+    allowed: MANAGE,
+  },
   { name: 'GET /api/outstanding', request: () => ({ url: '/api/outstanding' }), allowed: MANAGE },
   {
     name: 'POST /api/outstanding/:folder/mark-paid',

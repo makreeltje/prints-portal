@@ -376,7 +376,11 @@ describe.each(TEST_DATABASES)('invoices and Openstaand on $name', ({ url }) => {
       url: '/api/prints/bulk',
       payload: { action: 'setPrice', ids: [box.id], salePrice: 50 },
     });
-    expect(bulk.json()).toEqual({ results: [{ id: box.id, ok: false, error: 'locked' }] });
+    expect(bulk.json()).toEqual({
+      results: [
+        { id: box.id, ok: false, error: 'locked', orderNumber: 1, invoiceNumber: '2026-001' },
+      ],
+    });
     // Payments still go on: the invoice is open until it is paid.
     expect(
       (

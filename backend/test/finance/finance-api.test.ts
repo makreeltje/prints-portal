@@ -453,6 +453,34 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     expect(after.orders[0]?.cost?.materialCost).toBe(3.47);
     expect(after.money).toMatchObject({ status: 'open', orderCount: 2 });
     expect(after.money?.price).toBeCloseTo(11.89 + (second?.price ?? 0), 2);
+
+    // "Nabestelling verwijderen": never order 1, not with a payment or write-off.
+    const del = (orderId: string, session = editor) =>
+      t.as(session, { method: 'DELETE', url: `/api/orders/${orderId}` });
+    expect((await del(first.id)).json()).toEqual({ error: 'first_order' });
+    expect((await del(second?.id ?? '', helper)).statusCode).toBe(403);
+    await t.as(editor, {
+      method: 'POST',
+      url: `/api/orders/${second?.id ?? ''}/payments`,
+      payload: { amount: 1 },
+    });
+    expect((await del(second?.id ?? '')).json()).toEqual({ error: 'has_payment' });
+    await t.as(admin, { method: 'POST', url: `/api/orders/${second?.id ?? ''}/payments/undo` });
+    await t.as(editor, {
+      method: 'POST',
+      url: `/api/orders/${second?.id ?? ''}/write-off`,
+      payload: {},
+    });
+    expect((await del(second?.id ?? '')).json()).toEqual({ error: 'written_off' });
+    await t.as(admin, { method: 'DELETE', url: `/api/orders/${second?.id ?? ''}/write-off` });
+    expect((await del(second?.id ?? '')).statusCode).toBe(204);
+    const removed = await detail(editor, 'Babybox locks');
+    expect(removed.orders.map((o) => o.number)).toEqual([1]);
+    // Its files are back in no order; the reprinted G-code keeps its order-1 count.
+    expect(
+      removed.assets?.find((a) => a.fileName === 'spare_PLA_11m.gcode')?.lines[0],
+    ).toMatchObject({ inOrder: false, timesPrinted: 0 });
+    expect(removed.money).toMatchObject({ orderCount: 1, price: 11.89 });
   });
 
   it('runs bulk actions with a result per print', async () => {
@@ -481,6 +509,39 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     });
     expect(priced.json()).toEqual({ results: [{ id: empty, ok: true }] });
     expect((await firstOrder('Empty')).price).toBe(2.5);
+
+    // The price goes on the newest order; a paid one fails with its number.
+    const again = await t.as(editor, {
+      method: 'POST',
+      url: '/api/prints/bulk',
+      payload: { action: 'setPrice', ids: [box], salePrice: 30 },
+    });
+    expect(again.json()).toEqual({
+      results: [{ id: box, ok: false, error: 'paid', orderNumber: 1 }],
+    });
+    // "Voorstel uit marge per print": each print its own suggestion; no cost is skipped.
+    const board = await idOf('Board game');
+    const suggested = await t.as(editor, {
+      method: 'POST',
+      url: '/api/prints/bulk',
+      payload: { action: 'setPrice', ids: [board, empty], suggested: true },
+    });
+    expect(suggested.json<{ results: unknown[] }>().results).toEqual([
+      { id: board, ok: true },
+      { id: empty, ok: false, error: 'no_cost', orderNumber: 1 },
+    ]);
+    const boardOrder = await firstOrder('Board game');
+    expect(boardOrder).toMatchObject({ priceSuggested: false });
+    expect(boardOrder.salePrice).toBe(boardOrder.suggestion?.salePrice);
+    expect(
+      (
+        await t.as(editor, {
+          method: 'POST',
+          url: '/api/prints/bulk',
+          payload: { action: 'setPrice', ids: [board] },
+        })
+      ).json(),
+    ).toEqual({ error: 'missing_price' });
   });
 
   it('keeps 0 and null apart in request bodies', async () => {

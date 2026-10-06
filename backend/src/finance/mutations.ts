@@ -22,12 +22,21 @@ export type FinanceErrorCode =
   | 'changed'
   | 'not_an_invoice'
   | 'unknown_line'
-  | 'already_credited';
+  | 'already_credited'
+  | 'first_order'
+  | 'has_payment'
+  | 'written_off'
+  | 'paid'
+  | 'no_cost';
 
 /** A business rule refused the change; `code` is the API's error code. */
 export class FinanceError extends Error {
   override name = 'FinanceError';
-  constructor(readonly code: FinanceErrorCode) {
+  /** Extra facts for a per-print result ("Nabestelling 2 is al betaald.", "Staat op factuur …"). */
+  constructor(
+    readonly code: FinanceErrorCode,
+    readonly detail: { orderNumber?: number; invoiceNumber?: string } = {},
+  ) {
     super(code);
   }
 }
@@ -414,4 +423,38 @@ export async function setNoBilling(
       .where('customer_folder', '=', folder)
       .execute();
   }
+}
+
+/**
+ * "Nabestelling verwijderen" (Admin, Editor): only a later order without
+ * payment or write-off that is not on an invoice; Bestelling 1 never. Its
+ * files go back to "Niet in een bestelling". Undone payments go with it.
+ */
+export async function deleteRepeatOrder(
+  db: Kysely<Database>,
+  orderId: string,
+  now: string,
+): Promise<PrintOrderTable> {
+  return db.transaction().execute(async (trx) => {
+    const order = await orderById(trx, orderId);
+    if (order.number === 1) throw new FinanceError('first_order');
+    assertUnlocked(order);
+    if (order.written_off_cents !== null) throw new FinanceError('written_off');
+    const active = await trx
+      .selectFrom('payments')
+      .select('id')
+      .where('order_id', '=', orderId)
+      .where('undone_at', 'is', null)
+      .executeTakeFirst();
+    if (active !== undefined) throw new FinanceError('has_payment');
+    await trx.deleteFrom('payments').where('order_id', '=', orderId).execute();
+    await trx.deleteFrom('order_items').where('order_id', '=', orderId).execute();
+    await trx.deleteFrom('print_orders').where('id', '=', orderId).execute();
+    await trx
+      .updateTable('print_records')
+      .set({ updated_at: now })
+      .where('id', '=', order.print_record_id)
+      .execute();
+    return order;
+  });
 }
