@@ -43,11 +43,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Local users sign in with an e-mail address or a name; a password set by an Admin is temporary
   and must be replaced at the next sign-in; everyone can change their own password
   (`POST /api/auth/password`).
+- Prints (M5): dashboard with customer cards, filters (klant, tags with AND, search, archived,
+  deleted for Admins), card and list views, "Meer laden", empty states and live updates; print
+  detail with the 3D viewer (STL or 3MF), file list (sizes, grams, times printed, duplicates,
+  exclusion reasons, plates and slots, downloads) and delete; Admins restore prints and customers.
+  API for prints, customers, tags, thumbnails (embedded image, 3MF image, server-rendered STL,
+  .cxprj image; cached on the data volume), model files and downloads with Range; WebSocket
+  `/api/live` with per-customer subscriptions; Admin re-index.
+- Design system v1.3: "Klant verwijderen" on customer cards and on phones (customer chips),
+  the tag editor on the print detail page, the Tags page (`/tags`) to create, rename, recolour
+  and delete tags, a fullscreen button on the 3D viewer, dimmed deleted and archived prints and a
+  flash on list rows that change live.
 
 ### Changed
 
 - The app now needs `SESSION_SECRET`, and `ADMIN_EMAIL`/`ADMIN_PASSWORD` until a first Admin
   exists; it refuses to start without them outside development.
 - Every `/api` path needs a signed-in user unless it is explicitly public.
+- Tag colours are one of ten palette colours (or none); colours chosen freely before still show.
 
 - CI actions moved to versions that run on Node 24.

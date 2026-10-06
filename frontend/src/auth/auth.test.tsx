@@ -27,13 +27,14 @@ describe('routing by sign-in state and role', () => {
 
   it.each([
     ['User', ['Dashboard', 'Openstaand', 'API-docs']],
-    ['Editor', ['Dashboard', 'Openstaand', 'Facturen', 'API-docs']],
+    ['Editor', ['Dashboard', 'Openstaand', 'Facturen', 'Tags', 'API-docs']],
     [
       'Admin',
       [
         'Dashboard',
         'Openstaand',
         'Facturen',
+        'Tags',
         'Deel-links',
         'Toegang',
         'Gebruikers',

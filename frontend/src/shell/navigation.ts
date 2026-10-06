@@ -6,6 +6,7 @@ import {
   Receipt,
   Shield,
   SlidersHorizontal,
+  Tag,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -27,7 +28,7 @@ const ADMIN: readonly Role[] = ['Admin'];
 
 /**
  * Order, icons and visibility from design-system/components/AppShell:
- * Facturen for Admin and Editor, the Beheer group for Admins, the rest for everyone.
+ * Facturen and Tags for Admin and Editor, the Beheer group for Admins, the rest for everyone.
  */
 export const NAV_ITEMS: readonly NavItem[] = [
   { path: '/', label: 'nav.dashboard', icon: LayoutDashboard, group: 'main' },
@@ -39,6 +40,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     group: 'main',
     roles: ['Admin', 'Editor'],
   },
+  { path: '/tags', label: 'nav.tags', icon: Tag, group: 'main', roles: ['Admin', 'Editor'] },
   { path: '/deel-links', label: 'nav.shareLinks', icon: Link, group: 'manage', roles: ADMIN },
   { path: '/toegang', label: 'nav.access', icon: Shield, group: 'manage', roles: ADMIN },
   { path: '/gebruikers', label: 'nav.users', icon: Users, group: 'manage', roles: ADMIN },

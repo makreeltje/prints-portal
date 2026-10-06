@@ -1,11 +1,12 @@
-import { ChevronDown, Link, Plus, Trash2, TriangleAlert, User as UserIcon } from 'lucide-react';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { ChevronDown, Link, Plus, Trash2, User as UserIcon } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../api/client';
 import { PasswordField } from '../auth/NewPasswordPage';
 import { ROLES, type Role, type User } from '../auth/types';
 import { Avatar } from '../components/Avatar';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Dialog } from '../components/Dialog';
+import { FieldError, GenericError } from '../components/FieldError';
 import { useToast } from '../components/toast-context';
 import { t, type MessageKey } from '../i18n/nl';
 import { ErrorState, LoadingRows } from './ErrorState';
@@ -569,23 +570,5 @@ function DialogButtons({
         {confirmLabel}
       </button>
     </>
-  );
-}
-
-function FieldError({ id, children }: { id: string; children: ReactNode }) {
-  return (
-    <span id={id} className="pp-err" role="alert">
-      <TriangleAlert className="pp-ico" aria-hidden="true" />
-      {children}
-    </span>
-  );
-}
-
-function GenericError() {
-  return (
-    <div className="pp-alert unpaid" role="alert">
-      <TriangleAlert className="pp-ico" aria-hidden="true" />
-      <div>{t('error.generic')}</div>
-    </div>
   );
 }

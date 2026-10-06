@@ -300,3 +300,32 @@ Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Co
 | access.allAccessRoles | Admin en Editor hebben altijd toegang. |
 
 Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (replaced by `access.allAccessRoles`), `auth.email` (replaced by `auth.identifier`). Changed text: `auth.wrong`.
+
+## Added in 1.3
+
+| Key | Text |
+|---|---|
+| viewer.fullscreen | Volledig scherm |
+| viewer.exitFullscreen | Volledig scherm sluiten |
+| customers.printCount | {count, plural, one {# print} other {# prints}} |
+| customers.delete | Klant verwijderen |
+| customers.allPaid | Alles betaald |
+| confirm.deleteCustomer | Klant '{name}' verwijderen? |
+| confirm.deleteCustomerBody | {count, plural, one {De print van deze klant wordt verborgen} other {Alle # prints van deze klant worden verborgen}}. De financiële gegevens blijven bewaard en een beheerder kan de klant herstellen. |
+| nav.tags | Tags |
+| tags.searchOrCreate | Zoek of maak een tag |
+| tags.create | Tag '{name}' maken |
+| tags.createButton | Tag maken |
+| tags.settingsTitle | Tags |
+| tags.settingsHelp | Tags zijn voor alle klanten gelijk. Een naam is uniek, hoofdletters tellen niet. |
+| tags.color | Kleur |
+| tags.noColor | Geen kleur |
+| tags.empty | Nog geen tags. |
+| tags.none | Geen tags gevonden |
+| tags.rename | {name} bewerken |
+| tags.useCount | {count, plural, one {# print} other {# prints}} |
+| confirm.deleteTag | Tag '{name}' verwijderen? |
+| confirm.deleteTagBody | {count, plural, one {De tag wordt van # print verwijderd} other {De tag wordt van # prints verwijderd}}. De prints zelf blijven bestaan. |
+| error.tagExists | Deze tag bestaat al. |
+| error.tagTooLong | Een tag mag maximaal 64 tekens hebben. |
+

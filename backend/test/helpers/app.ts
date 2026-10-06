@@ -1,3 +1,6 @@
+import { mkdtemp, rm } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import type { FastifyInstance, InjectOptions, LightMyRequestResponse } from 'fastify';
 import { buildApp } from '../../src/app.js';
 import { hashPassword } from '../../src/auth/passwords.js';
@@ -43,10 +46,13 @@ export async function startTestApp(
   databaseUrl: string,
   env: Record<string, string> = {},
 ): Promise<TestApp> {
+  // Thumbnails and other app data go to a throw-away folder.
+  const dataDir = await mkdtemp(path.join(os.tmpdir(), 'pp-data-'));
   const config = loadConfig({
     NODE_ENV: 'test',
     SESSION_SECRET: TEST_SESSION_SECRET,
     PRINTS_ROOT: '/nonexistent',
+    DATA_DIR: dataDir,
     ...env,
   });
   const db = await openTestDatabase(databaseUrl);
@@ -94,7 +100,9 @@ export async function startTestApp(
       return app.inject({ ...options, headers: { ...headers, ...(options.headers ?? {}) } });
     },
     async close() {
+      await app.services.indexer.idle();
       await app.close();
+      await rm(dataDir, { recursive: true, force: true });
     },
   };
   return testApp;

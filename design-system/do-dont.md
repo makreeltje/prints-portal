@@ -38,3 +38,14 @@
 - Don't set a `.phone` class in the app; use the media queries.
 - Don't show amounts, payment status or PDF buttons on the share page of a niet-factureren klant.
 - Don't leave a temporary password in place: force "Nieuw wachtwoord kiezen" at the first sign-in.
+
+## Added in 1.3
+
+- **Do** dim deleted (45%) and archived (60%) prints only through `.is-deleted` and `.is-archived` on `.pp-thumb`, `.pp-card` and `.pp-row`; the text keeps its contrast. **Don't** set `opacity` on a whole card or row.
+- **Do** use `pp-chips` with `aria-pressed` on phones and customer cards (`pp-only-wide`) elsewhere. **Don't** show both at once.
+- **Do** confirm deleting a klant or a tag with the destructive ConfirmDialog and name the number of prints. **Don't** delete without it.
+- **Do** pick tag colours from the ten `tag-*` tokens through `data-c` (or "Geen kleur"). **Don't** invent hexes; `--tag` and `--tag-ink` inline are data for legacy colours only.
+- **Do** show an existing tag when a typed name matches in another case. **Don't** offer "Tag maken" for it.
+- **Do** keep layout in `bundle.css` classes. **Don't** put `style=""` with layout values in app screens; only `--c1`, `--tag` and `--tag-ink` are allowed as data.
+- **Do** hide the Tags page from the User role; Users see tags read-only on the print.
+

@@ -5,6 +5,8 @@ import { TEST_DATABASES } from '../helpers/databases.js';
 
 type Caller = 'anonymous' | 'User' | 'Editor' | 'Admin';
 
+const UNKNOWN = '00000000-0000-4000-8000-000000000000';
+
 /**
  * Every endpoint so far × every kind of caller. "ok" means the guard let the
  * request through (the handler may still answer 4xx for the payload).
@@ -80,6 +82,65 @@ const ENDPOINTS: {
     }),
     allowed: ['Admin'],
   },
+  {
+    name: 'GET /api/customers',
+    request: () => ({ url: '/api/customers' }),
+    allowed: ['User', 'Editor', 'Admin'],
+  },
+  {
+    name: 'GET /api/prints',
+    request: () => ({ url: '/api/prints' }),
+    allowed: ['User', 'Editor', 'Admin'],
+  },
+  {
+    name: 'GET /api/tags',
+    request: () => ({ url: '/api/tags' }),
+    allowed: ['User', 'Editor', 'Admin'],
+  },
+  {
+    name: 'POST /api/tags',
+    request: () => ({
+      method: 'POST',
+      url: '/api/tags',
+      payload: { name: `t${String(Math.random()).slice(2)}` },
+    }),
+    allowed: ['Editor', 'Admin'],
+  },
+  {
+    name: 'DELETE /api/prints/:id',
+    request: () => ({ method: 'DELETE', url: `/api/prints/${UNKNOWN}` }),
+    allowed: ['Editor', 'Admin'],
+  },
+  {
+    name: 'POST /api/prints/:id/restore',
+    request: () => ({ method: 'POST', url: `/api/prints/${UNKNOWN}/restore` }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'PUT /api/prints/:id/tags',
+    request: () => ({ method: 'PUT', url: `/api/prints/${UNKNOWN}/tags`, payload: { tagIds: [] } }),
+    allowed: ['Editor', 'Admin'],
+  },
+  {
+    name: 'GET /api/assets/:id/download',
+    request: () => ({ url: `/api/assets/${UNKNOWN}/download` }),
+    allowed: ['Editor', 'Admin'],
+  },
+  {
+    name: 'DELETE /api/customers/:folder',
+    request: () => ({ method: 'DELETE', url: '/api/customers/Nobody' }),
+    allowed: ['Editor', 'Admin'],
+  },
+  {
+    name: 'POST /api/customers/:folder/restore',
+    request: () => ({ method: 'POST', url: '/api/customers/Nobody/restore' }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'POST /api/admin/reindex',
+    request: () => ({ method: 'POST', url: '/api/admin/reindex' }),
+    allowed: ['Admin'],
+  },
 ];
 
 describe.each(TEST_DATABASES)('authorisation matrix on $name', ({ url }) => {
@@ -97,6 +158,7 @@ describe.each(TEST_DATABASES)('authorisation matrix on $name', ({ url }) => {
   });
 
   afterAll(async () => {
+    await t.app.services.indexer.idle();
     await t.close();
   });
 

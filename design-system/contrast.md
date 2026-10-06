@@ -101,6 +101,8 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | dark | "Verloopt niet" in ShareLinkRow, link label on the not-billed share page | `muted` on `surface` | 6.84 | 4.5 | pass |
 | dark | icon-rail tooltip text (pp-tip) | `bg` on `text-strong` | 16.08 | 4.5 | pass |
 | dark | drawer links and auth card text | `text` on `surface` | 10.59 | 4.5 | pass |
+| dark | muted row text on hover (deleted and archived rows) | `muted` on `primary-tint-soft` | 6.00 | 4.5 | pass |
+| dark | selected customer chip (aria-pressed) | `info` on `info-tint` | 7.35 | 4.5 | pass |
 | light | neutral badge and "slicer" hint text | `muted` on `surface-2` | 5.18 | 4.5 | pass |
 | light | remaining amount line | `unpaid` on `surface` | 6.18 | 4.5 | pass |
 | light | duplicate hint line | `warning` on `surface` | 6.11 | 4.5 | pass |
@@ -108,6 +110,18 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | light | "Verloopt niet" in ShareLinkRow, link label on the not-billed share page | `muted` on `surface` | 6.03 | 4.5 | pass |
 | light | icon-rail tooltip text (pp-tip) | `bg` on `text-strong` | 15.84 | 4.5 | pass |
 | light | drawer links and auth card text | `text` on `surface` | 12.67 | 4.5 | pass |
+| light | muted row text on hover (deleted and archived rows) | `muted` on `primary-tint-soft` | 5.39 | 4.5 | pass |
+| light | selected customer chip (aria-pressed) | `info` on `info-tint` | 5.24 | 4.5 | pass |
+| both | tag chip text on palette colour | `#141a33` on `tag-rose` | 6.48 | 4.5 | pass |
+| both | tag chip text on palette colour | `#141a33` on `tag-orange` | 8.43 | 4.5 | pass |
+| both | tag chip text on palette colour | `#141a33` on `tag-amber` | 10.87 | 4.5 | pass |
+| both | tag chip text on palette colour | `#141a33` on `tag-lime` | 9.38 | 4.5 | pass |
+| both | tag chip text on palette colour | `#141a33` on `tag-teal` | 10.29 | 4.5 | pass |
+| both | tag chip text on palette colour | `#141a33` on `tag-sky` | 9.99 | 4.5 | pass |
+| both | tag chip text on palette colour | `#141a33` on `tag-blue` | 6.81 | 4.5 | pass |
+| both | tag chip text on palette colour | `#141a33` on `tag-violet` | 7.41 | 4.5 | pass |
+| both | tag chip text on palette colour | `#141a33` on `tag-lilac` | 8.86 | 4.5 | pass |
+| both | tag chip text on palette colour | `#141a33` on `tag-grey` | 8.12 | 4.5 | pass |
 | light (PDF) | document text | `paper ink` on `paper` | 17.14 | 4.5 | pass |
 | light (PDF) | document text | `paper ink-2 (footer)` on `paper` | 12.67 | 4.5 | pass |
 | light (PDF) | document text | `paper muted (labels)` on `paper` | 6.03 | 4.5 | pass |

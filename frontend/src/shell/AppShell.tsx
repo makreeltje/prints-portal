@@ -6,6 +6,7 @@ import { Avatar } from '../components/Avatar';
 import { t, type MessageKey } from '../i18n/nl';
 import type { ThemePreference } from '../theme/theme';
 import { useTheme } from '../theme/useTheme';
+import { LiveIndicator } from '../prints/LiveIndicator';
 import { navItemsFor, type NavItem } from './navigation';
 
 const MAIN_ID = 'inhoud';
@@ -20,8 +21,8 @@ const THEME_LABELS: Record<ThemePreference, MessageKey> = {
 /**
  * Operator frame from design-system/components/AppShell (v1.2): one DOM for
  * every size; bundle.css switches between sidebar, 56px icon rail and the
- * phone bars with drawer. Navigation follows the signed-in user's role. The
- * LiveIndicator arrives with real-time updates (M5).
+ * phone bars with drawer. Navigation follows the signed-in user's role; the
+ * LiveIndicator sits in the footer and in the phone top bar.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const theme = useTheme();
@@ -76,6 +77,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <span className="lbl">{t('auth.logout')}</span>
               </button>
             </div>
+            <LiveIndicator />
           </div>
         </aside>
 
@@ -91,8 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Menu className="pp-ico pp-ico-20" aria-hidden="true" />
           </button>
           <b>{t('app.name')}</b>
-          {/* Keeps the name centred; the live dot goes here with real-time (M5). */}
-          <span />
+          <LiveIndicator dotOnly />
         </header>
 
         <main id={MAIN_ID} className="pp-main app-main" tabIndex={-1} inert={drawerOpen}>

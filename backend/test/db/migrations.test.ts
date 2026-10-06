@@ -46,6 +46,8 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
         'users',
         'customer_access',
         'sessions',
+        'tags',
+        'print_tags',
       ]),
     );
   });

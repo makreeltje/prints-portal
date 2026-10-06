@@ -5,7 +5,7 @@ import { ToastContext, type ToastAction, type ToastApi } from './toast-context';
 /** Toast: success toasts live 6 seconds (paused on hover), errors stay until dismissed. */
 const TOAST_LIFETIME_MS = 6000;
 
-type Tone = 'paid' | 'unpaid';
+type Tone = 'paid' | 'unpaid' | 'warning';
 
 interface Toast {
   id: number;
@@ -54,6 +54,10 @@ export function ToastProvider({
         const id = nextId.current++;
         setToasts((current) => [...current, { id, tone: 'unpaid', title, action }]);
       },
+      warning: (title) => {
+        const id = nextId.current++;
+        setToasts((current) => [...current, { id, tone: 'warning', title }]);
+      },
     }),
     [schedule],
   );
@@ -97,7 +101,7 @@ export function ToastProvider({
                 </>
               )}
             </div>
-            {toast.tone === 'unpaid' && (
+            {toast.tone !== 'paid' && (
               <button
                 type="button"
                 className="pp-btn pp-btn-ghost pp-btn-icon pp-btn-sm"
