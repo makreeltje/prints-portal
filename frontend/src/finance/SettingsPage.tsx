@@ -4,12 +4,13 @@ import { useId, useState, type ReactNode } from 'react';
 import { api } from '../api/client';
 import { FieldError, GenericError } from '../components/FieldError';
 import { useToast } from '../components/toast-context';
-import { parseAmount } from '../i18n/format';
 import { t, type MessageKey } from '../i18n/nl';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
 import { fetchCustomers, keys } from '../prints/api';
 import { useTheme } from '../theme/useTheme';
 import { THEME_ORDER } from '../theme/theme';
+import { LogoField } from './LogoField';
+import { PricingSection, PrintersSection } from './SettingsPricing';
 import {
   fetchSettings,
   fetchSpoolmanStatus,
@@ -28,9 +29,9 @@ const THEME_LABELS: Record<(typeof THEME_ORDER)[number], MessageKey> = {
 
 /**
  * ScreenSettings (`/instellingen`, Admin): Algemeen (re-index, theme),
- * Prijzen (Standaardmarge), Bedrijfsgegevens, Klanten (niet factureren) and
- * the Spoolman status. Printer profiles, tariff and material prices have an
- * API but no screen yet (GAP-033); the logo upload comes with M7.
+ * Prijzen (Standaardmarge, Stroomtarief, Materiaalprijzen), Printers,
+ * Bedrijfsgegevens with the logo, Klanten (niet factureren) and the
+ * Spoolman status.
  */
 export function SettingsPage() {
   const settings = useQuery({ queryKey: financeKeys.settings, queryFn: fetchSettings });
@@ -48,6 +49,7 @@ export function SettingsPage() {
         ) : (
           <>
             <PricingSection pricing={settings.data.pricing} />
+            <PrintersSection printers={settings.data.printers} />
             <CompanySection company={settings.data.company} />
           </>
         )}
@@ -107,8 +109,8 @@ function GeneralSection() {
         )}
         {state === 'failed' && <GenericError />}
       </div>
-      <fieldset className="app-fieldset pp-col">
-        <legend className="pp-label">{t('settings.theme')}</legend>
+      <fieldset className="pp-reset">
+        <legend className="pp-flabel pp-fw-medium pp-strong pp-mb-1">{t('settings.theme')}</legend>
         <div className="pp-row pp-gap-4">
           {THEME_ORDER.map((value) => (
             <label key={value} className="pp-opt">
@@ -126,73 +128,6 @@ function GeneralSection() {
           ))}
         </div>
       </fieldset>
-    </Section>
-  );
-}
-
-function PricingSection({ pricing }: { pricing: Settings['pricing'] }) {
-  const id = useId();
-  const toast = useToast();
-  const queryClient = useQueryClient();
-  const [text, setText] = useState(
-    pricing.defaultMarkupPercent === null ? '' : String(pricing.defaultMarkupPercent),
-  );
-  const [invalid, setInvalid] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const save = async () => {
-    const value = text.trim() === '' ? null : parseAmount(text);
-    if (text.trim() !== '' && (value === null || value < 0)) {
-      setInvalid(true);
-      return;
-    }
-    setInvalid(false);
-    setBusy(true);
-    try {
-      await saveSettings('pricing', { ...pricing, defaultMarkupPercent: value });
-      await queryClient.invalidateQueries();
-    } catch {
-      toast.error(t('error.saveFailed'));
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <Section title={t('settings.pricing')}>
-      <form
-        className="pp-col pp-gap-3"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void save();
-        }}
-      >
-        <div className="pp-field">
-          <label htmlFor={`${id}-markup`}>{t('settings.defaultMarkup')}</label>
-          <div className="pp-affix">
-            <input
-              id={`${id}-markup`}
-              className="pp-input"
-              inputMode="decimal"
-              value={text}
-              aria-invalid={invalid || undefined}
-              aria-describedby={invalid ? `${id}-err ${id}-help` : `${id}-help`}
-              onChange={(event) => {
-                setText(event.target.value);
-              }}
-            />
-            <span className="pp-suffix">%</span>
-          </div>
-          <span id={`${id}-help`} className="pp-help">
-            {t('settings.defaultMarkupHelp')}
-          </span>
-          {invalid && <FieldError id={`${id}-err`}>{t('error.invalidAmount')}</FieldError>}
-        </div>
-        <div>
-          <button type="submit" className="pp-btn pp-btn-primary" disabled={busy} aria-busy={busy}>
-            {busy && <span className="pp-spin" aria-hidden="true" />}
-            {t('common.save')}
-          </button>
-        </div>
-      </form>
     </Section>
   );
 }
@@ -216,7 +151,7 @@ function CompanySection({ company }: { company: Settings['company'] }) {
       {multiline ? (
         <textarea
           id={`${id}-${key}`}
-          className="pp-input"
+          className="pp-input pp-minh-64"
           value={values[key]}
           onChange={(event) => {
             setValues({ ...values, [key]: event.target.value });
@@ -273,11 +208,16 @@ function CompanySection({ company }: { company: Settings['company'] }) {
           void save();
         }}
       >
-        {field('name', 'settings.name')}
-        {field('iban', 'settings.iban')}
+        <div className="pp-cols-2">
+          {field('name', 'settings.name')}
+          {field('iban', 'settings.iban')}
+        </div>
         {field('address', 'settings.address', true)}
-        {field('email', 'settings.emailOptional')}
-        {field('phone', 'settings.phoneOptional')}
+        <div className="pp-cols-2">
+          {field('email', 'settings.emailOptional')}
+          {field('phone', 'settings.phoneOptional')}
+        </div>
+        <LogoField />
         <div>
           <button type="submit" className="pp-btn pp-btn-primary" disabled={busy} aria-busy={busy}>
             {busy && <span className="pp-spin" aria-hidden="true" />}
@@ -313,9 +253,9 @@ function CustomersSection() {
       <span className="pp-help">{t('customers.notBilledHelp')}</span>
       {customers.isPending && <LoadingRows rows={2} />}
       {customers.isSuccess && (
-        <ul className="app-plain-list pp-col pp-gap-2">
+        <ul className="pp-plain">
           {customers.data.customers.map((customer) => (
-            <li key={customer.folder} className="pp-row pp-between">
+            <li key={customer.folder} className="pp-row pp-setrow">
               <span>
                 <b className="pp-strong">{customer.folder}</b>{' '}
                 <span className="pp-muted pp-text-sm">

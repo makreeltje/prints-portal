@@ -6,6 +6,8 @@ import { api } from '../api/client';
 import { useCurrentUser } from '../auth/context';
 import { useToast } from '../components/toast-context';
 import { BulkActionBar } from '../finance/BulkActionBar';
+import { BulkFailures } from '../finance/BulkDialogs';
+import type { BulkFailure } from '../finance/bulk-results';
 import { t } from '../i18n/nl';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
 import { useDocumentTitle } from '../pages/useDocumentTitle';
@@ -100,6 +102,7 @@ export function DashboardPage() {
   const items: PrintSummary[] = prints.data?.pages.flatMap((page) => page.items) ?? [];
   // Selection for the bulk bar (Admins and Editors); only prints still in the list count.
   const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set());
+  const [bulkFailures, setBulkFailures] = useState<BulkFailure[] | null>(null);
   const selectedPrints = items.filter((print) => selectedIds.has(print.id));
   const selected = new Set(selectedPrints.map((print) => print.id));
   const toggle = (id: string, on: boolean) => {
@@ -280,9 +283,14 @@ export function DashboardPage() {
         shown={items.length}
         total={total}
       />
+      {bulkFailures !== null && <BulkFailures failures={bulkFailures} />}
       {body}
       {canManage && selectedPrints.length > 0 && (
-        <BulkActionBar selected={selectedPrints} onClear={clearSelection} />
+        <BulkActionBar
+          selected={selectedPrints}
+          onClear={clearSelection}
+          onFailures={setBulkFailures}
+        />
       )}
       {total !== null && items.length > 0 && (
         <div className="pp-more">

@@ -279,11 +279,6 @@
 }
 
 /* ScreenPrintDetail */
-/* TagEditor: the popover takes its own line under the tag chips. */
-.app-tagpop-line {
-  flex-basis: 100%;
-}
-
 .app-alert-row {
   gap: var(--space-3);
 }
@@ -337,4 +332,11 @@
 .app-money-lg {
   font-size: var(--text-xl);
   line-height: var(--leading-xl);
+}
+
+/* The uploaded logo inside .pp-logo-box keeps its proportions. */
+.app-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }

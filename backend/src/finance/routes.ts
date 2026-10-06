@@ -638,6 +638,11 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
 
   app.get('/api/settings', { config: { auth: ADMIN } }, () => readSettings(db));
 
+  /** Standaardmarge for "Voorstel uit marge per print" (BulkDialogs); Editors may read it. */
+  app.get('/api/settings/markup', { config: { auth: MANAGE } }, async () => ({
+    defaultMarkupPercent: (await readSettings(db)).pricing.defaultMarkupPercent,
+  }));
+
   const settingsSchemas: Record<keyof Settings, object> = {
     pricing: {
       type: 'object',

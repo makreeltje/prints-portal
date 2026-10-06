@@ -77,16 +77,23 @@ export function SpoolPicker({
   );
 }
 
-function SpoolPopover({
+/**
+ * The search field and spool listbox. As a popover it closes on an outside
+ * click and Esc; `inline` (BulkDialogs) keeps it in place inside a dialog,
+ * where Esc belongs to the dialog.
+ */
+export function SpoolPopover({
   selected,
   trigger,
   onPick,
   onClose,
+  inline = false,
 }: {
   selected: number | null;
-  trigger: RefObject<HTMLButtonElement | null>;
+  trigger?: RefObject<HTMLButtonElement | null>;
   onPick: (spoolId: number | null) => void;
-  onClose: () => void;
+  onClose?: () => void;
+  inline?: boolean;
 }) {
   const id = useId();
   const queryClient = useQueryClient();
@@ -101,19 +108,20 @@ function SpoolPopover({
   });
 
   useEffect(() => {
+    if (inline) return;
     input.current?.focus();
     const onPointer = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (panel.current?.contains(target) || trigger.current?.contains(target)) return;
+      if (panel.current?.contains(target) || trigger?.current?.contains(target)) return;
       setTimeout(() => {
-        latestClose.current();
+        latestClose.current?.();
       });
     };
     document.addEventListener('pointerdown', onPointer);
     return () => {
       document.removeEventListener('pointerdown', onPointer);
     };
-  }, [trigger]);
+  }, [trigger, inline]);
 
   const needle = query.trim().toLocaleLowerCase('nl-NL');
   const matches = (spools.data?.spools ?? []).filter((spool) => {
@@ -144,21 +152,22 @@ function SpoolPopover({
       event.preventDefault();
       const option = options[activeIndex];
       onPick(option === undefined || option === null ? null : option.id);
-    } else if (event.key === 'Escape') {
+    } else if (event.key === 'Escape' && !inline) {
       event.preventDefault();
       event.stopPropagation();
-      onClose();
+      onClose?.();
     }
   };
 
   const unreachable = spools.isError;
   return (
-    <div ref={panel} className="pp-pop pp-picker">
+    <div ref={panel} className={inline ? 'pp-pop pp-picker pp-fill' : 'pp-pop pp-picker'}>
       <div className="pp-iwrap" role="search">
         <Search className="pp-ico" aria-hidden="true" />
         <input
           ref={input}
           className="pp-input"
+          data-autofocus={inline ? true : undefined}
           role="combobox"
           aria-expanded="true"
           aria-controls={`${id}-list`}

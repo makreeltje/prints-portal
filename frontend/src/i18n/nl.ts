@@ -315,6 +315,13 @@ export const nl = {
   'settings.theme.system': 'Systeem', // component copy: ScreenSettings
   'settings.theme.light': 'Licht', // component copy: ScreenSettings
   'settings.theme.dark': 'Donker', // component copy: ScreenSettings
+  'settings.logoUpload': 'Logo uploaden',
+  'settings.logoHelp': 'PNG of SVG. Vervangt de naam op het scherm en op documenten.',
+  'settings.reindexProgress': 'Indexeren… {done} van {total} bestanden',
+  'settings.logoOptional': 'Logo (optioneel)', // component copy: ScreenSettings preview
+  'settings.addAlias': 'Alias toevoegen', // component copy: ScreenSettings preview (aria-label)
+  'settings.addPrefix': 'Voorvoegsel toevoegen', // component copy: ScreenSettings preview (aria-label)
+  'settings.addPlaceholder': 'Toevoegen…', // component copy: ScreenSettings preview
   // Added in design system 1.4
   Key: 'Text',
   'settings.electricityTariff': 'Stroomtarief',

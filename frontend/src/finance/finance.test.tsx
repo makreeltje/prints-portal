@@ -443,6 +443,61 @@ describe('BulkActionBar', () => {
     });
   });
 
+  it('sets a price on the newest orders and lists the prints that failed (GAP-034)', async () => {
+    const calls = stubFetch({
+      'GET /api/prints': () => ({
+        json: { items: [print('p1', 'Box'), print('p2', 'Lamp'), print('p3', 'Hoes')], total: 3 },
+      }),
+      'GET /api/customers': () => ({ json: { customers: [] } }),
+      'GET /api/tags': () => ({ json: { tags: [] } }),
+      'GET /api/settings/markup': () => ({ json: { defaultMarkupPercent: 400 } }),
+      'POST /api/prints/bulk': () => ({
+        json: {
+          results: [
+            { id: 'p1', ok: true },
+            { id: 'p2', ok: false, error: 'paid', orderNumber: 2 },
+            { id: 'p3', ok: false, error: 'locked', orderNumber: 1, invoiceNumber: '2026-004' },
+          ],
+        },
+      }),
+    });
+    renderWithAuth(
+      <LiveProvider onSessionEnded={() => undefined}>
+        <DashboardPage />
+      </LiveProvider>,
+      { state: signedIn('Editor'), path: '/' },
+    );
+    for (const name of ['Box', 'Lamp', 'Hoes']) {
+      await userEvent.click(await screen.findByRole('checkbox', { name: `Selecteer ${name}` }));
+    }
+    const bar = screen.getByRole('region', { name: 'Acties voor selectie' });
+    await userEvent.click(
+      within(bar).getAllByRole('button', { name: 'Prijs instellen' })[0] as HTMLElement,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Prijs instellen voor 3 prints' });
+    expect(
+      within(dialog).getByText('De prijs komt op de nieuwste bestelling van elke print.'),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      within(dialog).getByRole('radio', { name: 'Voorstel uit marge per print (400%)' }),
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Prijs instellen' }));
+    await waitFor(() => {
+      expect(calls.find((c) => c.method === 'POST')?.body).toEqual({
+        ids: ['p1', 'p2', 'p3'],
+        action: 'setPrice',
+        suggested: true,
+      });
+    });
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('2 prints niet bijgewerkt');
+    expect(within(alert).getByText('Nabestelling 2 is al betaald.')).toBeInTheDocument();
+    expect(within(alert).getByText('Staat op factuur 2026-004.')).toBeInTheDocument();
+    expect(await screen.findByText('1 van 3 bijgewerkt')).toBeInTheDocument();
+    // The selection stays so the failed prints can be handled.
+    expect(screen.getByRole('region', { name: 'Acties voor selectie' })).toBeInTheDocument();
+  });
+
   it('shows the price and payment badge on cards, and no selection for Users', async () => {
     stubFetch({
       'GET /api/prints': () => ({ json: { items: [print('p1', 'Box')], total: 1 } }),
@@ -484,6 +539,7 @@ describe('SettingsPage', () => {
         },
       }),
       'PUT /api/customers/Joey/billing': () => ({ status: 204 }),
+      'HEAD /api/settings/logo': () => ({ status: 404 }),
       'GET /api/spoolman/status': () => ({
         json: {
           configured: true,
@@ -517,5 +573,88 @@ describe('SettingsPage', () => {
     });
     expect(screen.getByText('Verbonden')).toBeInTheDocument();
     expect(screen.getByText(/24 spoelen · laatste sync 14:05/)).toBeInTheDocument();
+  });
+
+  it('edits Stroomtarief, Materiaalprijzen and printers (GAP-033)', async () => {
+    const printer = {
+      key: 'k1max',
+      displayName: 'Creality K1 Max',
+      aliases: ['K1 Max'],
+      videoPrefixes: ['k1max_'],
+      watts: 350,
+    };
+    const calls = stubFetch({
+      'GET /api/settings': () => ({
+        json: {
+          pricing: {
+            defaultMarkupPercent: null,
+            tariffEurPerKwh: 0.3,
+            materialPricesPerKg: { PLA: 22.5 },
+          },
+          printers: [printer],
+          company: { name: '', iban: '', address: '', email: null, phone: null },
+        },
+      }),
+      'PUT /api/settings/pricing': (body) => ({
+        json: { pricing: body, printers: [], company: {} },
+      }),
+      'PUT /api/settings/printers': (body) => ({
+        json: { pricing: {}, printers: body, company: {} },
+      }),
+      'GET /api/customers': () => ({ json: { customers: [] } }),
+      'HEAD /api/settings/logo': () => ({ status: 404 }),
+      'GET /api/spoolman/status': () => ({ json: { configured: false } }),
+    });
+    renderWithAuth(<SettingsPage />, { state: signedIn('Admin'), path: '/instellingen' });
+    const tariff = await screen.findByLabelText('Stroomtarief');
+    expect(tariff).toHaveValue('0,30');
+    await userEvent.clear(tariff);
+    await userEvent.type(tariff, '0,3x');
+    const pricing = screen.getByRole('region', { name: 'Prijzen' });
+    await userEvent.click(within(pricing).getByRole('button', { name: 'Materiaal toevoegen' }));
+    const names = within(pricing).getAllByRole('textbox', { name: 'Materiaal' });
+    await userEvent.type(names[1] as HTMLElement, 'pla');
+    await userEvent.click(within(pricing).getByRole('button', { name: 'Opslaan' }));
+    expect(within(pricing).getByText('Vul een bedrag in, bijvoorbeeld 0,30.')).toBeInTheDocument();
+    expect(within(pricing).getByText('Dit materiaal staat er al.')).toBeInTheDocument();
+    expect(calls.some((c) => c.path === '/api/settings/pricing')).toBe(false);
+
+    await userEvent.clear(tariff);
+    await userEvent.type(tariff, '0,28');
+    await userEvent.clear(names[1] as HTMLElement);
+    await userEvent.type(names[1] as HTMLElement, 'PETG');
+    await userEvent.type(
+      within(pricing).getByRole('textbox', { name: 'Prijs per kg: PETG' }),
+      '24',
+    );
+    await userEvent.click(within(pricing).getByRole('button', { name: 'Opslaan' }));
+    await waitFor(() => {
+      expect(calls.find((c) => c.path === '/api/settings/pricing')?.body).toEqual({
+        defaultMarkupPercent: null,
+        tariffEurPerKwh: 0.28,
+        materialPricesPerKg: { PLA: 22.5, PETG: 24 },
+      });
+    });
+
+    const printers = screen.getByRole('region', { name: 'Printers' });
+    const watts = within(printers).getByLabelText('Vermogen');
+    await userEvent.clear(watts);
+    await userEvent.type(watts, '350,5');
+    await userEvent.type(
+      within(printers).getByRole('textbox', { name: 'Alias toevoegen' }),
+      'K1MAX{Enter}',
+    );
+    await userEvent.click(within(printers).getByRole('button', { name: 'Opslaan' }));
+    expect(
+      within(printers).getByText('Vul een aantal watt in, bijvoorbeeld 350.'),
+    ).toBeInTheDocument();
+    await userEvent.clear(watts);
+    await userEvent.type(watts, '360');
+    await userEvent.click(within(printers).getByRole('button', { name: 'Opslaan' }));
+    await waitFor(() => {
+      expect(calls.find((c) => c.path === '/api/settings/printers')?.body).toEqual([
+        { ...printer, aliases: ['K1 Max', 'K1MAX'], watts: 360 },
+      ]);
+    });
   });
 });

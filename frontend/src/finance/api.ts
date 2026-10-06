@@ -60,6 +60,7 @@ export const financeKeys = {
   spools: ['spools'] as const,
   spoolman: ['spoolman'] as const,
   settings: ['settings'] as const,
+  markup: ['settings', 'markup'] as const,
 };
 
 export const fetchSpools = () => api<SpoolList>('/api/spools');
@@ -123,6 +124,14 @@ export const fetchSettings = () => api<Settings>('/api/settings');
 
 export const saveSettings = <K extends keyof Settings>(key: K, value: Settings[K]) =>
   api<Settings>(`/api/settings/${key}`, { method: 'PUT', body: value });
+
+export const fetchMarkup = () =>
+  api<{ defaultMarkupPercent: number | null }>('/api/settings/markup');
+
+export const logoUrl = '/api/settings/logo';
+export const uploadLogo = (file: File) =>
+  api(logoUrl, { method: 'PUT', raw: { data: file, type: file.type } });
+export const removeLogo = () => api(logoUrl, { method: 'DELETE' });
 
 export const setNoBilling = (folder: string, noBilling: boolean) =>
   api(`/api/customers/${encodeURIComponent(folder)}/billing`, {

@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, CircleCheck, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -7,30 +7,45 @@ import { t } from '../i18n/nl';
 import { keys } from '../prints/api';
 import { TagPopover, type TagState } from '../prints/TagEditor';
 import type { PrintSummary } from '../prints/types';
-import { runBulk, type BulkAction } from './api';
+import { fetchMarkup, fetchSpoolmanStatus, financeKeys, runBulk, type BulkAction } from './api';
+import { BulkPriceDialog, BulkSpoolDialog } from './BulkDialogs';
+import { reasonOf, type BulkFailure } from './bulk-results';
+
+type Dialog = 'markPaid' | 'delete' | 'spool' | 'price' | null;
 
 /**
- * BulkActionBar: "{n} geselecteerd", Markeer als betaald, Tags, Verwijderen
- * and Selectie wissen. Spoel toewijzen and Prijs instellen wait for their
- * dialogs (GAP-034). Destructive and mark-all actions confirm with the
- * count; failures keep the selection and show a toast. On phones the
- * actions sit behind "Acties". Esc clears the selection.
+ * BulkActionBar: "{n} geselecteerd", Spoel toewijzen, Prijs instellen,
+ * Markeer als betaald, Tags, Verwijderen and Selectie wissen. Spoel and
+ * prijs open BulkDialogs; mark-all and delete confirm with the count; Tags
+ * opens the tri-state tag popover. Every action reports per print: a toast
+ * "{ok} van {totaal} bijgewerkt" and, for failures, the alert above the
+ * grid (`onFailures`). On phones the actions sit behind "Acties". Esc
+ * clears the selection.
  */
 export function BulkActionBar({
   selected,
   onClear,
+  onFailures,
 }: {
   selected: readonly PrintSummary[];
   onClear: () => void;
+  onFailures: (failures: BulkFailure[] | null) => void;
 }) {
   const toast = useToast();
   const queryClient = useQueryClient();
-  const [confirm, setConfirm] = useState<'markPaid' | 'delete' | null>(null);
-  const [tagsOpen, setTagsOpen] = useState(false);
+  const [dialog, setDialog] = useState<Dialog>(null);
+  const [tagsFrom, setTagsFrom] = useState<'wide' | 'phone' | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const tagsButton = useRef<HTMLButtonElement>(null);
+  const actionsButton = useRef<HTMLButtonElement>(null);
   const count = selected.length;
+  const spoolman = useQuery({
+    queryKey: financeKeys.spoolman,
+    queryFn: fetchSpoolmanStatus,
+    staleTime: 60_000,
+  });
+  const markup = useQuery({ queryKey: financeKeys.markup, queryFn: fetchMarkup });
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -42,15 +57,27 @@ export function BulkActionBar({
     };
   }, [onClear]);
 
-  const run = async (action: BulkAction, clearOnSuccess = true) => {
+  /** Runs one action for every selected print; a failed request throws for the dialog. */
+  const run = async (action: BulkAction, options: { quietSuccess?: boolean } = {}) => {
     setBusy(true);
     try {
       const { results } = await runBulk(
         selected.map((print) => print.id),
         action,
       );
-      if (results.some((result) => !result.ok)) toast.error(t('error.generic'));
-      else if (clearOnSuccess) onClear();
+      const ok = results.filter((result) => result.ok).length;
+      const failures = results
+        .filter((result) => !result.ok)
+        .map((result) => ({
+          id: result.id,
+          name: selected.find((print) => print.id === result.id)?.name ?? result.id,
+          reason: reasonOf(result),
+        }));
+      if (ok > 0 && options.quietSuccess !== true) {
+        toast.success(t('bulk.result', { ok, total: results.length }));
+      }
+      onFailures(failures.length === 0 ? null : failures);
+      if (failures.length === 0 && options.quietSuccess !== true) onClear();
     } finally {
       setBusy(false);
       await Promise.all([
@@ -65,28 +92,57 @@ export function BulkActionBar({
     return having === 0 ? 'off' : having === count ? 'on' : 'mixed';
   };
 
-  const actions = (
+  const open = (next: Dialog) => {
+    setMenuOpen(false);
+    setDialog(next);
+  };
+  const spoolOn = spoolman.data?.configured === true;
+
+  const actions = (where: 'wide' | 'phone') => (
     <>
+      {spoolOn && (
+        <button
+          type="button"
+          className="pp-btn pp-btn-secondary"
+          disabled={busy}
+          onClick={() => {
+            open('spool');
+          }}
+        >
+          {t('bulk.assignSpool')}
+        </button>
+      )}
       <button
         type="button"
         className="pp-btn pp-btn-secondary"
         disabled={busy}
         onClick={() => {
-          setConfirm('markPaid');
+          open('price');
+        }}
+      >
+        {t('bulk.setPrice')}
+      </button>
+      <button
+        type="button"
+        className="pp-btn pp-btn-secondary"
+        disabled={busy}
+        onClick={() => {
+          open('markPaid');
         }}
       >
         <CircleCheck className="pp-ico" aria-hidden="true" />
         {t('pay.markPaid')}
       </button>
       <button
-        ref={tagsButton}
+        ref={where === 'wide' ? tagsButton : undefined}
         type="button"
         className="pp-btn pp-btn-secondary"
         aria-haspopup="dialog"
-        aria-expanded={tagsOpen}
+        aria-expanded={tagsFrom === where}
         disabled={busy}
         onClick={() => {
-          setTagsOpen((open) => !open);
+          setMenuOpen(false);
+          setTagsFrom(tagsFrom === where ? null : where);
         }}
       >
         {t('tags.label')}
@@ -96,7 +152,7 @@ export function BulkActionBar({
         className="pp-btn pp-btn-danger"
         disabled={busy}
         onClick={() => {
-          setConfirm('delete');
+          open('delete');
         }}
       >
         <Trash2 className="pp-ico" aria-hidden="true" />
@@ -105,6 +161,17 @@ export function BulkActionBar({
     </>
   );
 
+  const applyTags = async ({ add, remove }: { add: string[]; remove: string[] }) => {
+    if (add.length > 0) await run({ action: 'addTags', tagIds: add }, { quietSuccess: true });
+    if (remove.length > 0) {
+      await run({ action: 'removeTags', tagIds: remove }, { quietSuccess: true });
+    }
+  };
+  const closeTags = () => {
+    (tagsFrom === 'phone' ? actionsButton : tagsButton).current?.focus();
+    setTagsFrom(null);
+  };
+
   return (
     <div className="pp-bulk" role="region" aria-label={t('bulk.region')}>
       <span className="count" aria-live="polite">
@@ -112,20 +179,46 @@ export function BulkActionBar({
       </span>
       {busy && <span className="pp-spin" aria-hidden="true" />}
       <div className="pp-only-wide">
-        <div className="pp-row pp-gap-2">{actions}</div>
+        <div className="pp-row pp-gap-2">
+          {actions('wide')}
+          {tagsFrom === 'wide' && (
+            <span className="pp-anchor up">
+              <TagPopover
+                stateOf={stateOf}
+                apply={applyTags}
+                trigger={tagsButton}
+                onClose={closeTags}
+              />
+            </span>
+          )}
+        </div>
       </div>
       <div className="pp-only-phone">
-        <button
-          type="button"
-          className="pp-btn pp-btn-secondary"
-          aria-expanded={menuOpen}
-          onClick={() => {
-            setMenuOpen((open) => !open);
-          }}
-        >
-          {t('bulk.actions')}
-          <ChevronDown className="pp-ico" aria-hidden="true" />
-        </button>
+        <span className="pp-anchor up">
+          <button
+            ref={actionsButton}
+            type="button"
+            className="pp-btn pp-btn-secondary"
+            aria-haspopup="true"
+            aria-expanded={menuOpen}
+            onClick={() => {
+              setTagsFrom(null);
+              setMenuOpen((value) => !value);
+            }}
+          >
+            {t('bulk.actions')}
+            <ChevronDown className="pp-ico" aria-hidden="true" />
+          </button>
+          {menuOpen && <div className="pp-pop pp-col pp-p3">{actions('phone')}</div>}
+          {tagsFrom === 'phone' && (
+            <TagPopover
+              stateOf={stateOf}
+              apply={applyTags}
+              trigger={actionsButton}
+              onClose={closeTags}
+            />
+          )}
+        </span>
       </div>
       <button
         type="button"
@@ -135,46 +228,51 @@ export function BulkActionBar({
       >
         <X className="pp-ico" aria-hidden="true" />
       </button>
-      {menuOpen && (
-        <div className="pp-only-phone app-tagpop-line">
-          <div className="pp-col pp-gap-2">{actions}</div>
-        </div>
-      )}
-      {tagsOpen && (
-        <div className="app-tagpop-line">
-          <TagPopover
-            stateOf={stateOf}
-            apply={async ({ add, remove }) => {
-              if (add.length > 0) await run({ action: 'addTags', tagIds: add }, false);
-              if (remove.length > 0) await run({ action: 'removeTags', tagIds: remove }, false);
-            }}
-            trigger={tagsButton}
-            onClose={() => {
-              setTagsOpen(false);
-            }}
-          />
-        </div>
-      )}
       <ConfirmDialog
-        open={confirm === 'markPaid'}
+        open={dialog === 'markPaid'}
         title={t('confirm.bulkMarkPaid', { count })}
         confirmLabel={t('pay.markPaid')}
         onConfirm={() => run({ action: 'markPaid' })}
         onClose={() => {
-          setConfirm(null);
+          setDialog(null);
         }}
       />
       <ConfirmDialog
-        open={confirm === 'delete'}
+        open={dialog === 'delete'}
         title={t('confirm.bulkDelete', { count })}
         body={t('confirm.deletePrintBody')}
         confirmLabel={t('common.delete')}
         destructive
         onConfirm={() => run({ action: 'delete' })}
         onClose={() => {
-          setConfirm(null);
+          setDialog(null);
         }}
       />
+      {dialog === 'spool' && (
+        <BulkSpoolDialog
+          count={count}
+          onApply={(spoolId) => run({ action: 'assignSpool', spoolId })}
+          onClose={() => {
+            setDialog(null);
+          }}
+        />
+      )}
+      {dialog === 'price' && (
+        <BulkPriceDialog
+          count={count}
+          markupPercent={markup.data?.defaultMarkupPercent ?? null}
+          onApply={(choice) =>
+            run(
+              'suggested' in choice
+                ? { action: 'setPrice', suggested: true }
+                : { action: 'setPrice', salePrice: choice.salePrice },
+            )
+          }
+          onClose={() => {
+            setDialog(null);
+          }}
+        />
+      )}
     </div>
   );
 }
