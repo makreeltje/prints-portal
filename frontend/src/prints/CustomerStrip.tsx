@@ -1,6 +1,7 @@
-import { Trash2 } from 'lucide-react';
+import { Receipt, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { StatusBadge } from './bits';
 import type { Customer } from './types';
@@ -101,6 +102,7 @@ function CustomerCard({
           )}
         </span>
       </div>
+      {!customer.deleted && <CustomerMoney customer={customer} />}
       {customer.deleted && (
         <>
           <div>
@@ -122,6 +124,28 @@ function CustomerCard({
         </>
       )}
     </div>
+  );
+}
+
+/** Openstaand, "Alles betaald" or the Niet factureren badge (Admins and Editors). */
+function CustomerMoney({ customer }: { customer: Customer }) {
+  if (customer.noBilling) {
+    return (
+      <span>
+        <span className="pp-badge neutral">
+          <Receipt className="pp-ico" aria-hidden="true" />
+          {t('customers.notBilled')}
+        </span>
+      </span>
+    );
+  }
+  if (customer.openAmount === null) return null;
+  if (customer.openAmount === 0) return <span className="cnt">{t('customers.allPaid')}</span>;
+  return (
+    <span className="amt">
+      <span className="pp-money">{formatMoney(customer.openAmount)}</span>
+      <small>{t('money.openSuffix')}</small>
+    </span>
   );
 }
 

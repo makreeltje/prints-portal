@@ -45,7 +45,7 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
         'l.auto_excluded',
         'l.auto_exclusion_reason',
         'l.user_excluded',
-        'l.times_printed',
+        'a.path_hash',
         'l.possible_duplicate',
         'l.id',
       ])
@@ -144,8 +144,13 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
     );
     await db
       .updateTable('print_lines')
-      .set({ user_excluded: 0, times_printed: 2 })
+      .set({ user_excluded: 0 })
       .where('id', '=', next?.id ?? '')
+      .execute();
+    await db
+      .updateTable('order_items')
+      .set({ times_printed: 2 })
+      .where('path_hash', '=', next?.path_hash ?? '')
       .execute();
 
     const file = path.join(root, 'Joey/Babybox locks/Nog te printen/next_PLA_11m.gcode');
@@ -159,7 +164,13 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
     const after = (await lines('Joey/Babybox locks')).find(
       (l) => l.file_name === 'next_PLA_11m.gcode',
     );
-    expect(after).toMatchObject({ user_excluded: 0, times_printed: 2, auto_excluded: 1 });
+    expect(after).toMatchObject({ user_excluded: 0, auto_excluded: 1 });
+    const item = await db
+      .selectFrom('order_items')
+      .select('times_printed')
+      .where('path_hash', '=', after?.path_hash ?? '')
+      .executeTakeFirstOrThrow();
+    expect(item.times_printed).toBe(2);
     // 173.49 + 2 × 3.03
     expect((await record('Joey/Babybox locks')).total_grams).toBe(179.55);
   });
@@ -252,6 +263,80 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
     expect(names.map((n) => n.file_name)).toEqual(['key_PLA_11m.gcode', 'notes.pdf']);
     expect((await lines('Denise/Keychain')).map((l) => l.possible_duplicate)).toEqual([0]);
     expect((await record('Denise/Keychain')).total_grams).toBe(3.03);
+  });
+
+  it('puts every file of a new print in order 1', async () => {
+    await indexer.indexAll();
+    const box = await record('Joey/Babybox locks');
+    const orders = await db
+      .selectFrom('print_orders')
+      .selectAll()
+      .where('print_record_id', '=', box.id)
+      .execute();
+    expect(orders.map((o) => o.number)).toEqual([1]);
+    const items = await db
+      .selectFrom('order_items')
+      .selectAll()
+      .where('order_id', '=', orders[0]?.id ?? '')
+      .execute();
+    expect(items).toHaveLength((await lines('Joey/Babybox locks')).length);
+    expect(items.every((item) => item.times_printed === 1)).toBe(true);
+  });
+
+  it('keeps new files out of an order that has a price, until a Nabestelling', async () => {
+    await indexer.indexAll();
+    const keychain = await record('Denise/Keychain');
+    await db
+      .updateTable('print_orders')
+      .set({ sale_price_cents: 500 })
+      .where('print_record_id', '=', keychain.id)
+      .execute();
+    await putText(
+      root,
+      'Denise/Keychain/spare_PLA_11m.gcode',
+      '; total filament used [g] = 3.03\n',
+    );
+    await indexer.indexProject({ customerFolder: 'Denise', projectFolder: 'Keychain' });
+
+    const items = await db
+      .selectFrom('order_items as i')
+      .innerJoin('print_orders as o', 'o.id', 'i.order_id')
+      .select('i.path_hash')
+      .where('o.print_record_id', '=', keychain.id)
+      .execute();
+    const spare = (await lines('Denise/Keychain')).find(
+      (l) => l.file_name === 'spare_PLA_11m.gcode',
+    );
+    expect(spare).toBeDefined();
+    expect(items.map((i) => i.path_hash)).not.toContain(spare?.path_hash);
+    // A file in no order does not count.
+    expect((await record('Denise/Keychain')).total_grams).toBe(keychain.total_grams);
+  });
+
+  it('keeps orders and their items when an archived folder returns', async () => {
+    await indexer.indexAll();
+    const before = await record('Denise/Board game');
+    await db
+      .updateTable('order_items')
+      .set({ times_printed: 3 })
+      .where('order_id', 'in', (eb) =>
+        eb.selectFrom('print_orders').select('id').where('print_record_id', '=', before.id),
+      )
+      .execute();
+    const folder = path.join(root, 'Denise/Board game');
+    const parked = path.join(root, '..', `parked-orders-${path.basename(root)}`);
+    await rename(folder, parked);
+    await indexer.indexAll();
+    await rename(parked, folder);
+    await indexer.indexAll();
+    const items = await db
+      .selectFrom('order_items as i')
+      .innerJoin('print_orders as o', 'o.id', 'i.order_id')
+      .select('i.times_printed')
+      .where('o.print_record_id', '=', before.id)
+      .execute();
+    expect(items.length).toBeGreaterThan(0);
+    expect(items.every((item) => item.times_printed === 3)).toBe(true);
   });
 
   it('records unreadable files instead of failing', async () => {

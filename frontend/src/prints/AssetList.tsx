@@ -11,11 +11,21 @@ import {
   PenTool,
   TriangleAlert,
 } from 'lucide-react';
+import { useState } from 'react';
+import { SpoolPicker } from '../finance/SpoolPicker';
 import { formatDuration, formatFileSize, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { downloadUrl } from './api';
 import { ColourDot, StatusBadge } from './bits';
 import type { Asset, AssetType, Line } from './types';
+
+/** What Admins and Editors can change per file, plate or slot (M6). */
+export interface AssetControls {
+  setTimesPrinted: (line: Line, times: number) => Promise<void>;
+  setExcluded: (line: Line, excluded: boolean) => Promise<void>;
+  /** Slot 0: the whole file or plate. Absent when Spoolman is not configured. */
+  setSpool?: (line: Line, slot: number, spoolId: number | null) => Promise<void>;
+}
 
 const ICONS: Record<AssetType, typeof File> = {
   gcode: FileCode,
@@ -29,11 +39,17 @@ const ICONS: Record<AssetType, typeof File> = {
 };
 
 /**
- * AssetListItem, read-only for M5: name, size, grams and time, "× n",
- * duplicates, exclusion reasons, plates and slots, download. The count
- * input, the exclusion toggle and spool pickers arrive with M6.
+ * AssetListItem: name, size, grams and time, "× n", duplicates, exclusion
+ * reasons, plates and slots, download; with `controls` also "Aantal keer
+ * geprint", "Telt niet mee in kosten" and the spool pickers.
  */
-export function AssetList({ assets }: { assets: readonly Asset[] }) {
+export function AssetList({
+  assets,
+  controls,
+}: {
+  assets: readonly Asset[];
+  controls?: AssetControls;
+}) {
   return (
     <section className="pp-card pp-assetlist pp-flush" aria-labelledby="files-title">
       <div className="pp-card-hd rule">
@@ -44,14 +60,14 @@ export function AssetList({ assets }: { assets: readonly Asset[] }) {
       </div>
       <ul className="app-plain-list">
         {assets.map((asset) => (
-          <AssetRow key={asset.id} asset={asset} />
+          <AssetRow key={asset.id} asset={asset} controls={controls} />
         ))}
       </ul>
     </section>
   );
 }
 
-function AssetRow({ asset }: { asset: Asset }) {
+function AssetRow({ asset, controls }: { asset: Asset; controls?: AssetControls }) {
   const Icon = ICONS[asset.type];
   // A sliced 3MF: the parent row has only the download; plates are child rows.
   const plates = asset.type === '3mf' ? asset.lines : [];
@@ -80,6 +96,9 @@ function AssetRow({ asset }: { asset: Asset }) {
           {own !== undefined && <ExclusionReason line={own} />}
         </div>
         <div className="pp-row acts">
+          {own !== undefined && controls !== undefined && (
+            <LineControls line={own} controls={controls} />
+          )}
           <a
             className="pp-btn pp-btn-ghost pp-btn-icon"
             href={downloadUrl(asset.id)}
@@ -90,7 +109,7 @@ function AssetRow({ asset }: { asset: Asset }) {
           </a>
         </div>
       </div>
-      {own !== undefined && own.slots.length > 1 && <Slots line={own} />}
+      {own !== undefined && own.slots.length > 1 && <Slots line={own} controls={controls} />}
       {plates.length > 0 && (
         <ul className="app-plain-list">
           {plates.map((plate) => (
@@ -108,8 +127,13 @@ function AssetRow({ asset }: { asset: Asset }) {
                   </div>
                   <ExclusionReason line={plate} />
                 </div>
+                {controls !== undefined && (
+                  <div className="pp-row acts">
+                    <LineControls line={plate} controls={controls} />
+                  </div>
+                )}
               </div>
-              {plate.slots.length > 1 && <Slots line={plate} />}
+              {plate.slots.length > 1 && <Slots line={plate} controls={controls} />}
             </li>
           ))}
         </ul>
@@ -162,27 +186,110 @@ function ExclusionReason({ line }: { line: Line }) {
   );
 }
 
-/** Multi-colour: one indented row per used slot with the slicer colour. */
-function Slots({ line }: { line: Line }) {
+/**
+ * Multi-colour: one indented row per used slot. Without an assigned spool
+ * the slicer colour shows with the hint chip "slicer".
+ */
+function Slots({ line, controls }: { line: Line; controls?: AssetControls }) {
+  const setSpool = controls?.setSpool;
   return (
     <ul className="app-plain-list">
       {line.slots.map((slot) => (
         <li key={slot.slot} className="pp-slot">
           <b className="pp-strong">{t('asset.slot', { n: slot.slot })}</b>
           <span className="pp-num">{formatGrams(slot.grams)}</span>
-          <span className="sw">
-            {slot.colour === null ? (
-              <ColourDot colour={null} />
-            ) : (
-              <>
-                <ColourDot colour={slot.colour} slicer />
-                <span className="pp-hintchip">{t('asset.slicerHint')}</span>
-              </>
-            )}
-            {slot.material}
-          </span>
+          {slot.spool === null && (
+            <span className="sw">
+              {slot.colour === null ? (
+                <ColourDot colour={null} />
+              ) : (
+                <>
+                  <ColourDot colour={slot.colour} slicer />
+                  <span className="pp-hintchip">{t('asset.slicerHint')}</span>
+                </>
+              )}
+              {slot.material}
+            </span>
+          )}
+          {setSpool !== undefined && (
+            <SpoolPicker
+              value={slot.spool}
+              label={t('asset.slot', { n: slot.slot })}
+              onChange={(spoolId) => setSpool(line, slot.slot, spoolId)}
+            />
+          )}
         </li>
       ))}
     </ul>
+  );
+}
+
+/** "Aantal keer geprint", the file's own spool (one slot) and "Telt niet mee in kosten". */
+function LineControls({ line, controls }: { line: Line; controls: AssetControls }) {
+  const setSpool = controls.setSpool;
+  return (
+    <>
+      {line.inOrder && <TimesPrinted line={line} onSave={controls.setTimesPrinted} />}
+      {setSpool !== undefined && line.slots.length <= 1 && (
+        <SpoolPicker
+          value={line.spool ?? line.slots[0]?.spool ?? null}
+          label={t('asset.pickSpool')}
+          onChange={(spoolId) => setSpool(line, 0, spoolId)}
+        />
+      )}
+      <label className="pp-opt sm">
+        <input
+          type="checkbox"
+          role="switch"
+          className="pp-switch"
+          checked={line.excluded}
+          onChange={(event) => void controls.setExcluded(line, event.target.checked)}
+        />
+        {t('asset.excluded')}
+      </label>
+    </>
+  );
+}
+
+/** Compact NumberInput: saves on Enter or when focus leaves; min 1, whole numbers. */
+function TimesPrinted({
+  line,
+  onSave,
+}: {
+  line: Line;
+  onSave: (line: Line, times: number) => Promise<void>;
+}) {
+  const [text, setText] = useState(String(line.timesPrinted));
+  // Follow the server value when it changes (a save here or elsewhere).
+  const [shown, setShown] = useState(line.timesPrinted);
+  if (shown !== line.timesPrinted) {
+    setShown(line.timesPrinted);
+    setText(String(line.timesPrinted));
+  }
+  const commit = () => {
+    const value = Number(text);
+    if (!Number.isInteger(value) || value < 1 || value > 1000) {
+      setText(String(line.timesPrinted));
+      return;
+    }
+    if (value !== line.timesPrinted) void onSave(line, value);
+  };
+  return (
+    <label className="pp-qty">
+      {t('asset.timesPrinted')}
+      <input
+        className="pp-input"
+        inputMode="numeric"
+        value={text}
+        aria-label={t('asset.timesPrinted')}
+        onChange={(event) => {
+          setText(event.target.value);
+        }}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') commit();
+        }}
+      />
+    </label>
   );
 }

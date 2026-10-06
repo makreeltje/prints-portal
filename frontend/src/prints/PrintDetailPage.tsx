@@ -10,9 +10,27 @@ import { formatDate } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { LoadingRows } from '../pages/ErrorState';
 import { ForbiddenState, GlobalErrorState } from '../pages/StatePages';
+import {
+  addPayment,
+  fetchSpoolmanStatus,
+  financeKeys,
+  setLineExcluded,
+  setLineOverride,
+  setOrderOverrides,
+  setPrintSpool,
+  setSalePrice,
+  setTimesPrinted,
+  undoPayment,
+  undoWriteOff,
+  writeOff,
+} from '../finance/api';
+import { CostBreakdown } from '../finance/CostBreakdown';
+import { CostOverrideDialog } from '../finance/CostOverrideDialog';
+import { PaymentPanel, type PaymentActions } from '../finance/PaymentPanel';
+import { SpoolPicker } from '../finance/SpoolPicker';
 import { deletePrint, fetchPrint, keys, modelUrl, restorePrint, setPrintTags } from './api';
 import { RecordBadge, TagChip, Thumbnail } from './bits';
-import { AssetList } from './AssetList';
+import { AssetList, type AssetControls } from './AssetList';
 import { TagEditor } from './TagEditor';
 import { placeOf } from './filter';
 import { Meta } from './PrintCard';
@@ -21,12 +39,12 @@ import type { PrintDetail } from './types';
 const Viewer3D = lazy(() => import('./Viewer3D'));
 
 /**
- * ScreenPrintDetail (M5 part): breadcrumb, name, record badge, tags with the
- * TagEditor and Verwijderen (Admins and Editors), the archived and deleted alerts,
- * Viewer3D and the file list. Spool, costs and payment arrive with M6.
- * Users see name, status, tags and the model, no files (owner decision).
- * One column until M6 brings the right-hand column (spool, costs, payment);
- * the viewer becomes `pp-viewer fluid` in that two-column layout.
+ * ScreenPrintDetail: breadcrumb, name, record badge, tags with the TagEditor
+ * and Verwijderen (Admins and Editors), the archived and deleted alerts; left
+ * Viewer3D and the file list, right "Spoel voor de hele print",
+ * CostBreakdown and PaymentPanel. On phones the payment comes right after
+ * the viewer. Users see name, price, status, tags and the model only.
+ * With several orders (Nabestelling) the page shows order 1 (GAP-035).
  */
 export function PrintDetailPage() {
   const { id = '' } = useParams();
@@ -36,6 +54,13 @@ export function PrintDetailPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [adjusting, setAdjusting] = useState(false);
+  const spoolman = useQuery({
+    queryKey: financeKeys.spoolman,
+    queryFn: fetchSpoolmanStatus,
+    enabled: canManage,
+    staleTime: 60_000,
+  });
   const print = useQuery({
     queryKey: keys.detail(id),
     queryFn: () => fetchPrint(id),
@@ -55,6 +80,54 @@ export function PrintDetailPage() {
   const detail = print.data;
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: keys.all });
+  /** Runs a change and refetches; a failure shows "Opslaan mislukt" and is rethrown for the caller. */
+  const change = async (action: () => Promise<unknown>) => {
+    try {
+      await action();
+    } catch (error) {
+      toast.error(t('error.saveFailed'));
+      throw error;
+    } finally {
+      await refresh();
+    }
+  };
+  const quiet = (action: () => Promise<unknown>) => change(action).catch(() => undefined);
+  const order = detail.orders[0];
+  const spoolmanOn = canManage && spoolman.data?.configured === true;
+  const controls: AssetControls | undefined = canManage
+    ? {
+        setTimesPrinted: (line, times) => quiet(() => setTimesPrinted(detail.id, line.id, times)),
+        setExcluded: (line, excluded) => quiet(() => setLineExcluded(detail.id, line.id, excluded)),
+        ...(spoolmanOn
+          ? {
+              setSpool: (line, slot, spoolId) =>
+                quiet(() => setLineOverride(detail.id, line.id, { slot, spoolId })),
+            }
+          : {}),
+      }
+    : undefined;
+  const paymentActions: PaymentActions | null =
+    order === undefined
+      ? null
+      : {
+          setSalePrice: (price) => change(() => setSalePrice(order.id, price)),
+          addPayment: (amount) => change(() => addPayment(order.id, amount)),
+          writeOff: (reason) => change(() => writeOff(order.id, reason)),
+          undoPayment: () => change(() => undoPayment(order.id)),
+          undoWriteOff: () => change(() => undoWriteOff(order.id)),
+        };
+  const payment =
+    order === undefined || paymentActions === null ? null : (
+      <PaymentPanel
+        order={order}
+        printName={detail.name}
+        markupPercent={detail.markupPercent}
+        notBilled={detail.noBilling}
+        cost={order.cost?.totalCost ?? null}
+        role={user.role}
+        actions={paymentActions}
+      />
+    );
   const removeTag = async (tagId: string) => {
     try {
       await setPrintTags(
@@ -132,9 +205,58 @@ export function PrintDetailPage() {
         </div>
       )}
 
-      <ModelView detail={detail} />
-
-      {detail.assets !== null && detail.assets.length > 0 && <AssetList assets={detail.assets} />}
+      <div className="pp-detail">
+        <div>
+          <ModelView detail={detail} />
+          {payment !== null && <div className="pp-only-phone">{payment}</div>}
+          {detail.assets !== null && detail.assets.length > 0 && (
+            <AssetList assets={detail.assets} controls={controls} />
+          )}
+        </div>
+        <div>
+          {spoolmanOn && (
+            <section className="pp-card pp-sec pp-gap-2" aria-labelledby="spool-title">
+              <b id="spool-title" className="pp-strong">
+                {t('spool.forPrint')}
+              </b>
+              <SpoolPicker
+                value={detail.spool}
+                label={t('spool.forPrint')}
+                onChange={(spoolId) => quiet(() => setPrintSpool(detail.id, spoolId))}
+              />
+              <span className="pp-help">{t('spool.forPrintHelp')}</span>
+            </section>
+          )}
+          {canManage && order?.cost !== undefined && (
+            <CostBreakdown
+              cost={order.cost}
+              notBilled={detail.noBilling}
+              manual={
+                order.overrides !== undefined &&
+                (order.overrides.pricePerKg !== null ||
+                  order.overrides.grams !== null ||
+                  order.overrides.printSeconds !== null)
+              }
+              onAdjust={() => {
+                setAdjusting(true);
+              }}
+            />
+          )}
+          {payment !== null && <div className="pp-only-wide">{payment}</div>}
+        </div>
+      </div>
+      {adjusting && order !== undefined && (
+        <CostOverrideDialog
+          open
+          subject={detail.name}
+          initial={order.overrides ?? { pricePerKg: null, grams: null, printSeconds: null }}
+          priceFromSpoolman={detail.spool?.pricePerKg !== null && detail.spool !== null}
+          onSave={(overrides) => change(() => setOrderOverrides(order.id, overrides))}
+          onClose={() => {
+            setAdjusting(false);
+          }}
+        />
+      )}
 
       <ConfirmDialog
         open={confirmDelete}
@@ -161,7 +283,7 @@ function ModelView({ detail }: { detail: PrintDetail }) {
     return (
       <Suspense
         fallback={
-          <div className="pp-viewer">
+          <div className="pp-viewer fluid">
             <span className="pp-spin" aria-hidden="true" />
             <span>{t('viewer.loading')}</span>
           </div>
@@ -173,7 +295,7 @@ function ModelView({ detail }: { detail: PrintDetail }) {
   }
   return (
     <div className="pp-col app-no-model">
-      <div className="pp-viewer">
+      <div className="pp-viewer fluid">
         <Box className="pp-ico pp-ico-24" aria-hidden="true" />
         <span>{t('viewer.none')}</span>
       </div>

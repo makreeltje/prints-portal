@@ -6,6 +6,7 @@ import { TEST_DATABASES } from '../helpers/databases.js';
 type Caller = 'anonymous' | 'User' | 'Editor' | 'Admin';
 
 const UNKNOWN = '00000000-0000-4000-8000-000000000000';
+const MANAGE: readonly Caller[] = ['Editor', 'Admin'];
 
 /**
  * Every endpoint so far × every kind of caller. "ok" means the guard let the
@@ -140,6 +141,152 @@ const ENDPOINTS: {
     name: 'POST /api/admin/reindex',
     request: () => ({ method: 'POST', url: '/api/admin/reindex' }),
     allowed: ['Admin'],
+  },
+  // M6: financials. Users never reach any of them.
+  { name: 'GET /api/spools', request: () => ({ url: '/api/spools' }), allowed: MANAGE },
+  {
+    name: 'GET /api/spoolman/status',
+    request: () => ({ url: '/api/spoolman/status' }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'POST /api/spoolman/refresh',
+    request: () => ({ method: 'POST', url: '/api/spoolman/refresh' }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'PUT /api/prints/:id/spool',
+    request: () => ({
+      method: 'PUT',
+      url: `/api/prints/${UNKNOWN}/spool`,
+      payload: { spoolId: null },
+    }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'PUT /api/prints/:id/lines/:lineId/override',
+    request: () => ({
+      method: 'PUT',
+      url: `/api/prints/${UNKNOWN}/lines/${UNKNOWN}/override`,
+      payload: { slot: 0, pricePerKg: 20 },
+    }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'PUT /api/prints/:id/lines/:lineId/excluded',
+    request: () => ({
+      method: 'PUT',
+      url: `/api/prints/${UNKNOWN}/lines/${UNKNOWN}/excluded`,
+      payload: { excluded: true },
+    }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'PUT /api/prints/:id/lines/:lineId/times',
+    request: () => ({
+      method: 'PUT',
+      url: `/api/prints/${UNKNOWN}/lines/${UNKNOWN}/times`,
+      payload: { timesPrinted: 2 },
+    }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'POST /api/prints/:id/orders',
+    request: () => ({
+      method: 'POST',
+      url: `/api/prints/${UNKNOWN}/orders`,
+      payload: { items: [{ lineId: UNKNOWN, timesPrinted: 1 }] },
+    }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'PUT /api/orders/:orderId/overrides',
+    request: () => ({
+      method: 'PUT',
+      url: `/api/orders/${UNKNOWN}/overrides`,
+      payload: { pricePerKg: null, grams: null, printSeconds: null },
+    }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'PUT /api/orders/:orderId/sale-price',
+    request: () => ({
+      method: 'PUT',
+      url: `/api/orders/${UNKNOWN}/sale-price`,
+      payload: { salePrice: 10 },
+    }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'POST /api/orders/:orderId/payments',
+    request: () => ({
+      method: 'POST',
+      url: `/api/orders/${UNKNOWN}/payments`,
+      payload: { amount: 1 },
+    }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'POST /api/orders/:orderId/payments/undo',
+    request: () => ({ method: 'POST', url: `/api/orders/${UNKNOWN}/payments/undo` }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'POST /api/orders/:orderId/write-off',
+    request: () => ({ method: 'POST', url: `/api/orders/${UNKNOWN}/write-off`, payload: {} }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'DELETE /api/orders/:orderId/write-off',
+    request: () => ({ method: 'DELETE', url: `/api/orders/${UNKNOWN}/write-off` }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'POST /api/calculate',
+    request: () => ({ method: 'POST', url: '/api/calculate', payload: { grams: 10 } }),
+    allowed: MANAGE,
+  },
+  { name: 'GET /api/settings', request: () => ({ url: '/api/settings' }), allowed: ['Admin'] },
+  {
+    name: 'PUT /api/settings/pricing',
+    request: () => ({
+      method: 'PUT',
+      url: '/api/settings/pricing',
+      payload: { defaultMarkupPercent: 400, tariffEurPerKwh: 0.25, materialPricesPerKg: {} },
+    }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'PUT /api/settings/printers',
+    request: () => ({ method: 'PUT', url: '/api/settings/printers', payload: [] }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'PUT /api/settings/company',
+    request: () => ({
+      method: 'PUT',
+      url: '/api/settings/company',
+      payload: { name: 'Studio', iban: '', address: '' },
+    }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'PUT /api/customers/:folder/billing',
+    request: () => ({
+      method: 'PUT',
+      url: '/api/customers/Nobody/billing',
+      payload: { noBilling: true },
+    }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'POST /api/prints/bulk',
+    request: () => ({
+      method: 'POST',
+      url: '/api/prints/bulk',
+      payload: { action: 'markPaid', ids: [UNKNOWN] },
+    }),
+    allowed: MANAGE,
   },
 ];
 

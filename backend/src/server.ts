@@ -6,6 +6,7 @@ import { ConfigError, loadConfig, type AppConfig } from './config/config.js';
 import { checkDataDir } from './config/data-dir.js';
 import { createDatabase } from './db/connection.js';
 import { migrateToLatest } from './db/migrate.js';
+import { seedSettings } from './finance/settings.js';
 import { PrintsWatcher } from './indexing/watcher.js';
 
 /** The built SPA sits next to the backend in the repo and in the image: <root>/frontend/dist. */
@@ -35,6 +36,7 @@ async function main(): Promise<void> {
   if (dataDirProblem !== null) app.log.warn(dataDirProblem);
   const applied = await migrateToLatest(db);
   if (applied.length > 0) app.log.info({ migrations: applied }, 'database migrated');
+  await seedSettings(db, config.seedTariffEurPerKwh, new Date().toISOString());
   try {
     await ensureBootstrapAdmin(db, config, app.log);
   } catch (error) {

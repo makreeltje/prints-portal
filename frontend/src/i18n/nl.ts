@@ -105,6 +105,88 @@ export const nl = {
 
   'status.archived': 'Gearchiveerd',
   'status.deleted': 'Verwijderd',
+  'status.paid': 'Betaald',
+  'status.unpaid': 'Open',
+  'status.partiallyPaid': 'Deels betaald',
+  'status.writtenOff': 'Afgeschreven',
+  'status.noSpool': 'Geen spoel',
+  'status.noPrice': 'Geen prijs',
+  'status.noCost': 'Kosten ontbreken',
+  'status.daysOpen': '{days} dagen open',
+  'status.paidOn': 'Betaald op {date}',
+  'status.remaining': 'Nog {amount} open',
+  'status.notBilled': 'Niet factureren',
+
+  'money.suggested': 'voorgesteld',
+  'money.of': 'van {amount}',
+  'money.cost': 'Kosten',
+  'money.openSuffix': 'openstaand', // component copy: CustomerCard
+
+  'spool.choose': 'Kies een spoel',
+  'spool.search': 'Zoek op materiaal, kleur of leverancier',
+  'spool.empty': 'Geen spoelen gevonden',
+  'spool.none': 'Geen spoel',
+  'spool.pricePerKg': '€/kg',
+  'spool.forPrint': 'Spoel voor de hele print', // component copy: ScreenPrintDetail
+  'spool.forPrintHelp': 'Bestanden en slots met een eigen spoel gaan hierboven voor.', // component copy: ScreenPrintDetail
+  'spool.searchLabel': 'Zoeken', // component copy: SpoolPicker preview (aria-label)
+  'spool.unreachable': 'Niet bereikbaar', // component copy: ScreenSettings
+
+  'cost.title': 'Totaalkosten',
+  'cost.titleNotBilled': 'Kosten', // component copy: CostBreakdown (niet factureren)
+  'cost.material': 'Materiaal',
+  'cost.electricity': 'Stroom',
+  'cost.source.spoolman': 'Spoolman',
+  'cost.source.manual': 'Handmatig',
+  'cost.source.estimated': 'Geschat',
+  'cost.noPrinterProfile': 'Geen printerprofiel, stroomkosten zijn niet meegerekend.',
+  'cost.incomplete': 'Onvolledig',
+  'cost.adjust': 'Aanpassen',
+  'cost.notCounted': 'Niet meegeteld: {count} bestanden',
+  'cost.adjustTitle': 'Kosten aanpassen',
+  'cost.pricePerKg': 'Prijs per kg',
+  'cost.weight': 'Gewicht',
+  'cost.printTime': 'Printtijd',
+  'cost.manualSource': 'Waarden die je invult krijgen de bron Handmatig.',
+  'cost.spoolmanPrice': 'Prijs komt uit Spoolman.',
+  'cost.resetToComputed': 'Terug naar berekend',
+  'cost.col.item': 'Post', // component copy: CostBreakdown preview
+  'cost.col.calculation': 'Berekening', // component copy: CostBreakdown preview
+  'cost.col.source': 'Bron', // component copy: CostBreakdown preview
+  'cost.col.amount': 'Bedrag', // component copy: CostBreakdown preview
+  'cost.slotRow': 'Slot {n}', // component copy: CostBreakdown
+  'cost.partOf': 'onderdeel van {name}', // component copy: CostBreakdown (accessibility)
+  'cost.hours': 'u', // component copy: CostOverrideDialog
+  'cost.minutes': 'min', // component copy: CostOverrideDialog
+
+  'pay.title': 'Betaling', // component copy: PaymentPanel
+  'pay.salePrice': 'Verkoopprijs',
+  'pay.suggest': 'Voorstel uit marge ({markup}%)',
+  'pay.amountPaid': 'Betaald bedrag',
+  'pay.markPaid': 'Markeer als betaald',
+  'pay.writeOff': 'Afschrijven',
+  'pay.undo': 'Betaling ongedaan maken',
+  'pay.paidOf': 'Betaald € {paid} van € {total}',
+  'pay.writeOffReason': 'Reden',
+  'pay.writeOffReasonHelp': 'Optioneel. Zichtbaar voor beheerders.',
+  'pay.undoWriteOff': 'Afschrijving ongedaan maken',
+  'pay.notBilledNote': 'Deze klant wordt niet gefactureerd.',
+  'pay.userNote': 'Je ziet alleen prijs en status.',
+  'pay.adminOnly': 'Alleen zichtbaar voor beheerders.',
+  'pay.writtenOffAmount': 'Afgeschreven', // component copy: PaymentPanel
+  'pay.paidAmount': 'Betaald', // component copy: PaymentPanel
+  'pay.date': 'Datum', // component copy: PaymentPanel
+  'pay.by': 'Door', // component copy: PaymentPanel
+  'pay.missingCost': 'Het voorstel uit marge is niet beschikbaar.', // component copy: PaymentPanel preview
+
+  'bulk.selected': '{count} geselecteerd',
+  'bulk.assignSpool': 'Spoel toewijzen',
+  'bulk.setPrice': 'Prijs instellen',
+  'bulk.region': 'Acties voor selectie',
+  'bulk.actions': 'Acties', // component copy: BulkActionBar (phone)
+  'common.clearSelection': 'Selectie wissen',
+
+  'print.price': 'Prijs', // component copy: PrintRow
 
   'tags.label': 'Tags',
   'tags.labelCount': 'Tags ({count})', // component copy: FilterBar preview
@@ -153,6 +235,8 @@ export const nl = {
   'print.noWeightOrTime': 'geen gewicht of tijd', // component copy: ScreenPrintDetail preview
   'print.userView': 'Je ziet alleen prijs en status.', // component copy: ScreenPrintDetail
 
+  'asset.timesPrinted': 'Aantal keer geprint',
+  'asset.pickSpool': 'Kies een spoel',
   'asset.timesPrintedShort': '× {count}',
   'asset.duplicate': 'Mogelijk dubbel',
   'asset.duplicateHint': 'Zelfde bestand als {fileName}. Gebruik liever Aantal keer geprint.',
@@ -185,6 +269,13 @@ export const nl = {
   'empty.unreachable.body': 'Controleer of de map gekoppeld is.',
   'empty.reindex': 'Opnieuw indexeren', // component copy: EmptyState
 
+  'confirm.writeOff': 'Afschrijven ({amount})?',
+  'confirm.writeOffBody': "De rest van '{name}' ({amount}) wordt afgeschreven.",
+  'confirm.writeOffPaid': 'Al betaald: {amount}. Alleen de rest wordt afgeschreven.',
+  'confirm.undoWriteOff': 'Afschrijving ongedaan maken?',
+  'confirm.undoPayment': 'Betaling ongedaan maken?',
+  'confirm.bulkMarkPaid': '{count, plural, one {# print} other {# prints}} als betaald markeren?', // component copy: BulkActionBar ("a ConfirmDialog naming the count")
+  'confirm.bulkDelete': '{count, plural, one {# print} other {# prints}} verwijderen?', // component copy: BulkActionBar
   'confirm.deletePrint': "Print '{name}' verwijderen?",
   'confirm.deletePrintBody': 'Verwijderen verbergt de print, maar bewaart de financiële gegevens.',
   'confirm.deleteCustomer': "Klant '{name}' verwijderen?",
@@ -194,9 +285,32 @@ export const nl = {
   'confirm.deleteTagBody':
     '{count, plural, one {De tag wordt van # print verwijderd} other {De tag wordt van # prints verwijderd}}. De prints zelf blijven bestaan.',
 
+  'error.invalidAmount': 'Vul een bedrag in, bijvoorbeeld 11,89.',
+  'error.invalidEmail': 'Vul een geldig e-mailadres in.',
   'error.tagExists': 'Deze tag bestaat al.',
   'error.tagTooLong': 'Een tag mag maximaal 64 tekens hebben.',
 
+  'settings.title': 'Instellingen', // component copy: ScreenSettings
+  'settings.general': 'Algemeen',
+  'settings.reindex': 'Opnieuw indexeren',
+  'settings.reindexDone': 'Klaar.',
+  'settings.pricing': 'Prijzen',
+  'settings.defaultMarkup': 'Standaardmarge',
+  'settings.defaultMarkupHelp': 'Gebruikt voor "Voorstel uit marge" op elke print.', // component copy: ScreenSettings preview
+  'settings.company': 'Bedrijfsgegevens',
+  'settings.companyHelp': 'Deze gegevens staan op facturen, herinneringen en overzichten.',
+  'settings.name': 'Naam',
+  'settings.iban': 'IBAN',
+  'settings.address': 'Adres',
+  'settings.emailOptional': 'E-mailadres (optioneel)',
+  'settings.phoneOptional': 'Telefoon (optioneel)',
+  'settings.customers': 'Klanten',
+  'settings.spoolman': 'Spoolman',
+  'settings.connected': 'Verbonden',
+  'settings.spoolmanMeta': '{url} · {count} spoelen · laatste sync {time}', // component copy: ScreenSettings preview
+  'customers.notBilled': 'Niet factureren',
+  'customers.notBilledHelp':
+    'Voor een klant die niet wordt gefactureerd (bijvoorbeeld je eigen prints) zie je alleen de kosten.',
   'settings.theme': 'Thema',
   'settings.theme.system': 'Systeem', // component copy: ScreenSettings
   'settings.theme.light': 'Licht', // component copy: ScreenSettings

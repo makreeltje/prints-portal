@@ -39,21 +39,37 @@ export function TagEditor({ printId, current }: { printId: string; current: read
       {open && (
         // Its own line under the chips; on phones the design system makes it a bottom sheet.
         <div className="app-tagpop-line">
-          <TagPopover printId={printId} current={current} trigger={trigger} onClose={close} />
+          <TagPopover
+            stateOf={(tagId) => (current.some((tag) => tag.id === tagId) ? 'on' : 'off')}
+            apply={async ({ add, remove }) => {
+              const next = new Set(current.map((tag) => tag.id));
+              for (const tagId of add) next.add(tagId);
+              for (const tagId of remove) next.delete(tagId);
+              await setPrintTags(printId, [...next]);
+            }}
+            trigger={trigger}
+            onClose={close}
+          />
         </div>
       )}
     </>
   );
 }
 
-function TagPopover({
-  printId,
-  current,
+export type TagState = 'on' | 'off' | 'mixed';
+
+/**
+ * The TagEditor popover. `stateOf` says whether the print (or, in bulk,
+ * every selected print) carries a tag: on, off or mixed (tri-state).
+ */
+export function TagPopover({
+  stateOf,
+  apply,
   trigger,
   onClose,
 }: {
-  printId: string;
-  current: readonly Tag[];
+  stateOf: (tagId: string) => TagState;
+  apply: (change: { add: string[]; remove: string[] }) => Promise<void>;
   trigger: RefObject<HTMLButtonElement | null>;
   onClose: () => void;
 }) {
@@ -82,7 +98,6 @@ function TagPopover({
     };
   }, [trigger]);
 
-  const selected = new Set(current.map((tag) => tag.id));
   const all = tags.data?.tags ?? [];
   const name = normalizeTagName(query);
   const key = name === '' ? '' : tagKey(name);
@@ -91,10 +106,10 @@ function TagPopover({
   const exists = all.some((tag) => tagKey(tag.name) === key);
   const canCreate = key !== '' && !exists && !tooLong && tags.isSuccess;
 
-  const save = async (change: () => Promise<string[]>) => {
+  const save = async (change: () => Promise<{ add: string[]; remove: string[] }>) => {
     setSaving(true);
     try {
-      await setPrintTags(printId, await change());
+      await apply(await change());
     } catch {
       toast.error(t('error.saveFailed'));
     } finally {
@@ -105,17 +120,16 @@ function TagPopover({
       setSaving(false);
     }
   };
+  // A mixed tag becomes "on" for every print when ticked.
   const toggle = (tag: Tag, checked: boolean) =>
     save(() =>
-      Promise.resolve(
-        checked ? [...selected, tag.id] : [...selected].filter((tagId) => tagId !== tag.id),
-      ),
+      Promise.resolve(checked ? { add: [tag.id], remove: [] } : { add: [], remove: [tag.id] }),
     );
   const create = () =>
     save(async () => {
       const tag = await createTag(name);
       setQuery('');
-      return [...selected, tag.id];
+      return { add: [tag.id], remove: [] };
     });
 
   return (
@@ -162,20 +176,26 @@ function TagPopover({
       )}
       <div className="list">
         {tags.isPending && <span className="pp-spin" aria-hidden="true" />}
-        {shown.map((tag) => (
-          <label key={tag.id} className="row">
-            <input
-              type="checkbox"
-              className="pp-check"
-              checked={selected.has(tag.id)}
-              disabled={saving}
-              onChange={(event) => {
-                void toggle(tag, event.target.checked);
-              }}
-            />
-            <TagChip tag={tag} />
-          </label>
-        ))}
+        {shown.map((tag) => {
+          const state = stateOf(tag.id);
+          return (
+            <label key={tag.id} className="row">
+              <input
+                type="checkbox"
+                className="pp-check"
+                checked={state === 'on'}
+                ref={(input) => {
+                  if (input !== null) input.indeterminate = state === 'mixed';
+                }}
+                disabled={saving}
+                onChange={() => {
+                  void toggle(tag, state !== 'on');
+                }}
+              />
+              <TagChip tag={tag} />
+            </label>
+          );
+        })}
         {tags.isSuccess && shown.length === 0 && !canCreate && (
           <span className="empty">{t('tags.none')}</span>
         )}

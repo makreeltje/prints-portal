@@ -32,10 +32,15 @@ function detail(): PrintDetail {
     tags: [{ id: 't1', name: 'cadeau', colour: 'lilac', ink: null }],
     hasThumbnail: false,
     colour: null,
+    money: null,
     version: 'v1',
     printerModel: null,
     archivedAt: null,
     hasModel: false,
+    noBilling: false,
+    markupPercent: null,
+    spool: null,
+    orders: [],
     assets: [],
   };
 }

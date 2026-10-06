@@ -19,3 +19,12 @@ export function roundMoney(value: number): number {
 export function roundEnergy(value: number): number {
   return roundHalfAwayFromZero(value, 3);
 }
+
+/** Euros (2 decimals) to integer cents for storage. */
+export function toCents(euros: number): number {
+  return Math.round(roundMoney(euros) * 100);
+}
+
+export function fromCents(cents: number): number {
+  return cents / 100;
+}

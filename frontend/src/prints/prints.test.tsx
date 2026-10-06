@@ -25,6 +25,7 @@ function summary(overrides: Partial<PrintSummary> = {}): PrintSummary {
     tags: [{ id: 't1', name: 'cadeau', colour: 'lilac', ink: null }],
     hasThumbnail: true,
     colour: '#1a1a1a',
+    money: null,
     version: 'v1',
     ...overrides,
   };
@@ -131,7 +132,7 @@ describe('DashboardPage', () => {
       within(table)
         .getAllByRole('columnheader')
         .map((th) => th.textContent),
-    ).toEqual(['Naam', 'Materiaal', 'Tijd', 'Gewicht', 'Status', 'Tags']);
+    ).toEqual(['', 'Naam', 'Materiaal', 'Tijd', 'Gewicht', 'Status', 'Tags']);
   });
 
   it('lets Admins restore a deleted print', async () => {
@@ -347,6 +348,10 @@ function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
     printerModel: 'Creality K1 Max',
     archivedAt: null,
     hasModel: false,
+    noBilling: false,
+    markupPercent: null,
+    spool: null,
+    orders: [],
     assets: [
       {
         id: 'a1',
@@ -368,11 +373,28 @@ function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
             excluded: false,
             autoExclusionReason: null,
             timesPrinted: 2,
+            inOrder: true,
+            spool: null,
+            manualPricePerKg: null,
             possibleDuplicate: true,
             duplicateOf: 'copy.gcode',
             slots: [
-              { slot: 2, grams: 50, colour: '#ff7a1a', material: 'PETG' },
-              { slot: 4, grams: 37, colour: '#e63946', material: 'PLA' },
+              {
+                slot: 2,
+                grams: 50,
+                colour: '#ff7a1a',
+                material: 'PETG',
+                spool: null,
+                manualPricePerKg: null,
+              },
+              {
+                slot: 4,
+                grams: 37,
+                colour: '#e63946',
+                material: 'PLA',
+                spool: null,
+                manualPricePerKg: null,
+              },
             ],
           },
         ],
@@ -397,6 +419,9 @@ function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
             excluded: true,
             autoExclusionReason: 'folder:Test',
             timesPrinted: 1,
+            inOrder: true,
+            spool: null,
+            manualPricePerKg: null,
             possibleDuplicate: false,
             duplicateOf: null,
             slots: [],

@@ -11,6 +11,100 @@ export interface Tag {
   ink: string | null;
 }
 
+/** A Spoolman spool as it was when assigned (or as listed by /api/spools). */
+export interface Spool {
+  id: number;
+  name: string;
+  vendor: string | null;
+  material: string | null;
+  colour: string | null;
+  colours: string[];
+  multiColourDirection: 'coaxial' | 'longitudinal' | null;
+  pricePerKg: number | null;
+  remainingWeight?: number | null;
+  takenAt?: string;
+}
+
+export type OrderStatus = 'open' | 'partial' | 'paid' | 'writtenOff' | 'noPrice' | 'notBilled';
+export type PriceSource = 'spoolman' | 'manual' | 'estimated';
+export type MissingInput = 'grams' | 'price' | 'printTime' | 'printerProfile' | 'tariff';
+
+/** Price and status summed over a print's orders; cost is null for Users. */
+export interface PrintMoney {
+  status: OrderStatus;
+  price: number | null;
+  priceSuggested: boolean;
+  paid: number;
+  writtenOff: number;
+  remaining: number | null;
+  orderCount: number;
+  cost: number | null;
+}
+
+export interface CostSlot {
+  slot: number;
+  grams: number;
+  pricePerKg: number | null;
+  source: PriceSource | null;
+  cost: number | null;
+}
+
+export interface CostLine {
+  lineId: string;
+  fileName: string;
+  plateIndex: number;
+  counted: boolean;
+  timesPrinted: number;
+  grams: number | null;
+  materialCost: number | null;
+  slots: CostSlot[];
+}
+
+export interface Cost {
+  materialCost: number | null;
+  electricityCost: number | null;
+  totalCost: number | null;
+  grams: number | null;
+  gramsSource: 'files' | 'manual' | 'metadata' | null;
+  printPricePerKg: number | null;
+  printPriceSource: PriceSource | null;
+  printSeconds: number | null;
+  timeSource: 'files' | 'manual' | null;
+  energyKwh: number | null;
+  tariffEurPerKwh: number | null;
+  missing: MissingInput[];
+  lines: CostLine[];
+  excludedCount: number;
+}
+
+export interface Payment {
+  id: string;
+  amount: number;
+  paidAt: string;
+  by: string | null;
+  undoneAt: string | null;
+  undoneBy: string | null;
+}
+
+/** An order of a print; Users get id, number, createdAt, status and price only. */
+export interface Order {
+  id: string;
+  number: number;
+  createdAt: string;
+  status: OrderStatus;
+  price: number | null;
+  salePrice?: number | null;
+  priceSuggested?: boolean;
+  suggestion?: { salePrice: number | null; reason: 'noMarkup' | 'noCost' | null };
+  paid?: number;
+  remaining?: number | null;
+  writtenOff?: { amount: number; at: string; by: string | null; reason: string | null } | null;
+  payments?: Payment[];
+  overrides?: { pricePerKg: number | null; grams: number | null; printSeconds: number | null };
+  cost?: Cost;
+  items?: { lineId: string | null; timesPrinted: number }[];
+}
+
 export interface TagWithCount extends Tag {
   printCount: number;
 }
@@ -30,6 +124,7 @@ export interface PrintSummary {
   tags: Tag[];
   hasThumbnail: boolean;
   colour: string | null;
+  money: PrintMoney | null;
   version: string;
 }
 
@@ -38,6 +133,8 @@ export interface Slot {
   grams: number;
   colour: string | null;
   material: string | null;
+  spool: Spool | null;
+  manualPricePerKg: number | null;
 }
 
 export interface Line {
@@ -50,6 +147,9 @@ export interface Line {
   excluded: boolean;
   autoExclusionReason: string | null;
   timesPrinted: number;
+  inOrder: boolean;
+  spool: Spool | null;
+  manualPricePerKg: number | null;
   possibleDuplicate: boolean;
   duplicateOf: string | null;
   slots: Slot[];
@@ -72,12 +172,19 @@ export interface PrintDetail extends PrintSummary {
   archivedAt: string | null;
   hasModel: boolean;
   assets: Asset[] | null;
+  noBilling: boolean;
+  markupPercent: number | null;
+  spool: Spool | null;
+  orders: Order[];
 }
 
 export interface Customer {
   folder: string;
   printCount: number;
   deleted: boolean;
+  noBilling: boolean;
+  /** Openstaand, euros; null for Users and niet-factureren klanten. */
+  openAmount: number | null;
 }
 
 export interface PrintFilter {

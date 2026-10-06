@@ -57,7 +57,8 @@ const tagBody = {
   properties: {
     name: { type: 'string', minLength: 1, maxLength: 200 },
     // New colours are palette keys only (design system v1.3); null clears the colour.
-    colour: { anyOf: [{ type: 'string', enum: TAG_PALETTE }, { type: 'null' }] },
+    // A union, not anyOf: with type coercion anyOf would turn null into "".
+    colour: { type: ['string', 'null'], enum: [...TAG_PALETTE, null] },
   },
 } as const;
 
@@ -109,6 +110,7 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
       customers: await listCustomers(db, await scopeOf(request), {
         includeArchived: request.query.archived === true,
         includeDeleted: request.query.deleted === true && isAdmin(request),
+        withMoney: sessionUser(request).role !== 'User',
       }),
     }),
   );
@@ -151,6 +153,7 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
         includeDeleted: query.deleted === true && isAdmin(request),
         offset: query.offset,
         limit: query.limit,
+        withCost: sessionUser(request).role !== 'User',
       });
     },
   );
@@ -358,7 +361,7 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
   );
 
   // Full re-index of the prints folder (Instellingen, "Opnieuw indexeren").
-  app.post<{ Body: { force?: boolean } | undefined }>(
+  app.post<{ Body: { force?: boolean; wait?: boolean } | undefined }>(
     '/api/admin/reindex',
     {
       config: { auth: ADMIN },
@@ -368,7 +371,7 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
             {
               type: 'object',
               additionalProperties: false,
-              properties: { force: { type: 'boolean' } },
+              properties: { force: { type: 'boolean' }, wait: { type: 'boolean' } },
             },
             { type: 'null' },
           ],
@@ -377,6 +380,11 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
     },
     async (request, reply) => {
       const force = request.body?.force === true;
+      // "Opnieuw indexeren" in Instellingen waits for the summary to say "Klaar.".
+      if (request.body?.wait === true) {
+        const summary = await indexer.indexAll(force);
+        return reply.code(200).send({ started: true, summary });
+      }
       indexer.indexAll(force).then(
         (summary) => {
           request.log.info({ summary, force }, 'reindex finished');

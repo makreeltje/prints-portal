@@ -15,6 +15,7 @@ import { GlobalErrorState } from './pages/StatePages';
 import { UsersPage } from './pages/UsersPage';
 import { DashboardPage } from './prints/DashboardPage';
 import { LiveProvider } from './prints/live';
+import { SettingsPage } from './finance/SettingsPage';
 import { PrintDetailPage } from './prints/PrintDetailPage';
 import { TagsPage } from './prints/TagsPage';
 import { AppShell } from './shell/AppShell';
@@ -27,6 +28,12 @@ const pages = (methods: AuthMethods): Partial<Record<string, ReactNode>> => ({
     <>
       <DocumentTitle title="nav.users" />
       <UsersPage localLogin={methods.local} />
+    </>
+  ),
+  '/instellingen': (
+    <>
+      <DocumentTitle title="nav.settings" />
+      <SettingsPage />
     </>
   ),
   '/tags': (

@@ -45,6 +45,7 @@ let passwordHash: Promise<string> | undefined;
 export async function startTestApp(
   databaseUrl: string,
   env: Record<string, string> = {},
+  options: { spoolmanFetch?: typeof fetch } = {},
 ): Promise<TestApp> {
   // Thumbnails and other app data go to a throw-away folder.
   const dataDir = await mkdtemp(path.join(os.tmpdir(), 'pp-data-'));
@@ -57,7 +58,7 @@ export async function startTestApp(
   });
   const db = await openTestDatabase(databaseUrl);
   const clock = new TestClock();
-  const app = await buildApp({ config, db, now: clock.now });
+  const app = await buildApp({ config, db, now: clock.now, ...options });
   passwordHash ??= hashPassword(TEST_PASSWORD);
 
   const testApp: TestApp = {

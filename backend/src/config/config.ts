@@ -36,6 +36,15 @@ export interface AppConfig {
     /** Extra origins allowed to call the API with credentials; empty disables CORS. */
     corsOrigins: readonly string[];
   };
+  spoolman: {
+    /** Base URL of Spoolman (v0.27.0), e.g. http://spoolman:7912; null hides spool features. */
+    url: string | null;
+    timeoutMs: number;
+    /** How long the spool list is reused before Spoolman is asked again. */
+    cacheMs: number;
+  };
+  /** First-start seed for the electricity tariff (€/kWh); afterwards Instellingen owns it. */
+  seedTariffEurPerKwh: number | null;
   /** Non-fatal configuration problems to log at startup (development only). */
   warnings: readonly string[];
 }
@@ -143,6 +152,36 @@ export function loadConfig(
   const staticDirText = read('STATIC_DIR');
   const staticDir = staticDirText === undefined ? defaults.staticDir : path.resolve(staticDirText);
 
+  const spoolmanText = read('SPOOLMAN_URL');
+  let spoolmanUrl: string | null = null;
+  if (spoolmanText !== undefined) {
+    try {
+      const url = new URL(spoolmanText);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new TypeError('protocol');
+      spoolmanUrl = url.href.replace(/\/+$/, '');
+    } catch {
+      problems.push(`SPOOLMAN_URL must be an http(s) address (got "${spoolmanText}")`);
+    }
+  }
+  const spoolmanTimeoutMs = parseMilliseconds(
+    read('SPOOLMAN_TIMEOUT_MS'),
+    3000,
+    'SPOOLMAN_TIMEOUT_MS',
+    problems,
+  );
+  const tariffText = read('ELECTRICITY_TARIFF_EUR_PER_KWH');
+  let seedTariff: number | null = null;
+  if (tariffText !== undefined) {
+    const value = Number(tariffText.replace(',', '.'));
+    if (!Number.isFinite(value) || value < 0 || value > 10) {
+      problems.push(
+        `ELECTRICITY_TARIFF_EUR_PER_KWH must be a number between 0 and 10 (got "${tariffText}")`,
+      );
+    } else {
+      seedTariff = value;
+    }
+  }
+
   if (problems.length > 0) throw new ConfigError(problems);
 
   return {
@@ -163,6 +202,8 @@ export function loadConfig(
     },
     auth,
     http: { trustedProxies, corsOrigins },
+    spoolman: { url: spoolmanUrl, timeoutMs: spoolmanTimeoutMs, cacheMs: 60_000 },
+    seedTariffEurPerKwh: seedTariff,
     warnings,
   };
 }

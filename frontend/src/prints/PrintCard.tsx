@@ -1,30 +1,37 @@
 import { Clock } from 'lucide-react';
 import { Link } from 'react-router';
-import { formatDuration, formatGrams } from '../i18n/format';
+import { PaymentBadge } from '../finance/money';
+import { formatDuration, formatGrams, formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { RecordBadge, TagChip, Thumbnail } from './bits';
 import { placeOf } from './filter';
 import type { PrintSummary } from './types';
 
 /**
- * PrintCard. Price and payment status arrive with M6; selection and the bulk
- * bar too. The card is a link to the detail page with the name as its text.
+ * PrintCard: thumbnail, name (a link to the detail page), place, meta, tags,
+ * then the price block and the status badge. Admins and Editors get the
+ * selection checkbox for the bulk bar.
  */
 export function PrintCard({
   print,
   flashing,
   onFlashEnd,
   restore,
+  selected,
+  onSelect,
 }: {
   print: PrintSummary;
   flashing: boolean;
   onFlashEnd: () => void;
   /** Herstellen, for Admins on deleted prints. */
   restore?: () => void;
+  selected?: boolean;
+  onSelect?: (selected: boolean) => void;
 }) {
   const classes = ['pp-card', 'pp-print'];
   if (print.status === 'deleted') classes.push('is-deleted');
   if (print.status === 'archived') classes.push('is-archived');
+  if (selected === true) classes.push('is-selected');
   if (flashing) classes.push('flash');
   return (
     <article className={classes.join(' ')} onAnimationEnd={onFlashEnd}>
@@ -46,9 +53,14 @@ export function PrintCard({
             ))}
           </div>
         )}
-        {print.status !== 'indexed' && (
+        {(print.status !== 'indexed' || print.money !== null) && (
           <div className="pp-foot">
-            <RecordBadge print={print} />
+            <PriceBlock print={print} />
+            {print.status === 'indexed' ? (
+              print.money !== null && <PaymentBadge status={print.money.status} />
+            ) : (
+              <RecordBadge print={print} />
+            )}
             {restore !== undefined && (
               <button
                 type="button"
@@ -61,8 +73,55 @@ export function PrintCard({
           </div>
         )}
       </div>
+      {/* After the content: positioned later, so it sits above the card's link overlay. */}
+      {onSelect !== undefined && (
+        <span className="pp-sel app-above-link">
+          <label className="pp-opt">
+            <input
+              type="checkbox"
+              className="pp-check"
+              aria-label={t('print.select', { name: print.name })}
+              checked={selected === true}
+              onChange={(event) => {
+                onSelect(event.target.checked);
+              }}
+            />
+          </label>
+        </span>
+      )}
     </article>
   );
+}
+
+/**
+ * The price block (MoneyDisplay): the price, with "Nog € x open" when partly
+ * paid; "Kosten € x" for a klant that is niet factureren.
+ */
+export function PriceBlock({ print }: { print: PrintSummary }) {
+  const money = print.money;
+  if (money === null) return <span />;
+  if (money.status === 'notBilled') {
+    if (money.cost === null) return <span />;
+    return (
+      <span>
+        <span className="pp-muted pp-text-xs">{t('money.cost')}</span>{' '}
+        <span className="pp-money">{formatMoney(money.cost)}</span>
+      </span>
+    );
+  }
+  if (money.price === null) return <span />;
+  if (money.status === 'partial' && money.remaining !== null) {
+    return (
+      <span>
+        <span className="pp-money">{formatMoney(money.price)}</span>
+        <br />
+        <span className="pp-remaining">
+          {t('status.remaining', { amount: formatMoney(money.remaining) })}
+        </span>
+      </span>
+    );
+  }
+  return <span className="pp-money">{formatMoney(money.price)}</span>;
 }
 
 /** materiaal · tijd · gram, each only when known. */
