@@ -444,3 +444,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
+
+## GAP-037 [open] Invoice PDF payment sentence without IBAN or with nothing open
+- **Type:** unclear spec
+- **Found while:** M7, rendering the Factuur, Concept and Herinnering PDFs (DocInvoice, DocReminder)
+- **Where needed:** `backend/src/finance/pdf.ts` (footer of Factuur, Concept and Herinnering)
+- **What is missing or wrong:** the footer always reads "Graag € {bedrag} overmaken naar IBAN {iban} t.n.v. {naam}, onder vermelding van {referentie}." The spec does not say what to print when (a) Bedrijfsgegevens has no IBAN or name yet, or (b) the invoice is fully paid (a full invoice includes paid prints, so Openstaand can be € 0,00).
+- **Why it matters:** the klant would read "Graag € 0,00 overmaken" or "naar IBAN  t.n.v. ,".
+- **Proposal:** (a) refuse "Definitief maken" until name and IBAN are filled in (Concept still works, without the sentence); (b) with nothing open, replace the sentence with "Deze factuur is volledig betaald."
+- **Blocked:** nothing else; the PDFs follow the spec literally until this is decided.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.3
