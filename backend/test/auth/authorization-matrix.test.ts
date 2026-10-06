@@ -288,6 +288,72 @@ const ENDPOINTS: {
     }),
     allowed: MANAGE,
   },
+  { name: 'GET /api/outstanding', request: () => ({ url: '/api/outstanding' }), allowed: MANAGE },
+  {
+    name: 'POST /api/outstanding/:folder/mark-paid',
+    request: () => ({ method: 'POST', url: '/api/outstanding/Nobody/mark-paid' }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'GET /api/customers/:folder/reminder.pdf',
+    request: () => ({ url: '/api/customers/Nobody/reminder.pdf' }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'GET /api/customers/:folder/invoice/preview',
+    request: () => ({ url: '/api/customers/Nobody/invoice/preview' }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'GET /api/customers/:folder/invoice/concept.pdf',
+    request: () => ({ url: '/api/customers/Nobody/invoice/concept.pdf' }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'POST /api/customers/:folder/invoices',
+    request: () => ({ method: 'POST', url: '/api/customers/Nobody/invoices', payload: {} }),
+    allowed: MANAGE,
+  },
+  { name: 'GET /api/invoices', request: () => ({ url: '/api/invoices' }), allowed: MANAGE },
+  {
+    name: 'GET /api/invoices/:id',
+    request: () => ({ url: `/api/invoices/${UNKNOWN}` }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'GET /api/invoices/:id/pdf',
+    request: () => ({ url: `/api/invoices/${UNKNOWN}/pdf` }),
+    allowed: MANAGE,
+  },
+  {
+    name: 'POST /api/invoices/:id/credit',
+    request: () => ({
+      method: 'POST',
+      url: `/api/invoices/${UNKNOWN}/credit`,
+      payload: { lineIds: [UNKNOWN] },
+    }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'GET /api/settings/logo',
+    request: () => ({ url: '/api/settings/logo' }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'PUT /api/settings/logo',
+    request: () => ({
+      method: 'PUT',
+      url: '/api/settings/logo',
+      headers: { 'content-type': 'image/png' },
+      payload: Buffer.from('not a png'),
+    }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'DELETE /api/settings/logo',
+    request: () => ({ method: 'DELETE', url: '/api/settings/logo' }),
+    allowed: ['Admin'],
+  },
 ];
 
 describe.each(TEST_DATABASES)('authorisation matrix on $name', ({ url }) => {
