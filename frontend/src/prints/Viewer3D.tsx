@@ -236,7 +236,7 @@ export default function Viewer3D({
   };
 
   return (
-    <div ref={frame} className="pp-viewer">
+    <div ref={frame} className="pp-viewer fluid">
       {/* The drawing surface is the image; the button and hint sit on top of it. */}
       <div
         ref={host}

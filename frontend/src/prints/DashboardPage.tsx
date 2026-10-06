@@ -1,10 +1,11 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RotateCw } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { api } from '../api/client';
 import { useCurrentUser } from '../auth/context';
 import { useToast } from '../components/toast-context';
+import { BulkActionBar } from '../finance/BulkActionBar';
 import { t } from '../i18n/nl';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
 import { useDocumentTitle } from '../pages/useDocumentTitle';
@@ -97,6 +98,21 @@ export function DashboardPage() {
   });
 
   const items: PrintSummary[] = prints.data?.pages.flatMap((page) => page.items) ?? [];
+  // Selection for the bulk bar (Admins and Editors); only prints still in the list count.
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set());
+  const selectedPrints = items.filter((print) => selectedIds.has(print.id));
+  const selected = new Set(selectedPrints.map((print) => print.id));
+  const toggle = (id: string, on: boolean) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
   const total = prints.data?.pages[0]?.total ?? null;
   const refresh = () => queryClient.invalidateQueries({ queryKey: keys.all });
 
@@ -186,6 +202,14 @@ export function DashboardPage() {
                     }
                   : undefined
               }
+              selected={selected.has(print.id)}
+              onSelect={
+                canManage
+                  ? (on) => {
+                      toggle(print.id, on);
+                    }
+                  : undefined
+              }
             />
           </li>
         ))}
@@ -202,6 +226,17 @@ export function DashboardPage() {
               flashing={live.flashing}
               onFlashEnd={live.doneFlashing}
               restore={restore}
+              selection={
+                canManage
+                  ? {
+                      selected,
+                      toggle,
+                      setAll: (on) => {
+                        setSelectedIds(on ? new Set(items.map((print) => print.id)) : new Set());
+                      },
+                    }
+                  : undefined
+              }
             />
           </div>
           <div className="pp-only-phone">{cards}</div>
@@ -246,6 +281,9 @@ export function DashboardPage() {
         total={total}
       />
       {body}
+      {canManage && selectedPrints.length > 0 && (
+        <BulkActionBar selected={selectedPrints} onClear={clearSelection} />
+      )}
       {total !== null && items.length > 0 && (
         <div className="pp-more">
           <span aria-live="polite">

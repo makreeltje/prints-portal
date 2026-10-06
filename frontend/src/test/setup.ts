@@ -58,7 +58,25 @@ function emptyApi(input: string): Promise<Response> {
           ? { tags: [] }
           : path === '/healthz'
             ? { status: 'ok', checks: { printsRoot: { status: 'up' } } }
-            : {};
+            : path === '/api/settings'
+              ? {
+                  pricing: {
+                    defaultMarkupPercent: null,
+                    tariffEurPerKwh: null,
+                    materialPricesPerKg: {},
+                  },
+                  printers: [],
+                  company: { name: '', iban: '', address: '', email: null, phone: null },
+                }
+              : path === '/api/spoolman/status'
+                ? {
+                    configured: false,
+                    url: null,
+                    reachable: false,
+                    spoolCount: null,
+                    lastSync: null,
+                  }
+                : {};
   return Promise.resolve(
     new Response(JSON.stringify(body), {
       status: 200,
