@@ -1,4 +1,4 @@
-Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 1.2.1 (see `changelog.md`).
+Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 1.4 (see `changelog.md`).
 
 ## Principles
 
@@ -100,4 +100,12 @@ Customers Joey, Denise, Wouter (and Rick, niet factureren); project "Babybox loc
 - The print colour sits behind the thumbnail through `.pp-thumb.tinted` and `--c1`.
 - Tags are case-insensitively unique, at most 64 characters, with an optional colour from ten tokens (`tag-rose` to `tag-grey`). Chip text is `#141a33` or `#ffffff`.
 - Screens contain no raw layout values: use tokens and `bundle.css` classes. Only the data properties `--c1`, `--tag`, `--tag-ink` and preview scaffolding (`min-height` on `.pp-device`) remain inline.
+
+## Orders, settings and stacking (1.4)
+
+- A print (project folder) has one or more orders. Order 1 always exists; a Nabestelling is added by Admin or Editor. An order owns its items (each file or plate with its own "Aantal keer geprint"), Verkoopprijs, payments, write-off and, from M7, its invoice line. Files that are in no order wait until a Nabestelling is made. A print shows the summed price and the least settled status.
+- A payment is at most the open remainder of its order; Admins can undo the most recent payment, and undone payments stay in the history.
+- Instellingen (Admin) has the sections Algemeen, Prijzen (Standaardmarge, Stroomtarief, Materiaalprijzen), Printers, Bedrijfsgegevens, Klanten and Spoolman.
+- Stacking: popovers use `.pp-anchor` and `z-popover` (30); sticky bars 10, tooltips 40, drawers, sheets and dialogs 50. Apps never choose a z-index.
+- Fixed-size helpers (`pp-w-*`, `pp-minh-*`, `pp-gap-*`, `pp-text-*`, `pp-fw-*`) replace inline values; the previews no longer need `style` attributes except for data properties.
 

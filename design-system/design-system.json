@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-06T09:00:00Z",
+  "at": "2026-10-06T21:30:00Z",
   "via": "Claude",
-  "note": "v1.3: resolves GAP-024 to GAP-028 (deleted/archived states, customer chips, delete klant, tag editor and Tags page, fullscreen copy)"
+  "note": "v1.4: resolves GAP-029 to GAP-036 (stacking tokens, Instellingen printers and prices, orders, bulk dialogs, inline audit)"
  },
  "layout": "files",
  "libraries": [],

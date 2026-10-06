@@ -4,7 +4,7 @@ CustomerCard summarises one klant on the dashboard (desktop and tablet): name, n
 
 **Tokens.** `surface`, `border`, `radius-lg`, `space-*`, `muted`, `text-sm`, Badge and Button tokens.
 
-**States.** Default, hover, selected (filter active), deleted, no billing, all paid.
+**States.** Default, hover, selected (filter active: `.pp-cust.is-selected`, or any card that contains a name button with `aria-pressed="true"`; `primary` border and `primary-tint-soft` ground), deleted, no billing, all paid.
 
 **Accessibility.** The delete button has `aria-label="Klant verwijderen"`; the card name is a button that sets the filter; deleted cards stay readable (45% opacity only dims decoration, text keeps contrast).
 

@@ -103,6 +103,10 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | dark | drawer links and auth card text | `text` on `surface` | 10.59 | 4.5 | pass |
 | dark | muted row text on hover (deleted and archived rows) | `muted` on `primary-tint-soft` | 6.00 | 4.5 | pass |
 | dark | selected customer chip (aria-pressed) | `info` on `info-tint` | 7.35 | 4.5 | pass |
+| dark | selected customer card (pp-cust.is-selected) | `text` on `primary-tint-soft` | 9.29 | 4.5 | pass |
+| dark | count and amount label on a selected customer card | `muted` on `primary-tint-soft` | 6.00 | 4.5 | pass |
+| dark | reindex progress bar on its track (non-text 3:1) | `primary` on `surface-2` | 6.01 | 3.0 | pass |
+| dark | selected card border and order section accent (non-text 3:1) | `primary` on `surface` | 6.79 | 3.0 | pass |
 | light | neutral badge and "slicer" hint text | `muted` on `surface-2` | 5.18 | 4.5 | pass |
 | light | remaining amount line | `unpaid` on `surface` | 6.18 | 4.5 | pass |
 | light | duplicate hint line | `warning` on `surface` | 6.11 | 4.5 | pass |
@@ -112,6 +116,10 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | light | drawer links and auth card text | `text` on `surface` | 12.67 | 4.5 | pass |
 | light | muted row text on hover (deleted and archived rows) | `muted` on `primary-tint-soft` | 5.39 | 4.5 | pass |
 | light | selected customer chip (aria-pressed) | `info` on `info-tint` | 5.24 | 4.5 | pass |
+| light | selected customer card (pp-cust.is-selected) | `text` on `primary-tint-soft` | 11.32 | 4.5 | pass |
+| light | count and amount label on a selected customer card | `muted` on `primary-tint-soft` | 5.39 | 4.5 | pass |
+| light | reindex progress bar on its track (non-text 3:1) | `primary` on `surface-2` | 5.27 | 3.0 | pass |
+| light | selected card border and order section accent (non-text 3:1) | `primary` on `surface` | 6.12 | 3.0 | pass |
 | both | tag chip text on palette colour | `#141a33` on `tag-rose` | 6.48 | 4.5 | pass |
 | both | tag chip text on palette colour | `#141a33` on `tag-orange` | 8.43 | 4.5 | pass |
 | both | tag chip text on palette colour | `#141a33` on `tag-amber` | 10.87 | 4.5 | pass |

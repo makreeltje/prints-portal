@@ -49,3 +49,12 @@
 - **Do** keep layout in `bundle.css` classes. **Don't** put `style=""` with layout values in app screens; only `--c1`, `--tag` and `--tag-ink` are allowed as data.
 - **Do** hide the Tags page from the User role; Users see tags read-only on the print.
 
+## Added in 1.4
+
+- **Do** open popovers inside `.pp-anchor`; they float at `z-popover`. **Don't** write a `z-index` in the app; use the tokens `z-raised`, `z-sticky`, `z-popover`, `z-tooltip`, `z-overlay` through the classes.
+- **Do** show one OrderSection per order, newest first, settled ones closed. **Don't** add a price, payment or write-off outside an order.
+- **Do** put new files that are in no order under "Niet in een bestelling". **Don't** count them in any price or cost.
+- **Do** refuse a payment above the open remainder and keep undone payments in the history. **Don't** delete history lines.
+- **Do** report every bulk action per print (toast plus list of reasons). **Don't** stop the whole action because one print fails.
+- **Do** use the width, gap and weight helpers (`pp-w-*`, `pp-gap-*`, `pp-fw-*`). **Don't** copy `style` attributes from previews; only the data properties `--c1`, `--c2`, `--v`, `--tag` and `--tag-ink` are inline.
+

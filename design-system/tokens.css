@@ -162,6 +162,15 @@
   --space-6: 24px;
   --space-7: 32px;
   --space-8: 40px;
+  --space-9: 48px;
+  --z-raised: 1;
+  --z-sticky: 10;
+  --z-popover: 30;
+  --z-tooltip: 40;
+  --z-overlay: 50;
+  --opacity-deleted: 0.45;
+  --opacity-archived: 0.6;
+  --opacity-disabled: 0.5;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
