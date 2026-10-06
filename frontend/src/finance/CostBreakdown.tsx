@@ -116,7 +116,7 @@ export function CostBreakdown({
                   for (const slot of line.slots) {
                     rows.push(
                       <tr key={`${line.lineId}-${String(slot.slot)}`} className="sub">
-                        <td>
+                        <td className="pp-slotname">
                           <span className="pp-sr">
                             {t('cost.partOf', { name: line.fileName })}{' '}
                           </span>

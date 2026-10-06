@@ -468,3 +468,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Owner decision (2026-10-06):** use the proposal (1.3 README plus the 1.4 paragraph) until a re-export.
 - **Temporary placeholder approved:** no (no placeholder needed: it is how the specs are read)
 - **Design system version:** 1.4
+
+## GAP-039 [open] `pp-text-xl` is used in the PaymentPanel preview but not defined
+- **Type:** suspected design bug
+- **Found while:** implementing GAP-036 from v1.4
+- **Where needed:** PaymentPanel amount (`<span class="pp-money pp-text-xl">`), `frontend/src/finance/PaymentPanel.tsx`
+- **What is missing or wrong:** `components/bundle.css` defines `pp-text-xs`, `pp-text-sm` and `pp-text-md`, but not `pp-text-xl`, which the 1.4 PaymentPanel preview uses for the amount.
+- **Why it matters:** the class has no effect; the amount would render at body size.
+- **Proposal:** add `.pp-text-xl{font-size:var(--text-xl);line-height:var(--leading-xl)}` to `bundle.css`. The app keeps its existing `app-money-lg` rule (the same two tokens) until then.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** no (the existing token-only rule from M6 stays)
+- **Design system version:** 1.4

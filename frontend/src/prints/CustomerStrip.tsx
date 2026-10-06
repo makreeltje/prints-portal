@@ -72,7 +72,15 @@ function CustomerCard({
 }: WithAsk & { customer: Customer }) {
   const isSelected = selected === customer.folder;
   return (
-    <div className={customer.deleted ? 'pp-card pp-cust is-deleted' : 'pp-card pp-cust'}>
+    <div
+      className={[
+        'pp-card pp-cust',
+        customer.deleted ? 'is-deleted' : '',
+        isSelected ? 'is-selected' : '',
+      ]
+        .filter((name) => name !== '')
+        .join(' ')}
+    >
       <div className="hd">
         <b>
           <button
@@ -150,7 +158,7 @@ function CustomerMoney({ customer }: { customer: Customer }) {
 }
 
 /** CustomerChips: "Alle klanten" plus one chip per klant; exactly one is pressed. */
-function CustomerChips({ customers, selected, onSelect, total, onAskDelete }: WithAsk) {
+function CustomerChips({ customers, selected, onSelect, total, onAskDelete, onRestore }: WithAsk) {
   const current = customers.find((customer) => customer.folder === selected);
   return (
     <div className="pp-col">
@@ -169,7 +177,7 @@ function CustomerChips({ customers, selected, onSelect, total, onAskDelete }: Wi
           <button
             key={customer.folder}
             type="button"
-            className="pp-chip"
+            className={customer.deleted ? 'pp-chip is-deleted' : 'pp-chip'}
             aria-pressed={selected === customer.folder}
             onClick={() => {
               onSelect(customer.folder);
@@ -185,6 +193,22 @@ function CustomerChips({ customers, selected, onSelect, total, onAskDelete }: Wi
           <span className="pp-muted pp-text-sm">
             {total === null ? null : t('customers.printCount', { count: total })}
           </span>
+          {current?.deleted === true && (
+            <span className="pp-row pp-gap-2">
+              <StatusBadge kind="deleted" />
+              {onRestore !== undefined && (
+                <button
+                  type="button"
+                  className="pp-btn pp-btn-secondary pp-btn-sm"
+                  onClick={() => {
+                    onRestore(current.folder);
+                  }}
+                >
+                  {t('common.restore')}
+                </button>
+              )}
+            </span>
+          )}
           {current !== undefined && !current.deleted && onAskDelete !== undefined && (
             <button
               type="button"

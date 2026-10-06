@@ -224,7 +224,7 @@ function ManagedPanel({
       {order.status === 'writtenOff' &&
       order.writtenOff !== null &&
       order.writtenOff !== undefined ? (
-        <dl className="pp-kv">
+        <dl className="pp-kv narrow">
           <dt>{t('pay.paidAmount')}</dt>
           <dd>{formatMoney(paid)}</dd>
           <dt>{t('pay.writtenOffAmount')}</dt>

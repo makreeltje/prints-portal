@@ -172,7 +172,7 @@ export function CostOverrideDialog({
         <fieldset className="pp-field app-fieldset">
           <legend className="pp-label">{t('cost.printTime')}</legend>
           <div className="pp-row pp-gap-2 pp-nowrap">
-            <div className="pp-affix">
+            <div className="pp-affix pp-w-120">
               <input
                 className="pp-input"
                 inputMode="numeric"
@@ -185,7 +185,7 @@ export function CostOverrideDialog({
               />
               <span className="pp-suffix">{t('cost.hours')}</span>
             </div>
-            <div className="pp-affix">
+            <div className="pp-affix pp-w-120">
               <input
                 className="pp-input"
                 inputMode="numeric"
@@ -202,7 +202,7 @@ export function CostOverrideDialog({
           </div>
           {error('time')}
         </fieldset>
-        <span className="pp-help">{t('cost.manualSource')}</span>
+        <span className="pp-help pp-info">{t('cost.manualSource')}</span>
       </div>
     </Dialog>
   );

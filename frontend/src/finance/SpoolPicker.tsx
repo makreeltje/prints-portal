@@ -11,7 +11,7 @@ import { SpoolSwatch } from './money';
  * SpoolPicker: a trigger (swatch, name, chevron) and a popover with a search
  * field and a listbox of Spoolman spools, "Geen spoel" last. Combobox
  * keyboard: arrows move, Enter picks, Esc closes and returns focus. The
- * popover opens in the page flow; floating needs a stacking level (GAP-029).
+ * popover floats under the trigger in `.pp-anchor` (Popover, z-popover).
  */
 export function SpoolPicker({
   value,
@@ -43,11 +43,11 @@ export function SpoolPicker({
     }
   };
   return (
-    <>
+    <span className="pp-anchor">
       <button
         ref={trigger}
         type="button"
-        className="pp-btn pp-btn-secondary pp-btn-sm pp-spoolbtn"
+        className="pp-btn pp-btn-secondary pp-btn-sm pp-spoolbtn pp-minw-200 pp-start"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={
@@ -73,7 +73,7 @@ export function SpoolPicker({
           onClose={close}
         />
       )}
-    </>
+    </span>
   );
 }
 

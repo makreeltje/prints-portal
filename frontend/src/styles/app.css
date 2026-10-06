@@ -153,15 +153,8 @@
   height: var(--pp-control-h);
 }
 
-.app-bulk {
-  position: relative;
-  display: inline-block;
-}
-
+/* Menu panels inside .pp-anchor (Popover positions and stacks them). */
 .app-bulk-menu {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  left: 0;
   gap: 0;
   padding: var(--space-1);
   align-items: stretch;
@@ -274,9 +267,6 @@
 }
 
 .app-tag-pop {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  left: 0;
   gap: 0;
   padding: var(--space-2) var(--space-3);
   align-items: flex-start;

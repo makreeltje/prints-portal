@@ -405,7 +405,7 @@ function BulkMenu({
   }
 
   return (
-    <div ref={wrapper} className="app-bulk">
+    <div ref={wrapper} className="pp-anchor end">
       <button
         ref={trigger}
         type="button"
