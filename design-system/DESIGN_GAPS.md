@@ -289,7 +289,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.2
 
-## GAP-024 [open] Dimmed thumbnails for deleted and archived prints; row flash
+## GAP-024 [resolved in v1.3] Dimmed thumbnails for deleted and archived prints; row flash
 - **Type:** missing state
 - **Found while:** M5, PrintCard and PrintRow on the dashboard
 - **Where needed:** PrintCard (`.pp-thumb`), PrintRow (row text), ScreenDashboard with "Toon verwijderde" and "Gearchiveerd tonen"
@@ -301,7 +301,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.2.1
 
-## GAP-025 [open] Customer chip row on phones
+## GAP-025 [resolved in v1.3] Customer chip row on phones
 - **Type:** missing component
 - **Found while:** M5, ScreenDashboard phone layout
 - **Where needed:** ScreenDashboard at 480px and below ("customer strip becomes a horizontally scrolling chip row")
@@ -313,7 +313,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.2.1
 
-## GAP-026 [open] Deleting a whole customer from the UI
+## GAP-026 [resolved in v1.3] Deleting a whole customer from the UI
 - **Type:** missing state
 - **Found while:** M5, ScreenDashboard customer strip
 - **Where needed:** ScreenDashboard customer card (and its phone counterpart), copy deck
@@ -325,7 +325,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.2.1
 
-## GAP-027 [open] Tag editor and tag management
+## GAP-027 [resolved in v1.3] Tag editor and tag management
 - **Type:** missing component
 - **Found while:** M5, ScreenPrintDetail header and FilterBar
 - **Where needed:** ScreenPrintDetail (tags in the header), Popover "Tags bewerken", BulkActionBar "Tags" (M6), a place to rename, recolour and delete tags
@@ -338,7 +338,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.2.1
 
-## GAP-028 [open] Missing copy: viewer fullscreen button, "1 print"
+## GAP-028 [resolved in v1.3] Missing copy: viewer fullscreen button, "1 print"
 - **Type:** missing state
 - **Found while:** M5, Viewer3D and the dashboard customer cards
 - **Where needed:** Viewer3D (fullscreen button top-right), ScreenDashboard customer card, copy deck
@@ -348,3 +348,48 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Owner decision (2026-10-05):** wait for the design system, no placeholder.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.2.1
+
+## GAP-029 [open] Popovers and menus have no stacking level
+- **Type:** missing token
+- **Found while:** M5 with v1.3, checking the dashboard and print detail in the browser
+- **Where needed:** FilterBar "Tags" popover (ScreenDashboard), TagEditor popover above 480px (ScreenPrintDetail), later the BulkActionBar "Acties" menu and other Popovers; `frontend/src/prints/FilterBar.tsx`, `frontend/src/prints/TagEditor.tsx`
+- **What is missing or wrong:** `.pp-pop` has no `z-index` and the design system has no stacking tokens (only raw values inside `bundle.css`, e.g. the phone `.pp-tagpop` at 50). An absolutely positioned popover is painted under content that comes later in the page and is itself positioned: the PrintCard (`.pp-print` is `position:relative`) covers the FilterBar Tags popover, and the Viewer3D would cover a TagEditor popover. App code may not choose a `z-index`.
+- **Why it matters:** the FilterBar Tags popover is partly hidden behind the first row of print cards, so tags below the first one cannot be ticked with the mouse (keyboard still works).
+- **Proposal:** stacking tokens, e.g. `--z-sticky` 10, `--z-popover` 30, `--z-overlay` 50, and `.pp-pop{position:absolute; z-index:var(--z-popover)}` (or a `.pp-pop.floating` variant). Until then the TagEditor above 480px opens in the page flow under the tags (it pushes the content down instead of floating); at 480px and below it is the design system's bottom sheet.
+- **Blocked:** a floating TagEditor on desktop and a FilterBar Tags popover that is not covered by the cards. Filtering by tags still works through the keyboard and the phone Filters sheet.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.3
+
+## GAP-030 [open] CustomerCard selected state; restoring a klant on phones
+- **Type:** missing state
+- **Found while:** M5, implementing CustomerCard and CustomerChips from v1.3
+- **Where needed:** CustomerCard (ScreenDashboard above 480px), CustomerChips toolbar (480px and below)
+- **What is missing or wrong:** (1) the CustomerCard README lists the state "selected (filter active)", but `bundle.css` has no rule for it and no preview shows it. (2) On phones a deleted klant (Admins with "Toon verwijderde") has no Herstellen: the chips show no deleted state and the toolbar only has "Klant verwijderen".
+- **Why it matters:** (1) above 480px nothing shows which klant card is the active filter (the FilterBar's Klant select does); (2) on phones an Admin can restore the prints one by one but not the whole klant.
+- **Proposal:** (1) `.pp-cust[aria-pressed=true]` or `.pp-cust.is-selected` like `.pp-print.is-selected` (`primary` border, `primary-tint-soft` ground); (2) a deleted chip like the deleted card (muted text, the Verwijderd badge in the toolbar) and a secondary "Herstellen" button in `.pp-toolbar` instead of "Klant verwijderen" while a deleted klant is selected.
+- **Blocked:** the selected look of the card and restoring a whole klant on phones. The card's name button already carries `aria-pressed`.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.3
+
+## GAP-031 [open] Palette colours are announced in English
+- **Type:** improvement idea
+- **Found while:** M5, implementing the palette (`.pp-pal`) on the Tags page
+- **Where needed:** ScreenTags edit row, palette radiogroup
+- **What is missing or wrong:** the ScreenTags preview gives the swatches the accessible names `rose`, `orange`, `amber`, … (the palette keys), so a screen reader says English words in a Dutch interface. The copy deck has no keys for colour names.
+- **Why it matters:** screen-reader users hear inconsistent language; the vocabulary rule asks for Dutch.
+- **Proposal:** copy keys `tags.colour.rose` … `tags.colour.grey`: Roze, Oranje, Amber, Limoen, Turquoise, Hemelsblauw, Blauw, Violet, Lila, Grijs.
+- **Blocked:** nothing; the app uses the names from the preview until the copy exists.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.3
+
+## GAP-032 [open] ConfirmDialog README and copy deck differ for Klant verwijderen
+- **Type:** conflict
+- **Found while:** M5, implementing the delete-klant confirmation from v1.3
+- **Where needed:** ConfirmDialog, `confirm.deleteCustomerBody`
+- **What is missing or wrong:** the ConfirmDialog README says "Alle {count} prints van deze klant worden verborgen. De financiële gegevens blijven bewaard; een beheerder kan ze herstellen." while the copy deck key `confirm.deleteCustomerBody` reads "{count, plural, …}. De financiële gegevens blijven bewaard en een beheerder kan de klant herstellen." The same holds for "Tag verwijderen" ("De tag verdwijnt van {count} prints." vs `confirm.deleteTagBody`).
+- **Why it matters:** two texts for one dialog; the copy deck is the strings file, so the app uses it.
+- **Proposal:** align the README examples with the copy deck.
+- **Blocked:** nothing; the app follows the copy deck.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.3
+
