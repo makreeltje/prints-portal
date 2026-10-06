@@ -453,5 +453,18 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** the klant would read "Graag € 0,00 overmaken" or "naar IBAN  t.n.v. ,".
 - **Proposal:** (a) refuse "Definitief maken" until name and IBAN are filled in (Concept still works, without the sentence); (b) with nothing open, replace the sentence with "Deze factuur is volledig betaald."
 - **Blocked:** nothing else; the PDFs follow the spec literally until this is decided.
+- **Owner decision (2026-10-06):** wait for the design system, no placeholder.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
+
+## GAP-038 [open] v1.4 export: 18 component READMEs contain only their 1.4 paragraph
+- **Type:** suspected design bug
+- **Found while:** importing design system v1.4
+- **Where needed:** README.md of AssetListItem, BulkActionBar, ConfirmDialog, CostBreakdown, CostOverrideDialog, CustomerChips, FilterBar, MoneyDisplay, PaymentPanel, PrintCard, PrintRow, ScreenDashboard, ScreenInvoiceExport, ScreenInvoices, ScreenOutstanding, ScreenPrintDetail, SpoolPicker, TagEditor
+- **What is missing or wrong:** each of these files now holds only the new "1.4" paragraph (e.g. "**Inline values (1.4).** …"); the anatomy, tokens, states, accessibility and Dutch copy from 1.3 are gone. The changelog says these components were changed, not rewritten.
+- **Why it matters:** the specs the screens are built from (and checked against) are incomplete.
+- **Proposal:** read each as the 1.3 README plus the 1.4 paragraph (the 1.4 text amends the 1.3 text where they differ); ask Claude's Design System to re-export the full READMEs in the next version.
+- **Blocked:** reading these specs as complete; nothing else if the proposal is accepted.
+- **Owner decision (2026-10-06):** use the proposal (1.3 README plus the 1.4 paragraph) until a re-export.
+- **Temporary placeholder approved:** no (no placeholder needed: it is how the specs are read)
+- **Design system version:** 1.4
