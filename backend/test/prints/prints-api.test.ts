@@ -272,10 +272,21 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
   it('manages tags and filters with AND', async () => {
     const create = async (name: string, colour?: string) =>
       t.as(editor, { method: 'POST', url: '/api/tags', payload: { name, colour } });
-    const prio = (await create('prio', '#E11D48')).json<{ id: string; colour: string }>();
-    expect(prio.colour).toBe('#e11d48');
+    const prio = (await create('prio', 'rose')).json<{ id: string; colour: string }>();
+    expect(prio).toMatchObject({ colour: 'rose', ink: null });
     const gift = (await create('cadeau')).json<{ id: string }>();
     expect((await create('PRIO')).statusCode).toBe(409);
+    // Since design system v1.3 new colours are palette keys only.
+    expect((await create('hex', '#e11d48')).statusCode).toBe(400);
+    expect((await create('x'.repeat(65))).json()).toEqual({ error: 'invalid_tag_name' });
+    // Changing only the case of a tag's own name is allowed.
+    const recased = await t.as(editor, {
+      method: 'PATCH',
+      url: `/api/tags/${prio.id}`,
+      payload: { name: 'Prio' },
+    });
+    expect(recased.json()).toMatchObject({ name: 'Prio', colour: 'rose' });
+    await t.as(editor, { method: 'PATCH', url: `/api/tags/${prio.id}`, payload: { name: 'prio' } });
     expect(
       (await t.as(helper, { method: 'POST', url: '/api/tags', payload: { name: 'x' } })).statusCode,
     ).toBe(403);
@@ -310,8 +321,12 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
       tags: { name: string; printCount: number }[];
     }>();
     expect(tags.tags).toEqual([
-      { id: prio.id, name: 'prio', colour: '#e11d48', ink: '#ffffff', printCount: 2 },
+      { id: prio.id, name: 'prio', colour: 'rose', ink: null, printCount: 2 },
     ]);
+    // A free colour stored before v1.3 still renders, with its text colour by contrast.
+    await t.db.updateTable('tags').set({ colour: '#e11d48' }).where('id', '=', prio.id).execute();
+    const legacy = (await t.as(helper, { url: '/api/tags' })).json<{ tags: unknown[] }>();
+    expect(legacy.tags[0]).toMatchObject({ colour: '#e11d48', ink: '#ffffff' });
   });
 
   it('starts a re-index for Admins only', async () => {

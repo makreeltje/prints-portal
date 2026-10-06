@@ -1,4 +1,4 @@
-import { normalizeHexColor, normalizeTagName, tagKey } from '../core/tags.js';
+import { normalizeTagName, tagKey, type TagPaletteKey } from '../core/tags.js';
 import type { AppDatabase } from '../db/connection.js';
 import { toTagDto } from './queries.js';
 import type { TagDto } from './types.js';
@@ -140,7 +140,7 @@ export async function listTags(db: AppDatabase): Promise<(TagDto & { printCount:
 
 export async function createTag(
   db: AppDatabase,
-  input: { name: string; colour?: string | null },
+  input: { name: string; colour?: TagPaletteKey | null },
   now: Date,
 ): Promise<TagDto> {
   const name = normalizeTagName(input.name);
@@ -151,7 +151,7 @@ export async function createTag(
     .where('name_key', '=', key)
     .executeTakeFirst();
   if (existing !== undefined) throw new TagConflictError('tag exists');
-  const tag = { id: crypto.randomUUID(), name, colour: normalizeHexColor(input.colour) };
+  const tag = { id: crypto.randomUUID(), name, colour: input.colour ?? null };
   await db
     .insertInto('tags')
     .values({ ...tag, name_key: key, created_at: now.toISOString() })
@@ -162,7 +162,7 @@ export async function createTag(
 export async function updateTag(
   db: AppDatabase,
   id: string,
-  input: { name?: string; colour?: string | null },
+  input: { name?: string; colour?: TagPaletteKey | null },
 ): Promise<TagDto | null> {
   const current = await db.selectFrom('tags').selectAll().where('id', '=', id).executeTakeFirst();
   if (current === undefined) return null;
@@ -176,7 +176,7 @@ export async function updateTag(
       .executeTakeFirst();
     if (clash !== undefined) throw new TagConflictError('tag exists');
   }
-  const colour = input.colour === undefined ? current.colour : normalizeHexColor(input.colour);
+  const colour = input.colour === undefined ? current.colour : input.colour;
   await db.updateTable('tags').set({ name, name_key: key, colour }).where('id', '=', id).execute();
   return toTagDto({ id, name, colour });
 }

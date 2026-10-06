@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { customerScope, scopeAllows } from '../auth/access.js';
-import { TagNameError } from '../core/tags.js';
+import { TAG_PALETTE, TagNameError, type TagPaletteKey } from '../core/tags.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { Role } from '../db/schema.js';
 import type { Indexer } from '../indexing/indexer.js';
@@ -56,7 +56,8 @@ const tagBody = {
   additionalProperties: false,
   properties: {
     name: { type: 'string', minLength: 1, maxLength: 200 },
-    colour: { anyOf: [{ type: 'string', maxLength: 16 }, { type: 'null' }] },
+    // New colours are palette keys only (design system v1.3); null clears the colour.
+    colour: { anyOf: [{ type: 'string', enum: TAG_PALETTE }, { type: 'null' }] },
   },
 } as const;
 
@@ -280,7 +281,7 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
 
   app.get('/api/tags', async () => ({ tags: await listTags(db) }));
 
-  app.post<{ Body: { name: string; colour?: string | null } }>(
+  app.post<{ Body: { name: string; colour?: TagPaletteKey | null } }>(
     '/api/tags',
     {
       config: { auth: MANAGE },
@@ -295,7 +296,7 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
     },
   );
 
-  app.patch<{ Params: { id: string }; Body: { name?: string; colour?: string | null } }>(
+  app.patch<{ Params: { id: string }; Body: { name?: string; colour?: TagPaletteKey | null } }>(
     '/api/tags/:id',
     { config: { auth: MANAGE }, schema: { params: idParams, body: tagBody } },
     async (request, reply) => {

@@ -1,10 +1,30 @@
 /**
- * Tag rules: names are unique case-insensitively and at most 64 characters;
- * colours are stored as #rrggbb or null; the chip text colour is picked by
- * contrast (design-system/README.md, Colour: "#141a33 or #ffffff, whichever
- * has the higher contrast").
+ * Tag rules: names are unique case-insensitively and at most 64 characters.
+ * Since design system v1.3 a tag colour is a palette key (`data-c`, tokens
+ * `--tag-<key>`) or null. Free #rrggbb colours stored before still render: the
+ * chip text colour is then picked by contrast (design-system/README.md,
+ * Colour: "#141a33 or #ffffff, whichever has the higher contrast").
  */
 export const MAX_TAG_NAME_LENGTH = 64;
+
+/** Palette keys from design-system v1.3 (TagEditor, ScreenTags), in palette order. */
+export const TAG_PALETTE = [
+  'rose',
+  'orange',
+  'amber',
+  'lime',
+  'teal',
+  'sky',
+  'blue',
+  'violet',
+  'lilac',
+  'grey',
+] as const;
+export type TagPaletteKey = (typeof TAG_PALETTE)[number];
+
+export function isTagPaletteKey(value: string): value is TagPaletteKey {
+  return (TAG_PALETTE as readonly string[]).includes(value);
+}
 
 /** The two chip text colours named in the design-system README. */
 export const TAG_INK_DARK = '#141a33';

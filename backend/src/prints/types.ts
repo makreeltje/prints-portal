@@ -5,9 +5,12 @@ import type { RecordStatus } from '../db/schema.js';
 export interface TagDto {
   id: string;
   name: string;
-  /** #rrggbb or null (chip without colour). */
+  /**
+   * Palette key (`rose` … `grey`, rendered via `data-c`), a legacy #rrggbb
+   * from before design system v1.3, or null (chip without colour).
+   */
   colour: string | null;
-  /** Chip text colour for `colour` (TagChip: whichever has the higher contrast); null without colour. */
+  /** Chip text colour for a legacy #rrggbb `colour` (higher contrast); null otherwise. */
   ink: string | null;
 }
 

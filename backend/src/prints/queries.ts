@@ -1,6 +1,6 @@
 import { sql, type ExpressionBuilder, type SelectQueryBuilder } from 'kysely';
 import { scopeAllows, type CustomerScope } from '../auth/access.js';
-import { tagInkColor } from '../core/tags.js';
+import { isTagPaletteKey, tagInkColor } from '../core/tags.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { Database } from '../db/schema.js';
 import type {
@@ -348,7 +348,8 @@ export function toTagDto(row: { id: string; name: string; colour: string | null 
     id: row.id,
     name: row.name,
     colour: row.colour,
-    ink: row.colour === null ? null : tagInkColor(row.colour),
+    // Palette keys get their ink from the design system's `data-c` rules.
+    ink: row.colour === null || isTagPaletteKey(row.colour) ? null : tagInkColor(row.colour),
   };
 }
 
