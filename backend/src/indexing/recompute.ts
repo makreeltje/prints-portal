@@ -2,6 +2,7 @@ import path from 'node:path';
 import type { Transaction } from 'kysely';
 import { autoExcludeFolder } from '../core/files.js';
 import type { Database } from '../db/schema.js';
+import { itemKey, timesPerLine } from '../finance/orders.js';
 
 /**
  * Recomputes everything derived for one print from its lines: automatic
@@ -12,7 +13,9 @@ import type { Database } from '../db/schema.js';
  *   - files under a folder such as "Nog te printen" or "Test" start excluded;
  *   - a 3MF plate is excluded when the print has a counted G-code;
  *   - G-code files with the same size and slicer metadata are possible duplicates;
- *   - the user's own choice (user_excluded) always wins over the automatic one.
+ *   - the user's own choice (user_excluded) always wins over the automatic one;
+ *   - totals count each file as often as it was printed over all orders
+ *     (a file in no order yet does not count).
  */
 export async function recomputeRecord(
   trx: Transaction<Database>,
@@ -32,7 +35,8 @@ export async function recomputeRecord(
       'l.auto_excluded',
       'l.auto_exclusion_reason',
       'l.user_excluded',
-      'l.times_printed',
+      'l.plate_index',
+      'a.path_hash',
       'l.duplicate_fingerprint',
       'l.possible_duplicate',
       'a.type',
@@ -96,11 +100,16 @@ export async function recomputeRecord(
     }
   }
 
-  const counted = resolved.filter((item) => !item.excluded).map((item) => item.row);
+  const times = await timesPerLine(trx, recordId);
+  const timesOf = (row: { path_hash: string; plate_index: number }) =>
+    times.get(itemKey(row.path_hash, row.plate_index)) ?? 0;
+  const counted = resolved
+    .filter((item) => !item.excluded && timesOf(item.row) > 0)
+    .map((item) => item.row);
   const sum = (pick: (row: (typeof counted)[number]) => number | null) => {
     const values = counted.flatMap((row) => {
       const value = pick(row);
-      return value === null ? [] : [value * row.times_printed];
+      return value === null ? [] : [value * timesOf(row)];
     });
     return values.length === 0 ? null : values.reduce((a, b) => a + b, 0);
   };

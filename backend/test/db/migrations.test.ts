@@ -1,6 +1,7 @@
+import type { Kysely } from 'kysely';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { AppDatabase } from '../../src/db/connection.js';
-import { migrateToEmpty, migrateToLatest } from '../../src/db/migrate.js';
+import { migrateTo, migrateToEmpty, migrateToLatest } from '../../src/db/migrate.js';
 import { openTestDatabase, TEST_DATABASES } from '../helpers/databases.js';
 
 describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
@@ -48,8 +49,37 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
         'sessions',
         'tags',
         'print_tags',
+        'app_settings',
+        'customers',
+        'line_overrides',
+        'print_orders',
+        'order_items',
+        'payments',
       ]),
     );
+  });
+
+  it('moves times printed into order 1 of every existing print', async () => {
+    db = await openTestDatabase(url);
+    await migrateTo(db, '0003_tags');
+    // Written at the 0003 schema, before orders existed.
+    await db
+      .insertInto('print_records')
+      .values(record('r', 'Joey/Box', 'Joey'))
+      .execute();
+    await sqlInsert(db, 'r');
+    await migrateToLatest(db);
+
+    const orders = await db.selectFrom('print_orders').selectAll().execute();
+    expect(orders).toMatchObject([{ print_record_id: 'r', number: 1, sale_price_cents: null }]);
+    const items = await db.selectFrom('order_items').selectAll().execute();
+    expect(items).toEqual([
+      { order_id: orders[0]?.id, path_hash: 'h1', plate_index: 0, times_printed: 3 },
+    ]);
+    const columns = (await db.introspection.getTables())
+      .find((t) => t.name === 'print_lines')
+      ?.columns.map((c) => c.name);
+    expect(columns).not.toContain('times_printed');
   });
 
   it('removes sessions and grants with their user', async () => {
@@ -155,7 +185,6 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
         auto_excluded: 0,
         auto_exclusion_reason: null,
         user_excluded: null,
-        times_printed: 1,
         duplicate_fingerprint: null,
         possible_duplicate: 0,
       })
@@ -178,3 +207,49 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
     expect(tables).not.toContain('users');
   });
 });
+
+/** A file with a line printed three times, in the 0003 schema (times_printed on the line). */
+async function sqlInsert(db: AppDatabase, recordId: string): Promise<void> {
+  const now = '2026-10-05T12:00:00.000Z';
+  await db
+    .insertInto('print_assets')
+    .values({
+      id: 'a1',
+      print_record_id: recordId,
+      relative_path: 'Joey/Box/a.gcode',
+      path_hash: 'h1',
+      file_name: 'a.gcode',
+      sub_path: '',
+      type: 'gcode',
+      size_bytes: 10,
+      last_write_utc: now,
+      name_part: null,
+      name_material: null,
+      name_print_seconds: null,
+      recorded_at: null,
+      printer_prefix: null,
+      slicer: null,
+      has_thumbnail: 0,
+      parse_error: null,
+      indexed_at: now,
+    })
+    .execute();
+  await (db as unknown as Kysely<{ print_lines: Record<string, unknown> }>)
+    .insertInto('print_lines')
+    .values({
+      id: 'l1',
+      asset_id: 'a1',
+      plate_index: 0,
+      total_grams: 1,
+      print_seconds: 1,
+      printer_model: null,
+      material: null,
+      auto_excluded: 0,
+      auto_exclusion_reason: null,
+      user_excluded: null,
+      times_printed: 3,
+      duplicate_fingerprint: null,
+      possible_duplicate: 0,
+    })
+    .execute();
+}

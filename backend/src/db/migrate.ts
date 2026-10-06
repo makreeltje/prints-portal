@@ -3,12 +3,14 @@ import type { AppDatabase } from './connection.js';
 import * as m0001 from './migrations/0001_print_index.js';
 import * as m0002 from './migrations/0002_auth.js';
 import * as m0003 from './migrations/0003_tags.js';
+import * as m0004 from './migrations/0004_financials.js';
 
 /** Migrations are listed explicitly so the compiled app needs no directory scanning. */
 const MIGRATIONS: Record<string, Migration> = {
   '0001_print_index': m0001,
   '0002_auth': m0002,
   '0003_tags': m0003,
+  '0004_financials': m0004,
 };
 
 const provider: MigrationProvider = {
@@ -29,6 +31,13 @@ export async function migrateToLatest(db: AppDatabase): Promise<string[]> {
     throw new MigrationError(`database migration failed${which}: ${reason}`);
   }
   return (results ?? []).map((result) => result.migrationName);
+}
+
+/** Migrates up or down to one named migration; used by tests of data migrations. */
+export async function migrateTo(db: AppDatabase, name: string): Promise<void> {
+  const { error } = await new Migrator({ db, provider }).migrateTo(name);
+  if (error !== undefined)
+    throw new MigrationError(`migration to ${name} failed: ${describe(error)}`);
 }
 
 /** Drops everything the migrations created; used by tests to start clean. */

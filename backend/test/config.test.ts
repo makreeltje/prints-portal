@@ -36,6 +36,8 @@ describe('loadConfig', () => {
         loginRateLimit: 5,
       },
       http: { trustedProxies: [], corsOrigins: [] },
+      spoolman: { url: null, timeoutMs: 3000, cacheMs: 60_000 },
+      seedTariffEurPerKwh: null,
       warnings: [],
     });
   });
@@ -218,6 +220,29 @@ describe('loadConfig: auth', () => {
 
   it('rejects a CORS origin with a path', () => {
     expect(() => load({ CORS_ORIGINS: 'https://a.example.org/app' })).toThrow(ConfigError);
+  });
+
+  it('reads Spoolman and the seed tariff', () => {
+    const config = load({
+      SPOOLMAN_URL: 'http://spoolman.lan:7912/',
+      SPOOLMAN_TIMEOUT_MS: '1500',
+      ELECTRICITY_TARIFF_EUR_PER_KWH: '0,25',
+    });
+    expect(config.spoolman).toEqual({
+      url: 'http://spoolman.lan:7912',
+      timeoutMs: 1500,
+      cacheMs: 60_000,
+    });
+    expect(config.seedTariffEurPerKwh).toBe(0.25);
+  });
+
+  it.each([
+    { SPOOLMAN_URL: 'ftp://spoolman' },
+    { SPOOLMAN_URL: 'not a url' },
+    { ELECTRICITY_TARIFF_EUR_PER_KWH: 'cheap' },
+    { ELECTRICITY_TARIFF_EUR_PER_KWH: '-1' },
+  ] as Record<string, string>[])('rejects %o', (env) => {
+    expect(() => load(env)).toThrow(ConfigError);
   });
 });
 

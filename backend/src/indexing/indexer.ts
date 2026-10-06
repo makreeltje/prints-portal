@@ -4,6 +4,8 @@ import { DEFAULT_AUTO_EXCLUDE_FOLDERS } from '../core/files.js';
 import type { GcodeSlot } from '../core/gcode.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { Database, PrintAssetTable, PrintRecordTable } from '../db/schema.js';
+import { recalculatePrint } from '../finance/costs.js';
+import { assignNewLine, ensureFirstOrder } from '../finance/orders.js';
 import { readAsset, type AssetReading, type LineReading } from './read-asset.js';
 import { recomputeRecord } from './recompute.js';
 import { Scanner, type ProjectRef, type ScannedFile } from './scanner.js';
@@ -13,7 +15,10 @@ import { Scanner, type ProjectRef, type ScannedFile } from './scanner.js';
  *
  *   - One record per (customer, project); files and their lines are upserted.
  *   - Only files whose size or modification time changed are parsed again.
- *   - User decisions on lines (excluded, times printed) survive re-indexing.
+ *   - User decisions on lines (excluded) survive re-indexing; times printed
+ *     live on order items, keyed by file path.
+ *   - Every print has order 1; a new file joins the newest order while that
+ *     order has no price, payment or write-off (owner decision, M6).
  *   - A folder that disappeared makes its record Archived: files go, the
  *     record (and later its financials) stays. It returns when the folder does.
  *   - Records with status Deleted are skipped entirely: never re-created,
@@ -117,9 +122,11 @@ export class Indexer {
   /** Re-applies exclusion rules and totals after a user change to a print's lines. */
   recalculateRecord(recordId: string): Promise<void> {
     return this.enqueue(() =>
-      this.options.db
-        .transaction()
-        .execute((trx) => recomputeRecord(trx, recordId, this.autoExcludeFolders, this.now())),
+      this.options.db.transaction().execute(async (trx) => {
+        const now = this.now();
+        await recomputeRecord(trx, recordId, this.autoExcludeFolders, now);
+        await recalculatePrint(trx, recordId, now);
+      }),
     );
   }
 
@@ -244,6 +251,7 @@ export class Indexer {
           .insertInto('print_records')
           .values(newRecord(recordId, key, ref, now))
           .execute();
+        await ensureFirstOrder(trx, recordId, now);
       } else {
         await trx
           .updateTable('print_records')
@@ -261,7 +269,7 @@ export class Indexer {
         } else {
           await trx.updateTable('print_assets').set(values).where('id', '=', assetId).execute();
         }
-        await syncLines(trx, assetId, item.reading.lines);
+        await syncLines(trx, recordId, assetId, item.hash, item.reading.lines);
       }
 
       for (const asset of removed) {
@@ -269,6 +277,7 @@ export class Indexer {
       }
 
       await recomputeRecord(trx, recordId, this.autoExcludeFolders, now);
+      await recalculatePrint(trx, recordId, now);
     });
 
     this.emit(existing === undefined ? 'print:created' : 'print:updated', ref, recordId);
@@ -322,6 +331,8 @@ function newRecord(id: string, key: string, ref: ProjectRef, now: string): Print
     total_grams: null,
     total_print_seconds: null,
     updated_at: now,
+    spool_id: null,
+    spool_snapshot: null,
   };
 }
 
@@ -358,7 +369,9 @@ function assetValues(
 /** Updates parsed fields of existing lines (keeping user decisions), adds new ones, drops gone ones. */
 async function syncLines(
   trx: Transaction<Database>,
+  recordId: string,
   assetId: string,
+  pathHash: string,
   lines: readonly LineReading[],
 ): Promise<void> {
   const existing = await trx
@@ -389,10 +402,10 @@ async function syncLines(
           auto_excluded: 0,
           auto_exclusion_reason: null,
           user_excluded: null,
-          times_printed: 1,
           possible_duplicate: 0,
         })
         .execute();
+      await assignNewLine(trx, recordId, pathHash, line.plateIndex);
     } else {
       await trx.updateTable('print_lines').set(parsed).where('id', '=', lineId).execute();
     }

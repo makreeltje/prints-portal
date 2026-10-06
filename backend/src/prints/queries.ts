@@ -1,6 +1,7 @@
 import { sql, type ExpressionBuilder, type SelectQueryBuilder } from 'kysely';
 import { scopeAllows, type CustomerScope } from '../auth/access.js';
 import { isTagPaletteKey, tagInkColor } from '../core/tags.js';
+import { itemKey, timesPerLine } from '../finance/orders.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { Database } from '../db/schema.js';
 import type {
@@ -250,6 +251,7 @@ export async function getPrintDetail(
           .orderBy('slot')
           .execute();
 
+  const times = await timesPerLine(db, row.id);
   const fileByAsset = new Map(assets.map((asset) => [asset.id, asset.file_name]));
   const byFingerprint = new Map<string, string[]>();
   for (const line of lines) {
@@ -288,7 +290,7 @@ export async function getPrintDetail(
             line.user_excluded === null && line.auto_excluded === 1
               ? line.auto_exclusion_reason
               : null,
-          timesPrinted: line.times_printed,
+          timesPrinted: times.get(itemKey(asset.path_hash, line.plate_index)) ?? 0,
           possibleDuplicate: line.possible_duplicate === 1,
           duplicateOf: other === undefined ? null : (fileByAsset.get(other) ?? null),
           slots: slots
