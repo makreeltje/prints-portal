@@ -93,3 +93,11 @@ Customers Joey, Denise, Wouter (and Rick, niet factureren); project "Babybox loc
 - A credited print (whole invoice or chosen lines) becomes Afgeschreven.
 - Contract for the app: only tokens and the classes in `components/bundle.css`. Inline `style` attributes in the previews are demo layout only and are not part of the contract; sizes the app needs exist as tokens or classes (`pp-auth`, `pp-state`, `pp-iwrap compact`, `pp-dialog sm`, `pp-drawer`, `leading-*`).
 - Table or cards: put both layouts in the DOM and wrap them in `pp-only-wide` (above 480px) and `pp-only-phone` (480px and below); wrappers carry no display of their own. Gebruikers and Toegang use this.
+
+## Roles, tags and deleting (1.3)
+
+- **Admin** and **Editor** delete prints (a project folder is one print) and whole klanten, and manage tags on the page "Tags". Only **Admin** sees and restores deleted prints and klanten ("Toon verwijderde"). **User** sees name, price, status, thumbnail, 3D model and tags read-only: no files, downloads, costs or notes, and no Tags page.
+- The print colour sits behind the thumbnail through `.pp-thumb.tinted` and `--c1`.
+- Tags are case-insensitively unique, at most 64 characters, with an optional colour from ten tokens (`tag-rose` to `tag-grey`). Chip text is `#141a33` or `#ffffff`.
+- Screens contain no raw layout values: use tokens and `bundle.css` classes. Only the data properties `--c1`, `--tag`, `--tag-ink` and preview scaffolding (`min-height` on `.pp-device`) remain inline.
+
