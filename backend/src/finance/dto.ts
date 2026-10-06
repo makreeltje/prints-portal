@@ -3,6 +3,7 @@ import type { CostBreakdown, MissingInput, PriceSource } from '../core/cost.js';
 import { suggestSalePrice } from '../core/pricing.js';
 import type { Database } from '../db/schema.js';
 import { loadPrintCosts, type LineFacts } from './costs.js';
+import { orderDates } from './billing.js';
 import { itemKey } from './orders.js';
 import { ordersWithMoney } from './read.js';
 import type { SpoolSnapshot } from './spools.js';
@@ -60,6 +61,8 @@ export interface OrderDto {
   id: string;
   number: number;
   createdAt: string;
+  /** The order's date: newest counted G-code in the order, else its creation time. */
+  date: string;
   status: OrderStatus;
   /** What the klant pays, in euros; null when unknown or niet factureren. */
   price: number | null;
@@ -165,11 +168,16 @@ export async function printFinance(
   );
   const nameOf = (id: string | null) => (id === null ? null : (names.get(id) ?? null));
 
+  const dates = await orderDates(
+    db,
+    money.map(({ order }) => order.id),
+  );
   const orders: OrderDto[] = money.map(({ order, money: m }) => {
     const base: OrderDto = {
       id: order.id,
       number: order.number,
       createdAt: order.created_at,
+      date: dates.get(order.id) ?? order.created_at,
       status: m.status,
       price: m.priceCents === null ? null : m.priceCents / 100,
     };

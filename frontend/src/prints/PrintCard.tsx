@@ -4,7 +4,7 @@ import { PaymentBadge } from '../finance/money';
 import { formatDuration, formatGrams, formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { RecordBadge, TagChip, Thumbnail } from './bits';
-import { placeOf } from './filter';
+import { subLine } from './orders';
 import type { PrintSummary } from './types';
 
 /**
@@ -43,7 +43,7 @@ export function PrintCard({
               {print.name}
             </Link>
           </h3>
-          <span className="sub">{placeOf(print)}</span>
+          <span className="sub">{subLine(print)}</span>
         </div>
         <Meta print={print} />
         {print.tags.length > 0 && (
@@ -110,7 +110,8 @@ export function PriceBlock({ print }: { print: PrintSummary }) {
     );
   }
   if (money.price === null) return <span />;
-  if (money.status === 'partial' && money.remaining !== null) {
+  // Several orders: the remainder over all orders as soon as something is paid.
+  if (money.remaining !== null && money.remaining > 0 && money.remaining < money.price) {
     return (
       <span>
         <span className="pp-money">{formatMoney(money.price)}</span>

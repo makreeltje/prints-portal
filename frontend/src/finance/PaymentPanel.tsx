@@ -47,10 +47,11 @@ export function PaymentPanel({
   role: 'Admin' | 'Editor' | 'User';
   actions: PaymentActions;
 }) {
+  const titleId = useId();
   if (notBilled) {
     return (
-      <section className="pp-card pp-pay" aria-labelledby="pay-title">
-        <h3 id="pay-title">{t('pay.title')}</h3>
+      <section className="pp-card pp-pay" aria-labelledby={titleId}>
+        <h3 id={titleId}>{t('pay.title')}</h3>
         <div className="pp-alert info">
           <Info className="pp-ico" aria-hidden="true" />
           <div>{t('pay.notBilledNote')}</div>
@@ -64,8 +65,8 @@ export function PaymentPanel({
   }
   if (role === 'User') {
     return (
-      <section className="pp-card pp-pay" aria-labelledby="pay-title">
-        <h3 id="pay-title">{t('pay.title')}</h3>
+      <section className="pp-card pp-pay" aria-labelledby={titleId}>
+        <h3 id={titleId}>{t('pay.title')}</h3>
         <div className="pp-row pp-between">
           <PaymentBadge status={order.status} />
           {order.price === null ? null : <Money amount={order.price} />}
@@ -184,8 +185,8 @@ function ManagedPanel({
     ) : null;
 
   return (
-    <section className="pp-card pp-pay" aria-labelledby="pay-title">
-      <h3 id="pay-title">{t('pay.title')}</h3>
+    <section className="pp-card pp-pay" aria-labelledby={`${id}-title`}>
+      <h3 id={`${id}-title`}>{t('pay.title')}</h3>
       {failed && (
         <div className="pp-alert unpaid" role="alert">
           <TriangleAlert className="pp-ico" aria-hidden="true" />

@@ -42,6 +42,7 @@ export interface Settings {
 export type BulkAction =
   | { action: 'markPaid' }
   | { action: 'setPrice'; salePrice: number | null }
+  | { action: 'setPrice'; suggested: true }
   | { action: 'assignSpool'; spoolId: number | null }
   | { action: 'delete' }
   | { action: 'addTags' | 'removeTags'; tagIds: string[] };
@@ -50,6 +51,9 @@ export interface BulkResult {
   id: string;
   ok: boolean;
   error?: string;
+  /** For "Nabestelling {n} is al betaald." and "Staat op factuur {nummer}.". */
+  orderNumber?: number;
+  invoiceNumber?: string;
 }
 
 export const financeKeys = {
@@ -105,6 +109,15 @@ export const writeOff = (orderId: string, reason: string | null) =>
 
 export const undoWriteOff = (orderId: string) =>
   api(`/api/orders/${orderId}/write-off`, { method: 'DELETE' });
+
+/** "Nabestelling maken": the chosen files or plates and how often each is printed. */
+export const createOrder = (
+  printId: string,
+  items: readonly { lineId: string; timesPrinted: number }[],
+) => api<{ id: string }>(`/api/prints/${printId}/orders`, { method: 'POST', body: { items } });
+
+/** "Nabestelling verwijderen". */
+export const deleteOrder = (orderId: string) => api(`/api/orders/${orderId}`, { method: 'DELETE' });
 
 export const fetchSettings = () => api<Settings>('/api/settings');
 

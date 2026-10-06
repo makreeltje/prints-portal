@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Box, Info, Trash2, TriangleAlert } from 'lucide-react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ApiError } from '../api/client';
 import { useCurrentUser } from '../auth/context';
@@ -12,6 +12,8 @@ import { LoadingRows } from '../pages/ErrorState';
 import { ForbiddenState, GlobalErrorState } from '../pages/StatePages';
 import {
   addPayment,
+  createOrder,
+  deleteOrder,
   fetchSpoolmanStatus,
   financeKeys,
   setLineExcluded,
@@ -26,7 +28,10 @@ import {
 } from '../finance/api';
 import { CostBreakdown } from '../finance/CostBreakdown';
 import { CostOverrideDialog } from '../finance/CostOverrideDialog';
-import { PaymentPanel, type PaymentActions } from '../finance/PaymentPanel';
+import { PaymentBadge } from '../finance/money';
+import { NabestellingDialog } from '../finance/NabestellingDialog';
+import { OrderSection } from '../finance/OrderSection';
+import { PaymentPanel } from '../finance/PaymentPanel';
 import { SpoolPicker } from '../finance/SpoolPicker';
 import { deletePrint, fetchPrint, keys, modelUrl, restorePrint, setPrintTags } from './api';
 import { RecordBadge, TagChip, Thumbnail } from './bits';
@@ -34,17 +39,17 @@ import { AssetList, type AssetControls } from './AssetList';
 import { TagEditor } from './TagEditor';
 import { placeOf } from './filter';
 import { Meta } from './PrintCard';
-import type { PrintDetail } from './types';
+import { assetsForOrder, isSettled, newestFirst, unassignedAssets } from './orders';
+import type { Order, PrintDetail } from './types';
 
 const Viewer3D = lazy(() => import('./Viewer3D'));
 
 /**
- * ScreenPrintDetail: breadcrumb, name, record badge, tags with the TagEditor
- * and Verwijderen (Admins and Editors), the archived and deleted alerts; left
- * Viewer3D and the file list, right "Spoel voor de hele print",
- * CostBreakdown and PaymentPanel. On phones the payment comes right after
- * the viewer. Users see name, price, status, tags and the model only.
- * With several orders (Nabestelling) the page shows order 1 (GAP-035).
+ * ScreenPrintDetail: breadcrumb, name, payment and record badges, tags with
+ * the TagEditor and Verwijderen (Admins and Editors), the archived and
+ * deleted alerts. Admins and Editors get the viewer, files in no order and
+ * one OrderSection per order, newest first (design system 1.4). Users see
+ * name, the summed price and status, tags and the model only.
  */
 export function PrintDetailPage() {
   const { id = '' } = useParams();
@@ -54,7 +59,7 @@ export function PrintDetailPage() {
   const navigate = useNavigate();
   const toast = useToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [adjusting, setAdjusting] = useState(false);
+  const [adjusting, setAdjusting] = useState<string | null>(null);
   const spoolman = useQuery({
     queryKey: financeKeys.spoolman,
     queryFn: fetchSpoolmanStatus,
@@ -92,42 +97,40 @@ export function PrintDetailPage() {
     }
   };
   const quiet = (action: () => Promise<unknown>) => change(action).catch(() => undefined);
-  const order = detail.orders[0];
   const spoolmanOn = canManage && spoolman.data?.configured === true;
-  const controls: AssetControls | undefined = canManage
-    ? {
-        setTimesPrinted: (line, times) => quiet(() => setTimesPrinted(detail.id, line.id, times)),
-        setExcluded: (line, excluded) => quiet(() => setLineExcluded(detail.id, line.id, excluded)),
-        ...(spoolmanOn
-          ? {
-              setSpool: (line, slot, spoolId) =>
-                quiet(() => setLineOverride(detail.id, line.id, { slot, spoolId })),
-            }
-          : {}),
-      }
-    : undefined;
-  const paymentActions: PaymentActions | null =
-    order === undefined
-      ? null
-      : {
-          setSalePrice: (price) => change(() => setSalePrice(order.id, price)),
-          addPayment: (amount) => change(() => addPayment(order.id, amount)),
-          writeOff: (reason) => change(() => writeOff(order.id, reason)),
-          undoPayment: () => change(() => undoPayment(order.id)),
-          undoWriteOff: () => change(() => undoWriteOff(order.id)),
-        };
-  const payment =
-    order === undefined || paymentActions === null ? null : (
-      <PaymentPanel
-        order={order}
-        printName={detail.name}
-        markupPercent={detail.markupPercent}
-        notBilled={detail.noBilling}
-        cost={order.cost?.totalCost ?? null}
-        role={user.role}
-        actions={paymentActions}
-      />
-    );
+  const controlsFor = (orderId: string | null): AssetControls | undefined =>
+    canManage
+      ? {
+          setTimesPrinted: (line, times) =>
+            quiet(() => setTimesPrinted(detail.id, line.id, times, orderId ?? undefined)),
+          setExcluded: (line, excluded) =>
+            quiet(() => setLineExcluded(detail.id, line.id, excluded)),
+          ...(spoolmanOn
+            ? {
+                setSpool: (line, slot, spoolId) =>
+                  quiet(() => setLineOverride(detail.id, line.id, { slot, spoolId })),
+              }
+            : {}),
+        }
+      : undefined;
+  const paymentFor = (order: Order) => (
+    <PaymentPanel
+      order={order}
+      printName={detail.name}
+      markupPercent={detail.markupPercent}
+      notBilled={detail.noBilling}
+      cost={order.cost?.totalCost ?? null}
+      role={user.role}
+      actions={{
+        setSalePrice: (price) => change(() => setSalePrice(order.id, price)),
+        addPayment: (amount) => change(() => addPayment(order.id, amount)),
+        writeOff: (reason) => change(() => writeOff(order.id, reason)),
+        undoPayment: () => change(() => undoPayment(order.id)),
+        undoWriteOff: () => change(() => undoWriteOff(order.id)),
+      }}
+    />
+  );
+  const adjustingOrder = detail.orders.find((order) => order.id === adjusting) ?? null;
   const removeTag = async (tagId: string) => {
     try {
       await setPrintTags(
@@ -139,6 +142,18 @@ export function PrintDetailPage() {
       toast.error(t('error.saveFailed'));
     }
   };
+  // Users see one price and status: the sum over all orders (PrintCard rules).
+  const userOrder: Order | null =
+    detail.money === null
+      ? null
+      : {
+          id: detail.id,
+          number: 1,
+          createdAt: '',
+          date: '',
+          status: detail.money.status,
+          price: detail.money.price,
+        };
   const restore = async () => {
     try {
       await restorePrint(detail.id);
@@ -168,6 +183,7 @@ export function PrintDetailPage() {
           )}
         </div>
         <div className="pp-tags">
+          {detail.money !== null && <PaymentBadge status={detail.money.status} />}
           <RecordBadge print={detail} />
           {detail.tags.map((tag) => (
             <TagChip
@@ -205,55 +221,35 @@ export function PrintDetailPage() {
         </div>
       )}
 
-      <div className="pp-detail">
-        <div>
-          <ModelView detail={detail} />
-          {payment !== null && <div className="pp-only-phone">{payment}</div>}
-          {detail.assets !== null && detail.assets.length > 0 && (
-            <AssetList assets={detail.assets} controls={controls} />
-          )}
+      {canManage ? (
+        <ManagedOrders
+          detail={detail}
+          spoolmanOn={spoolmanOn}
+          controlsFor={controlsFor}
+          paymentFor={paymentFor}
+          onAdjust={setAdjusting}
+          change={change}
+          quiet={quiet}
+        />
+      ) : (
+        <div className="pp-detail">
+          <div>
+            <ModelView detail={detail} />
+          </div>
+          <div>{userOrder !== null && paymentFor(userOrder)}</div>
         </div>
-        <div>
-          {spoolmanOn && (
-            <section className="pp-card pp-sec pp-gap-2" aria-labelledby="spool-title">
-              <b id="spool-title" className="pp-strong">
-                {t('spool.forPrint')}
-              </b>
-              <SpoolPicker
-                value={detail.spool}
-                label={t('spool.forPrint')}
-                onChange={(spoolId) => quiet(() => setPrintSpool(detail.id, spoolId))}
-              />
-              <span className="pp-help">{t('spool.forPrintHelp')}</span>
-            </section>
-          )}
-          {canManage && order?.cost !== undefined && (
-            <CostBreakdown
-              cost={order.cost}
-              notBilled={detail.noBilling}
-              manual={
-                order.overrides !== undefined &&
-                (order.overrides.pricePerKg !== null ||
-                  order.overrides.grams !== null ||
-                  order.overrides.printSeconds !== null)
-              }
-              onAdjust={() => {
-                setAdjusting(true);
-              }}
-            />
-          )}
-          {payment !== null && <div className="pp-only-wide">{payment}</div>}
-        </div>
-      </div>
-      {adjusting && order !== undefined && (
+      )}
+      {adjustingOrder !== null && (
         <CostOverrideDialog
           open
           subject={detail.name}
-          initial={order.overrides ?? { pricePerKg: null, grams: null, printSeconds: null }}
+          initial={
+            adjustingOrder.overrides ?? { pricePerKg: null, grams: null, printSeconds: null }
+          }
           priceFromSpoolman={detail.spool?.pricePerKg !== null && detail.spool !== null}
-          onSave={(overrides) => change(() => setOrderOverrides(order.id, overrides))}
+          onSave={(overrides) => change(() => setOrderOverrides(adjustingOrder.id, overrides))}
           onClose={() => {
-            setAdjusting(false);
+            setAdjusting(null);
           }}
         />
       )}
@@ -305,5 +301,128 @@ function ModelView({ detail }: { detail: PrintDetail }) {
         </div>
       )}
     </div>
+  );
+}
+
+/** Admin and Editor part of the page: viewer, spool, files in no order and the orders. */
+function ManagedOrders({
+  detail,
+  spoolmanOn,
+  controlsFor,
+  paymentFor,
+  onAdjust,
+  change,
+  quiet,
+}: {
+  detail: PrintDetail;
+  spoolmanOn: boolean;
+  controlsFor: (orderId: string | null) => AssetControls | undefined;
+  paymentFor: (order: Order) => ReactNode;
+  onAdjust: (orderId: string) => void;
+  change: (action: () => Promise<unknown>) => Promise<void>;
+  quiet: (action: () => Promise<unknown>) => Promise<void>;
+}) {
+  const [creating, setCreating] = useState(false);
+  const assets = detail.assets ?? [];
+  const unassigned = unassignedAssets(assets);
+  const unassignedCount = unassigned.reduce((total, asset) => total + asset.lines.length, 0);
+  const orders = newestFirst(detail.orders);
+  const current = orders.find((order) => !isSettled(order.status))?.id ?? null;
+  const createButton = (small: boolean) => (
+    <button
+      type="button"
+      className={small ? 'pp-btn pp-btn-secondary pp-btn-sm' : 'pp-btn pp-btn-secondary'}
+      onClick={() => {
+        setCreating(true);
+      }}
+    >
+      {t('orders.create')}
+    </button>
+  );
+  return (
+    <>
+      <ModelView detail={detail} />
+      {spoolmanOn && (
+        // ds-gap: GAP-040 (placement of "Spoel voor de hele print" with orders)
+        <section className="pp-card pp-sec pp-gap-2" aria-labelledby="spool-title">
+          <b id="spool-title" className="pp-strong">
+            {t('spool.forPrint')}
+          </b>
+          <SpoolPicker
+            value={detail.spool}
+            label={t('spool.forPrint')}
+            onChange={(spoolId) => quiet(() => setPrintSpool(detail.id, spoolId))}
+          />
+          <span className="pp-help">{t('spool.forPrintHelp')}</span>
+        </section>
+      )}
+      {unassignedCount > 0 && (
+        <>
+          <div className="pp-alert info" role="status">
+            <Info className="pp-ico" aria-hidden="true" />
+            <div>
+              {t('orders.unassignedAlert', { count: unassignedCount })}
+              <div className="pp-mt">{createButton(true)}</div>
+            </div>
+          </div>
+          <AssetList
+            assets={unassigned}
+            controls={controlsFor(null)}
+            label={t('orders.unassignedGroup')}
+          />
+        </>
+      )}
+      <div className="pp-orders">
+        {orders.map((order) => {
+          const files = assetsForOrder(assets, order);
+          return (
+            <OrderSection
+              key={order.id}
+              order={order}
+              current={order.id === current}
+              files={
+                <>
+                  {files.length > 0 && (
+                    <AssetList assets={files} controls={controlsFor(order.id)} />
+                  )}
+                  {order.cost !== undefined && (
+                    <CostBreakdown
+                      cost={order.cost}
+                      notBilled={detail.noBilling}
+                      manual={
+                        order.overrides !== undefined &&
+                        (order.overrides.pricePerKg !== null ||
+                          order.overrides.grams !== null ||
+                          order.overrides.printSeconds !== null)
+                      }
+                      onAdjust={() => {
+                        onAdjust(order.id);
+                      }}
+                    />
+                  )}
+                </>
+              }
+              payment={paymentFor(order)}
+              onDelete={() => change(() => deleteOrder(order.id))}
+            />
+          );
+        })}
+      </div>
+      {assets.some((asset) => asset.lines.length > 0) && (
+        <div className="pp-row">{createButton(false)}</div>
+      )}
+      {creating && (
+        <NabestellingDialog
+          assets={assets}
+          orders={detail.orders}
+          onCreate={async (items) => {
+            await change(() => createOrder(detail.id, items));
+          }}
+          onClose={() => {
+            setCreating(false);
+          }}
+        />
+      )}
+    </>
   );
 }

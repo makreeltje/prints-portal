@@ -11,7 +11,7 @@ import {
   PenTool,
   TriangleAlert,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { SpoolPicker } from '../finance/SpoolPicker';
 import { formatDuration, formatFileSize, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
@@ -46,14 +46,34 @@ const ICONS: Record<AssetType, typeof File> = {
 export function AssetList({
   assets,
   controls,
+  label,
 }: {
   assets: readonly Asset[];
   controls?: AssetControls;
+  /** Files in no order: a label above a card without its own header (AssetListItem preview). */
+  label?: string;
 }) {
+  const titleId = useId();
+  if (label !== undefined) {
+    return (
+      <section className="pp-col pp-gap-2" aria-labelledby={titleId}>
+        <h2 id={titleId} className="pp-label app-card-heading">
+          {label}
+        </h2>
+        <div className="pp-card pp-assetlist pp-flush">
+          <ul className="app-plain-list">
+            {assets.map((asset) => (
+              <AssetRow key={asset.id} asset={asset} controls={controls} />
+            ))}
+          </ul>
+        </div>
+      </section>
+    );
+  }
   return (
-    <section className="pp-card pp-assetlist pp-flush" aria-labelledby="files-title">
+    <section className="pp-card pp-assetlist pp-flush" aria-labelledby={titleId}>
       <div className="pp-card-hd rule">
-        <h2 id="files-title" className="app-card-heading">
+        <h2 id={titleId} className="app-card-heading">
           <b>{t('print.files')}</b>
         </h2>
         <span className="sub">{t('print.fileCount', { count: assets.length })}</span>
@@ -86,7 +106,11 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: AssetControls 
             {own !== undefined && <LineMeta line={own} />}
             {plates.length > 0 && <span>{t('asset.plates', { count: plates.length })}</span>}
             {own?.possibleDuplicate === true && <StatusBadge kind="duplicate" />}
+            {own !== undefined && !own.inOrder && <NotInOrderBadge />}
           </div>
+          {own !== undefined && !own.inOrder && (
+            <span className="pp-help">{t('orders.notInOrderHint')}</span>
+          )}
           {own?.duplicateOf != null && (
             <div className="pp-reason app-reason-warning">
               <TriangleAlert className="pp-ico" aria-hidden="true" />
@@ -124,7 +148,9 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: AssetControls 
                   </div>
                   <div className="pp-meta">
                     <LineMeta line={plate} />
+                    {!plate.inOrder && <NotInOrderBadge />}
                   </div>
+                  {!plate.inOrder && <span className="pp-help">{t('orders.notInOrderHint')}</span>}
                   <ExclusionReason line={plate} />
                 </div>
                 {controls !== undefined && (
@@ -140,6 +166,10 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: AssetControls 
       )}
     </li>
   );
+}
+
+function NotInOrderBadge() {
+  return <span className="pp-badge warning">{t('orders.notInOrder')}</span>;
 }
 
 /** File name truncated in the middle: the end (with the extension) always stays visible. */

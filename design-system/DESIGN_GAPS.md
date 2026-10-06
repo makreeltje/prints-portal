@@ -479,3 +479,15 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing.
 - **Temporary placeholder approved:** no (the existing token-only rule from M6 stays)
 - **Design system version:** 1.4
+
+## GAP-040 [open] Where "Spoel voor de hele print" goes on the print detail with orders
+- **Type:** unclear spec
+- **Found while:** implementing GAP-035 (OrderSection on ScreenPrintDetail)
+- **Where needed:** ScreenPrintDetail, `frontend/src/prints/PrintDetailPage.tsx`
+- **What is missing or wrong:** in 1.3 the "Spoel voor de hele print" card sat in the right column above CostBreakdown. The 1.4 orders variant puts the viewer full width and gives each OrderSection its own files, costs and payment, but does not show the print-level spool card anywhere. The spool belongs to the print, not to one order.
+- **Why it matters:** without a place, the whole-print spool cannot be set (files and slots keep their own pickers).
+- **Proposal:** a `pp-card pp-sec` between the viewer and the "nieuw bestand" alert, full width, as in 1.3 (title, SpoolPicker, help).
+- **Also unclear:** files that never count (STL, video, PDF, links) have no order; the app lists them in Bestelling 1's Bestanden. Files in no order are listed under the label "Nog niet in een bestelling" in a card after the alert (as in the AssetListItem preview).
+- **Blocked:** the placement only; the card works as before.
+- **Temporary placeholder approved:** no (shown at the proposed place, marked `ds-gap: GAP-040`, pending your answer)
+- **Design system version:** 1.4

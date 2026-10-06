@@ -3,7 +3,7 @@ import { formatDuration, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { PaymentBadge } from '../finance/money';
 import { ColourDot, RecordBadge, TagChip } from './bits';
-import { placeOf } from './filter';
+import { subLine } from './orders';
 import { PriceBlock } from './PrintCard';
 import type { PrintSummary } from './types';
 
@@ -105,7 +105,7 @@ export function PrintTable({
                   <Link className="app-row-link" to={`/prints/${print.id}`}>
                     {print.name}
                   </Link>
-                  <div className="pp-muted">{placeOf(print)}</div>
+                  <div className="pp-muted">{subLine(print)}</div>
                 </td>
                 <td>
                   <span className="pp-row app-material">

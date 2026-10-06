@@ -1,4 +1,5 @@
 import { TriangleAlert } from 'lucide-react';
+import { useId } from 'react';
 import { formatGrams, formatMoney } from '../i18n/format';
 import { t, type MessageKey } from '../i18n/nl';
 import type { Cost, PriceSource } from '../prints/types';
@@ -36,12 +37,13 @@ export function CostBreakdown({
   /** The order has "Handmatig" values. */
   manual: boolean;
 }) {
+  const titleId = useId();
   const incomplete = cost.missing.length > 0;
   const printLevel = cost.gramsSource === 'manual' || cost.gramsSource === 'metadata';
   return (
-    <section className="pp-card pp-flush" aria-labelledby="cost-title">
+    <section className="pp-card pp-flush" aria-labelledby={titleId}>
       <div className="pp-card-hd">
-        <h2 id="cost-title" className="app-card-heading">
+        <h2 id={titleId} className="app-card-heading">
           <b>{notBilled ? t('cost.titleNotBilled') : t('cost.title')}</b>
         </h2>
         {onAdjust !== undefined && (

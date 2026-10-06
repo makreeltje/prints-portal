@@ -351,7 +351,26 @@ function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
     noBilling: false,
     markupPercent: null,
     spool: null,
-    orders: [],
+    orders: [
+      {
+        id: 'o1',
+        number: 1,
+        createdAt: '2026-10-01T10:00:00.000Z',
+        date: '2026-09-12T10:00:00.000Z',
+        status: 'open',
+        price: 11.89,
+        salePrice: 11.89,
+        paid: 0,
+        remaining: 11.89,
+        writtenOff: null,
+        payments: [],
+        items: [
+          { lineId: 'l1', timesPrinted: 2 },
+          { lineId: 'l2', timesPrinted: 1 },
+        ],
+        invoice: null,
+      },
+    ],
     assets: [
       {
         id: 'a1',
@@ -466,6 +485,111 @@ describe('PrintDetailPage', () => {
       within(files).getByRole('link', { name: 'Downloaden: Babybox_locks_v3_plate1_1h20m.gcode' }),
     ).toHaveAttribute('href', '/api/assets/a1/download');
     expect(screen.getByText('Geen 3D-model beschikbaar')).toBeInTheDocument();
+  });
+
+  it('lists the orders newest first and makes or deletes a Nabestelling', async () => {
+    const base = detail();
+    const first = base.orders[0];
+    const assets = base.assets ?? [];
+    if (first === undefined) throw new Error('fixture');
+    const withRepeat = detail({
+      orders: [
+        { ...first, status: 'paid', paid: 11.89, remaining: 0 },
+        {
+          ...first,
+          id: 'o2',
+          number: 2,
+          date: '2026-10-06T10:00:00.000Z',
+          status: 'open',
+          price: 5,
+          items: [{ lineId: 'l1', timesPrinted: 3 }],
+        },
+      ],
+      assets: [
+        ...assets,
+        {
+          id: 'a3',
+          fileName: 'spare.gcode',
+          subPath: '',
+          type: 'gcode',
+          sizeBytes: 100,
+          lastWriteUtc: '2026-10-06T10:00:00.000Z',
+          recordedAt: null,
+          parseError: null,
+          lines: [
+            {
+              ...(assets[0]?.lines[0] as NonNullable<(typeof assets)[0]['lines'][0]>),
+              id: 'l3',
+              timesPrinted: 0,
+              inOrder: false,
+              possibleDuplicate: false,
+              duplicateOf: null,
+              slots: [],
+            },
+          ],
+        },
+      ],
+    });
+    const calls = stubFetch({
+      'GET /api/prints/p1': () => ({ json: withRepeat }),
+      'POST /api/prints/p1/orders': () => ({ status: 201, json: { id: 'o3' } }),
+      'DELETE /api/orders/o2': () => ({ status: 204 }),
+    });
+    const view = renderDetail('Editor');
+    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    const sections = view.container.querySelectorAll('details.pp-order');
+    expect([...sections].map((s) => s.querySelector('.ttl b')?.textContent)).toEqual([
+      'Nabestelling 2',
+      'Bestelling 1',
+    ]);
+    // Settled orders start closed; the newest unsettled one is the current order.
+    expect(sections[0]).toHaveAttribute('open');
+    expect(sections[0]).toHaveClass('is-open-order');
+    expect(sections[1]).not.toHaveAttribute('open');
+    // The reprinted file shows this order's count.
+    expect(within(sections[0] as HTMLElement).getByText('× 3')).toBeInTheDocument();
+    // A file in no order: alert, badge and hint.
+    expect(
+      screen.getByText(
+        '1 nieuw bestand staat in geen bestelling. Voeg het toe aan een nabestelling.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Niet in een bestelling')).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getAllByRole('button', { name: 'Nabestelling maken' })[0] as HTMLElement,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Nabestelling maken' });
+    expect(within(dialog).getByRole('checkbox', { name: 'spare.gcode' })).toBeChecked();
+    expect(
+      within(dialog).getByRole('checkbox', { name: 'Babybox_locks_v3_plate1_1h20m.gcode' }),
+    ).not.toBeChecked();
+    await userEvent.click(within(dialog).getByRole('checkbox', { name: 'spare.gcode' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Nabestelling maken' }));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Kies minstens één bestand.');
+    await userEvent.click(
+      within(dialog).getByRole('checkbox', { name: 'Babybox_locks_v3_plate1_1h20m.gcode' }),
+    );
+    const qty = within(dialog).getByRole('textbox', {
+      name: 'Aantal keer geprint: Babybox_locks_v3_plate1_1h20m.gcode',
+    });
+    // Starts at the count of its latest order.
+    expect(qty).toHaveValue('3');
+    await userEvent.clear(qty);
+    await userEvent.type(qty, '4');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Nabestelling maken' }));
+    await waitFor(() => {
+      expect(calls.find((c) => c.method === 'POST')?.body).toEqual({
+        items: [{ lineId: 'l1', timesPrinted: 4 }],
+      });
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Nabestelling verwijderen' }));
+    const confirm = screen.getByRole('alertdialog', { name: 'Nabestelling 2 verwijderen?' });
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Verwijderen' }));
+    await waitFor(() => {
+      expect(calls.some((c) => c.method === 'DELETE')).toBe(true);
+    });
   });
 
   it('removes a tag from the print for Editors', async () => {
