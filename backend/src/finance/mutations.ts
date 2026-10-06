@@ -17,7 +17,12 @@ export type FinanceErrorCode =
   | 'not_written_off'
   | 'not_in_order'
   | 'archived'
-  | 'locked';
+  | 'locked'
+  | 'no_lines'
+  | 'changed'
+  | 'not_an_invoice'
+  | 'unknown_line'
+  | 'already_credited';
 
 /** A business rule refused the change; `code` is the API's error code. */
 export class FinanceError extends Error {
