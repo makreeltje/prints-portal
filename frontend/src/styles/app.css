@@ -78,6 +78,16 @@
   display: none;
 }
 
+/* CustomerCard: the name is a button that sets the klant filter, styled by `.pp-cust .hd b`. */
+.app-name-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
 /* A text button that looks like .pp-link. */
 .app-link-button {
   background: none;
@@ -183,38 +193,7 @@
   padding: 0;
 }
 
-/* ScreenDashboard: customer strip (amounts and Factuur arrive with M6/M7). */
-.app-customer-strip {
-  align-items: stretch;
-}
-
-.app-customer-card {
-  padding: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.app-customer-head {
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.app-customer-head > b {
-  color: var(--text-strong);
-  font-size: var(--text-md);
-  line-height: var(--leading-base);
-}
-
-.app-customer-head > .pp-muted {
-  font-size: var(--text-sm);
-}
-
 /* PrintCard: the name link covers the card; other controls sit above it. */
-.pp-grid .pp-print {
-  width: 100%;
-}
-
 .app-card-link {
   color: inherit;
   text-decoration: none;
@@ -228,15 +207,6 @@
 
 .app-above-link {
   position: relative;
-}
-
-.app-card-place,
-.app-breadcrumb {
-  font-size: var(--text-sm);
-}
-
-.app-tag-row {
-  gap: var(--space-1);
 }
 
 .pp-thumb {
@@ -259,18 +229,14 @@
   font-size: var(--text-sm);
 }
 
-/* PrintRow */
+/* PrintRow: the name link takes the cell's colour (muted on archived and deleted rows). */
 .app-row-link {
-  color: var(--text-strong);
+  color: inherit;
   text-decoration: none;
 }
 
 .app-row-link:hover {
   text-decoration: underline;
-}
-
-.app-row-place {
-  font-weight: 400;
 }
 
 .app-material {
@@ -323,8 +289,9 @@
 }
 
 /* ScreenPrintDetail */
-.app-detail-head {
-  gap: var(--space-2);
+/* TagEditor: the popover takes its own line under the tag chips. */
+.app-tagpop-line {
+  flex-basis: 100%;
 }
 
 .app-alert-row {
@@ -341,7 +308,11 @@
   overflow: hidden;
 }
 
-.app-viewer {
+/* Viewer3D: the stage holds the canvas; state, button and hint sit above it. */
+.app-viewer-stage {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   overflow: hidden;
 }
 
@@ -354,6 +325,7 @@
 }
 
 .app-viewer-state {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -361,36 +333,12 @@
 }
 
 /* AssetListItem (read-only in M5) */
-.app-assetlist {
-  overflow: hidden;
-}
-
-.app-assetlist-head {
-  justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border);
-}
-
-.app-assetlist-head > h2 {
+/* The card title is a heading for screen readers, styled by .pp-card-hd b. */
+.app-card-heading {
   margin: 0;
-  color: var(--text-strong);
-  font-size: var(--text-md);
-  line-height: var(--leading-base);
-}
-
-.app-assetlist-head > .pp-muted {
-  font-size: var(--text-sm);
-}
-
-.app-min0 {
-  min-width: 0;
+  font: inherit;
 }
 
 .app-reason-warning {
   color: var(--warning);
-}
-
-.app-times,
-.app-strong {
-  color: var(--text-strong);
 }

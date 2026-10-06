@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { formatDuration, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
@@ -9,7 +8,7 @@ import type { PrintSummary } from './types';
 /**
  * PrintRow list view. Price and selection columns arrive with M6; at 480px
  * and below the dashboard shows cards instead (pp-only-wide / pp-only-phone).
- * Rows do not flash on live updates yet: there is no row flash class (GAP-024).
+ * Archived and deleted rows have muted text; live updates flash the row.
  */
 export function PrintTable({
   prints,
@@ -22,10 +21,6 @@ export function PrintTable({
   onFlashEnd: (id: string) => void;
   restore?: (print: PrintSummary) => void;
 }) {
-  useEffect(() => {
-    for (const id of flashing) onFlashEnd(id);
-  }, [flashing, onFlashEnd]);
-
   return (
     <div className="pp-scroll edge">
       <table className="pp-table">
@@ -45,27 +40,34 @@ export function PrintTable({
         </thead>
         <tbody>
           {prints.map((print) => {
-            const muted = print.status !== 'indexed';
+            const classes: string[] = [];
+            if (print.status === 'deleted') classes.push('is-deleted');
+            if (print.status === 'archived') classes.push('is-archived');
+            if (flashing.has(print.id)) classes.push('flash');
             return (
-              <tr key={print.id}>
+              <tr
+                key={print.id}
+                className={classes.length > 0 ? classes.join(' ') : undefined}
+                onAnimationEnd={() => {
+                  onFlashEnd(print.id);
+                }}
+              >
                 <td className="name">
                   <Link className="app-row-link" to={`/prints/${print.id}`}>
                     {print.name}
                   </Link>
-                  <div className="pp-muted app-row-place">{placeOf(print)}</div>
+                  <div className="pp-muted">{placeOf(print)}</div>
                 </td>
-                <td className={muted ? 'pp-muted' : undefined}>
+                <td>
                   <span className="pp-row app-material">
                     <ColourDot colour={print.colour} />
                     {print.material ?? '–'}
                   </span>
                 </td>
-                <td className={muted ? 'r pp-muted' : 'r'}>
+                <td className="r">
                   {print.printSeconds === null ? '–' : formatDuration(print.printSeconds)}
                 </td>
-                <td className={muted ? 'r pp-muted' : 'r'}>
-                  {print.grams === null ? '–' : formatGrams(print.grams)}
-                </td>
+                <td className="r">{print.grams === null ? '–' : formatGrams(print.grams)}</td>
                 <td>
                   <span className="pp-row app-material">
                     <RecordBadge print={print} />
@@ -83,7 +85,7 @@ export function PrintTable({
                   </span>
                 </td>
                 <td>
-                  <span className="pp-row app-tag-row">
+                  <span className="pp-tags">
                     {print.tags.map((tag) => (
                       <TagChip key={tag.id} tag={tag} />
                     ))}

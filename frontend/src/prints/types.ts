@@ -5,8 +5,9 @@ export type AssetType = 'gcode' | '3mf' | 'stl' | 'video' | 'f3d' | 'pdf' | 'url
 export interface Tag {
   id: string;
   name: string;
+  /** Palette key (`data-c`), a free #rrggbb from before design system v1.3, or null. */
   colour: string | null;
-  /** Chip text colour chosen by the server for contrast; null without colour. */
+  /** Chip text colour chosen by the server for a free colour; null otherwise. */
   ink: string | null;
 }
 

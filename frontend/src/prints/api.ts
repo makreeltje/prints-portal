@@ -1,5 +1,6 @@
 import { api } from '../api/client';
-import type { Customer, PrintDetail, PrintFilter, PrintSummary, TagWithCount } from './types';
+import type { TagPaletteKey } from './tag-palette';
+import type { Customer, PrintDetail, PrintFilter, PrintSummary, Tag, TagWithCount } from './types';
 
 export const PAGE_SIZE = 24;
 
@@ -56,8 +57,10 @@ export const restoreCustomer = (folder: string) =>
   api(`/api/customers/${encodeURIComponent(folder)}/restore`, { method: 'POST' });
 export const setPrintTags = (id: string, tagIds: string[]) =>
   api(`/api/prints/${id}/tags`, { method: 'PUT', body: { tagIds } });
-export const createTag = (name: string) =>
-  api<{ id: string; name: string; colour: string | null }>('/api/tags', {
-    method: 'POST',
-    body: { name },
-  });
+export const createTag = (name: string, colour: TagPaletteKey | null = null) =>
+  api<Tag>('/api/tags', { method: 'POST', body: { name, colour } });
+export const updateTag = (id: string, changes: { name?: string; colour?: TagPaletteKey | null }) =>
+  api<Tag>(`/api/tags/${id}`, { method: 'PATCH', body: changes });
+export const deleteTag = (id: string) => api(`/api/tags/${id}`, { method: 'DELETE' });
+export const deleteCustomer = (folder: string) =>
+  api(`/api/customers/${encodeURIComponent(folder)}`, { method: 'DELETE' });

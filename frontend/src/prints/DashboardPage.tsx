@@ -8,14 +8,23 @@ import { useToast } from '../components/toast-context';
 import { t } from '../i18n/nl';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
 import { useDocumentTitle } from '../pages/useDocumentTitle';
-import { fetchCustomers, fetchPrints, fetchTags, keys, restoreCustomer, restorePrint } from './api';
-import { EmptyState, StatusBadge } from './bits';
+import {
+  deleteCustomer,
+  fetchCustomers,
+  fetchPrints,
+  fetchTags,
+  keys,
+  restoreCustomer,
+  restorePrint,
+} from './api';
+import { EmptyState } from './bits';
+import { CustomerStrip } from './CustomerStrip';
 import { FilterBar } from './FilterBar';
 import { isFiltered, type ViewMode } from './filter';
 import { useLive } from './live-context';
 import { PrintCard } from './PrintCard';
 import { PrintTable } from './PrintTable';
-import type { Customer, PrintFilter, PrintSummary } from './types';
+import type { PrintFilter, PrintSummary } from './types';
 
 /** Filters live in the URL, so back/forward and reloads keep them. */
 function readFilter(params: URLSearchParams): PrintFilter {
@@ -40,14 +49,16 @@ function writeFilter(filter: PrintFilter, view: ViewMode): URLSearchParams {
 }
 
 /**
- * ScreenDashboard (M5 part): customer strip, FilterBar, PrintCard grid or
- * PrintRow list with "Meer laden", live flashes and the empty states. Prices,
+ * ScreenDashboard (M5 part): customer cards (chips on phones), FilterBar,
+ * PrintCard grid or PrintRow list with "Meer laden", live flashes and the
+ * empty states. Prices,
  * openstaand totals, Factuur and the bulk bar arrive with M6/M7.
  */
 export function DashboardPage() {
   useDocumentTitle('nav.dashboard');
   const user = useCurrentUser();
   const isAdmin = user.role === 'Admin';
+  const canManage = isAdmin || user.role === 'Editor';
   const toast = useToast();
   const queryClient = useQueryClient();
   const live = useLive();
@@ -206,6 +217,20 @@ export function DashboardPage() {
       {customers.data !== undefined && customers.data.customers.length > 0 && (
         <CustomerStrip
           customers={customers.data.customers}
+          selected={filter.customer}
+          onSelect={(customer) => {
+            setFilter({ ...filter, customer });
+          }}
+          total={total}
+          onDelete={
+            canManage
+              ? async (folder) => {
+                  await deleteCustomer(folder);
+                  if (filter.customer === folder) setFilter({ ...filter, customer: null });
+                  await refresh();
+                }
+              : undefined
+          }
           onRestore={isAdmin ? (folder) => void run(() => restoreCustomer(folder)) : undefined}
         />
       )}
@@ -254,42 +279,4 @@ async function loadMore(fetchNext: () => Promise<unknown>, before: number) {
   );
   const visible = [...links].filter((link) => link.offsetParent !== null);
   visible[before]?.focus();
-}
-
-/** One card per klant: name and number of prints (amounts and Factuur arrive with M6/M7). */
-function CustomerStrip({
-  customers,
-  onRestore,
-}: {
-  customers: readonly Customer[];
-  onRestore?: (folder: string) => void;
-}) {
-  return (
-    <ul className="pp-row app-customer-strip app-plain-list">
-      {customers.map((customer) => (
-        <li key={customer.folder} className="pp-card app-customer-card">
-          <div className="pp-row app-customer-head">
-            <b>{customer.folder}</b>
-            <span className="pp-muted">
-              {t('customers.prints', { count: customer.printCount })}
-            </span>
-          </div>
-          {customer.deleted && onRestore !== undefined && (
-            <div className="pp-row app-customer-head">
-              <StatusBadge kind="deleted" />
-              <button
-                type="button"
-                className="pp-btn pp-btn-secondary pp-btn-sm"
-                onClick={() => {
-                  onRestore(customer.folder);
-                }}
-              >
-                {t('common.restore')}
-              </button>
-            </div>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
 }

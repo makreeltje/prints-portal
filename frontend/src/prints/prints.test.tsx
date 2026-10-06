@@ -22,7 +22,7 @@ function summary(overrides: Partial<PrintSummary> = {}): PrintSummary {
     discoveredAt: '2026-10-01T10:00:00.000Z',
     status: 'indexed',
     deletedAt: null,
-    tags: [{ id: 't1', name: 'cadeau', colour: '#e0a3ff', ink: '#141a33' }],
+    tags: [{ id: 't1', name: 'cadeau', colour: 'lilac', ink: null }],
     hasThumbnail: true,
     colour: '#1a1a1a',
     version: 'v1',
@@ -32,7 +32,7 @@ function summary(overrides: Partial<PrintSummary> = {}): PrintSummary {
 
 const customers = { customers: [{ folder: 'Joey', printCount: 1, deleted: false }] };
 const tags = {
-  tags: [{ id: 't1', name: 'cadeau', colour: '#e0a3ff', ink: '#141a33', printCount: 1 }],
+  tags: [{ id: 't1', name: 'cadeau', colour: 'lilac', ink: null, printCount: 1 }],
 };
 
 function renderDashboard(path = '/', role: 'Admin' | 'Editor' | 'User' = 'Admin') {
@@ -151,6 +151,142 @@ describe('DashboardPage', () => {
     expect(calls.some((c) => c.method === 'POST' && c.path === '/api/prints/p1/restore')).toBe(
       true,
     );
+  });
+
+  it('draws palette tags with data-c and older free colours with their own ink', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({
+        json: {
+          items: [
+            summary({
+              tags: [
+                { id: 't1', name: 'cadeau', colour: 'lilac', ink: null },
+                { id: 't2', name: 'oud', colour: '#e11d48', ink: '#ffffff' },
+                { id: 't3', name: 'proef', colour: null, ink: null },
+              ],
+            }),
+          ],
+          total: 1,
+        },
+      }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    const card = (await screen.findByRole('link', { name: 'Babybox locks' })).closest('article');
+    if (card === null) throw new Error('no card');
+    expect(within(card).getByText('cadeau')).toHaveAttribute('data-c', 'lilac');
+    expect(within(card).getByText('oud')).toHaveStyle({ '--tag': '#e11d48' });
+    expect(within(card).getByText('proef')).toHaveClass('pp-tag', 'none');
+  });
+
+  it('dims deleted and archived prints in cards and mutes them in the list', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({
+        json: {
+          items: [
+            summary({ status: 'deleted', deletedAt: '2026-10-02T10:00:00.000Z' }),
+            summary({ id: 'p2', name: 'Oud', status: 'archived' }),
+          ],
+          total: 2,
+        },
+      }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    const view = renderDashboard('/?verwijderd=1');
+    await screen.findAllByRole('link', { name: 'Babybox locks' });
+    const cards = view.container.querySelectorAll('article.pp-print');
+    expect(cards[0]).toHaveClass('is-deleted');
+    expect(cards[1]).toHaveClass('is-archived');
+    view.unmount();
+
+    const list = renderDashboard('/?verwijderd=1&weergave=lijst');
+    const table = await screen.findByRole('table');
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(rows[0]).toHaveClass('is-deleted');
+    expect(rows[1]).toHaveClass('is-archived');
+    list.unmount();
+  });
+
+  it('shows customer cards with counts and filters by klant from the card or a chip', async () => {
+    const calls = stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary()], total: 12 } }),
+      'GET /api/customers': () => ({
+        json: {
+          customers: [
+            { folder: 'Joey', printCount: 12, deleted: false },
+            { folder: 'Anouk', printCount: 1, deleted: false },
+          ],
+        },
+      }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard('/', 'User');
+    expect(await screen.findByText('1 print')).toBeInTheDocument();
+    expect(screen.getAllByText('12 prints').length).toBeGreaterThan(0);
+    // Users cannot delete customers.
+    expect(screen.queryByRole('button', { name: 'Klant verwijderen' })).toBeNull();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Joey' }));
+    await waitFor(() => {
+      expect(calls.some((c) => c.path.includes('customer=Joey'))).toBe(true);
+    });
+    const chips = screen.getByRole('group', { name: 'Klanten' });
+    expect(within(chips).getByRole('button', { name: /^Joey/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await userEvent.click(within(chips).getByRole('button', { name: 'Alle klanten' }));
+    expect(within(chips).getByRole('button', { name: 'Alle klanten' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('lets Editors delete a whole klant after confirmation', async () => {
+    const calls = stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary()], total: 12 } }),
+      'GET /api/customers': () => ({
+        json: { customers: [{ folder: 'Joey', printCount: 12, deleted: false }] },
+      }),
+      'GET /api/tags': () => ({ json: tags }),
+      'DELETE /api/customers/Joey': () => ({ status: 204, json: { deleted: 12 } }),
+    });
+    renderDashboard('/?klant=Joey', 'Editor');
+    // The card's icon button and the phone toolbar's button (one shows per screen size).
+    const buttons = await screen.findAllByRole('button', { name: 'Klant verwijderen' });
+    expect(buttons).toHaveLength(2);
+    await userEvent.click(buttons[0] as HTMLElement);
+    const dialog = screen.getByRole('alertdialog', { name: "Klant 'Joey' verwijderen?" });
+    expect(dialog).toHaveAccessibleDescription(
+      'Alle 12 prints van deze klant worden verborgen. De financiële gegevens blijven bewaard en een beheerder kan de klant herstellen.',
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Verwijderen' }));
+    await waitFor(() => {
+      expect(calls.some((c) => c.method === 'DELETE' && c.path === '/api/customers/Joey')).toBe(
+        true,
+      );
+    });
+  });
+
+  it('lets Admins restore a deleted klant from its card', async () => {
+    const calls = stubFetch({
+      'GET /api/prints': () => ({ json: { items: [], total: 0 } }),
+      'GET /api/customers': () => ({
+        json: { customers: [{ folder: 'Bas', printCount: 4, deleted: true }] },
+      }),
+      'GET /api/tags': () => ({ json: tags }),
+      'GET /healthz': () => ({ json: { checks: { printsRoot: { status: 'up' } } } }),
+      'POST /api/customers/Bas/restore': () => ({ json: { restored: 4 } }),
+    });
+    const view = renderDashboard('/?verwijderd=1');
+    await screen.findByRole('button', { name: 'Bas' });
+    expect(view.container.querySelector('.pp-cust')).toHaveClass('is-deleted');
+    await userEvent.click(screen.getByRole('button', { name: 'Herstellen' }));
+    await waitFor(() => {
+      expect(calls.some((c) => c.path === '/api/customers/Bas/restore')).toBe(true);
+    });
   });
 
   it('subscribes to live updates, refetches and flashes the changed card', async () => {

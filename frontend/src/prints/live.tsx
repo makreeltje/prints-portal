@@ -10,6 +10,8 @@ const MIN_DELAY_MS = 1000;
 const MAX_DELAY_MS = 30_000;
 /** Close code the server uses when the session behind the socket ended. */
 const SESSION_ENDED = 4401;
+/** Live update flash length from the PrintCard spec ("1.6s flash"). */
+const FLASH_MS = 1600;
 
 /**
  * One WebSocket to /api/live for the signed-in app. Subscribes to every
@@ -40,6 +42,7 @@ export function LiveProvider({
     let stopped = false;
     let wasLive = false;
     let announcedLoss = false;
+    const flashTimers: number[] = [];
 
     const connect = () => {
       const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -63,6 +66,12 @@ export function LiveProvider({
         void queryClient.invalidateQueries({ queryKey: keys.all });
         const id = data.printId;
         setFlashing((current) => new Set([...current, id]));
+        // The flash also ends without an animation (reduced motion, print not on screen).
+        flashTimers.push(
+          window.setTimeout(() => {
+            setFlashing((current) => without(current, id));
+          }, FLASH_MS),
+        );
       };
       socket.onclose = (event) => {
         socket = null;
@@ -84,6 +93,7 @@ export function LiveProvider({
     return () => {
       stopped = true;
       window.clearTimeout(timer);
+      for (const flashTimer of flashTimers) window.clearTimeout(flashTimer);
       socket?.close();
     };
   }, [queryClient, toast]);
@@ -92,12 +102,15 @@ export function LiveProvider({
     status,
     flashing,
     doneFlashing: (printId) => {
-      setFlashing((current) => {
-        const next = new Set(current);
-        next.delete(printId);
-        return next;
-      });
+      setFlashing((current) => without(current, printId));
     },
   };
   return <LiveContext.Provider value={value}>{children}</LiveContext.Provider>;
+}
+
+function without(set: ReadonlySet<string>, id: string): ReadonlySet<string> {
+  if (!set.has(id)) return set;
+  const next = new Set(set);
+  next.delete(id);
+  return next;
 }

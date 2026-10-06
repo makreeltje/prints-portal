@@ -22,11 +22,12 @@ export function PrintCard({
   /** Herstellen, for Admins on deleted prints. */
   restore?: () => void;
 }) {
+  const classes = ['pp-card', 'pp-print'];
+  if (print.status === 'deleted') classes.push('is-deleted');
+  if (print.status === 'archived') classes.push('is-archived');
+  if (flashing) classes.push('flash');
   return (
-    <article
-      className={flashing ? 'pp-card pp-print flash' : 'pp-card pp-print'}
-      onAnimationEnd={onFlashEnd}
-    >
+    <article className={classes.join(' ')} onAnimationEnd={onFlashEnd}>
       <Thumbnail print={print} />
       <div className="pp-info">
         <div>
@@ -35,11 +36,11 @@ export function PrintCard({
               {print.name}
             </Link>
           </h3>
-          <span className="pp-muted app-card-place">{placeOf(print)}</span>
+          <span className="sub">{placeOf(print)}</span>
         </div>
         <Meta print={print} />
         {print.tags.length > 0 && (
-          <div className="pp-row app-tag-row">
+          <div className="pp-tags">
             {print.tags.map((tag) => (
               <TagChip key={tag.id} tag={tag} />
             ))}

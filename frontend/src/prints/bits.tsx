@@ -2,6 +2,7 @@ import { Archive, Box, Copy, FolderOpen, SearchX, TriangleAlert, Trash2, X } fro
 import type { CSSProperties, ReactNode } from 'react';
 import { t } from '../i18n/nl';
 import { thumbnailUrl } from './api';
+import { isPaletteKey } from './tag-palette';
 import type { PrintSummary, Tag } from './types';
 
 /** StatusBadge (record and asset statuses used so far). Always an icon and a word. */
@@ -49,8 +50,9 @@ export function RecordBadge({ print }: { print: Pick<PrintSummary, 'status'> }) 
 }
 
 /**
- * TagChip: the tag colour and its text colour are user data, passed as the
- * per-instance variables the component reads (--tag, --tag-ink).
+ * TagChip: a palette colour is a `data-c` key (design system v1.3); a free
+ * colour stored before v1.3 is user data passed as the per-instance variables
+ * the component reads (--tag, --tag-ink); no colour is the outlined chip.
  */
 export function TagChip({ tag, onRemove }: { tag: Tag; onRemove?: () => void }) {
   const remove =
@@ -59,6 +61,14 @@ export function TagChip({ tag, onRemove }: { tag: Tag; onRemove?: () => void }) 
         <X className="pp-ico" aria-hidden="true" />
       </button>
     );
+  if (tag.colour !== null && isPaletteKey(tag.colour)) {
+    return (
+      <span className="pp-tag" data-c={tag.colour}>
+        {tag.name}
+        {remove}
+      </span>
+    );
+  }
   if (tag.colour === null || tag.ink === null) {
     return (
       <span className="pp-tag none">
