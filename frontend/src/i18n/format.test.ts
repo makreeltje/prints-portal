@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatDuration, formatFileSize, formatGrams } from './format';
+import {
+  formatAmountInput,
+  formatDate,
+  formatDuration,
+  formatFileSize,
+  formatGrams,
+  formatMoney,
+  parseAmount,
+} from './format';
 
 describe('nl-NL formats', () => {
   it.each([
@@ -19,5 +27,16 @@ describe('nl-NL formats', () => {
     expect(formatFileSize(812)).toBe('812 B');
     expect(formatFileSize(2_400_000)).toBe('2,4 MB');
     expect(formatFileSize(4_600)).toBe('4,6 kB');
+  });
+
+  it('formats and reads money the Dutch way', () => {
+    expect(formatMoney(1234.56).replace(/\s/g, ' ')).toBe('€ 1.234,56');
+    expect(formatMoney(-11.89).replace(/\s/g, ' ')).toBe('€ -11,89');
+    expect(formatAmountInput(1234.5)).toBe('1234,50');
+    expect(parseAmount('11,89')).toBe(11.89);
+    expect(parseAmount('€ 1.234,56')).toBe(1234.56);
+    expect(parseAmount('11.89')).toBe(11.89);
+    expect(parseAmount('abc')).toBeNull();
+    expect(parseAmount('')).toBeNull();
   });
 });
