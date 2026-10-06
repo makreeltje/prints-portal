@@ -403,6 +403,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** under Prijzen: NumberInput "Stroomtarief" (`€/kWh`), a small table "Materiaalprijzen" (Materiaal, €/kg, add and remove rows); a section "Printers" with one row per profile (Naam, Watt as NumberInput, aliases as chips), and "Printer toevoegen".
 - **Blocked:** editing these values in the UI. The API (`/api/settings/pricing`, `/api/settings/printers`) is built; the K1 family is seeded and the tariff is seeded from `ELECTRICITY_TARIFF_EUR_PER_KWH`.
 - **Owner decision (2026-10-06):** API now, the UI waits for the design system.
+- **Owner decision (2026-10-06, asked by the design system):** tariff (€/kWh) and a "Materiaalprijzen" table (material, €/kg) under Prijzen next to Standaardmarge; a separate section "Printers" with one row per profile (name, watts, aliases).
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
@@ -415,6 +416,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** "Spoel toewijzen": a Dialog with the SpoolPicker that sets the spool for the whole print on every selected print; "Prijs instellen": a Dialog with one Verkoopprijs NumberInput applied to every selected print, plus "Voorstel uit marge" per print. Results: a toast "{ok} van {totaal} bijgewerkt" and, on failures, an alert listing the prints and reasons.
 - **Blocked:** those two buttons. The bulk API with per-print results is built; Markeer als betaald, Tags and Verwijderen are offered.
 - **Owner decision (2026-10-06):** wait for the design system.
+- **Owner decision (2026-10-06, asked by the design system):** "Prijs instellen" sets the price on the newest order of each print; if that order is already paid or written off, that print fails with a reason and the others go ahead.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
@@ -426,6 +428,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** repeat orders cannot be created or paid from the UI; new files after an order is priced do not count until they are in an order.
 - **Proposal:** on the detail page a section per order ("Bestelling 1", "Nabestelling 2 · {datum}") with its items, CostBreakdown and PaymentPanel; a secondary button "Nabestelling maken" opening a Dialog with checkbox rows per file/plate and an "Aantal keer geprint" NumberInput; AssetListItem badge "Niet in een bestelling" with the hint "Nieuw bestand. Voeg het toe aan een nabestelling."; PrintCard shows the summed price and the least settled badge, with "{n} bestellingen" in the meta line.
 - **Blocked:** making a Nabestelling and showing more than one order. The data model, API and status rules are built; the screens show order 1 as designed.
+- **Owner decision (2026-10-06, asked by the design system):** stacked sections per order ("Bestelling 1", "Nabestelling 2 · {datum}"), newest first, each with its files, CostBreakdown and PaymentPanel; settled orders collapsed; the same on phone and desktop. A Nabestelling may be deleted by Admin and Editor while it has no payment, no write-off and (from M7) is not on an invoice; order 1 can never be deleted; its files go back to "not in an order".
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
