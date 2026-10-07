@@ -32,11 +32,29 @@ Since v1.1 the screens and documents are delivered as component folders, not a `
 
 ## How to import or update
 
-1. Export or download the design system from Claude's Design System.
-2. Replace everything in `design-system/` **except** `DESIGN_GAPS.md`, `FEEDBACK_PROMPT.md` and `IMPORTING.md`.
-3. Bump `VERSION` and add a changelog entry below, listing which `GAP-###` entries it resolves.
-4. Commit it on its own, e.g. `design-system: import v1.1 (resolves GAP-001)`.
-5. Tell Claude Code: *"Design system v1.1 is imported. Follow 'After a new export arrives' in CLAUDE.md."*
+The design system lives in its own Artifact, and Claude Code can read it
+directly, so there is no zip to download or unpack:
+
+1. Tell Claude Code the new version is published (a link is useful the first
+   time; the artifact keeps the same URL afterwards).
+2. Claude Code fetches the artifact's `project/` tree and runs
+   `scripts/sync-design-system.sh <dir>`, which replaces everything in
+   `design-system/` **except** `DESIGN_GAPS.md`, `FEEDBACK_PROMPT.md` and
+   `IMPORTING.md`, and takes `VERSION` from the export's own `tokens.json` so
+   the two cannot disagree.
+3. `node scripts/check-design-export.mjs` checks the export against its own
+   changelog: every class and copy key it claims must really be there, "no
+   token changes" must be true, every gap in its table must exist in the log.
+   It also lists the gaps the export does **not** settle (those marked
+   proposed, or waiting on a measurement), so they are not mistaken for
+   delivered. A problem goes back to the design system before anything is
+   built on it.
+4. Add a changelog entry below, listing which `GAP-###` entries it resolves.
+5. Commit the import on its own, e.g. `design-system: import v1.1`.
+6. Then follow "After a new export arrives" in `CLAUDE.md`.
+
+The old way (a zip pasted into the repo root) still works: point
+`sync-design-system.sh` at the unpacked folder.
 
 ## Changelog
 
