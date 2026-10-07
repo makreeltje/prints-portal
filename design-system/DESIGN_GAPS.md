@@ -840,7 +840,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Type:** improvement idea
 - **Found while:** the UX review of 1.0
 - **Where needed:** PrintCard and PrintTable; `placeOf` in `frontend/src/prints/filter.ts`
-- **What is missing or wrong:** The subtitle is "klant / project", and the print is named after its project folder, so the line reads "Rick / USB SD Card holder" under the title "USB SD Card holder". The only new information is the klant.
+- **What is missing or wrong:** The subtitle is "klant / project", and the print is named after its project folder, so the line reads "Joey / Babybox locks" under the title "Babybox locks". The only new information is the klant.
 - **Why it matters:** It costs a line in every card, and on a phone it wraps, so a quarter of each card repeats the title.
 - **Proposal:** Show the klant alone when the project equals the print name, and keep "klant / project" when they differ. Please confirm, since it changes what the card's second line means.
 - **Blocked:** Nothing.
