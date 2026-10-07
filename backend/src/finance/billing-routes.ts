@@ -3,6 +3,7 @@ import path from 'node:path';
 import { Resvg } from '@resvg/resvg-js';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import PDFDocument from 'pdfkit';
+import { customerScope } from '../auth/access.js';
 import { localDate } from '../core/time.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { InvoiceKind, Role } from '../db/schema.js';
@@ -125,7 +126,12 @@ export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDe
 
   // -------------------------------------------------------------- Openstaand
 
-  app.get('/api/outstanding', { config: { auth: MANAGE } }, () => outstanding(db, now()));
+  /** Admins and Editors see every klant; Users read their granted klanten (owner decision). */
+  app.get('/api/outstanding', async (request) => {
+    if (request.auth === null) throw new Error('session missing after guard');
+    const scope = await customerScope(db, request.auth.user);
+    return outstanding(db, now(), scope.kind === 'all' ? {} : { customers: scope.customerFolders });
+  });
 
   /** "Alles als betaald" for one klant. */
   app.post<{ Params: { folder: string } }>(

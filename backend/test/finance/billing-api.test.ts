@@ -548,8 +548,29 @@ describe.each(TEST_DATABASES)('invoices and Openstaand on $name', ({ url }) => {
     expect((await t.as(admin, { url: '/api/settings/logo' })).statusCode).toBe(404);
   });
 
-  it('keeps Users out', async () => {
-    expect((await t.as(helper, { url: '/api/outstanding' })).statusCode).toBe(403);
+  it('shows Users Openstaand for their own klanten only, without actions', async () => {
+    expect((await t.as(helper, { url: '/api/outstanding' })).json<Outstanding>().groups).toEqual(
+      [],
+    );
+    const helperId = (
+      await t.db
+        .selectFrom('users')
+        .select('id')
+        .where('login', '=', 'helper@example.org')
+        .executeTakeFirstOrThrow()
+    ).id;
+    await t.as(admin, {
+      method: 'PATCH',
+      url: '/api/access',
+      payload: { changes: [{ userId: helperId, customerFolder: 'Joey', granted: true }] },
+    });
+    const mine = (await t.as(helper, { url: '/api/outstanding' })).json<Outstanding>();
+    expect(mine.groups.map((g) => g.customer)).toEqual(['Joey']);
+    expect(mine.customers).toBe(1);
+    expect(
+      (await t.as(helper, { method: 'POST', url: '/api/outstanding/Joey/mark-paid' })).statusCode,
+    ).toBe(403);
+    expect((await t.as(helper, { url: '/api/customers/Joey/reminder.pdf' })).statusCode).toBe(403);
   });
 });
 

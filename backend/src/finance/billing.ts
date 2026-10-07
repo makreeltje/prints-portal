@@ -11,7 +11,7 @@ export interface BillableOrder {
   order: PrintOrderTable;
   money: OrderMoney;
   noBilling: boolean;
-  print: { id: string; name: string; project: string | null; customer: string };
+  print: { id: string; name: string; project: string | null; customer: string; archived: boolean };
   /**
    * The order's date (owner decision, M7): the modification time of the
    * newest counted G-code in the order, else the order's creation time.
@@ -28,7 +28,7 @@ export async function billableOrders(
 ): Promise<BillableOrder[]> {
   let query = db
     .selectFrom('print_records')
-    .select(['id', 'display_name', 'project_folder', 'customer_folder'])
+    .select(['id', 'display_name', 'project_folder', 'customer_folder', 'status'])
     .where('status', '!=', 'deleted');
   if (filter.customer !== undefined) query = query.where('customer_folder', '=', filter.customer);
   const records = await query.execute();
@@ -66,6 +66,7 @@ export async function billableOrders(
           name: record.display_name,
           project: record.project_folder,
           customer: record.customer_folder,
+          archived: record.status === 'archived',
         },
         date: dates.get(order.id) ?? order.created_at,
         invoice: order.invoice_id === null ? null : (invoices.get(order.invoice_id) ?? null),

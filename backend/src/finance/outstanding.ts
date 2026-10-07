@@ -11,6 +11,8 @@ export interface OutstandingLine {
   printId: string;
   printName: string;
   project: string | null;
+  /** Archived prints stay in Openstaand with the Gearchiveerd badge (plan). */
+  archived: boolean;
   status: 'open' | 'partial';
   price: number;
   paid: number;
@@ -49,12 +51,13 @@ function since(item: BillableOrder): string {
 export async function outstanding(
   db: Kysely<Database>,
   now: Date,
-  filter: { customer?: string } = {},
+  filter: { customer?: string; customers?: ReadonlySet<string> } = {},
 ): Promise<Outstanding> {
   const today = localDate(now);
   const groups = new Map<string, OutstandingGroup>();
   for (const item of await billableOrders(db, filter)) {
     const { money } = item;
+    if (filter.customers !== undefined && !filter.customers.has(item.print.customer)) continue;
     if (item.noBilling || (money.status !== 'open' && money.status !== 'partial')) continue;
     const remaining = money.remainingCents ?? 0;
     if (remaining <= 0 || money.priceCents === null) continue;
@@ -65,6 +68,7 @@ export async function outstanding(
       printId: item.print.id,
       printName: item.print.name,
       project: item.print.project,
+      archived: item.print.archived,
       status: money.status,
       price: money.priceCents / 100,
       paid: money.paidCents / 100,

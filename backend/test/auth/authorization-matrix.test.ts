@@ -298,7 +298,11 @@ const ENDPOINTS: {
     request: () => ({ url: '/api/settings/markup' }),
     allowed: MANAGE,
   },
-  { name: 'GET /api/outstanding', request: () => ({ url: '/api/outstanding' }), allowed: MANAGE },
+  {
+    name: 'GET /api/outstanding',
+    request: () => ({ url: '/api/outstanding' }),
+    allowed: ['User', 'Editor', 'Admin'],
+  },
   {
     name: 'POST /api/outstanding/:folder/mark-paid',
     request: () => ({ method: 'POST', url: '/api/outstanding/Nobody/mark-paid' }),
