@@ -32,8 +32,8 @@ export function Dialog({
   describedBy?: string;
   /** aria-label for a close button in the header; omitted when not given. */
   closeLabel?: string;
-  /** `sm`: the 380px panel for confirmations (pp-dialog sm). */
-  size?: 'sm';
+  /** `sm`: the 380px panel for confirmations (pp-dialog sm); `lg`: 560px (pp-dialog lg). */
+  size?: 'sm' | 'lg';
   /** Makes the panel a form, so Enter submits. */
   onSubmit?: () => void;
 }) {
@@ -100,12 +100,12 @@ function Panel({
   onSubmit,
   children,
 }: {
-  size?: 'sm';
+  size?: 'sm' | 'lg';
   onSubmit?: () => void;
   children: ReactNode;
 }) {
   // `sheet`: full width with top corners only at 480px and below (Dialog spec).
-  const className = size === 'sm' ? 'pp-dialog sm sheet' : 'pp-dialog sheet';
+  const className = size === undefined ? 'pp-dialog sheet' : `pp-dialog ${size} sheet`;
   if (onSubmit === undefined) return <div className={className}>{children}</div>;
   return (
     <form

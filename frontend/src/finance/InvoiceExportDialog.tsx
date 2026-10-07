@@ -1,21 +1,30 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { TriangleAlert } from 'lucide-react';
 import { useId, useState } from 'react';
+import { Link } from 'react-router';
+import { useCurrentUser } from '../auth/context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { DatePicker } from '../components/DatePicker';
 import { Dialog } from '../components/Dialog';
 import { GenericError } from '../components/FieldError';
 import { formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { keys } from '../prints/api';
-import { billingKeys, conceptUrl, fetchInvoicePreview, finaliseInvoice } from './billing-api';
+import {
+  billingKeys,
+  conceptUrl,
+  fetchInvoicePreview,
+  finaliseInvoice,
+  type InvoicePeriod,
+} from './billing-api';
 
 /**
- * ScreenInvoiceExport for Editors: "Factuur maken voor {klant}" with
- * "Alleen openstaand", the live preview card (Regels, Totaal, Betaald,
- * Openstaand), the prints left out for lack of a price, "Concept
- * downloaden" and "Definitief maken" (confirmed with klant, count, amount
- * and the new number). Van / Tot en met wait for GAP-043 (owner decision):
- * the invoice covers every order not yet on a final invoice.
+ * ScreenInvoiceExport for Editors (`pp-dialog lg`): "Factuur maken voor
+ * {klant}" with Van / Tot en met (the order date; empty means every order
+ * not yet on a final invoice), "Alleen openstaand", the live preview card,
+ * the prints left out for lack of a price, "Concept downloaden" and
+ * "Definitief maken" (confirmed with klant, count, amount and the new
+ * number; refused while Bedrijfsgegevens has no name or IBAN).
  */
 export function InvoiceExportDialog({
   customer,
@@ -26,21 +35,28 @@ export function InvoiceExportDialog({
 }) {
   const id = useId();
   const queryClient = useQueryClient();
+  const user = useCurrentUser();
+  const [from, setFrom] = useState<string | null>(null);
+  const [to, setTo] = useState<string | null>(null);
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const badPeriod = from !== null && to !== null && to < from;
+  const period: InvoicePeriod = { from, to, onlyOpen };
   const preview = useQuery({
-    queryKey: billingKeys.preview(customer, onlyOpen),
-    queryFn: () => fetchInvoicePreview(customer, onlyOpen),
+    queryKey: billingKeys.preview(customer, period),
+    queryFn: () => fetchInvoicePreview(customer, period),
+    enabled: !badPeriod,
   });
-  const data = preview.data;
+  const data = badPeriod ? undefined : preview.data;
   const empty = data !== undefined && data.lines.length === 0;
   const ready = data !== undefined && !empty;
+  const blocked = data !== undefined && !data.companyReady;
 
   const concept = (block: boolean) =>
     ready ? (
       <a
         className={block ? 'pp-btn pp-btn-secondary pp-fill' : 'pp-btn pp-btn-secondary'}
-        href={conceptUrl(customer, onlyOpen)}
+        href={conceptUrl(customer, period)}
         download
       >
         {t('invoice.conceptDownload')}
@@ -55,9 +71,10 @@ export function InvoiceExportDialog({
       type="button"
       className="pp-btn pp-btn-primary"
       disabled={!ready}
-      aria-describedby={empty ? `${id}-empty` : undefined}
+      aria-disabled={blocked || undefined}
+      aria-describedby={empty ? `${id}-empty` : blocked ? `${id}-blocked` : undefined}
       onClick={() => {
-        setConfirming(true);
+        if (!blocked) setConfirming(true);
       }}
     >
       {t('invoice.finalize')}
@@ -73,12 +90,12 @@ export function InvoiceExportDialog({
     <>
       <Dialog
         open={!confirming}
+        size="lg"
         title={t('invoice.createFor', { customer })}
         onClose={onClose}
         footer={
           <>
             <div className="pp-only-wide">
-              {/* The three buttons do not fit 440px (GAP-045): the row wraps, right-aligned. */}
               <div className="pp-row pp-gap-2 pp-end">
                 {cancel}
                 {concept(false)}
@@ -96,12 +113,22 @@ export function InvoiceExportDialog({
         }
       >
         <div className="pp-col">
+          <div className="pp-row pp-gap-3 pp-nowrap pp-items-start">
+            <DatePicker label={t('invoice.from')} value={from} onChange={setFrom} max={to} />
+            <DatePicker
+              label={t('invoice.to')}
+              value={to}
+              onChange={setTo}
+              min={from}
+              error={badPeriod ? t('date.outOfRange') : null}
+            />
+          </div>
+          <span className="pp-help">{t('invoice.periodHelp')}</span>
           <label className="pp-opt">
             <input
               type="checkbox"
               className="pp-check"
               checked={onlyOpen}
-              data-autofocus
               onChange={(event) => {
                 setOnlyOpen(event.target.checked);
               }}
@@ -110,7 +137,7 @@ export function InvoiceExportDialog({
           </label>
           <div className="pp-card pp-sec pp-gap-2 pp-bg-2" aria-live="polite">
             <b className="pp-strong">{t('invoice.preview')}</b>
-            {preview.isPending && <span className="pp-spin" aria-hidden="true" />}
+            {preview.isPending && !badPeriod && <span className="pp-spin" aria-hidden="true" />}
             {preview.isError && <GenericError />}
             {data !== undefined && (
               <dl className="pp-kv tight">
@@ -141,6 +168,22 @@ export function InvoiceExportDialog({
               </div>
             </div>
           )}
+          {blocked && (
+            <div id={`${id}-blocked`} className="pp-alert warning" role="alert">
+              <TriangleAlert className="pp-ico" aria-hidden="true" />
+              <div>
+                {t('invoice.finalize.blocked')}
+                {user.role === 'Admin' && (
+                  <>
+                    {' '}
+                    <Link className="pp-link" to="/instellingen">
+                      {t('invoice.toSettings')}
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </Dialog>
       {data !== undefined && (
@@ -156,6 +199,8 @@ export function InvoiceExportDialog({
           confirmLabel={t('invoice.finalize')}
           onConfirm={async () => {
             await finaliseInvoice(customer, {
+              ...(from === null ? {} : { from }),
+              ...(to === null ? {} : { to }),
               onlyOpen,
               expectedTotal: data.total,
               expectedLines: data.lines.length,

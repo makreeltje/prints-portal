@@ -49,6 +49,15 @@ export interface InvoicePreview {
   excluded: string[];
   earlier: { description: string; invoiceNumber: string }[];
   nextNumber: string;
+  /** Bedrijfsgegevens has a name and an IBAN; without them finalising is refused. */
+  companyReady: boolean;
+}
+
+/** Van / Tot en met (inclusive `YYYY-MM-DD`) and "Alleen openstaand". */
+export interface InvoicePeriod {
+  from: string | null;
+  to: string | null;
+  onlyOpen: boolean;
 }
 
 export interface InvoiceSummary {
@@ -78,8 +87,8 @@ export interface InvoiceDetail {
 export const billingKeys = {
   outstanding: ['outstanding'] as const,
   invoices: ['invoices'] as const,
-  preview: (customer: string, onlyOpen: boolean) =>
-    ['invoices', 'preview', customer, onlyOpen] as const,
+  preview: (customer: string, period: InvoicePeriod) =>
+    ['invoices', 'preview', customer, period.from, period.to, period.onlyOpen] as const,
   invoice: (id: string) => ['invoices', 'detail', id] as const,
 };
 
@@ -95,15 +104,28 @@ export const markCustomerPaid = (customer: string) =>
 
 export const reminderUrl = (customer: string) => `${customerPath(customer)}/reminder.pdf`;
 
-export const fetchInvoicePreview = (customer: string, onlyOpen: boolean) =>
-  api<InvoicePreview>(`${customerPath(customer)}/invoice/preview?onlyOpen=${String(onlyOpen)}`);
+const periodQuery = (period: InvoicePeriod) => {
+  const params = new URLSearchParams({ onlyOpen: String(period.onlyOpen) });
+  if (period.from !== null) params.set('from', period.from);
+  if (period.to !== null) params.set('to', period.to);
+  return params.toString();
+};
 
-export const conceptUrl = (customer: string, onlyOpen: boolean) =>
-  `${customerPath(customer)}/invoice/concept.pdf?onlyOpen=${String(onlyOpen)}`;
+export const fetchInvoicePreview = (customer: string, period: InvoicePeriod) =>
+  api<InvoicePreview>(`${customerPath(customer)}/invoice/preview?${periodQuery(period)}`);
+
+export const conceptUrl = (customer: string, period: InvoicePeriod) =>
+  `${customerPath(customer)}/invoice/concept.pdf?${periodQuery(period)}`;
 
 export const finaliseInvoice = (
   customer: string,
-  body: { onlyOpen: boolean; expectedTotal: number; expectedLines: number },
+  body: {
+    from?: string;
+    to?: string;
+    onlyOpen: boolean;
+    expectedTotal: number;
+    expectedLines: number;
+  },
 ) =>
   api<{ id: string; number: string }>(`${customerPath(customer)}/invoices`, {
     method: 'POST',

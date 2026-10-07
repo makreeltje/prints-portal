@@ -173,6 +173,7 @@ export const nl = {
   'pay.notBilledNote': 'Deze klant wordt niet gefactureerd.',
   'pay.userNote': 'Je ziet alleen prijs en status.',
   'pay.adminOnly': 'Alleen zichtbaar voor beheerders.',
+  'pay.lockedHelp': 'Staat op een definitieve factuur en kan niet meer worden gewijzigd.',
   'pay.writtenOffAmount': 'Afgeschreven', // component copy: PaymentPanel
   'pay.paidAmount': 'Betaald', // component copy: PaymentPanel
   'pay.date': 'Datum', // component copy: PaymentPanel
@@ -378,6 +379,27 @@ export const nl = {
   'invoice.empty': 'Nog geen facturen',
   'invoice.emptyHint': 'Maak een factuur vanaf het dashboard.',
   'invoice.date': 'Factuurdatum',
+  'invoice.from': 'Van',
+  'invoice.to': 'Tot en met',
+  // Added in design system 1.5
+  'invoice.line.reorder': '{print} (nabestelling {n})',
+  'invoice.finalize.blocked':
+    'Naam en IBAN ontbreken. Vul ze in bij Instellingen, Bedrijfsgegevens. Een concept kan wel worden gedownload, zonder betaalzin.',
+  'invoice.paidfull': 'Deze factuur is volledig betaald.',
+  'invoice.finalize.blockedTitle': 'Naam en IBAN ontbreken.', // component copy: ScreenInvoiceExport
+  'invoice.toSettings': 'Naar Instellingen', // component copy: ScreenInvoiceExport
+  'invoice.periodHelp': 'De periode werkt op de datum van de bestelling.', // component copy: ScreenInvoiceExport preview
+  'order.locked': 'Op factuur {nummer}',
+  'order.lockedNote': 'Op factuur {nummer}.', // component copy: ScreenPrintDetail (Vergrendeld alert)
+  'outstanding.line.pay': 'Markeer als betaald',
+  'outstanding.payHelp':
+    'Standaard het openstaande bedrag ({amount}). Een lager bedrag is een deelbetaling.', // component copy: ScreenOutstanding preview
+  'date.today': 'Vandaag',
+  'date.clear': 'Wissen',
+  'date.prev': 'Vorige maand',
+  'date.next': 'Volgende maand',
+  'date.pick': 'Kies een datum', // component copy: DatePicker
+  'date.outOfRange': 'Kies een datum binnen de periode.', // component copy: DatePicker
   // Added in design system 1.4
   Key: 'Text',
   'settings.electricityTariff': 'Stroomtarief',
