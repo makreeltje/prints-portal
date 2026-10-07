@@ -71,6 +71,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   toewijzen" and "Prijs instellen" with a reason per print, Stroomtarief, Materiaalprijzen and
   Printers in Instellingen, floating popovers, the selected klant card, deleted klant chips and
   Dutch palette names.
+- Design system v1.5: Van / Tot en met in the invoice export (DatePicker with a calendar and typed
+  `d-m-jjjj`) and a refusal while Bedrijfsgegevens has no name or IBAN; an amount dialog for
+  "Markeer als betaald" in Openstaand; Factuur on phones; "Spoel voor de hele print" back on the
+  print detail; the locked price on a final invoice; the uploaded logo in the sidebar, phone top
+  bar and drawer (every signed-in role can read it); the payment sentence on PDFs follows the IBAN
+  and what is still open.
 
 ### Changed
 

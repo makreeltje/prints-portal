@@ -445,7 +445,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Design system version:** 1.3
 
 
-## GAP-037 [open] Invoice PDF payment sentence without IBAN or with nothing open
+## GAP-037 [resolved in v1.5] Invoice PDF payment sentence without IBAN or with nothing open
 - **Type:** unclear spec
 - **Found while:** M7, rendering the Factuur, Concept and Herinnering PDFs (DocInvoice, DocReminder)
 - **Where needed:** `backend/src/finance/pdf.ts` (footer of Factuur, Concept and Herinnering)
@@ -457,7 +457,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-038 [open] v1.4 export: 18 component READMEs contain only their 1.4 paragraph
+## GAP-038 [resolved in v1.5] v1.4 export: 18 component READMEs contain only their 1.4 paragraph
 - **Type:** suspected design bug
 - **Found while:** importing design system v1.4
 - **Where needed:** README.md of AssetListItem, BulkActionBar, ConfirmDialog, CostBreakdown, CostOverrideDialog, CustomerChips, FilterBar, MoneyDisplay, PaymentPanel, PrintCard, PrintRow, ScreenDashboard, ScreenInvoiceExport, ScreenInvoices, ScreenOutstanding, ScreenPrintDetail, SpoolPicker, TagEditor
@@ -469,7 +469,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no (no placeholder needed: it is how the specs are read)
 - **Design system version:** 1.4
 
-## GAP-039 [open] `pp-text-xl`, `pp-text-lg` and `pp-text-2xl` are used in previews but not defined
+## GAP-039 [resolved in v1.5] `pp-text-xl`, `pp-text-lg` and `pp-text-2xl` are used in previews but not defined
 - **Type:** suspected design bug
 - **Found while:** implementing GAP-036 from v1.4
 - **Where needed:** PaymentPanel amount (`<span class="pp-money pp-text-xl">`), `frontend/src/finance/PaymentPanel.tsx`
@@ -480,7 +480,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no (the existing token-only rule from M6 stays)
 - **Design system version:** 1.4
 
-## GAP-040 [open] Where "Spoel voor de hele print" goes on the print detail with orders
+## GAP-040 [resolved in v1.5] Where "Spoel voor de hele print" goes on the print detail with orders
 - **Type:** unclear spec
 - **Found while:** implementing GAP-035 (OrderSection on ScreenPrintDetail)
 - **Where needed:** ScreenPrintDetail, `frontend/src/prints/PrintDetailPage.tsx`
@@ -493,7 +493,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.4
 
-## GAP-041 [open] Openstaand: "Markeer als betaald" per line asks an amount, but there is no dialog
+## GAP-041 [resolved in v1.5] Openstaand: "Markeer als betaald" per line asks an amount, but there is no dialog
 - **Type:** missing component
 - **Found while:** M7, building ScreenOutstanding
 - **Where needed:** ScreenOutstanding / OutstandingGroup line action, `frontend/src/finance/OutstandingPage.tsx`
@@ -505,7 +505,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.4
 
-## GAP-042 [open] "Factuur maken" on phones
+## GAP-042 [resolved in v1.5] "Factuur maken" on phones
 - **Type:** missing state
 - **Found while:** M7, wiring the invoice export dialog
 - **Where needed:** ScreenDashboard on phones (CustomerChips toolbar), ScreenInvoiceExport
@@ -517,7 +517,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.4
 
-## GAP-043 [open] DatePicker calendar has no classes in bundle.css
+## GAP-043 [resolved in v1.5] DatePicker calendar has no classes in bundle.css
 - **Type:** missing component
 - **Found while:** M7, building the invoice export dialog (Van, Tot en met)
 - **Where needed:** DatePicker, ScreenInvoiceExport, `frontend/src/components/DatePicker.tsx`
@@ -529,7 +529,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.4
 
-## GAP-044 [open] `.pp-anchor.up` pushes the phone bottom sheet off the screen
+## GAP-044 [resolved in v1.5] `.pp-anchor.up` pushes the phone bottom sheet off the screen
 - **Type:** suspected design bug
 - **Found while:** checking the BulkActionBar "Acties" menu at 360px
 - **Where needed:** Popover (`components/bundle.css`), BulkActionBar on phones
@@ -540,7 +540,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.4
 
-## GAP-045 [open] Invoice export dialog: three footer buttons do not fit the 440px dialog
+## GAP-045 [resolved in v1.5] Invoice export dialog: three footer buttons do not fit the 440px dialog
 - **Type:** suspected design bug
 - **Found while:** comparing ScreenInvoiceExport at 1280px
 - **Where needed:** ScreenInvoiceExport footer (Annuleren, Concept downloaden, Definitief maken), `frontend/src/finance/InvoiceExportDialog.tsx`
@@ -551,7 +551,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no (no new values; only existing helper classes)
 - **Design system version:** 1.4
 
-## GAP-046 [open] Uploaded logo in the AppShell brand
+## GAP-046 [resolved in v1.5] Uploaded logo in the AppShell brand
 - **Type:** missing state
 - **Found while:** M7, owner decision on the logo
 - **Where needed:** AppShell brand (`.pp-brand` in the sidebar, the 40px `.ini` tile in the tablet rail, `.pp-phone-top` on phones, the drawer), `frontend/src/shell/AppShell.tsx`
@@ -562,3 +562,25 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Owner decision (2026-10-07):** the logo replaces the name in the sidebar too.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.4
+
+## GAP-047 [open] DatePicker: "calendar icon button" in the README, a decorative icon in the preview
+- **Type:** unclear spec
+- **Found while:** implementing v1.5 (DatePicker in the invoice export dialog)
+- **Where needed:** DatePicker field (`frontend/src/components/DatePicker.tsx`), invoice export Van / Tot en met
+- **What is missing or wrong:** the README's anatomy says the field has "a calendar icon button on the right", and its accessibility notes say "typing `d-m-jjjj` in the field works without opening the calendar". The preview, however, shows a plain `svg.pp-ico.r` inside `.pp-iwrap`, and `bundle.css` gives `.pp-iwrap>.pp-ico` `pointer-events:none`, so the icon cannot be clicked. There is no class for a button inside `.pp-iwrap` (size, position, hover and focus ring inside the field), and no `aria-label` copy for it (for example "Kies een datum").
+- **Why it matters:** with only the decorative icon, a mouse or touch user can open the calendar only by clicking the field itself. Building a real button would mean inventing its size, position and focus style.
+- **Proposal:** a `.pp-iwrap>.pp-btn.pp-btn-icon.r` rule (ghost icon button at `right: space-1`, height `--pp-tap` minus the border, `focus-ring` inside the field) with the label "Kies een datum" (copy key `date.pick`), and say whether a click in the field itself should open the calendar.
+- **Blocked:** the icon button only. As built now (no new visuals): the icon stays decorative, as in the preview; a click in the field opens the calendar but leaves focus in the field so typing works; Alt+Down or Down moves into the grid; Enter or Tab after typing closes it.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.5
+
+## GAP-048 [open] Locked order: no locked state for "Aantal keer geprint", Aanpassen and the slot spools
+- **Type:** missing state
+- **Found while:** implementing v1.5 (PaymentPanel "Vergrendeld"), checking the print detail of an order on a final invoice
+- **Where needed:** AssetListItem (Aantal keer geprint, "Telt niet mee in kosten", slot SpoolPickers), CostBreakdown ("Aanpassen" / CostOverrideDialog), the per-order controls in OrderSection; `frontend/src/prints/AssetList.tsx`, `frontend/src/finance/CostBreakdown.tsx`
+- **What is missing or wrong:** the PaymentPanel README (1.5) says that after finalising "the price, cost adjustments and Aantal keer geprint are locked ("Op factuur {nummer}")". Only PaymentPanel has a locked variant (disabled price field plus help text). AssetListItem, CostBreakdown and OrderSection list no locked state, so it is not specified whether these controls are disabled, hidden or read-only, which help text or tooltip explains why, and whether spool choices (which change the cost) are locked too.
+- **Why it matters:** the server already refuses these changes on a locked order, so today the controls look editable and a change ends in the error toast "Opslaan mislukt".
+- **Proposal:** on a locked order, show "Aantal keer geprint" as plain text (as the role User sees it), disable the "Telt niet mee in kosten" toggle and the slot SpoolPickers with their existing disabled state, hide "Aanpassen" in CostBreakdown, and give all of them the tooltip `pay.lockedHelp`. Also say whether "Spoel voor de hele print" may still change a locked order.
+- **Blocked:** the locked look of those controls. Until then they stay as they are and the server refuses the change.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.5
