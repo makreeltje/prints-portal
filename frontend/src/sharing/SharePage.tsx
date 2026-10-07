@@ -296,7 +296,9 @@ function PaymentCard({ pay }: { pay: SharePayment }) {
 
 /**
  * The second line: project and date, or the date alone when the project only
- * repeats the print's name (ScreenSharePage 1.9, GAP-072).
+ * repeats the print's name. v1.9 marks this proposed rather than settled, so
+ * it is built here as proposed and the gap stays open.
+ * ds-gap: GAP-072
  */
 function lineSubtitle(line: { description: string; project: string | null; date: string }): string {
   const squash = (value: string) => value.toLocaleLowerCase('nl').replace(/\s+/g, '');
