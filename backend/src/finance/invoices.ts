@@ -24,11 +24,13 @@ export interface DocumentLine {
   paidCents: number;
   /** null on a credit note. */
   status: 'paid' | 'open' | 'partial' | null;
+  /** Overzicht: the order has no customer price yet ("Prijs volgt"); amounts are 0. */
+  noPrice?: boolean;
 }
 
 /** Everything a PDF needs; also the snapshot stored with a final invoice. */
 export interface InvoiceDocument {
-  kind: 'invoice' | 'concept' | 'credit' | 'reminder';
+  kind: 'invoice' | 'concept' | 'credit' | 'reminder' | 'overview';
   number: string | null;
   customer: string;
   issuedOn: string;
@@ -41,6 +43,8 @@ export interface InvoiceDocument {
   openCents: number;
   reference: string;
   company: CompanySettings;
+  /** Overzicht: the Deel-link label (sub-line) and its expiry date ("Geldig tot"); null for Nooit. */
+  overview?: { label: string; validUntil: string | null };
 }
 
 export interface InvoiceQuery {
