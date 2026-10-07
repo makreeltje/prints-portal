@@ -77,6 +77,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   print detail; the locked price on a final invoice; the uploaded logo in the sidebar, phone top
   bar and drawer (every signed-in role can read it); the payment sentence on PDFs follows the IBAN
   and what is still open.
+- Deel-links (M8): Admins create read-only links per klant (Over 7, 30 or 90 dagen, or Nooit), see
+  the link once and can revoke it; only a hash of the token is stored. The share page needs no
+  sign-in and shows one line per order with the customer price, status and totals, "Alleen
+  openstaand" and an "Overzicht" PDF; a niet-factureren klant sees the print list only. Unknown,
+  expired and revoked links get the same page. `RATE_LIMIT_SHARE` (default 60 per minute) limits
+  the public endpoints.
 
 ### Changed
 

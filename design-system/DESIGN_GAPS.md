@@ -617,3 +617,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing structural; the wording for 0 and 1 day.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-051`; the proposal's copy is used.
 - **Design system version:** 1.5
+
+## GAP-052 [open] ShareLinkRow: columns shift on rows without Intrekken
+- **Type:** suspected design bug
+- **Found while:** M8, comparing ScreenShareLinks at 1280px
+- **Where needed:** ShareLinkRow (`.pp-share`), ScreenShareLinks
+- **What is missing or wrong:** each `.pp-share` row is its own grid (`1.4fr 1fr 1fr 1fr auto`). An expired or revoked row has an empty `span` in the `auto` column instead of the Intrekken button, so its `fr` columns are wider and its dates and badge sit further right than on the active rows above. The ShareLinkRow preview has the same structure, so it shows there too.
+- **Why it matters:** the columns of one klant's list do not line up.
+- **Proposal:** give the last column a fixed width (the width of a small danger button), or let the list be one grid with `subgrid` rows.
+- **Blocked:** nothing; built as specified until the design system changes it.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.5

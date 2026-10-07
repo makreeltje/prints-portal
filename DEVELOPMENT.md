@@ -120,6 +120,7 @@ Pull requests only build and health-check the image; they never push.
 | `OIDC_CLIENT_SECRET`             | none                                   | OIDC client secret                                                                               |
 | `OIDC_ADMIN_GROUP`               | none                                   | Members of this group (`groups` claim) become Admin                                              |
 | `RATE_LIMIT_LOGIN`               | `5`                                    | Login attempts per minute per client address                                                     |
+| `RATE_LIMIT_SHARE`               | `60`                                   | Requests per minute per client address on the public share page, PDF and logo                    |
 | `TRUSTED_PROXIES`                | none                                   | IPs/CIDRs (or `loopback`, `linklocal`, `uniquelocal`) allowed to set `X-Forwarded-*`             |
 | `CORS_ORIGINS`                   | none                                   | Extra origins allowed to call the API with cookies; empty disables CORS                          |
 | `SPOOLMAN_URL`                   | none                                   | Spoolman (v0.27.0) address, e.g. `http://spoolman:7912`; empty hides spools                      |
