@@ -515,6 +515,29 @@ describe('PrintDetailPage', () => {
     expect(screen.getByText('Geen 3D-model beschikbaar')).toBeInTheDocument();
   });
 
+  it('makes the file controls read-only for an order on a final invoice', async () => {
+    const base = detail();
+    const first = base.orders[0];
+    if (first === undefined) throw new Error('fixture');
+    stubFetch({
+      'GET /api/prints/p1': () => ({
+        json: detail({ orders: [{ ...first, invoice: { id: 'i7', number: '2026-007' } }] }),
+      }),
+    });
+    renderDetail('Editor');
+    expect(await screen.findByText('Op factuur 2026-007.')).toBeInTheDocument();
+    const files = screen.getByRole('region', { name: 'Bestanden' });
+    const help = 'Staat op een definitieve factuur en kan niet meer worden gewijzigd.';
+    expect(within(files).getByText(help)).toBeInTheDocument();
+    expect(within(files).queryByRole('textbox', { name: 'Aantal keer geprint' })).toBeNull();
+    for (const toggle of within(files).getAllByRole('switch', {
+      name: 'Telt niet mee in kosten',
+    })) {
+      expect(toggle).toBeDisabled();
+      expect(toggle).toHaveAccessibleDescription(help);
+    }
+  });
+
   it('lists the orders newest first and makes or deletes a Nabestelling', async () => {
     const base = detail();
     const first = base.orders[0];

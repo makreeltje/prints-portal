@@ -98,9 +98,10 @@ export function PrintDetailPage() {
   };
   const quiet = (action: () => Promise<unknown>) => change(action).catch(() => undefined);
   const spoolmanOn = canManage && spoolman.data?.configured === true;
-  const controlsFor = (orderId: string | null): AssetControls | undefined =>
+  const controlsFor = (orderId: string | null, locked = false): AssetControls | undefined =>
     canManage
       ? {
+          locked,
           setTimesPrinted: (line, times) =>
             quiet(() => setTimesPrinted(detail.id, line.id, times, orderId ?? undefined)),
           setExcluded: (line, excluded) =>
@@ -326,7 +327,7 @@ function ManagedOrders({
   detail: PrintDetail;
   spoolmanOn: boolean;
   quiet: (action: () => Promise<unknown>) => Promise<void>;
-  controlsFor: (orderId: string | null) => AssetControls | undefined;
+  controlsFor: (orderId: string | null, locked?: boolean) => AssetControls | undefined;
   paymentFor: (order: Order) => ReactNode;
   onAdjust: (orderId: string) => void;
   change: (action: () => Promise<unknown>) => Promise<void>;
@@ -388,7 +389,10 @@ function ManagedOrders({
               files={
                 <>
                   {files.length > 0 && (
-                    <AssetList assets={files} controls={controlsFor(order.id)} />
+                    <AssetList
+                      assets={files}
+                      controls={controlsFor(order.id, order.invoice != null)}
+                    />
                   )}
                   {order.cost !== undefined && (
                     <CostBreakdown
@@ -400,9 +404,14 @@ function ManagedOrders({
                           order.overrides.grams !== null ||
                           order.overrides.printSeconds !== null)
                       }
-                      onAdjust={() => {
-                        onAdjust(order.id);
-                      }}
+                      onAdjust={
+                        // ds-gap: GAP-048 no Aanpassen on an order on a final invoice
+                        order.invoice != null
+                          ? undefined
+                          : () => {
+                              onAdjust(order.id);
+                            }
+                      }
                     />
                   )}
                 </>

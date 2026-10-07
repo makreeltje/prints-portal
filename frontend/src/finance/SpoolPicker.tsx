@@ -18,12 +18,15 @@ export function SpoolPicker({
   onChange,
   disabled = false,
   label,
+  describedBy,
 }: {
   value: Spool | null;
   onChange: (spoolId: number | null) => Promise<void>;
   disabled?: boolean;
   /** Accessible name of the trigger when it says only the spool name. */
   label?: string;
+  /** Id of a help text, e.g. why the picker is disabled. */
+  describedBy?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -54,6 +57,7 @@ export function SpoolPicker({
           label === undefined ? undefined : `${label}: ${value?.name ?? t('spool.choose')}`
         }
         aria-busy={busy}
+        aria-describedby={describedBy}
         disabled={disabled || busy}
         onClick={() => {
           setOpen((current) => !current);
