@@ -30,17 +30,9 @@ export const openapiOptions = {
         'wijzigende verzoeken sturen de CSRF-token mee in de header `x-csrf-token`.',
     },
     tags: API_TAGS.map((tag) => ({ ...tag })),
-    components: {
-      securitySchemes: {
-        session: {
-          type: 'apiKey' as const,
-          in: 'cookie' as const,
-          name: 'pp_session',
-          description: 'Sessiecookie, gezet door POST /api/auth/login.',
-        },
-      },
-    },
-    security: [{ session: [] }],
+    // No securitySchemes and no `security`: the browser sends the session cookie
+    // by itself, so an authentication panel would only show a field nobody fills
+    // in. The description above says how signing in works.
   },
   /** Routes without a tag (static files, the SPA fallback) stay out of the docs. */
   hideUntagged: true,

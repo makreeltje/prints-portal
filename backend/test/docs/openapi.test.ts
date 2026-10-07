@@ -5,10 +5,10 @@ import { TEST_DATABASES } from '../helpers/databases.js';
 
 interface OpenApiDocument {
   openapi: string;
-  info: { title: string; version: string };
+  info: { title: string; version: string; description: string };
   tags: { name: string }[];
   paths: Record<string, Record<string, { summary?: string; tags?: string[] }>>;
-  components: { securitySchemes: Record<string, { type: string; in?: string; name?: string }> };
+  components?: { securitySchemes?: Record<string, unknown> };
 }
 
 describe.each(TEST_DATABASES)('OpenAPI document on $name', ({ url }) => {
@@ -49,12 +49,11 @@ describe.each(TEST_DATABASES)('OpenAPI document on $name', ({ url }) => {
       tags: ['Prints'],
     });
     expect(doc.paths['/api/share/{token}']?.get?.tags).toEqual(['Deel-links']);
-    // The session cookie is the scheme; the docs never show a token.
-    expect(doc.components.securitySchemes.session).toMatchObject({
-      type: 'apiKey',
-      in: 'cookie',
-      name: 'pp_session',
-    });
+    // The browser sends the session cookie itself, so the document declares no
+    // scheme and the page shows no credential field; the description says it.
+    expect(doc.components?.securitySchemes).toBeUndefined();
+    expect(doc.info.description).toContain('sessiecookie');
+    expect(doc.info.description).toContain('x-csrf-token');
     // Password fields belong in the docs; their values and the session secret do not.
     const json = JSON.stringify(doc);
     expect(json).not.toContain(TEST_SESSION_SECRET);
