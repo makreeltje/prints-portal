@@ -1,4 +1,4 @@
-import { sql, type ExpressionBuilder, type SelectQueryBuilder } from 'kysely';
+import { sql, type ExpressionBuilder, type Selectable, type SelectQueryBuilder } from 'kysely';
 import { scopeAllows, type CustomerScope } from '../auth/access.js';
 import { isTagPaletteKey, tagInkColor } from '../core/tags.js';
 import { printFinance } from '../finance/dto.js';
@@ -33,9 +33,31 @@ export interface PrintFilter {
   limit?: number;
   /** Admin and Editor see the internal cost. */
   withCost?: boolean;
+  /** FilterBar 1.9 (GAP-066); "newest" when absent. */
+  sort?: PrintSort;
+  /** FilterBar 1.9 (GAP-066); every status when absent. */
+  status?: PrintStatusFilter;
 }
 
+export const PRINT_SORTS = ['newest', 'oldest', 'priceDesc', 'priceAsc', 'customer'] as const;
+export type PrintSort = (typeof PRINT_SORTS)[number];
+
+export const PRINT_STATUS_FILTERS = [
+  'noPrice',
+  'open',
+  'paid',
+  'writtenOff',
+  'incompleteCost',
+] as const;
+export type PrintStatusFilter = (typeof PRINT_STATUS_FILTERS)[number];
+
 type RecordQuery = SelectQueryBuilder<Database, 'print_records', object>;
+
+/** A print_records row plus the two derived columns the list selects. */
+type PrintRecordRow = Selectable<Database['print_records']> & {
+  has_thumbnail: number | boolean | string;
+  colour: string | null;
+};
 
 /** Visibility rules shared by list, count and customers. */
 function applyScope(query: RecordQuery, scope: CustomerScope, filter: PrintFilter): RecordQuery {
@@ -146,17 +168,36 @@ export async function listPrints(
   const limit = Math.min(Math.max(filter.limit ?? DEFAULT_PAGE_SIZE, 1), MAX_PAGE_SIZE);
   const offset = Math.max(filter.offset ?? 0, 0);
 
+  const sort = filter.sort ?? 'newest';
+  const dated = sql`coalesce(print_records.print_date, print_records.discovered_at)`;
+  // A klant sort breaks its ties on newest first (FilterBar 1.9).
+  const ordered = (
+    sort === 'customer'
+      ? base
+          .selectAll('print_records')
+          .select((eb) => [hasThumbnailExpression(eb), colourExpression(eb)])
+          .orderBy('print_records.customer_folder')
+          .orderBy(dated, 'desc')
+      : base
+          .selectAll('print_records')
+          .select((eb) => [hasThumbnailExpression(eb), colourExpression(eb)])
+          .orderBy(dated, sort === 'oldest' ? 'asc' : 'desc')
+  ).orderBy('print_records.id');
+
+  /*
+   * Price and status come from the orders and their payments, which are read
+   * per print rather than joined, so a sort or filter that needs them works on
+   * the whole filtered set here and not on one page (FilterBar 1.9). Date sorts
+   * stay in SQL and keep paging in the database.
+   */
+  const needsMoney = sort === 'priceDesc' || sort === 'priceAsc' || filter.status !== undefined;
+  if (needsMoney) {
+    return await listByMoney(db, ordered, filter, { sort, limit, offset });
+  }
+
   const [countRow, rows] = await Promise.all([
     base.select((eb) => eb.fn.countAll<number | string>().as('count')).executeTakeFirstOrThrow(),
-    base
-      .selectAll('print_records')
-      .select((eb) => [hasThumbnailExpression(eb), colourExpression(eb)])
-      // Newest print first; prints without a print date by discovery date.
-      .orderBy(sql`coalesce(print_records.print_date, print_records.discovered_at)`, 'desc')
-      .orderBy('print_records.id')
-      .limit(limit)
-      .offset(offset)
-      .execute(),
+    ordered.limit(limit).offset(offset).execute(),
   ]);
   const ids = rows.map((row) => row.id);
   const [tags, money, tints] = await Promise.all([
@@ -175,6 +216,84 @@ export async function listPrints(
         summariseMoney(money.get(row.id) ?? [], { withCost: filter.withCost === true }),
       ),
     ),
+  };
+}
+
+/**
+ * The slow path: a sort or filter that depends on price, payment or cost state.
+ * Those live in the orders and their payments, so the whole filtered set is read
+ * and ordered here before the page is cut (FilterBar 1.9, GAP-066). A workshop's
+ * library is small enough for this; a date sort never comes here.
+ */
+async function listByMoney(
+  db: AppDatabase,
+  ordered: { execute: () => Promise<PrintRecordRow[]> },
+  filter: PrintFilter,
+  page: { sort: PrintSort; limit: number; offset: number },
+): Promise<{ items: PrintSummary[]; total: number }> {
+  const all = await ordered.execute();
+  const ids = all.map((row) => row.id);
+  const [tags, money, tints] = await Promise.all([
+    tagsFor(db, ids),
+    ordersWithMoney(db, ids),
+    spoolTints(db, all),
+  ]);
+
+  const summarised = all.map((row) => {
+    const orders = money.get(row.id) ?? [];
+    return {
+      row,
+      orders,
+      // The cost is needed for "Onvolledige kosten" whatever the caller may see.
+      summary: summariseMoney(orders, { withCost: filter.withCost === true }),
+      incompleteCost: orders.some((order) => order.order.total_cost_cents === null),
+    };
+  });
+
+  const matches = summarised.filter((item) => {
+    switch (filter.status) {
+      case undefined:
+        return true;
+      case 'noPrice':
+        return item.summary === null || item.summary.status === 'noPrice';
+      case 'open':
+        // As in Openstaand: partly paid counts as open.
+        return item.summary?.status === 'open' || item.summary?.status === 'partial';
+      case 'paid':
+        return item.summary?.status === 'paid';
+      case 'writtenOff':
+        return item.summary?.status === 'writtenOff';
+      case 'incompleteCost':
+        return item.incompleteCost;
+    }
+  });
+
+  if (page.sort === 'priceDesc' || page.sort === 'priceAsc') {
+    const up = page.sort === 'priceAsc';
+    matches.sort((a, b) => {
+      const pa = a.summary?.price ?? null;
+      const pb = b.summary?.price ?? null;
+      // A print without a price goes last in both directions.
+      if (pa === null && pb === null) return 0;
+      if (pa === null) return 1;
+      if (pb === null) return -1;
+      return up ? pa - pb : pb - pa;
+    });
+  }
+
+  return {
+    total: matches.length,
+    items: matches
+      .slice(page.offset, page.offset + page.limit)
+      .map((item) =>
+        toSummary(
+          item.row,
+          tags.get(item.row.id) ?? [],
+          toBool(item.row.has_thumbnail),
+          tints.get(item.row.id) ?? item.row.colour,
+          item.summary,
+        ),
+      ),
   };
 }
 

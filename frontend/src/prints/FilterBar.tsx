@@ -1,10 +1,18 @@
 import { ChevronDown, LayoutGrid, List, Search, SlidersHorizontal, X } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Dialog } from '../components/Dialog';
-import { t } from '../i18n/nl';
+import { t, type MessageKey } from '../i18n/nl';
 import { TagChip } from './bits';
 import { isFiltered, type ViewMode } from './filter';
-import type { Customer, PrintFilter, TagWithCount } from './types';
+import {
+  PRINT_SORTS,
+  PRINT_STATUS_FILTERS,
+  type Customer,
+  type PrintFilter,
+  type PrintSort,
+  type PrintStatusFilter,
+  type TagWithCount,
+} from './types';
 
 interface FilterBarProps {
   filter: PrintFilter;
@@ -46,6 +54,8 @@ export function FilterBar(props: FilterBarProps) {
       <div className="pp-only-wide">
         <div className="pp-filters" role="search">
           <CustomerSelect {...props} />
+          <SortSelect {...props} />
+          <StatusSelect {...props} />
           <TagPicker {...props} />
           <SearchField filter={filter} onChange={onChange} />
           <ViewToggle view={props.view} onView={props.onView} />
@@ -128,6 +138,53 @@ export function FilterBar(props: FilterBarProps) {
         </fieldset>
         <RecordToggles {...props} />
       </Dialog>
+    </div>
+  );
+}
+
+/** Sorteren and Status (FilterBar 1.9, GAP-066); both go to the server. */
+function SortSelect({ filter, onChange }: FilterBarProps) {
+  return (
+    <div className="pp-iwrap">
+      <select
+        className="pp-input pp-select"
+        aria-label={t('filter.sort')}
+        value={filter.sort}
+        onChange={(event) => {
+          onChange({ ...filter, sort: event.target.value as PrintSort });
+        }}
+      >
+        {PRINT_SORTS.map((sort) => (
+          <option key={sort} value={sort}>
+            {t(`sort.${sort}` as MessageKey)}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pp-ico r" aria-hidden="true" />
+    </div>
+  );
+}
+
+function StatusSelect({ filter, onChange }: FilterBarProps) {
+  return (
+    <div className="pp-iwrap">
+      <select
+        className="pp-input pp-select"
+        aria-label={t('filter.status')}
+        value={filter.status ?? ''}
+        onChange={(event) => {
+          const value = event.target.value;
+          onChange({ ...filter, status: value === '' ? null : (value as PrintStatusFilter) });
+        }}
+      >
+        <option value="">{t('filter.status.all')}</option>
+        {PRINT_STATUS_FILTERS.map((status) => (
+          <option key={status} value={status}>
+            {t(`filter.status.${status}` as MessageKey)}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pp-ico r" aria-hidden="true" />
     </div>
   );
 }

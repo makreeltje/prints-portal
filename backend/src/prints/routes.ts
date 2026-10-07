@@ -26,6 +26,10 @@ import {
   listCustomers,
   listPrints,
   MAX_PAGE_SIZE,
+  PRINT_SORTS,
+  PRINT_STATUS_FILTERS,
+  type PrintSort,
+  type PrintStatusFilter,
 } from './queries.js';
 
 export interface PrintRouteDependencies {
@@ -124,6 +128,8 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
       deleted?: boolean;
       offset?: number;
       limit?: number;
+      sort?: PrintSort;
+      status?: PrintStatusFilter;
     };
   }>(
     '/api/prints',
@@ -139,6 +145,8 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
             deleted: { type: 'boolean' },
             offset: { type: 'integer', minimum: 0 },
             limit: { type: 'integer', minimum: 1, maximum: MAX_PAGE_SIZE },
+            sort: { type: 'string', enum: [...PRINT_SORTS] },
+            status: { type: 'string', enum: [...PRINT_STATUS_FILTERS] },
           },
         },
       },
@@ -153,6 +161,8 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
         includeDeleted: query.deleted === true && isAdmin(request),
         offset: query.offset,
         limit: query.limit,
+        sort: query.sort,
+        status: query.status,
         withCost: sessionUser(request).role !== 'User',
       });
     },

@@ -21,6 +21,8 @@ function listQuery(filter: PrintFilter, offset: number): string {
   if (filter.search.trim() !== '') params.set('q', filter.search.trim());
   if (filter.archived) params.set('archived', 'true');
   if (filter.deleted) params.set('deleted', 'true');
+  if (filter.sort !== 'newest') params.set('sort', filter.sort);
+  if (filter.status !== null) params.set('status', filter.status);
   params.set('offset', String(offset));
   params.set('limit', String(PAGE_SIZE));
   return params.toString();

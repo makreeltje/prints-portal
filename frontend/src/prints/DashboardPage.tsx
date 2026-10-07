@@ -29,7 +29,15 @@ import { isFiltered, type ViewMode } from './filter';
 import { useLive } from './live-context';
 import { PrintCard } from './PrintCard';
 import { PrintTable } from './PrintTable';
-import type { PrintFilter, PrintSummary } from './types';
+import {
+  EMPTY_FILTER,
+  PRINT_SORTS,
+  PRINT_STATUS_FILTERS,
+  type PrintFilter,
+  type PrintSort,
+  type PrintStatusFilter,
+  type PrintSummary,
+} from './types';
 
 /** Filters live in the URL, so back/forward and reloads keep them. */
 function readFilter(params: URLSearchParams): PrintFilter {
@@ -39,8 +47,16 @@ function readFilter(params: URLSearchParams): PrintFilter {
     search: params.get('q') ?? '',
     archived: params.get('gearchiveerd') === '1',
     deleted: params.get('verwijderd') === '1',
+    sort: readSort(params.get('sorteer')),
+    status: readStatus(params.get('status')),
   };
 }
+
+const readSort = (value: string | null): PrintSort =>
+  PRINT_SORTS.find((sort) => sort === value) ?? 'newest';
+
+const readStatus = (value: string | null): PrintStatusFilter | null =>
+  PRINT_STATUS_FILTERS.find((status) => status === value) ?? null;
 
 function writeFilter(filter: PrintFilter, view: ViewMode): URLSearchParams {
   const params = new URLSearchParams();
@@ -49,6 +65,8 @@ function writeFilter(filter: PrintFilter, view: ViewMode): URLSearchParams {
   if (filter.search.trim() !== '') params.set('q', filter.search.trim());
   if (filter.archived) params.set('gearchiveerd', '1');
   if (filter.deleted) params.set('verwijderd', '1');
+  if (filter.sort !== 'newest') params.set('sorteer', filter.sort);
+  if (filter.status !== null) params.set('status', filter.status);
   if (view === 'list') params.set('weergave', 'lijst');
   return params;
 }
@@ -163,13 +181,8 @@ export function DashboardPage() {
             type="button"
             className="pp-btn pp-btn-secondary"
             onClick={() => {
-              setFilter({
-                customer: null,
-                tagIds: [],
-                search: '',
-                archived: false,
-                deleted: false,
-              });
+              // Clearing keeps the chosen order: sorting is not a filter (1.9).
+              setFilter({ ...EMPTY_FILTER, sort: filter.sort });
             }}
           >
             {t('common.clearFilters')}

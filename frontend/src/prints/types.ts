@@ -191,18 +191,36 @@ export interface Customer {
   openAmount: number | null;
 }
 
+export const PRINT_SORTS = ['newest', 'oldest', 'priceDesc', 'priceAsc', 'customer'] as const;
+export type PrintSort = (typeof PRINT_SORTS)[number];
+
+export const PRINT_STATUS_FILTERS = [
+  'noPrice',
+  'open',
+  'paid',
+  'writtenOff',
+  'incompleteCost',
+] as const;
+export type PrintStatusFilter = (typeof PRINT_STATUS_FILTERS)[number];
+
 export interface PrintFilter {
   customer: string | null;
   tagIds: string[];
   search: string;
   archived: boolean;
   deleted: boolean;
+  /** FilterBar 1.9 (GAP-066); sorting is not a filter. */
+  sort: PrintSort;
+  /** null: "Alle statussen". */
+  status: PrintStatusFilter | null;
 }
 
 export const EMPTY_FILTER: PrintFilter = {
   customer: null,
   tagIds: [],
   search: '',
+  sort: 'newest',
+  status: null,
   archived: false,
   deleted: false,
 };

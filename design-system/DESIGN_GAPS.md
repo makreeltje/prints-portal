@@ -770,7 +770,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-066 [open] The dashboard cannot be sorted and cannot be filtered by status
+## GAP-066 [resolved in v1.9] The dashboard cannot be sorted and cannot be filtered by status
 - **Type:** missing component
 - **Found while:** the UX review of 1.0; confirmed in `frontend/src/prints/filter.ts`
 - **Where needed:** FilterBar on ScreenDashboard; `frontend/src/prints/filter.ts`

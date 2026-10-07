@@ -81,6 +81,62 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
     expect(second.items.map((i) => i.id)).not.toContain(first.items[0]?.id);
   });
 
+  it('sorts and filters by status over the whole set, not one page', async () => {
+    // Price two prints so the money sorts and filters have something to work on.
+    const all = await list(admin);
+    const lock = all.items.find((item) => item.name === 'Babybox locks');
+    const keychain = all.items.find((item) => item.name === 'Keychain');
+    for (const [print, price] of [
+      [lock, 30],
+      [keychain, 10],
+    ] as const) {
+      const detail = (await t.as(admin, { url: `/api/prints/${print?.id ?? ''}` })).json<{
+        orders: { id: string }[];
+      }>();
+      await t.as(admin, {
+        method: 'PUT',
+        url: `/api/orders/${detail.orders[0]?.id ?? ''}/sale-price`,
+        payload: { salePrice: price },
+      });
+    }
+
+    // Dearest first, and a print without a price goes last either way.
+    const high = await list(admin, '?sort=priceDesc');
+    expect(high.items.map((item) => item.name).slice(0, 2)).toEqual(['Babybox locks', 'Keychain']);
+    expect(high.items.at(-1)?.money?.price ?? null).toBeNull();
+    const low = await list(admin, '?sort=priceAsc');
+    expect(low.items.map((item) => item.name).slice(0, 2)).toEqual(['Keychain', 'Babybox locks']);
+    expect(low.items.at(-1)?.money?.price ?? null).toBeNull();
+
+    // Oldest first runs up the dates, newest first runs down them. (Prints that
+    // share a date keep the same tie-break in both, so the lists are not exact
+    // mirrors.)
+    const dates = (items: { printDate: string | null }[]) => items.map((i) => i.printDate ?? '');
+    const newest = dates((await list(admin, '?sort=newest')).items);
+    const oldest = dates((await list(admin, '?sort=oldest')).items);
+    expect(newest).toEqual([...newest].sort().reverse());
+    expect(oldest).toEqual([...oldest].sort());
+
+    // Klant A to Z, ties on newest.
+    const byCustomer = await list(admin, '?sort=customer');
+    const folders = byCustomer.items.map((item) => item.customerFolder);
+    expect([...folders]).toEqual([...folders].sort((a, b) => a.localeCompare(b)));
+
+    // Status narrows the set, and the total counts the matches, not the page.
+    const open = await list(admin, '?status=open');
+    expect(open.items.length).toBeGreaterThan(0);
+    expect(open.total).toBe(open.items.length);
+    for (const item of open.items) expect(['open', 'partial']).toContain(item.money?.status);
+    const noPrice = await list(admin, '?status=noPrice');
+    for (const item of noPrice.items) expect(item.money?.price ?? null).toBeNull();
+    expect(open.total + noPrice.total).toBeLessThanOrEqual(all.total);
+
+    // Filtering happens before paging: one page of a narrowed set still counts all of it.
+    const firstOfOpen = await list(admin, '?status=open&limit=1');
+    expect(firstOfOpen.items).toHaveLength(1);
+    expect(firstOfOpen.total).toBe(open.total);
+  });
+
   it('filters by customer and by search text, case-insensitively, with literal wildcards', async () => {
     expect((await list(admin, '?customer=Denise')).items.map((i) => i.name).sort()).toEqual([
       'Board game',
