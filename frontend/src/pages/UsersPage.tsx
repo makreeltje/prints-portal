@@ -131,7 +131,7 @@ export function UsersPage({ localLogin }: { localLogin: boolean }) {
     <>
       {header}
       <div className="pp-only-wide">
-        <div className="pp-scroll">
+        <div className="pp-scroll" tabIndex={0} role="region" aria-label={t('nav.users')}>
           <table className="pp-table">
             <thead>
               <tr>

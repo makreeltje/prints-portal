@@ -77,6 +77,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   print detail; the locked price on a final invoice; the uploaded logo in the sidebar, phone top
   bar and drawer (every signed-in role can read it); the payment sentence on PDFs follows the IBAN
   and what is still open.
+- Frontend polish (M9): an OpenAPI document generated from the route schemas and served at
+  `/api/openapi.json`, and an `/api-docs` screen that renders it with Scalar in the app's own
+  theme, without its AI assistant or platform tools and without contacting anything outside the
+  instance; a warning bar while the live connection is down; a first-run page that shows the
+  klant/project folder convention; an empty state on Toegang when no account has the role User;
+  and an accessibility pass over every screen in both themes (WCAG 2.1 AA).
 - Deel-links (M8): Admins create read-only links per klant (Over 7, 30 or 90 dagen, or Nooit), see
   the link once and can revoke it; only a hash of the token is stored. The share page needs no
   sign-in and shows one line per order with the customer price, status and totals, "Alleen

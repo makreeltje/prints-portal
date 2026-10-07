@@ -334,3 +334,64 @@
   max-height: 100%;
   object-fit: contain;
 }
+
+/*
+ * Scalar renders /api-docs with `theme: 'none'`, so every colour, font and
+ * radius comes from our tokens through its own variables. The design system
+ * still specifies Swagger UI here, so these lines stay marked until it
+ * decides (CLAUDE.md allows a third-party kit only on our tokens).
+ */
+.app-api {
+  /* ds-gap: GAP-056 */
+  --scalar-font: var(--font-sans); /* ds-gap: GAP-056 */
+  --scalar-font-code: var(--font-mono); /* ds-gap: GAP-056 */
+  --scalar-color-1: var(--text-strong); /* ds-gap: GAP-056 */
+  --scalar-color-2: var(--text); /* ds-gap: GAP-056 */
+  --scalar-color-3: var(--muted); /* ds-gap: GAP-056 */
+  --scalar-color-accent: var(--primary); /* ds-gap: GAP-056 */
+  --scalar-background-1: var(--surface); /* ds-gap: GAP-056 */
+  --scalar-background-2: var(--surface-2); /* ds-gap: GAP-056 */
+  --scalar-background-3: var(--bg); /* ds-gap: GAP-056 */
+  --scalar-background-accent: var(--primary-tint); /* ds-gap: GAP-056 */
+  --scalar-border-color: var(--border); /* ds-gap: GAP-056 */
+  --scalar-radius: var(--radius-md); /* ds-gap: GAP-056 */
+  --scalar-radius-lg: var(--radius-lg); /* ds-gap: GAP-056 */
+  /* surface, not surface-2: the contrast report validates primary on primary-tint
+     over surface, which is what the active sidebar item composites against. */
+  --scalar-sidebar-background-1: var(--surface); /* ds-gap: GAP-056 */
+  --scalar-sidebar-color-1: var(--text-strong); /* ds-gap: GAP-056 */
+  --scalar-sidebar-color-2: var(--muted); /* ds-gap: GAP-056 */
+  --scalar-sidebar-border-color: var(--border); /* ds-gap: GAP-056 */
+  --scalar-sidebar-item-active-background: var(--primary-tint); /* ds-gap: GAP-056 */
+  --scalar-sidebar-color-active: var(--primary); /* ds-gap: GAP-056 */
+  --scalar-color-green: var(--paid); /* ds-gap: GAP-056 */
+  --scalar-color-red: var(--unpaid); /* ds-gap: GAP-056 */
+  --scalar-color-yellow: var(--warning); /* ds-gap: GAP-056 */
+  --scalar-color-blue: var(--info); /* ds-gap: GAP-056 */
+  --scalar-color-orange: var(--warning); /* ds-gap: GAP-056 */
+  --scalar-color-purple: var(--primary); /* ds-gap: GAP-056 */
+  --scalar-color-alert: var(--warning); /* ds-gap: GAP-056 */
+  --scalar-color-danger: var(--unpaid); /* ds-gap: GAP-056 */
+  --scalar-color-query: var(--muted); /* ds-gap: GAP-056 */
+  --scalar-color--1: var(--muted); /* ds-gap: GAP-056 */
+  --scalar-background-4: var(--surface-2); /* ds-gap: GAP-056 */
+}
+
+/* The folder diagram must scroll in its card, not wrap: ds-gap: GAP-057. */
+.pp-tree > div {
+  /* ds-gap: GAP-057 */
+  white-space: nowrap; /* ds-gap: GAP-057 */
+} /* ds-gap: GAP-057 */
+
+/*
+ * Scalar hard-codes the search field's colours instead of reading its own
+ * variables, which fails AA (3.16 measured). Same marker as the mapping above.
+ */
+.app-api .sidebar-search {
+  /* ds-gap: GAP-056 */
+  background: var(--surface-2); /* ds-gap: GAP-056 */
+} /* ds-gap: GAP-056 */
+.app-api .sidebar-search-placeholder {
+  /* ds-gap: GAP-056 */
+  color: var(--muted); /* ds-gap: GAP-056 */
+} /* ds-gap: GAP-056 */

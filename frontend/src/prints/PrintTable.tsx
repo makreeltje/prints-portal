@@ -34,7 +34,7 @@ export function PrintTable({
     selection === undefined ? 0 : prints.filter((p) => selection.selected.has(p.id)).length;
   const showMoney = prints.some((p) => p.money !== null);
   return (
-    <div className="pp-scroll edge">
+    <div className="pp-scroll edge" tabIndex={0} role="region" aria-label={t('nav.dashboard')}>
       <table className="pp-table">
         <thead>
           <tr>

@@ -118,7 +118,12 @@ export function InvoicesPage() {
             </div>
           </div>
           <div className="pp-only-wide">
-            <div className="pp-scroll edge">
+            <div
+              className="pp-scroll edge"
+              tabIndex={0}
+              role="region"
+              aria-label={t('nav.invoices')}
+            >
               <table className="pp-table">
                 <thead>
                   <tr>

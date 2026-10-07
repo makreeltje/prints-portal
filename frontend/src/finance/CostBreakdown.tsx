@@ -74,7 +74,7 @@ export function CostBreakdown({
           <div>{t('status.noCost')}</div>
         </div>
       )}
-      <div className="pp-scroll">
+      <div className="pp-scroll" tabIndex={0} role="region" aria-label={t('cost.title')}>
         <table className="pp-cost">
           <thead>
             <tr>

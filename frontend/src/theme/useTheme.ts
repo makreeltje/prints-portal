@@ -54,3 +54,27 @@ export function useTheme(): ThemeControls {
 
   return { theme, setTheme, cycleTheme };
 }
+
+/**
+ * The theme actually shown: "system" resolved against the browser setting.
+ * Components that cannot read CSS (an embedded renderer) need this.
+ */
+export function useResolvedTheme(): 'light' | 'dark' {
+  const { theme } = useTheme();
+  const query = '(prefers-color-scheme: dark)';
+  const [systemDark, setSystemDark] = useState(() => window.matchMedia(query).matches);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const onChange = (event: MediaQueryListEvent) => {
+      setSystemDark(event.matches);
+    };
+    media.addEventListener('change', onChange);
+    return () => {
+      media.removeEventListener('change', onChange);
+    };
+  }, []);
+
+  if (theme === 'system') return systemDark ? 'dark' : 'light';
+  return theme;
+}

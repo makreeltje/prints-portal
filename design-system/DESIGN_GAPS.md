@@ -640,13 +640,44 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.6
 
-## GAP-055 [open] CostBreakdown table is clipped on phones
+## GAP-055 [wontfix] CostBreakdown table is clipped on phones — mistaken report
+- **Type:** suspected design bug
+- **Found while:** M9, checking v1.6 in the browser
+- **What I reported:** that `.pp-cost` needs 520px inside a 292px card at 360px, so the "Bedrag" column could not be reached.
+- **Why it is wrong:** the table is already wrapped in `.pp-scroll` (`overflow: auto`), exactly like the Toegang matrix and the Facturen table. Measured in the running app at 360px: the box scrolls (`scrollWidth` 387 against `clientWidth` 290, `scrollLeft` moves). I had compared widths and inferred clipping without testing whether it scrolled. The design system is fine here; nothing is unreachable by touch or trackpad.
+- **What was real:** the scroll containers had no keyboard access (`tabindex` −1), found by axe on ScreenAccess and true of every `.pp-scroll` in the app. That is markup, not design, and is fixed in the app by making the regions focusable and naming them.
+- **Temporary placeholder approved:** not applicable
+- **Design system version:** 1.6
+
+## GAP-056 [open] ScreenApiDocs specifies Swagger UI; the owner wants Scalar
+- **Type:** conflict
+- **Found while:** M9, starting ScreenApiDocs
+- **Where needed:** ScreenApiDocs (`/api-docs`), `frontend/src/pages/ApiDocsPage.tsx`
+- **What is missing or wrong:** the README says the card holds "the Swagger UI iframe or container" with the Swagger styles overridden by our tokens, and the preview illustrates that with `.pp-api-head`, `.pp-api-row` and `.pp-method`. The owner finds plain Swagger UI ugly and inflexible and wants the approach of github.com/connorgallopo/tracearr: the OpenAPI document rendered by **Scalar** (`@scalar/api-reference-react`), with the spec fetched by the page and the credentials preset so "Test request" works. Scalar renders its own layout, so the three `pp-api-*` classes would go unused, and the screen would no longer match its preview.
+- **Why it matters:** CLAUDE.md allows a third-party UI kit only with the owner's approval and only when it is configured to use our tokens; the design system should decide what the screen officially is before it is built twice.
+- **Proposal:** adopt Scalar with `theme: 'none'` and map its CSS variables (`--scalar-color-1/2/3`, `--scalar-color-accent`, `--scalar-background-1/2/3`, `--scalar-border-color` and the sidebar variables) onto our tokens, so no Scalar colour, font or radius survives. The page header, the card and the loading and error states stay ours, exactly as specified. Please either bless Scalar in the spec with a preview of the themed result, or keep Swagger UI and say so.
+- **Blocked:** the official look of `/api-docs`. Everything around it (header, card, loading, error, theme switch) is specified and unaffected.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-056`: Scalar with `theme: 'none'` and its CSS variables mapped onto our tokens. The mapping uses the same marker, because the checker allows a custom property outside `tokens.css` only for an open gap.
+- **Design system version:** 1.6
+
+## GAP-057 [open] First-run folder diagram wraps instead of scrolling
+- **Type:** suspected design bug
+- **Found while:** M9, building the first-run page from ScreenSystemStates
+- **Where needed:** `.pp-tree` with `.pp-indent-1` to `.pp-indent-4` (ScreenSystemStates first run); `frontend/src/pages/FirstRunState.tsx`
+- **What is missing or wrong:** the README says "on a phone the diagram scrolls inside its card", but `.pp-tree` sets only `line-height` and colour, the indent classes only `padding-left`, and nothing sets `white-space` or an overflow. At 360px the longest row ("└─ **Babybox locks**/ project") therefore wraps, and the `project` chip lands on the next line under the wrong indent level, which reads as a separate folder. The preview has the same markup, so it wraps there too.
+- **Why it matters:** the diagram's whole job is to show which folder sits inside which; a wrapped row shows the wrong nesting on the screen a new installation starts at.
+- **Proposal:** `white-space: nowrap` on the rows inside `.pp-tree` so the card can scroll, and say which container scrolls: `.pp-scroll` (which exists and looks like a card) or `.pp-card` with an overflow of its own.
+- **Blocked:** nothing. Built with `.pp-scroll` and an app rule that stops the rows wrapping, marked `ds-gap: GAP-057`.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-057`: one rule in `app.css` stops the rows inside `.pp-tree` wrapping, so the card scrolls as the README describes.
+- **Design system version:** 1.6
+
+## GAP-058 [open] ScreenAccess names an empty state but does not describe it
 - **Type:** missing state
-- **Found while:** checking v1.6 in the browser; also present before 1.6 (reproduced on a print without an invoice)
-- **Where needed:** CostBreakdown (`.pp-cost`), ScreenPrintDetail phone layout; `frontend/src/finance/CostBreakdown.tsx`
-- **What is missing or wrong:** `.pp-cost` is `width:100%` with five columns (Post, Berekening, Bron, Bedrag) and no phone treatment. At 360px the table needs 520px inside a 292px card, so it is cut off at the card edge: the "Bedrag" column, the whole point of the breakdown, cannot be reached. The page itself does not scroll sideways, so there is no way to see it. ScreenInvoices solves the same problem by scrolling its table inside its own container, and `pp-only-wide` / `pp-only-phone` exist for swapping a table for cards, but CostBreakdown uses neither.
-- **Why it matters:** on a phone the cost breakdown shows no amounts at all.
-- **Proposal:** either wrap `.pp-cost` in a horizontally scrolling container as ScreenInvoices does, or give the phone layout a card list per row (Post, then Berekening, Bron and Bedrag beneath), reusing `pp-only-wide` / `pp-only-phone`.
-- **Blocked:** nothing; it works on desktop and tablet.
-- **Temporary placeholder approved:** no
-- **Design system version:** 1.6 (present since 1.1)
+- **Found while:** M9, going through every screen's empty, loading and error states
+- **Where needed:** ScreenAccess / AccessMatrix; `frontend/src/pages/AccessPage.tsx`
+- **What is missing or wrong:** the States line lists "empty (no users besides you)", but neither the anatomy, the preview nor the copy deck says what that looks like. On a fresh installation the only account is the Admin, so the matrix draws one row with every box checked and disabled, which reads as a broken screen rather than "there is nobody to grant access to yet".
+- **Why it matters:** Toegang is one of the first screens a new installation visits, and it currently explains nothing.
+- **Proposal:** when no account has the role User, replace the matrix with an EmptyState: title "Nog geen gebruikers om toegang te geven", the sentence "Alleen Admins en Editors bestaan nu; zij zien altijd elke klant." and a link to Gebruikers. Keep the `access.allAccessRoles` help line. Copy keys: `access.empty.title`, `access.empty.body`.
+- **Blocked:** that one state. The matrix itself, the per-row and per-column toggles and the phone cards are specified and built.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-058`: the proposed EmptyState and its two copy keys.
+- **Design system version:** 1.6
