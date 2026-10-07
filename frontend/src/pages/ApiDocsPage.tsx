@@ -23,18 +23,6 @@ const ApiReference = lazy(async () => {
   return { default: (await import('@scalar/api-reference-react')).ApiReferenceReact };
 });
 
-/** Shown while the document loads, and while the renderer itself is fetched. */
-function DocsSkeleton() {
-  return (
-    <div aria-busy="true">
-      <span className="pp-sr" role="status">
-        {t('common.loading')}
-      </span>
-      <LoadingRows rows={4} />
-    </div>
-  );
-}
-
 export function ApiDocsPage() {
   const resolved = useResolvedTheme();
   const spec = useQuery({
@@ -68,7 +56,7 @@ export function ApiDocsPage() {
       </div>
       <div className="pp-card pp-flush app-api">
         {spec.isPending ? (
-          <DocsSkeleton />
+          <LoadingRows rows={4} />
         ) : spec.isError ? (
           <div className="pp-state is-inline" role="alert">
             <span className="pp-unpaid">
@@ -88,7 +76,7 @@ export function ApiDocsPage() {
             </div>
           </div>
         ) : (
-          <Suspense fallback={<DocsSkeleton />}>
+          <Suspense fallback={<LoadingRows rows={4} />}>
             <ApiReference configuration={configuration} />
           </Suspense>
         )}
