@@ -990,7 +990,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-086 [open] Only one model can be viewed when a print has several
+## GAP-086 [resolved in v1.9] Only one model can be viewed when a print has several
 - **Type:** missing state
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** Viewer3D on ScreenPrintDetail

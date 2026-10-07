@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, Info, Trash2, TriangleAlert } from 'lucide-react';
-import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { Box, ChevronDown, Info, Trash2, TriangleAlert } from 'lucide-react';
+import { lazy, Suspense, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ApiError } from '../api/client';
 import { useCurrentUser } from '../auth/context';
@@ -293,20 +293,110 @@ export function PrintDetailPage() {
   );
 }
 
+/**
+ * ModelPicker (1.9, GAP-086): a print usually holds several models, and the
+ * viewer used to show one of them silently. Up to six as a strip, more as a
+ * Select, in file order.
+ */
+function ModelPicker({
+  models,
+  index,
+  colour,
+  onChoose,
+}: {
+  models: { id: string; fileName: string }[];
+  index: number;
+  colour: string | null;
+  onChoose: (id: string) => void;
+}) {
+  const current = models[index];
+  const caption = t('models.caption', {
+    n: index + 1,
+    totaal: models.length,
+    bestandsnaam: current?.fileName ?? '',
+  });
+  return (
+    <div className="pp-col pp-gap-1">
+      <span className="pp-muted pp-text-sm">{caption}</span>
+      {models.length > 6 ? (
+        <div className="pp-iwrap pp-w-520">
+          <select
+            className="pp-input pp-select"
+            aria-label={t('models.select')}
+            value={current?.id ?? ''}
+            onChange={(event) => {
+              onChoose(event.target.value);
+            }}
+          >
+            {models.map((model, position) => (
+              <option key={model.id} value={model.id}>
+                {`${model.fileName} (${String(position + 1)} van ${String(models.length)})`}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pp-ico r" aria-hidden="true" />
+        </div>
+      ) : (
+        <div className="pp-models" role="group" aria-label={t('models.group')}>
+          {models.map((model, position) => (
+            <button
+              key={model.id}
+              type="button"
+              className={position === index ? 'pp-modelbtn is-selected' : 'pp-modelbtn'}
+              aria-pressed={position === index}
+              onClick={() => {
+                onChoose(model.id);
+              }}
+            >
+              <span
+                className={colour === null ? 'pp-thumb' : 'pp-thumb tinted'}
+                style={colour === null ? undefined : ({ '--c1': colour } as CSSProperties)}
+              >
+                <Box className="pp-ico" aria-hidden="true" />
+              </span>
+              <span className="nm">{model.fileName}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Viewer3D when there is a model; otherwise "Geen 3D-model beschikbaar" and the thumbnail. */
 function ModelView({ detail }: { detail: PrintDetail }) {
+  // The choice is not stored (ModelPicker 1.9); the first model opens.
+  const [chosen, setChosen] = useState<string | null>(null);
+  const models = detail.models;
+  const index = Math.max(
+    0,
+    models.findIndex((model) => model.id === chosen),
+  );
+  const current = models[index];
+
   if (detail.hasModel) {
     return (
-      <Suspense
-        fallback={
-          <div className="pp-viewer fluid">
-            <span className="pp-spin" aria-hidden="true" />
-            <span>{t('viewer.loading')}</span>
-          </div>
-        }
-      >
-        <Viewer3D url={modelUrl(detail)} name={detail.name} colour={detail.colour} />
-      </Suspense>
+      <div className="pp-col pp-gap-2">
+        <Suspense
+          fallback={
+            <div className="pp-viewer fluid">
+              <span className="pp-spin" aria-hidden="true" />
+              <span>{t('models.loading')}</span>
+            </div>
+          }
+        >
+          <Viewer3D
+            // Remounting on a change shows "Model laden…" while the file loads.
+            key={current?.id ?? 'first'}
+            url={modelUrl(detail, current?.id)}
+            name={detail.name}
+            colour={detail.colour}
+          />
+        </Suspense>
+        {models.length > 1 && current !== undefined && (
+          <ModelPicker models={models} index={index} colour={detail.colour} onChoose={setChosen} />
+        )}
+      </div>
     );
   }
   return (

@@ -49,8 +49,10 @@ export function fetchTags() {
 
 export const thumbnailUrl = (print: { id: string; version: string }) =>
   `/api/prints/${print.id}/thumbnail?v=${encodeURIComponent(print.version)}`;
-export const modelUrl = (print: { id: string; version: string }) =>
-  `/api/prints/${print.id}/model?v=${encodeURIComponent(print.version)}`;
+export const modelUrl = (print: { id: string; version: string }, assetId?: string) =>
+  `/api/prints/${print.id}/model?v=${encodeURIComponent(print.version)}${
+    assetId === undefined ? '' : `&asset=${encodeURIComponent(assetId)}`
+  }`;
 export const downloadUrl = (assetId: string) => `/api/assets/${assetId}/download`;
 
 export const deletePrint = (id: string) => api(`/api/prints/${id}`, { method: 'DELETE' });

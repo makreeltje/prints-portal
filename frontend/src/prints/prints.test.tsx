@@ -402,6 +402,7 @@ function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
     printerModel: 'Creality K1 Max',
     archivedAt: null,
     hasModel: false,
+    models: [],
     noBilling: false,
     markupPercent: null,
     spool: null,

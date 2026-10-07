@@ -153,6 +153,10 @@ export const nl = {
   'menu.more': 'Meer acties', // component copy: OverflowMenu
   'print.preview': 'Voorbeeld', // component copy: PrintRow
   'invoices.noStatus': 'Geen status', // component copy: ScreenInvoices
+  'models.group': 'Modellen', // component copy: ModelPicker
+  'models.caption': 'Model {n} van {totaal}: {bestandsnaam}',
+  'models.loading': 'Model laden…',
+  'models.select': 'Model',
   'settings.dirty': 'Niet opgeslagen', // component copy: ScreenSettings
   'settings.undo': 'Ongedaan maken',
   'settings.leave.title': 'Wijzigingen niet opgeslagen',

@@ -388,6 +388,12 @@ export async function getPrintDetail(
       .execute(),
   ]);
   const hasModel = assets.some((asset) => asset.type === 'stl' || asset.type === '3mf');
+  // Every model the viewer can show, in file order; the first is the one the
+  // thumbnail is rendered from (ModelPicker 1.9, GAP-086).
+  const models = assets
+    .filter((asset) => asset.type === 'stl' || asset.type === '3mf')
+    .map((asset) => ({ id: asset.id, fileName: asset.file_name }))
+    .sort((a, b) => a.fileName.localeCompare(b.fileName, 'nl'));
   const settings = await readSettings(db);
   const [money, tints, finance] = await Promise.all([
     ordersWithMoney(db, [row.id], settings),
@@ -408,6 +414,7 @@ export async function getPrintDetail(
     printerModel: row.printer_model,
     archivedAt: row.archived_at,
     hasModel: hasModel && row.status !== 'archived',
+    models: row.status === 'archived' ? [] : models,
     assets: null,
     noBilling: finance.noBilling,
     markupPercent: options.withAssets ? finance.markupPercent : null,

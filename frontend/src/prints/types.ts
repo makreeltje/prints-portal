@@ -175,6 +175,8 @@ export interface PrintDetail extends PrintSummary {
   printerModel: string | null;
   archivedAt: string | null;
   hasModel: boolean;
+  /** Every viewable model, file order (ModelPicker 1.9). */
+  models: { id: string; fileName: string }[];
   assets: Asset[] | null;
   noBilling: boolean;
   markupPercent: number | null;
