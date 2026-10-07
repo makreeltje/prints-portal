@@ -1,14 +1,29 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithAuth, signedIn, stubFetch } from '../test/render';
 import type { ShareLink, ShareView } from './share-api';
 import { SharePage } from './SharePage';
 import { ShareLinksPage } from './ShareLinksPage';
 
 const text = (value: string | null) => (value ?? '').replace(/\u00a0/g, ' ');
-const inDays = (days: number) => new Date(Date.now() + days * 86_400_000 + 3_600_000).toISOString();
+
+/*
+ * These dates are relative ("morgen", "3 dagen geleden"), so the clock is
+ * pinned: with the real one, adding an hour to "now" crosses midnight in the
+ * last hour of the day and the suite fails nightly for an hour.
+ */
+const NOW = new Date('2026-06-15T12:00:00Z');
+beforeEach(() => {
+  vi.useFakeTimers({ shouldAdvanceTime: true, now: NOW });
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+const inDays = (days: number) =>
+  new Date(NOW.getTime() + days * 86_400_000 + 3_600_000).toISOString();
 
 const TOKEN = 'q2Hk9-2vX7rTnP4aBd8sLw3eYcQ2Hk9-2vX7rTnP4aB';
 

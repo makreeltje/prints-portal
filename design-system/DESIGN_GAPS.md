@@ -1052,3 +1052,146 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** the whole indicator. The data behind it already exists in the app; nothing is drawn.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
+
+## GAP-091 [open] Selecting a print needs its checkbox, but the tile looks selectable
+- **Type:** unclear spec
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** PrintCard on ScreenDashboard
+- **What is missing or wrong:** Selection is the small checkbox in the corner; the rest of the tile opens the print. The owner expected that once one print is selected, clicking any other tile would select it too.
+- **Why it matters:** The bulk actions are the reason selection exists, and the way in is a 20px target in a corner of a large clickable card. GAP-070 made the whole klant tile its control for the same reason.
+- **Proposal:** Say what a click on the tile does once a selection is active: the common pattern is that the first selection switches the grid into a selecting mode, where a plain click selects and only the title or an explicit control opens the print. It conflicts with the card being a link, so the system has to decide which wins and how the mode is shown and left.
+- **Blocked:** Nothing; selection works through the checkbox.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-092 [open] A klant chip sets the name and the count in the same weight
+- **Type:** suspected design bug
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** CustomerChips on ScreenDashboard
+- **What is missing or wrong:** The chip reads name, print count and open amount. The name is bold and the count is bold too, so the two run together and the count reads as part of the name.
+- **Why it matters:** The chip's job is to be scanned; two bold values of different kinds compete.
+- **Proposal:** Give the count (and the amount) a lighter weight than the name, as `.pp-chip .amt` already does with `font-weight: 400`. The `.n` element seems to inherit the chip's own weight; a rule for it would settle it.
+- **Blocked:** Nothing; it reads badly.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-093 [open] In the list view only the title opens a print; in the grid the whole card does
+- **Type:** unclear spec
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** PrintRow on ScreenDashboard
+- **What is missing or wrong:** A card in the grid is clickable anywhere, a row in the list only on its name. The same list offers the same prints two ways with two different rules.
+- **Why it matters:** Switching view changes where you have to aim, which is exactly the kind of thing that is only noticed as friction.
+- **Proposal:** Make the row's hit area the row, as the card's is the card: a stretched link over the row with the other controls above it (`z-index: 1`), which is the pattern `.pp-cust-name` already uses since GAP-070. The thumbnail column added in GAP-068 makes the name an even smaller share of the row.
+- **Blocked:** Nothing; the row opens from its name.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-094 [open] The model picker shows names where thumbnails would say more, and a Select above six
+- **Type:** improvement idea
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** ModelPicker on ScreenPrintDetail
+- **What is missing or wrong:** The strip draws a `pp-thumb` with a generic box icon and the file name underneath, so the buttons are distinguished by name only. Above six models it becomes a Select, which the owner does not like.
+- **Why it matters:** A print holds a median of 3 models and up to 29 here, so this is the normal way to move around a project. File names like `CrealityRFIDHyperPLA3.stl` do not tell the parts apart; a picture would.
+- **Proposal:** Render each model as a real thumbnail rather than an icon (the backend can already rasterise an STL, which is how the card thumbnail is made; a per-asset thumbnail endpoint is a small addition on our side). With pictures, the Select may not be needed at all: a scrolling strip of 29 small thumbnails is usable where 29 names are not. Please say whether the strip replaces the Select entirely or keeps it as a fallback above some number.
+- **Blocked:** Nothing; the picker works, it just says little.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-095 [open] The print detail has a lot of empty space now that the viewer is capped
+- **Type:** suspected design bug
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** ScreenPrintDetail
+- **What is missing or wrong:** GAP-064 capped the viewer at 560px, which fixed the fold. What is left beside and below it is empty: the viewer sits alone in a full-width row, so the page is mostly whitespace until the order block. The owner reads the order of the page as wrong.
+- **Why it matters:** The fold is better but the screen is no denser: the first thing you see is still mostly nothing.
+- **Proposal:** Rearrange the top of the print detail now that the viewer is small: the obvious pairing is the viewer beside the print's own facts (tags, spool, status, what is missing) rather than above them, with the order block below at full width. Needs a layout at 360, 768 and 1360px.
+- **Blocked:** The top of the print detail.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-096 [open] A timelapse is buried in the file list while the model gets a viewer
+- **Type:** improvement idea
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** VideoPlayer, ModelPicker and Viewer3D on ScreenPrintDetail
+- **What is missing or wrong:** A video is a row in the file list behind a small play button, and it opens in a modal dialog. The 3D model, which is the same kind of thing — a picture of the print — gets the viewer at the top of the page.
+- **Why it matters:** A timelapse is the record of the print being made, and on this library 60% of prints have one. Burying it undersells it, and a modal takes you off the page to watch twelve seconds.
+- **Proposal:** Treat the timelapse as what it is: visual material of the print, beside the models. Put it in the ModelPicker strip as another entry with a play badge, and let choosing it swap the viewer from the 3D canvas to the player, in place. That removes the dialog, makes the video as findable as the model, reuses a component that exists, and gives the capped viewer area something to do (GAP-095). The file list keeps the download, as it does for every asset.
+- **Blocked:** Nothing; the player works, it is in the wrong place.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-097 [open] Every file is listed inside every order, which repeats the print's contents
+- **Type:** suspected design bug
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** OrderSection and AssetListItem on ScreenPrintDetail
+- **What is missing or wrong:** An order shows a Bestanden section holding every asset of the print — STL, 3MF, G-code, video alike — so a print with two orders lists the same files twice, and files that cannot be billed (an STL source, a timelapse) appear inside a billing unit.
+- **Why it matters:** It is the main reason the order block is long and repetitive, and it blurs what an order is: the files belong to the print, the order is what is being charged for.
+- **Proposal:** Separate the two. One Bestanden section at **print** level, above the orders, where files are browsed, downloaded and played. The order keeps only what it bills: Totaalkosten (which already names the counted files with their grams and price) and Betaling. A Nabestelling then renders cheaply and the order block shrinks to two sections, which is most of the whitespace the owner sees. Per-order controls that act on a file (counting, times printed, the slot spool) would move with the cost breakdown, so please say where they live.
+- **Blocked:** The shape of the order block.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-098 [open] A column menu in Toegang is painted over by the sticky first column
+- **Type:** suspected design bug
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** AccessMatrix on ScreenAccess
+- **What is missing or wrong:** Opening the menu on the leftmost klant column puts the panel partly behind the sticky user column: measured at 1360px, the panel spans x=364 to 504 while the sticky column ends at x=410, so **46px of it is covered** and the items read as "s selecteren". It is not clipped by the scroll box (the overflow does not cut it) — the sticky cell paints over it.
+- **Why it matters:** The first menu in the row is unusable, and it is the one most likely to be opened. The system's own scale puts `z-popover` (30) well above `z-raised` (1), so the intent is clear and the result does not follow it.
+- **Proposal:** The sticky cell and the popover end up in different stacking contexts inside the scroll box. Either the popover has to escape the scroll box, or the sticky column must sit below `z-popover` while the panel is open. Please say which, since it decides whether the menu can be a plain child of the header cell.
+- **Blocked:** The leftmost column menu. The others are fine.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-099 [open] A user's name in Toegang looks interactive but is not the control
+- **Type:** unclear spec
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** AccessMatrix on ScreenAccess
+- **What is missing or wrong:** Each row's first cell holds the user's name with a chevron that opens a row menu, but the name itself is not the target and the cursor does not change over it, so clicking the name does nothing. The owner read the names as clickable and found nothing happened.
+- **Why it matters:** Same confusion GAP-070 resolved on the klant tile: something that looks like a control and is not.
+- **Proposal:** Either make the whole cell the menu trigger (the chevron then being decoration), or draw the name as plain text so only the chevron reads as a control. The first matches what GAP-070 chose elsewhere.
+- **Blocked:** Nothing; the menu opens from the chevron.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-100 [open] Reusing the same password gives "Er ging iets mis"
+- **Type:** missing state
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** ScreenLogin / the forced password change; `frontend/src/auth/NewPasswordPage.tsx`
+- **What is missing or wrong:** A new account must replace its temporary password. Entering the same password again is refused by the backend with `password_unchanged` (400), but the page maps only `password_too_short`, so everything else falls through to `error.generic`, "Er ging iets mis". Nothing went wrong; the app discards a precise message and shows a vague one.
+- **Why it matters:** It is the first thing a new user does, and the message says the app broke rather than what to do.
+- **Proposal:** Copy for the case, on the password field rather than the form: something like "Kies een ander wachtwoord dan het tijdelijke." Please give the key and the wording. The page should also show the field-level error for any other refusal it can name.
+- **Blocked:** The message only; the refusal itself is correct.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-101 [open] Instellingen and Tags leave most of their width empty
+- **Type:** improvement idea
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** ScreenSettings and ScreenTags
+- **What is missing or wrong:** Both pages are a single narrow column of cards on a wide screen, so the right half is empty while Instellingen is 3600px tall and needs a lot of scrolling.
+- **Why it matters:** Not broken, but the owner noticed it twice unprompted, which usually means the page feels unfinished.
+- **Proposal:** Say whether these pages use the full width above some breakpoint — two columns of sections for Instellingen, a wider or multi-column list for Tags — or whether a measured column is deliberate. If deliberate, a maximum width would at least make it look chosen rather than accidental.
+- **Blocked:** Nothing.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-102 [open] API-docs still reads as a box inside a box
+- **Type:** suspected design bug
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** ScreenApiDocs
+- **What is missing or wrong:** GAP-084 removed the card around the renderer, and the owner still reads the page as a box in a box: Scalar draws its own bordered sidebar and panel inside our page padding, so there are two nested frames whatever we do with the card.
+- **Why it matters:** It is the only screen whose body is drawn by something else, and it still does not look like the rest of the app.
+- **Proposal:** The frame is not ours to remove, so the question is what the page around it should be: full-bleed to the window with no page padding at all, our own header outside the renderer's, or Scalar's own chrome suppressed through its variables. Needs a drawn example, since the previous answer did not settle it.
+- **Blocked:** The frame; the theming is correct.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-103 [open] The share page tells a klant what they owe but gives no way to pay
+- **Type:** improvement idea
+- **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
+- **Where needed:** ScreenSharePage payment block
+- **What is missing or wrong:** GAP-078 added IBAN, amount and reference with copy buttons, which is a manual transfer. The owner asks whether the page could offer paying directly, by bank or by Tikkie, which is how most people in the Netherlands settle an amount like this.
+- **Why it matters:** The amounts are small and the klanten are private people; a copyable IBAN is several steps, a link is one.
+- **Proposal:** Decide whether a payment link belongs on the page, and what it looks like beside "Download overzicht". The honest constraint from our side: a real integration needs an account with a provider and a backend that can create a payment, which is a product decision, not a visual one. A link the studio pastes per klant (a Tikkie link, a payment-request URL) needs no integration and could be a field in Instellingen; that is the cheap version and probably the right first step.
+- **Blocked:** Nothing; the manual details work.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9

@@ -30,8 +30,11 @@ export function NewPasswordPage() {
     try {
       await changePassword(password);
     } catch (error) {
+      // The backend names why it refused; "Er ging iets mis" threw that away.
       if (error instanceof ApiError && error.code === 'password_too_short') {
         setErrors({ password: 'error.passwordTooShort' });
+      } else if (error instanceof ApiError && error.code === 'password_unchanged') {
+        setErrors({ password: 'error.passwordUnchanged' }); // ds-gap: GAP-100
       } else {
         setFailed(true);
       }

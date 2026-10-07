@@ -89,6 +89,8 @@ export const nl = {
   'error.passwordMismatch': 'De wachtwoorden zijn niet gelijk.',
   'error.userExists': 'Deze gebruiker bestaat al.',
   'error.required': 'Dit veld is verplicht.',
+  // ds-gap: GAP-100 — the design system has no copy for a reused password yet.
+  'error.passwordUnchanged': 'Kies een ander wachtwoord dan het tijdelijke.', // ds-gap: GAP-100
   'error.tooManyAttempts': 'Te veel pogingen, probeer het over een minuut opnieuw',
   'toast.saved': 'Opgeslagen',
 
