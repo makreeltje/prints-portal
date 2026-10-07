@@ -334,3 +334,10 @@
   max-height: 100%;
   object-fit: contain;
 }
+
+/* DatePicker: the calendar button inside the field (temporary, ds-gap: GAP-047). */
+.app-date-btn {
+  /* ds-gap: GAP-047 */
+  position: absolute; /* ds-gap: GAP-047 */
+  right: var(--space-1); /* ds-gap: GAP-047 */
+} /* ds-gap: GAP-047 */

@@ -67,9 +67,10 @@ function todayIso(): string {
 
 /**
  * DatePicker: a field that shows `5 okt 2026` and accepts `d-m-jjjj`, with
- * a calendar popover (`pp-calpop`, a bottom sheet on phones). A click opens
- * the calendar and keeps focus in the field so typing still works; Alt+Down
- * or Down moves into the grid. The value is a `YYYY-MM-DD` string or null.
+ * a calendar popover (`pp-calpop`, a bottom sheet on phones). The calendar
+ * button (GAP-047 placeholder) or Alt+Down opens it and moves focus into
+ * the grid; typing in the field never opens it. The value is a `YYYY-MM-DD`
+ * string or null.
  * Days outside `min`…`max` are disabled.
  */
 export function DatePicker({
@@ -195,17 +196,10 @@ export function DatePicker({
             value={text}
             aria-invalid={errorText !== null || undefined}
             aria-describedby={errorText === null ? undefined : `${id}-err`}
-            aria-haspopup="dialog"
-            aria-expanded={open}
             onChange={(event) => {
               setText(event.target.value);
             }}
             onBlur={commitTyped}
-            onClick={() => {
-              if (open) return;
-              setFocus(value ?? today);
-              setOpen(true);
-            }}
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
                 event.preventDefault();
@@ -225,7 +219,25 @@ export function DatePicker({
               }
             }}
           />
-          <CalendarDays className="pp-ico r" aria-hidden="true" />
+          {/* ds-gap: GAP-047 calendar button (README) instead of the decorative icon (preview) */}
+          <button
+            type="button"
+            className="pp-btn pp-btn-ghost pp-btn-icon pp-btn-sm app-date-btn"
+            aria-label={t('date.pick')}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            onClick={() => {
+              if (open) {
+                setOpen(false);
+                return;
+              }
+              enterGrid.current = true;
+              setFocus(value ?? today);
+              setOpen(true);
+            }}
+          >
+            <CalendarDays className="pp-ico" aria-hidden="true" />
+          </button>
         </div>
         {errorText !== null && <FieldError id={`${id}-err`}>{errorText}</FieldError>}
       </div>

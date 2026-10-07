@@ -50,20 +50,22 @@ describe('DatePicker', () => {
     expect(input).toHaveFocus();
   });
 
-  it('disables days before min and closes with Esc', async () => {
+  it('opens from the calendar button, disables days before min and closes with Esc', async () => {
     render(<Field initial="2026-10-05" min="2026-10-03" />);
     const input = screen.getByLabelText('Van');
+    // Typing in the field never opens the calendar.
     await userEvent.click(input);
-    // A click keeps focus in the field so typing still works.
-    expect(input).toHaveFocus();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    const button = screen.getByRole('button', { name: 'Kies een datum' });
+    await userEvent.click(button);
+    expect(button).toHaveAttribute('aria-expanded', 'true');
     const popover = screen.getByRole('dialog', { name: 'Kies een datum' });
     expect(within(popover).getByRole('gridcell', { name: '2 oktober 2026' })).toBeDisabled();
-    await userEvent.keyboard('{ArrowDown}');
     expect(within(popover).getByRole('gridcell', { name: '5 oktober 2026' })).toHaveFocus();
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(input).toHaveFocus();
-    await userEvent.click(input);
+    await userEvent.click(button);
     await userEvent.click(screen.getByRole('button', { name: 'Wissen' }));
     expect(screen.getByRole('status')).toHaveTextContent('leeg');
   });
