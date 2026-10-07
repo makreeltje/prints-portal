@@ -17,12 +17,15 @@ interface CustomerStripProps {
   onDelete?: (folder: string) => Promise<void>;
   /** Herstellen on a deleted klant, for Admins. */
   onRestore?: (folder: string) => void;
+  /** "Factuur" (ScreenInvoiceExport), for Admins and Editors. */
+  onInvoice?: (folder: string) => void;
 }
 
 /**
  * Customer strip of ScreenDashboard: CustomerCard per klant above 480px,
  * CustomerChips with a toolbar at 480px and below (one DOM, pp-only-wide /
- * pp-only-phone). Amounts and Factuur arrive with M6/M7.
+ * pp-only-phone). "Factuur" on the card opens the invoice export dialog;
+ * phones have no invoice action yet (GAP-042, owner decision: wait).
  */
 export function CustomerStrip(props: CustomerStripProps) {
   const { customers, onDelete } = props;
@@ -69,6 +72,7 @@ function CustomerCard({
   onSelect,
   onAskDelete,
   onRestore,
+  onInvoice,
 }: WithAsk & { customer: Customer }) {
   const isSelected = selected === customer.folder;
   return (
@@ -111,6 +115,20 @@ function CustomerCard({
         </span>
       </div>
       {!customer.deleted && <CustomerMoney customer={customer} />}
+      {!customer.deleted && !customer.noBilling && onInvoice !== undefined && (
+        <div className="acts">
+          <button
+            type="button"
+            className="pp-btn pp-btn-secondary pp-btn-sm"
+            onClick={() => {
+              onInvoice(customer.folder);
+            }}
+          >
+            <Receipt className="pp-ico" aria-hidden="true" />
+            {t('invoice.button')}
+          </button>
+        </div>
+      )}
       {customer.deleted && (
         <>
           <div>

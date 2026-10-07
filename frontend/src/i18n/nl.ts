@@ -322,6 +322,62 @@ export const nl = {
   'settings.addAlias': 'Alias toevoegen', // component copy: ScreenSettings preview (aria-label)
   'settings.addPrefix': 'Voorvoegsel toevoegen', // component copy: ScreenSettings preview (aria-label)
   'settings.addPlaceholder': 'Toevoegen…', // component copy: ScreenSettings preview
+  // Openstaand, invoices (copy deck)
+  'invoices.col.customer': 'Klant', // component copy: ScreenInvoices
+  'invoices.col.date': 'Datum', // component copy: ScreenInvoices
+  'invoices.col.amount': 'Bedrag', // component copy: ScreenInvoices
+  'invoices.col.actions': 'Acties', // component copy: ScreenInvoices preview
+  'invoices.kind.invoice': 'Factuur', // component copy: ScreenInvoices
+  'invoices.kind.credit': 'Creditnota', // component copy: ScreenInvoices
+  'invoices.relates': 'betreft {number}', // component copy: ScreenInvoices
+  'invoices.allTypes': 'Alle types', // component copy: ScreenInvoices preview
+  'invoices.search': 'Zoek op nummer of klant', // component copy: ScreenInvoices preview
+  'invoices.downloadNumber': 'Downloaden {number}', // component copy: ScreenInvoices preview (aria-label)
+  'invoices.creditNote': 'Creditnota', // component copy: ScreenInvoices preview (credit summary)
+  'invoices.relatesShort': 'Betreft', // component copy: ScreenInvoices preview (credit summary)
+  'invoices.relatesValue': 'factuur {number}', // component copy: ScreenInvoices preview (credit summary)
+  'invoice.button': 'Factuur', // component copy: CustomerCard
+  'outstanding.totalDetail': '{count, plural, one {uit # print} other {uit # prints}}', // component copy: ScreenOutstanding preview
+  'outstanding.customersDetail': 'met een openstaand bedrag', // component copy: ScreenOutstanding preview
+  'outstanding.oldestShort': 'Oudste', // component copy: ScreenOutstanding preview (phone)
+  'outstanding.days': '{count, plural, one {# dag} other {# dagen}}', // component copy: ScreenOutstanding preview
+  'outstanding.of': 'van {amount}', // component copy: OutstandingGroup ("van € 11,89")
+  'outstanding.markAllBody': 'Het openstaande bedrag van {amount} wordt als betaald geregistreerd.', // component copy: ScreenOutstanding preview
+  'outstanding.total': 'Totaal openstaand',
+  'outstanding.customers': 'Aantal klanten',
+  'outstanding.oldest': 'Oudste openstaande print',
+  'outstanding.groupMeta': '{count} prints · oudste {days} dagen open',
+  'outstanding.empty': 'Niets openstaand',
+  'outstanding.emptyHint': 'Alle prints zijn betaald.',
+  'pay.reminderPdf': 'Herinnering (PDF)',
+  'pay.markAllPaid': 'Alles als betaald',
+  'confirm.markAllPaid': 'Alles als betaald markeren voor {customer} ({count} prints)?',
+  'confirm.finalize': 'Definitief maken?',
+  'confirm.finalizeBody':
+    'Je maakt een factuur voor {customer} met {count} prints, totaal {amount}. De factuur krijgt nummer {number} en de regels worden vergrendeld.',
+  'status.onInvoice': 'Op factuur {number}',
+  'invoice.title': 'Factuur',
+  'invoice.registerTitle': 'Facturen',
+  'invoice.number': 'Nummer',
+  'invoice.type': 'Type',
+  'invoice.createFor': 'Factuur maken voor {customer}',
+  'invoice.onlyOutstanding': 'Alleen openstaand',
+  'invoice.preview': 'Voorbeeld',
+  'invoice.lines': 'Regels',
+  'invoice.total': 'Totaal',
+  'invoice.paid': 'Betaald',
+  'invoice.outstanding': 'Openstaand',
+  'invoice.omitted': '{count} prints zonder verkoopprijs zijn weggelaten: {names}.',
+  'invoice.conceptDownload': 'Concept downloaden',
+  'invoice.finalize': 'Definitief maken',
+  'invoice.noLines': 'Geen regels in deze periode.',
+  'invoice.relatesTo': 'Betreft factuur {number}',
+  'invoice.createCredit': 'Creditnota maken',
+  'invoice.createCreditFor': 'Creditnota maken voor factuur {number}',
+  'invoice.pickLines': 'Kies de regels die je wilt crediteren.',
+  'invoice.empty': 'Nog geen facturen',
+  'invoice.emptyHint': 'Maak een factuur vanaf het dashboard.',
+  'invoice.date': 'Factuurdatum',
   // Added in design system 1.4
   Key: 'Text',
   'settings.electricityTariff': 'Stroomtarief',

@@ -7,6 +7,7 @@ import { useCurrentUser } from '../auth/context';
 import { useToast } from '../components/toast-context';
 import { BulkActionBar } from '../finance/BulkActionBar';
 import { BulkFailures } from '../finance/BulkDialogs';
+import { InvoiceExportDialog } from '../finance/InvoiceExportDialog';
 import type { BulkFailure } from '../finance/bulk-results';
 import { t } from '../i18n/nl';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
@@ -103,6 +104,7 @@ export function DashboardPage() {
   // Selection for the bulk bar (Admins and Editors); only prints still in the list count.
   const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set());
   const [bulkFailures, setBulkFailures] = useState<BulkFailure[] | null>(null);
+  const [invoiceFor, setInvoiceFor] = useState<string | null>(null);
   const selectedPrints = items.filter((print) => selectedIds.has(print.id));
   const selected = new Set(selectedPrints.map((print) => print.id));
   const toggle = (id: string, on: boolean) => {
@@ -255,6 +257,7 @@ export function DashboardPage() {
       {customers.data !== undefined && customers.data.customers.length > 0 && (
         <CustomerStrip
           customers={customers.data.customers}
+          onInvoice={canManage ? setInvoiceFor : undefined}
           selected={filter.customer}
           onSelect={(customer) => {
             setFilter({ ...filter, customer });
@@ -284,6 +287,14 @@ export function DashboardPage() {
         total={total}
       />
       {bulkFailures !== null && <BulkFailures failures={bulkFailures} />}
+      {invoiceFor !== null && (
+        <InvoiceExportDialog
+          customer={invoiceFor}
+          onClose={() => {
+            setInvoiceFor(null);
+          }}
+        />
+      )}
       {body}
       {canManage && selectedPrints.length > 0 && (
         <BulkActionBar

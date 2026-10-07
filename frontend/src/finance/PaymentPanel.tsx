@@ -100,6 +100,8 @@ function ManagedPanel({
   actions: PaymentActions;
 }) {
   const id = useId();
+  // On a final invoice the price is locked (M7); payments and write-offs go on.
+  const locked = (order.invoice ?? null) !== null;
   const paid = order.paid ?? 0;
   const remaining = order.remaining ?? null;
   const active = (order.payments ?? []).filter((p) => p.undoneAt === null);
@@ -194,7 +196,7 @@ function ManagedPanel({
         </div>
       )}
 
-      {order.status !== 'open' && order.status !== 'noPrice' && (
+      {(locked || (order.status !== 'open' && order.status !== 'noPrice')) && (
         <div className="pp-row pp-between">
           <PaymentBadge status={order.status} />
           {order.price === null ? null : (
@@ -245,7 +247,7 @@ function ManagedPanel({
         history
       )}
 
-      {(order.status === 'open' || order.status === 'noPrice') && (
+      {!locked && (order.status === 'open' || order.status === 'noPrice') && (
         <>
           {suggestion?.reason === 'noCost' && (
             <div className="pp-alert warning" role="status">

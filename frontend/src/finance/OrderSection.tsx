@@ -58,6 +58,11 @@ export function OrderSection({
         </span>
         <span className="sum">
           <PaymentBadge status={order.status} />
+          {order.invoice != null && (
+            <span className="pp-badge neutral">
+              {t('status.onInvoice', { number: order.invoice.number })}
+            </span>
+          )}
           {order.price !== null && <span className="pp-money">{formatMoney(order.price)}</span>}
           {partly && (
             <span className="pp-remaining">
