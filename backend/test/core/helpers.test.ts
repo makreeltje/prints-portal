@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -86,7 +86,9 @@ describe('path containment', () => {
   let root: string;
 
   beforeAll(async () => {
-    tmp = await mkdtemp(path.join(os.tmpdir(), 'pp-paths-'));
+    // realpath: on macOS the temp folder sits under /var, a symlink to /private/var,
+    // and resolveExistingWithinRoot returns the canonical path.
+    tmp = await realpath(await mkdtemp(path.join(os.tmpdir(), 'pp-paths-')));
     root = path.join(tmp, 'prints');
     await mkdir(path.join(root, 'Joey', 'Babybox locks'), { recursive: true });
     await writeFile(path.join(root, 'Joey', 'Babybox locks', 'lock.gcode'), 'G1');
