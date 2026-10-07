@@ -17,6 +17,8 @@ import type { AppDatabase } from './db/connection.js';
 import { registerBillingRoutes } from './finance/billing-routes.js';
 import { registerFinanceRoutes } from './finance/routes.js';
 import { SpoolmanClient } from './finance/spoolman.js';
+import { registerErrorHandler } from './core/error-handler.js';
+import { redactUrl } from './core/log-redaction.js';
 import { openapiOptions, registerOpenapiRoute } from './docs/openapi.js';
 import { registerRouteDocs } from './docs/route-docs.js';
 import { checkHealth } from './health/health.js';
@@ -59,7 +61,20 @@ export async function buildApp({
 }: AppDependencies): Promise<FastifyInstance> {
   const { trustedProxies, corsOrigins } = config.http;
   const app = Fastify({
-    logger,
+    logger:
+      typeof logger !== 'object'
+        ? logger
+        : {
+            ...logger,
+            // A Deel-link token and an OIDC code are credentials, not identifiers,
+            // and they travel in the URL that every request logs.
+            serializers: {
+              req: (request: { method: string; url: string; routeOptions?: unknown }) => ({
+                method: request.method,
+                url: redactUrl(request.url),
+              }),
+            },
+          },
     // X-Forwarded-For/-Proto/-Host count only when they come from a configured proxy.
     trustProxy: trustedProxies.length > 0 ? [...trustedProxies] : false,
   });
@@ -73,6 +88,8 @@ export async function buildApp({
   if (corsOrigins.length > 0) {
     await app.register(fastifyCors, { origin: [...corsOrigins], credentials: true });
   }
+
+  registerErrorHandler(app);
 
   const sessions = new SessionStore(db, config.auth.sessionSecret, now);
   registerAuthGuard(app, sessions);

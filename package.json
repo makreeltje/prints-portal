@@ -1,6 +1,6 @@
 {
   "name": "prints-portal",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Self-hosted portal that indexes 3D print files, prices them and shares status pages with customers.",
   "type": "module",

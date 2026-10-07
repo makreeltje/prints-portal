@@ -99,35 +99,21 @@ Pull requests only build and health-check the image; they never push.
 
 ## Configuration
 
-| Variable                         | Default                                | Meaning                                                                                          |
-| -------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `PORT`                           | `8080`                                 | HTTP port                                                                                        |
-| `HOST`                           | `0.0.0.0`                              | Bind address                                                                                     |
-| `DATA_DIR`                       | `/data`                                | Database and app data (thumbnails, `invoices/` with final PDFs, `branding/logo.png`; back it up) |
-| `PRINTS_ROOT`                    | `/prints`                              | Read-only prints folder                                                                          |
-| `DATABASE_URL`                   | `sqlite://<DATA_DIR>/prints-portal.db` | `sqlite://…`, `postgres://…`, `mysql://…` or `mariadb://…`                                       |
-| `LOG_LEVEL`                      | `info`                                 | `fatal`, `error`, `warn`, `info`, `debug`, `trace`, `silent`                                     |
-| `STATIC_DIR`                     | `frontend/dist` next to the backend    | Built SPA; API only when missing                                                                 |
-| `INDEX_ON_STARTUP`               | `true`                                 | Full scan of the prints folder when the app starts                                               |
-| `WATCH_ENABLED`                  | `true`                                 | Re-index prints when files change                                                                |
-| `WATCH_DEBOUNCE_MS`              | `2000`                                 | Quiet period per print before it is re-indexed                                                   |
-| `WATCH_POLLING`                  | `false`                                | Poll instead of file-system events (mounts without change events)                                |
-| `WATCH_POLL_INTERVAL_MS`         | `5000`                                 | Poll interval when `WATCH_POLLING` is on                                                         |
-| `NODE_ENV`                       | `production`                           | `development` turns the secret checks into warnings and creates a development Admin              |
-| `SESSION_SECRET`                 | none (required)                        | At least 32 random characters; keys session ids and the OIDC sign-in cookie                      |
-| `ADMIN_EMAIL`                    | none                                   | First Admin, created only while no Admin exists (local login only)                               |
-| `ADMIN_PASSWORD`                 | none                                   | Password for that Admin; at least 12 characters, not a placeholder                               |
-| `PUBLIC_URL`                     | none                                   | Address users open, without a path (required with OIDC)                                          |
-| `OIDC_ISSUER`                    | none                                   | OIDC issuer URL; with the next three it turns local login off (Authentik: see README.md)         |
-| `OIDC_CLIENT_ID`                 | none                                   | OIDC client id (confidential client)                                                             |
-| `OIDC_CLIENT_SECRET`             | none                                   | OIDC client secret                                                                               |
-| `OIDC_ADMIN_GROUP`               | none                                   | Members of this group (`groups` claim) become Admin                                              |
-| `RATE_LIMIT_LOGIN`               | `5`                                    | Login attempts per minute per client address                                                     |
-| `RATE_LIMIT_SHARE`               | `60`                                   | Requests per minute per client address on the public share page, PDF and logo                    |
-| `TRUSTED_PROXIES`                | none                                   | IPs/CIDRs (or `loopback`, `linklocal`, `uniquelocal`) allowed to set `X-Forwarded-*`             |
-| `CORS_ORIGINS`                   | none                                   | Extra origins allowed to call the API with cookies; empty disables CORS                          |
-| `SPOOLMAN_URL`                   | none                                   | Spoolman (v0.27.0) address, e.g. `http://spoolman:7912`; empty hides spools                      |
-| `SPOOLMAN_TIMEOUT_MS`            | `3000`                                 | How long a Spoolman request may take before Spoolman counts as unreachable                       |
-| `ELECTRICITY_TARIFF_EUR_PER_KWH` | none                                   | First-start seed for the tariff; afterwards it is a setting (`/api/settings/pricing`)            |
+Every setting, its default and what it does: [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
+The app checks them all at start-up and refuses to start while one is wrong,
+listing every problem at once.
 
-The full reference arrives in `docs/CONFIGURATION.md` with the documentation milestone.
+For development the useful ones are `NODE_ENV=development` (a generated
+session secret and a development Admin), `DATA_DIR`, `PRINTS_ROOT` and
+`SPOOLMAN_URL`.
+
+## Where the rest is written down
+
+|                                              |                                                           |
+| -------------------------------------------- | --------------------------------------------------------- |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Module map, data model, the decisions behind them.        |
+| [docs/AUTH.md](docs/AUTH.md)                 | Roles, sessions, CSRF, OIDC.                              |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)     | Docker, reverse proxies, databases, backups, upgrades.    |
+| [docs/SECURITY.md](docs/SECURITY.md)         | What is protected and what is known to be imperfect.      |
+| [docs/USAGE.md](docs/USAGE.md)               | The Dutch user guide.                                     |
+| [docs/PLAN.md](docs/PLAN.md)                 | The milestone plan and the decisions taken per milestone. |
