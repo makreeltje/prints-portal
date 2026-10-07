@@ -10,6 +10,7 @@ import { NewPasswordPage } from './auth/NewPasswordPage';
 import { ToastProvider } from './components/Toasts';
 import { t } from './i18n/nl';
 import { AccessPage } from './pages/AccessPage';
+import { ApiDocsPage } from './pages/ApiDocsPage';
 import { DocumentTitle, PageTitle } from './pages/PageTitle';
 import { GlobalErrorState } from './pages/StatePages';
 import { UsersPage } from './pages/UsersPage';
@@ -56,6 +57,12 @@ const pages = (methods: AuthMethods): Partial<Record<string, ReactNode>> => ({
     <>
       <DocumentTitle title="nav.tags" />
       <TagsPage />
+    </>
+  ),
+  '/api-docs': (
+    <>
+      <DocumentTitle title="nav.apiDocs" />
+      <ApiDocsPage />
     </>
   ),
   '/deel-links': (

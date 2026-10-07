@@ -527,6 +527,10 @@ export const nl = {
   'share.closeUncopiedBody':
     'Je ziet deze link daarna niet meer. Je kunt hem wel intrekken en een nieuwe maken.',
   'common.back': 'Terug',
+  'api.loadError': 'API-docs konden niet worden geladen',
+  // The design system still says "Swagger UI"; we render the document with Scalar.
+  'api.loadErrorBody': 'De documentatie kon niet worden opgehaald. Probeer het opnieuw.', // ds-gap: GAP-056
+  'api.title': '3D Prints Portal API', // component copy: ScreenApiDocs
   'spool.wholePrintSkipped':
     'Spoel gewijzigd in {n, plural, one {# bestelling} other {# bestellingen}}. {m, plural, one {# bestelling} other {# bestellingen}} overgeslagen: staat op een factuur.',
 } as const;
