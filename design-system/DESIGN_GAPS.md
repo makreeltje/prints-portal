@@ -681,3 +681,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** that one state. The matrix itself, the per-row and per-column toggles and the phone cards are specified and built.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-058`: the proposed EmptyState and its two copy keys.
 - **Design system version:** 1.6
+
+## GAP-059 [open] The contrast report does not say which ground each pair assumes
+- **Type:** improvement idea
+- **Found while:** M9, theming the `/api-docs` renderer and then auditing it with axe
+- **Where needed:** `contrast.md`, and anywhere a translucent tint is used as a background
+- **What is missing or wrong:** the report lists pairs such as "`primary` on `primary-tint (on surface)` 5.00 pass". The parenthesis carries the whole meaning, because `primary-tint` is translucent (`#3659c924`, 14% alpha): over `surface` the pair measures 5.00, but over `surface-2` it measures 4.34 and fails AA. The report gives one number per pair and names the ground only inside the label, so it is easy to read "primary on primary-tint passes" and use the tint on another ground. That is exactly what happened here, and axe caught it.
+- **Why it matters:** every translucent token has this property. A reader who takes a pair as "safe" can fail AA without any warning, on a surface the report never measured.
+- **Proposal:** give the report an explicit "ground" column rather than putting it in the label, and for each translucent token list every ground it is approved over (`bg`, `surface`, `surface-2`), with a line saying that a translucent token is only approved over the grounds listed. Alternatively, state once at the top that every tint pair assumes `surface` and must be re-measured over any other ground.
+- **Blocked:** nothing; this is about preventing a class of mistake, not about a screen.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.6
