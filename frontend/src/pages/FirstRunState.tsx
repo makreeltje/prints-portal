@@ -16,7 +16,12 @@ export function FirstRunState({ onReindex }: { onReindex?: () => void }) {
       <h1>{t('empty.noPrints.title')}</h1>
       <p>{t('system.firstRunBody')}</p>
       {/* pp-scroll, not pp-card: on a phone the diagram scrolls instead of wrapping. */}
-      <div className="pp-scroll pp-p4 pp-left-t">
+      <div
+        className="pp-scroll pp-p4 pp-left-t"
+        tabIndex={0}
+        role="region"
+        aria-label={t('empty.noPrints.title')}
+      >
         <div className="pp-mono pp-tree">
           prints/
           <div className="pp-indent-1">

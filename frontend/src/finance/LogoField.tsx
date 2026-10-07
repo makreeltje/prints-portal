@@ -77,6 +77,7 @@ export function LogoField() {
           id={`${id}-file`}
           type="file"
           className="pp-sr"
+          aria-label={t('settings.logoUpload')}
           accept="image/png,image/svg+xml"
           aria-describedby={failed ? `${id}-err ${id}-help` : `${id}-help`}
           onChange={(event) => void pick(event.target.files?.[0])}

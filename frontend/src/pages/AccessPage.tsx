@@ -147,7 +147,7 @@ export function AccessPage() {
     <>
       {title}
       <div className="pp-only-wide">
-        <div className="pp-scroll">
+        <div className="pp-scroll" tabIndex={0} role="region" aria-label={t('nav.access')}>
           <table className="pp-matrix" onKeyDown={moveBetweenCells}>
             <thead>
               <tr>
