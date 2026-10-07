@@ -3,8 +3,10 @@ import { CircleCheck, Clock, FileText } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useCurrentUser } from '../auth/context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { Dialog } from '../components/Dialog';
+import { FieldError, GenericError } from '../components/FieldError';
 import { useToast } from '../components/toast-context';
-import { formatMoney } from '../i18n/format';
+import { formatAmountInput, formatMoney, parseAmount } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
 import { keys } from '../prints/api';
@@ -105,7 +107,6 @@ function Stats({ data }: { data: Outstanding }) {
         <div className="pp-stats">
           <div className="pp-card pp-stat pp-minw-0">
             <span className="l">{t('outstanding.total')}</span>
-            {/* pp-text-2xl is not in bundle.css yet (GAP-039). */}
             <span className="v pp-text-2xl">{formatMoney(data.total)}</span>
           </div>
           <div className="pp-card pp-stat pp-minw-0">
@@ -152,7 +153,6 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
         <span className="pp-muted pp-text-sm">
           {t('outstanding.groupMeta', { count: group.count, days: group.oldestDays })}
         </span>
-        {/* pp-text-lg is not in bundle.css yet (GAP-039). */}
         <span className="pp-money pp-text-lg">{formatMoney(group.total)}</span>
         {busy === group.customer && <span className="pp-spin" aria-hidden="true" />}
         {canManage && (
@@ -182,7 +182,7 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
         {group.lines.map((line) => (
           <li key={line.orderId} className="pp-line">
             <div>
-              <b className="pp-strong">{line.printName}</b>
+              <b className="pp-strong">{lineName(line)}</b>
               <div className="pp-muted">
                 {line.project === null ? group.customer : `${group.customer} · ${line.project}`}
               </div>
@@ -249,22 +249,18 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
           setConfirmAll(false);
         }}
       />
-      {/* The amount question waits for GAP-041 (owner decision): the remainder, after a confirm. */}
-      <ConfirmDialog
-        open={paying !== null}
-        title={t('confirm.bulkMarkPaid', { count: 1 })}
-        confirmLabel={t('pay.markPaid')}
-        onConfirm={async () => {
-          if (paying !== null)
-            await run(paying.orderId, () => addPayment(paying.orderId, paying.remaining));
-        }}
-        onClose={() => {
-          setPaying(null);
-        }}
-      />
+      {paying !== null && (
+        <PayDialog
+          line={paying}
+          onPay={(amount) => run(paying.orderId, () => addPayment(paying.orderId, amount))}
+          onClose={() => {
+            setPaying(null);
+          }}
+        />
+      )}
       {writingOff !== null && (
         <WriteOffDialog
-          printName={writingOff.printName}
+          printName={lineName(writingOff)}
           remaining={writingOff.remaining}
           paid={writingOff.paid}
           onConfirm={(reason) =>
@@ -276,5 +272,113 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
         />
       )}
     </section>
+  );
+}
+
+/** Bestelling 1 is the print; a Nabestelling reads "{print} (nabestelling {n})". */
+function lineName(line: OutstandingLine): string {
+  return line.orderNumber === 1
+    ? line.printName
+    : t('invoice.line.reorder', { print: line.printName, n: line.orderNumber });
+}
+
+/**
+ * "Markeer als betaald" for one line: the amount, by default the remainder;
+ * less is a partial payment, more is refused (ScreenOutstanding 1.5).
+ */
+function PayDialog({
+  line,
+  onPay,
+  onClose,
+}: {
+  line: OutstandingLine;
+  onPay: (amount: number) => Promise<void>;
+  onClose: () => void;
+}) {
+  const id = useId();
+  const [text, setText] = useState(formatAmountInput(line.remaining));
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const amount = parseAmount(text);
+  const error =
+    amount === null || amount <= 0
+      ? t('error.invalidAmount')
+      : Math.round(amount * 100) > Math.round(line.remaining * 100)
+        ? t('error.overpay', { amount: formatMoney(line.remaining) })
+        : null;
+  const submit = async () => {
+    if (error !== null || amount === null) return;
+    setBusy(true);
+    setFailed(false);
+    try {
+      await onPay(amount);
+      onClose();
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Dialog
+      open
+      size="sm"
+      title={t('outstanding.line.pay')}
+      onClose={onClose}
+      busy={busy}
+      onSubmit={() => void submit()}
+      footer={
+        <>
+          <button
+            type="button"
+            className="pp-btn pp-btn-secondary"
+            disabled={busy}
+            onClick={onClose}
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            type="submit"
+            className="pp-btn pp-btn-primary"
+            aria-disabled={error !== null || undefined}
+            disabled={busy}
+            aria-busy={busy}
+          >
+            {busy && <span className="pp-spin" aria-hidden="true" />}
+            {t('outstanding.line.pay')}
+          </button>
+        </>
+      }
+    >
+      <div className="pp-col">
+        {failed && <GenericError />}
+        <span className="pp-strong">{lineName(line)}</span>
+        <div className="pp-field">
+          <label htmlFor={`${id}-amount`}>{t('pay.amountPaid')}</label>
+          <div className="pp-affix pre">
+            <input
+              id={`${id}-amount`}
+              className="pp-input"
+              inputMode="decimal"
+              data-autofocus
+              value={text}
+              aria-invalid={error !== null || undefined}
+              aria-describedby={error === null ? `${id}-help` : `${id}-err`}
+              onChange={(event) => {
+                setText(event.target.value);
+              }}
+            />
+            <span className="pp-suffix">€</span>
+          </div>
+          {error === null ? (
+            <span id={`${id}-help`} className="pp-help">
+              {t('outstanding.payHelp', { amount: formatMoney(line.remaining) })}
+            </span>
+          ) : (
+            <FieldError id={`${id}-err`}>{error}</FieldError>
+          )}
+        </div>
+      </div>
+    </Dialog>
   );
 }

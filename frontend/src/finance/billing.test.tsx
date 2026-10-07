@@ -116,6 +116,34 @@ describe('OutstandingPage', () => {
     });
   });
 
+  it('asks for the amount when marking one line paid, the remainder by default', async () => {
+    const calls = stubFetch({
+      'GET /api/outstanding': () => ({ json: outstanding }),
+      'POST /api/orders/o1/payments': () => ({ json: {} }),
+    });
+    renderWithAuth(<OutstandingPage />, { state: signedIn('Editor') });
+    const joey = await screen.findByRole('region', { name: 'Joey' });
+    const line = within(joey).getByText('Babybox locks').closest('li') as HTMLElement;
+    await userEvent.click(within(line).getByRole('button', { name: 'Markeer als betaald' }));
+    const dialog = screen.getByRole('dialog', { name: 'Markeer als betaald' });
+    expect(within(dialog).getByText('Babybox locks')).toBeInTheDocument();
+    const amount = within(dialog).getByLabelText('Betaald bedrag');
+    expect(amount).toHaveValue('6,89');
+    await userEvent.clear(amount);
+    await userEvent.type(amount, '7');
+    expect(text(within(dialog).getByText(/kan niet hoger/).textContent)).toBe(
+      'Een betaling kan niet hoger zijn dan het openstaande bedrag (€ 6,89).',
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Markeer als betaald' }));
+    expect(calls.some((c) => c.method === 'POST')).toBe(false);
+    await userEvent.clear(amount);
+    await userEvent.type(amount, '5');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Markeer als betaald' }));
+    await waitFor(() => {
+      expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ amount: 5 });
+    });
+  });
+
   it('is read-only for Users and says when nothing is open', async () => {
     stubFetch({ 'GET /api/outstanding': () => ({ json: outstanding }) });
     const view = renderWithAuth(<OutstandingPage />, { state: signedIn('User') });
@@ -144,6 +172,7 @@ describe('InvoiceExportDialog', () => {
     excluded: ['Dopje', 'Houder blauw'],
     earlier: [],
     nextNumber: '2026-008',
+    companyReady: true,
   });
 
   it('previews, downloads a concept and finalises after confirming', async () => {
@@ -196,6 +225,60 @@ describe('InvoiceExportDialog', () => {
       expectedTotal: 6.89,
       expectedLines: 1,
     });
+  });
+
+  it('sends the period from the date fields and refuses an end before the start', async () => {
+    const calls = stubFetch({
+      'GET /api/customers/Joey/invoice/preview': () => ({ json: preview(false) }),
+    });
+    renderWithAuth(<InvoiceExportDialog customer="Joey" onClose={() => undefined} />, {
+      state: signedIn('Editor'),
+    });
+    const dialog = screen.getByRole('dialog', { name: 'Factuur maken voor Joey' });
+    await within(dialog).findByText('2');
+    expect(
+      within(dialog).getByText('De periode werkt op de datum van de bestelling.'),
+    ).toBeVisible();
+    const from = within(dialog).getByLabelText('Van');
+    await userEvent.type(from, '1-9-2026{Enter}');
+    await waitFor(() => {
+      expect(calls.at(-1)?.path).toBe(
+        '/api/customers/Joey/invoice/preview?onlyOpen=false&from=2026-09-01',
+      );
+    });
+    expect(from).toHaveValue('1 sep 2026');
+    const to = within(dialog).getByLabelText('Tot en met');
+    await userEvent.type(to, '31-8-2026{Enter}');
+    expect(await within(dialog).findByText('Kies een datum binnen de periode.')).toBeVisible();
+    expect(to).toHaveAttribute('aria-invalid', 'true');
+    for (const button of within(dialog).getAllByRole('button', { name: 'Definitief maken' })) {
+      expect(button).toBeDisabled();
+    }
+  });
+
+  it('blocks Definitief maken while the company has no name or IBAN', async () => {
+    stubFetch({
+      'GET /api/customers/Joey/invoice/preview': () => ({
+        json: { ...preview(false), excluded: [], companyReady: false },
+      }),
+    });
+    renderWithAuth(<InvoiceExportDialog customer="Joey" onClose={() => undefined} />, {
+      state: signedIn('Admin'),
+    });
+    const dialog = screen.getByRole('dialog', { name: 'Factuur maken voor Joey' });
+    const alert = await within(dialog).findByRole('alert');
+    expect(alert).toHaveTextContent('Naam en IBAN ontbreken.');
+    expect(within(alert).getByRole('link', { name: 'Naar Instellingen' })).toHaveAttribute(
+      'href',
+      '/instellingen',
+    );
+    const finalise = within(dialog).getAllByRole('button', { name: 'Definitief maken' })[0];
+    expect(finalise).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.click(finalise as HTMLElement);
+    expect(screen.queryByRole('dialog', { name: 'Definitief maken?' })).toBeNull();
+    expect(
+      within(dialog).getAllByRole('link', { name: 'Concept downloaden' }).length,
+    ).toBeGreaterThan(0);
   });
 
   it('disables both actions when there is nothing to invoice', async () => {
