@@ -1,8 +1,10 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { ImageIcon } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { ApiError } from '../api/client';
 import { FieldError } from '../components/FieldError';
 import { t } from '../i18n/nl';
+import { logoKey } from '../shell/logo';
 import { logoUrl, uploadLogo } from './api';
 
 const MAX_BYTES = 1024 * 1024;
@@ -10,11 +12,12 @@ const MAX_BYTES = 1024 * 1024;
 /**
  * Logo (optioneel) in Bedrijfsgegevens: the `pp-logo-box` shows the logo
  * (or an icon when empty) and "Logo uploaden" picks a PNG or SVG. The
- * server keeps a PNG; it replaces the name on documents.
+ * server keeps a PNG; it replaces the name on documents and in the AppShell.
  */
 export function LogoField() {
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
   const [version, setVersion] = useState(0);
   const [present, setPresent] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
@@ -46,6 +49,7 @@ export function LogoField() {
     try {
       await uploadLogo(file);
       setVersion(version + 1);
+      await queryClient.invalidateQueries({ queryKey: logoKey });
     } catch (error) {
       if (!(error instanceof ApiError)) throw error;
       setFailed(true);
