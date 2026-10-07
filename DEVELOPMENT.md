@@ -115,7 +115,7 @@ Pull requests only build and health-check the image; they never push.
 | `ADMIN_EMAIL`                    | none                                   | First Admin, created only while no Admin exists (local login only)                               |
 | `ADMIN_PASSWORD`                 | none                                   | Password for that Admin; at least 12 characters, not a placeholder                               |
 | `PUBLIC_URL`                     | none                                   | Address users open, without a path (required with OIDC)                                          |
-| `OIDC_ISSUER`                    | none                                   | OIDC issuer URL; with the next three it turns local login off                                    |
+| `OIDC_ISSUER`                    | none                                   | OIDC issuer URL; with the next three it turns local login off (Authentik: see README.md)         |
 | `OIDC_CLIENT_ID`                 | none                                   | OIDC client id (confidential client)                                                             |
 | `OIDC_CLIENT_SECRET`             | none                                   | OIDC client secret                                                                               |
 | `OIDC_ADMIN_GROUP`               | none                                   | Members of this group (`groups` claim) become Admin                                              |
