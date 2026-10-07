@@ -175,6 +175,31 @@ Text colour on the composited token, over each of the three grounds. 'not approv
 | light | `info-tint` | `info` | 4.85 pass | 5.23 pass | 4.54 pass | bg, surface, surface-2 |
 | light | `info-tint` | `text` | 9.50 pass | 10.23 pass | 8.88 pass | bg, surface, surface-2 |
 
+## Translucent token inside a translucent row
+
+A badge or chip tint composited over a row that is itself tinted (row hover, selected row) over `surface`. This is the ground the lists of the app can produce. **Since 1.8 status badges and `pp-hint` chips carry an opaque `surface` base under their tint, so their ground is `surface` in every row state and the ratios of the first table apply (4.9 to 5.3 in light, 5.9 to 9 in dark).** The table below shows what the nested composite would give without that base and is the reason for it; a nested pair is approved only if it passes here.
+
+| Theme | Token | Row state (row ground) | Own colour text | `text` |
+|---|---|---|---|---|
+| dark | `paid-tint` | row hover (`primary-tint-soft` over `surface`) | 6.04 pass | 6.84 pass |
+| dark | `unpaid-tint` | row hover (`primary-tint-soft` over `surface`) | 4.57 pass | 7.49 pass |
+| dark | `warning-tint` | row hover (`primary-tint-soft` over `surface`) | 6.82 pass | 6.66 pass |
+| dark | `info-tint` | row hover (`primary-tint-soft` over `surface`) | 6.34 pass | 6.73 pass |
+| dark | `paid-tint` | selected row (`primary-tint` over `surface`) | 5.42 pass | 6.13 pass |
+| dark | `unpaid-tint` | selected row (`primary-tint` over `surface`) | 4.12 not approved | 6.74 pass |
+| dark | `warning-tint` | selected row (`primary-tint` over `surface`) | 6.12 pass | 5.98 pass |
+| dark | `info-tint` | selected row (`primary-tint` over `surface`) | 5.67 pass | 6.03 pass |
+| light | `paid-tint` | row hover (`primary-tint-soft` over `surface`) | 4.81 pass | 9.24 pass |
+| light | `unpaid-tint` | row hover (`primary-tint-soft` over `surface`) | 4.44 not approved | 9.11 pass |
+| light | `warning-tint` | row hover (`primary-tint-soft` over `surface`) | 4.49 not approved | 9.31 pass |
+| light | `info-tint` | row hover (`primary-tint-soft` over `surface`) | 4.72 pass | 9.24 pass |
+| light | `paid-tint` | selected row (`primary-tint` over `surface`) | 4.41 not approved | 8.49 pass |
+| light | `unpaid-tint` | selected row (`primary-tint` over `surface`) | 4.10 not approved | 8.40 pass |
+| light | `warning-tint` | selected row (`primary-tint` over `surface`) | 4.12 not approved | 8.54 pass |
+| light | `info-tint` | selected row (`primary-tint` over `surface`) | 4.33 not approved | 8.47 pass |
+
+Rule: a translucent token is never nested inside another translucent ground except the combinations listed here; when an alpha changes, regenerate this report and read both tables.
+
 Alpha values are the real ones from `tokens.css`: soft 0x14 (7.8%), tint 0x24 (14.1%), strong 0x38 dark and 0x33 light (21.9% and 20%), state tints 0x24. Until 1.6 the report used rounded alphas (.08, .14, .20); the ratios moved by hundredths and no verdict changed.
 
 Added in 1.1: neutral badge, remaining-amount line, duplicate hint, and the three text colours used on the A4 documents (white paper, printed in black and white: status is always a word). Not checked here: `border` (decorative hairline, never the sole cue), `viz-seq-1`/`viz-seq-2` (fills that need labels or an outline), and anything painted over a user-chosen tag or spool colour (tag text flips between `#141a33` and `#ffffff` by luminance at runtime).

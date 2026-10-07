@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-07T15:00:00Z",
+  "at": "2026-10-07T18:00:00Z",
   "via": "Claude",
-  "note": "v1.7: Scalar as API-docs renderer (.pp-scalar mapping), contrast report with grounds, lock help wrap, folder diagram scroll, empty Toegang"
+  "note": "v1.8: third-party renderer rule (GAP-060), badges on an opaque surface base and nested-tint contrast table (GAP-061)"
  },
  "layout": "files",
  "libraries": [],

@@ -70,3 +70,6 @@
 - **Do** check the Ground column in `contrast.md` before using a translucent token: it is approved only over the grounds listed. **Don't** assume "passes on `surface`" holds on `surface-2`.
 - **Do** map a third-party UI kit through CSS variables onto our tokens (`.pp-scalar`). **Don't** let a literal colour, font or radius of the kit survive.
 
+- **Do** give a translucent chip an opaque `surface` base when it can sit inside a tinted row. **Don't** assume its ground is `surface`.
+- **Do** make a region that a third-party renderer leaves scrollable a focusable, labelled region (`role="region"` on a generic element only). **Don't** put `role="region"` on a `ul`.
+
