@@ -827,14 +827,16 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 
 ## GAP-071 [open] A dark filament tint swallows the model in the thumbnail
 - **Type:** suspected design bug
-- **Found while:** the owner's walkthrough of 1.0
-- **Where needed:** Thumbnail on PrintCard; ScreenDashboard
-- **What is missing or wrong:** The thumbnail is tinted with the filament colour, which the system calls the only decoration. With a dark or saturated colour (the owner's black and purple spools) the rendered model nearly disappears into its own ground: a dark grey model on a black tint has almost no edge left.
-- **Why it matters:** The thumbnail is the only way to recognise a print at a glance, and it is exactly the dark spools where it stops working.
-- **Proposal:** Give the tint a floor, for example composite it towards `surface` beyond a lightness threshold, or draw the model with a contrasting outline or a lighter material when the tint is dark. The rule has to work in both themes and should keep the colour recognisable.
-- **Blocked:** Nothing is broken; the thumbnails are simply unreadable for dark spools.
+- **Found while:** the owner's walkthrough of 1.0; measured again against the v1.9 mechanism
+- **Where needed:** Thumbnail on PrintCard and PrintRow; `.pp-thumb.tinted` in `bundle.css`
+- **What is missing or wrong:** the thumbnail is tinted with the filament colour, and with a dark or saturated one the model nearly disappears into its own ground.
+- **Correction to an earlier note in this entry:** it previously said the `--mix` floor was not in the v1.9 export. That was wrong, and the mistake was ours: the floor does ship, as `color-mix(in srgb, var(--c1) var(--mix,100%), var(--border-strong))` on `.pp-thumb.tinted` with an inset `border-strong` ring, and the grep that looked for it missed `--mix` inside `var(--mix,100%)`. `scripts/check-design-export.mjs` now reads the export's own claims so this cannot recur.
+- **Why it is still open, measured:** the mechanism cannot reach the 3:1 target, and between 100% and 40% it makes things worse. On a black-filament thumbnail, model against ground: **100% (default) 1.21 darkest / 1.57 lightest; 80% 1.02 / 1.33; 60% 1.34 / 1.03; 40% (the proposed floor) 1.94 / 1.49; 25% 2.60 / 2.00.** The reason is that the model image holds a *range* of luminances, so a ground moving through that range collides with part of it: at 80% it matches the darkest pixels, at 60% the lightest. No single mix clears 3:1 on both ends, and the best measured value (25%) is well past the proposed 40% floor and still short.
+- **The app also cannot set it yet:** `--mix` is not in the checker's list of custom properties an app may set inline (`--tag`, `--tag-ink`, `--c1`, `--c2`). v1.9's changelog calls `--mix` a "new allowed inline data property", so the kit's `scripts/check-design-tokens.sh` needs that list extended before the app may use it. We have not changed the checker, since there is nothing to let through yet.
+- **Proposal:** the ground alone cannot carry this. Either (a) separate the model from the ground rather than lightening it — the inset ring already shipped is a start, and a stronger outline or a drop shadow on the image would not depend on the tint at all; (b) keep the ground neutral for dark filaments and show the colour as a swatch next to the name, as SpoolSwatch already does elsewhere; or (c) state a lower target for this case and say what it is, since 3:1 against a photographic preview may not be reachable at all. We would implement whichever you choose; this needs a visual decision, not a number.
+- **Blocked:** dark and saturated thumbnails stay hard to read. Everything else about the thumbnail works.
 - **Temporary placeholder approved:** no
-- **Design system version:** 1.8
+- **Design system version:** 1.9 (measured against the shipped `--mix` mechanism)
 
 ## GAP-072 [resolved in v1.9] The card subtitle repeats the print's own name
 - **Type:** improvement idea
