@@ -82,8 +82,7 @@ describe('AppShell sidebar', () => {
         (child) => `${child.tagName.toLowerCase()}.${child.className}`,
       ),
     ).toEqual([
-      // app-side keeps the sidebar in the viewport on a long page: ds-gap: GAP-063.
-      'aside.pp-side app-side',
+      'aside.pp-side',
       'header.pp-phone-top',
       'main.pp-main app-main',
       'nav.pp-bottomnav',
@@ -143,11 +142,11 @@ describe('theme switch', () => {
     const user = userEvent.setup();
     renderAt('/');
     const button = sidebar().getByRole('button', { name: /^Thema/ });
-    expect(button).toHaveAccessibleName('Thema: Systeem');
+    expect(button).toHaveAccessibleName('Thema: Systeem. Wissel naar Licht.');
     expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
 
     await user.click(button);
-    expect(button).toHaveAccessibleName('Thema: Licht');
+    expect(button).toHaveAccessibleName('Thema: Licht. Wissel naar Donker.');
     expect(document.documentElement.dataset.theme).toBe('light');
     expect(window.localStorage.getItem('prints-portal.theme')).toBe('light');
 
@@ -163,7 +162,9 @@ describe('theme switch', () => {
     window.localStorage.setItem('prints-portal.theme', 'dark');
     renderAt('/');
     expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(sidebar().getByRole('button', { name: /^Thema/ })).toHaveAccessibleName('Thema: Donker');
+    expect(sidebar().getByRole('button', { name: /^Thema/ })).toHaveAccessibleName(
+      'Thema: Donker. Wissel naar Systeem.',
+    );
   });
 });
 

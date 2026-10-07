@@ -726,7 +726,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.7
 
-## GAP-062 [open] The selection checkbox moves down when it is ticked
+## GAP-062 [resolved in v1.9] The selection checkbox moves down when it is ticked
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of 1.0, dashboard cards
 - **Where needed:** `.pp-opt` and `.pp-check` (PrintCard, PrintTable); `frontend/src/prints/PrintCard.tsx`
@@ -737,7 +737,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-062`: `vertical-align: top` on `.pp-opt` inside `.app-above-link`, which takes the label off the text baseline. Verified on the dashboard: the box stays put when ticked and nothing else moves.
 - **Design system version:** 1.8
 
-## GAP-063 [open] The sidebar footer is unreachable on any page taller than the window
+## GAP-063 [resolved in v1.9] The sidebar footer is unreachable on any page taller than the window
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of 1.0; reproduced across every screen
 - **Where needed:** `.pp-side` and `.pp-side .foot` (AppShell); every desktop screen
@@ -748,7 +748,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-063`: an `app-side` class on the existing `aside.pp-side` (the pattern `main.pp-main app-main` already uses) making it `position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto`. The page keeps its own scrollbar. Verified on all nine screens at 1440, 1360, 768 and 390px: the footer is in view everywhere, the rail and the phone layout are unchanged, and no page scrolls horizontally.
 - **Design system version:** 1.8
 
-## GAP-064 [open] The 3D viewer takes the whole fold on the print detail, including when there is no model
+## GAP-064 [resolved in v1.9] The 3D viewer takes the whole fold on the print detail, including when there is no model
 - **Type:** suspected design bug
 - **Found while:** the UX review of 1.0 and the owner's walkthrough
 - **Where needed:** Viewer3D on ScreenPrintDetail; `frontend/src/prints/PrintDetailPage.tsx`
@@ -759,7 +759,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-065 [open] The theme control always shows a moon, whatever the theme is
+## GAP-065 [resolved in v1.9] The theme control always shows a moon, whatever the theme is
 - **Type:** missing state
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** AppShell footer and drawer, "Thema"; `frontend/src/shell/AppShell.tsx`
@@ -968,7 +968,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-084 [open] API-docs puts a bordered card around a renderer that draws its own frame
+## GAP-084 [resolved in v1.9] API-docs puts a bordered card around a renderer that draws its own frame
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** ScreenApiDocs
@@ -1001,7 +1001,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-087 [open] The lost-connection state is announced twice at once
+## GAP-087 [resolved in v1.9] The lost-connection state is announced twice at once
 - **Type:** improvement idea
 - **Found while:** fixing the toast pile-up from the owner's walkthrough
 - **Where needed:** OfflineBanner and Toasts; ScreenSystemStates

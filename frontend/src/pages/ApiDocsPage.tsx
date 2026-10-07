@@ -117,7 +117,7 @@ export function ApiDocsPage() {
       <div className="pp-ph">
         <h1>{t('api.title')}</h1>
       </div>
-      <div className="pp-card pp-flush pp-scalar" ref={card}>
+      <div className="pp-scalar" ref={card}>
         {spec.isPending ? (
           <LoadingRows rows={4} />
         ) : spec.isError ? (

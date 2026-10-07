@@ -41,10 +41,9 @@ export function LiveProvider({
     let delay = MIN_DELAY_MS;
     let stopped = false;
     let wasLive = false;
-    // The id of the "connection lost" warning, so it can be taken back when the
-    // connection returns. Without this each loss leaves a warning that never
-    // auto-dismisses, and a long run of flaps fills the screen with them.
-    let lossToast: number | null = null;
+    // ScreenSystemStates 1.9 (GAP-087): the offline bar is the state, so losing
+    // the connection is not toasted; coming back still is.
+    let lostConnection = false;
     const flashTimers: number[] = [];
 
     const connect = () => {
@@ -58,9 +57,8 @@ export function LiveProvider({
         const data = JSON.parse(message.data) as { type: string; printId?: string };
         if (data.type === 'subscribed') {
           setStatus('live');
-          if (lossToast !== null) {
-            toast.dismiss(lossToast);
-            lossToast = null;
+          if (lostConnection) {
+            lostConnection = false;
             toast.success(t('system.reconnected'));
           }
           // Anything may have changed while we were away.
@@ -87,7 +85,7 @@ export function LiveProvider({
           return;
         }
         setStatus('reconnecting');
-        if (wasLive && lossToast === null) lossToast = toast.warning(t('live.reconnecting'));
+        if (wasLive) lostConnection = true;
         timer = window.setTimeout(connect, delay);
         delay = Math.min(delay * 2, MAX_DELAY_MS);
       };

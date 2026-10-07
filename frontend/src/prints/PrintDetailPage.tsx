@@ -306,7 +306,7 @@ function ModelView({ detail }: { detail: PrintDetail }) {
   }
   return (
     <div className="pp-col app-no-model">
-      <div className="pp-viewer fluid">
+      <div className="pp-viewer is-empty">
         <Box className="pp-ico pp-ico-24" aria-hidden="true" />
         <span>{t('viewer.none')}</span>
       </div>

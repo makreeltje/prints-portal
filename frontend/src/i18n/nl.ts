@@ -321,6 +321,10 @@ export const nl = {
   'customers.notBilledHelp':
     'Voor een klant die niet wordt gefactureerd (bijvoorbeeld je eigen prints) zie je alleen de kosten.',
   'settings.theme': 'Thema',
+  'shell.theme.label': 'Thema: {stand}. Wissel naar {volgende}.', // component copy: AppShell
+  'shell.theme.system': 'Systeem',
+  'shell.theme.light': 'Licht',
+  'shell.theme.dark': 'Donker',
   'settings.theme.system': 'Systeem', // component copy: ScreenSettings
   'settings.theme.light': 'Licht', // component copy: ScreenSettings
   'settings.theme.dark': 'Donker', // component copy: ScreenSettings

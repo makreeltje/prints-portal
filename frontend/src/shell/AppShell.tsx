@@ -1,10 +1,10 @@
-import { LogOut, Menu, Moon } from 'lucide-react';
+import { LogOut, Menu, Monitor, Moon, Sun } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { useAuth, useCurrentUser } from '../auth/context';
 import { Avatar } from '../components/Avatar';
 import { t, type MessageKey } from '../i18n/nl';
-import type { ThemePreference } from '../theme/theme';
+import { nextTheme, type ThemePreference } from '../theme/theme';
 import { useTheme } from '../theme/useTheme';
 import { OfflineBanner } from '../pages/OfflineBanner';
 import { LiveIndicator } from '../prints/LiveIndicator';
@@ -15,9 +15,16 @@ const MAIN_ID = 'inhoud';
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const THEME_LABELS: Record<ThemePreference, MessageKey> = {
-  system: 'settings.theme.system',
-  light: 'settings.theme.light',
-  dark: 'settings.theme.dark',
+  system: 'shell.theme.system',
+  light: 'shell.theme.light',
+  dark: 'shell.theme.dark',
+};
+
+/** The icon shows the stand the control is in now (AppShell 1.9, GAP-065). */
+const THEME_ICONS: Record<ThemePreference, typeof Monitor> = {
+  system: Monitor,
+  light: Sun,
+  dark: Moon,
 };
 
 /**
@@ -39,7 +46,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const openDrawer = () => {
     setDrawerOpen(true);
   };
-  const themeLabel = `${t('settings.theme')}: ${t(THEME_LABELS[theme.theme])}`;
+  const themeLabel = t('shell.theme.label', {
+    stand: t(THEME_LABELS[theme.theme]),
+    volgende: t(THEME_LABELS[nextTheme(theme.theme)]),
+  });
+  const ThemeIcon = THEME_ICONS[theme.theme];
 
   return (
     <>
@@ -48,7 +59,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </a>
       <div className="pp-app">
         {/* While the drawer is open the rest of the shell is inert (modal drawer). */}
-        <aside className="pp-side app-side" inert={drawerOpen}>
+        <aside className="pp-side" inert={drawerOpen}>
           <div className={logo === null ? 'pp-brand' : 'pp-brand has-logo'}>
             <span className="ini" aria-hidden="true">
               {t('app.name').charAt(0)}
@@ -68,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aria-label={themeLabel}
                 onClick={theme.cycleTheme}
               >
-                <Moon className="pp-ico" aria-hidden="true" />
+                <ThemeIcon className="pp-ico" aria-hidden="true" />
                 <span className="lbl">{t('settings.theme')}</span>
               </button>
               <button
@@ -162,7 +173,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               aria-label={themeLabel}
               onClick={theme.cycleTheme}
             >
-              <Moon className="pp-ico" aria-hidden="true" />
+              <ThemeIcon className="pp-ico" aria-hidden="true" />
               {t('settings.theme')}
             </button>
             <button type="button" className="pp-btn pp-btn-ghost" onClick={onLogout}>
