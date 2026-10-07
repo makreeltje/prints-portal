@@ -87,18 +87,58 @@ say so plainly rather than quietly changing course.
 
 ## Talking back to the design system
 
-The loop is not closed: the design system is a claude.ai chat, which cannot be
-messaged from here. The owner carries the outbound half, so make it small and
-unambiguous:
+The loop is closed in both directions, and the design system is an Artifact,
+not a chat to paste into:
 
-- Write the prompt to `docs/design-feedback/vX.Y-prompt.md`, following the
-  shape of the previous ones and `design-system/FEEDBACK_PROMPT.md`.
-- Include every `[open]` entry verbatim, so nothing needs pasting separately.
-- Group the gaps and say what to do first, with a reason.
-- Answer anything the previous round asked, with numbers from the app.
-- Say explicitly which gaps the previous export did not settle.
-- Ask them to request measurements rather than assume; we can measure anything
-  in the running instance.
+    https://claude.ai/artifact/VDJ58ezfNxqJwBgV8ogXJ5
+
+**Inbound** is the import above. **Outbound** is one file of ours published
+into that artifact: `project/implementation.md`, which the system shows as a
+section beside `changelog.md` and `contrast.md`. Keep its source in the repo at
+`docs/design-feedback/implementation.md`, so it has history and can be reviewed
+in a pull request, and publish that file.
+
+Rewrite and republish it at the end of every round. It holds the implementer's
+half and nothing else:
+
+- every open gap, and **what is actually built** for it — including a gap that
+  is only half implemented, which is the thing a changelog cannot know;
+- the measurements the last export asked for, as numbers from the running app;
+- deviations we chose, with the reason and what they cost;
+- corrections, when either side got something wrong, in their own section
+  rather than buried;
+- what would help most next.
+
+### The line you do not cross
+
+The design system owns `tokens.json`, `components/`, `bundle.css` and every
+other file under `project/` except ours. **Never publish a design decision.**
+Writing both the spec and the implementation would end the mutual checking that
+has caught real errors in both directions: they caught a contrast measurement
+taken on the wrong case, our export checker caught a class we wrongly called
+missing and a gap we wrongly marked resolved. If a change to their files looks
+necessary, that is a gap entry and a question, not a publish.
+
+### Publishing it
+
+1. `Artifact action:"read"` on the artifact first. A publish without it is
+   refused — that refusal is the protection against overwriting an edit someone
+   made in the chat, so never reach for `force`.
+2. Stage under one folder as `<dir>/project/implementation.md`, and the index
+   as `<dir>/project/design-system.json`: read the index immediately before,
+   change **only** `lastChange` (`by` the owner, `at` now, `via` "Claude Code",
+   `note` what changed), and keep every other key and the `createdOnFiles`
+   marker.
+3. One publish: `url`, `root` = that folder, `file_path` = the index's absolute
+   path, `files` = `{"project/implementation.md": "project/implementation.md"}`.
+   Files you do not send are kept.
+4. Read both files back from the service afterwards. The result line is not
+   evidence that the content landed.
+5. Refused because someone saved meanwhile: read again, redo the edit on what
+   came back, publish once more. A second refusal stops and goes to the owner.
+
+A separate `docs/design-feedback/vX.Y-prompt.md` is only needed when the owner
+wants to ask for a round explicitly; the section carries the standing state.
 
 ## Privacy
 
