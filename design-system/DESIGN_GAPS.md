@@ -628,3 +628,25 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing; built as specified until the design system changes it.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.5
+
+## GAP-054 [open] `.pp-lockhelp` does not wrap on phones
+- **Type:** missing state
+- **Found while:** checking v1.6 in the browser, print detail of an order on a final invoice at 360px
+- **Where needed:** `.pp-lockhelp` (AssetListItem locked state, OrderSection); `frontend/src/prints/AssetList.tsx`
+- **What is missing or wrong:** `.pp-lockhelp` is `display:flex` with `flex-wrap:nowrap` and no rule below 900px or 480px. At 360px the badge "Op factuur {nummer}" takes 159 of the 292 available pixels, leaving the help text a 93px column that wraps over four lines. Measured in the app, not guessed.
+- **Why it matters:** the sentence that explains why every control is disabled is the hardest thing to read on the screen where it matters most.
+- **Proposal:** `flex-wrap: wrap` on `.pp-lockhelp`, or `flex-direction: column; align-items: flex-start` at 480px and below, so the badge sits above the sentence and the sentence gets the full width.
+- **Blocked:** nothing; it is readable, only cramped.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.6
+
+## GAP-055 [open] CostBreakdown table is clipped on phones
+- **Type:** missing state
+- **Found while:** checking v1.6 in the browser; also present before 1.6 (reproduced on a print without an invoice)
+- **Where needed:** CostBreakdown (`.pp-cost`), ScreenPrintDetail phone layout; `frontend/src/finance/CostBreakdown.tsx`
+- **What is missing or wrong:** `.pp-cost` is `width:100%` with five columns (Post, Berekening, Bron, Bedrag) and no phone treatment. At 360px the table needs 520px inside a 292px card, so it is cut off at the card edge: the "Bedrag" column, the whole point of the breakdown, cannot be reached. The page itself does not scroll sideways, so there is no way to see it. ScreenInvoices solves the same problem by scrolling its table inside its own container, and `pp-only-wide` / `pp-only-phone` exist for swapping a table for cards, but CostBreakdown uses neither.
+- **Why it matters:** on a phone the cost breakdown shows no amounts at all.
+- **Proposal:** either wrap `.pp-cost` in a horizontally scrolling container as ScreenInvoices does, or give the phone layout a card list per row (Post, then Berekening, Bron and Bedrag beneath), reusing `pp-only-wide` / `pp-only-phone`.
+- **Blocked:** nothing; it works on desktop and tablet.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.6 (present since 1.1)
