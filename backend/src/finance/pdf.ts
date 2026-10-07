@@ -73,7 +73,9 @@ export function renderDocument(
     pdfVersion: '1.7',
     info: {
       Title: documentTitle(document),
-      Author: document.company.name === '' ? undefined : document.company.name,
+      // Keys must be left out rather than set to undefined: pdfkit builds the
+      // file id by calling valueOf() on every info value it finds.
+      ...(document.company.name === '' ? {} : { Author: document.company.name }),
       ...(options.creationDate === undefined ? {} : { CreationDate: options.creationDate }),
     },
   });

@@ -28,7 +28,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
   let editor: Session;
   let helper: Session;
 
-  const start = async (env: Record<string, string> = {}) => {
+  const start = async (env: Record<string, string> = {}, options: { company?: boolean } = {}) => {
     t = await startTestApp(url, { PRINTS_ROOT: root, ...env });
     await t.addUser('owner@example.org', 'Admin');
     await t.addUser('editor@example.org', 'Editor');
@@ -45,17 +45,19 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
         materialPricesPerKg: { PLA: 20 },
       },
     });
-    await t.as(admin, {
-      method: 'PUT',
-      url: '/api/settings/company',
-      payload: {
-        name: 'Voorbeeld 3D',
-        iban: 'NL00 BANK 0000 0000 00',
-        address: 'Voorbeeldstraat 1',
-        email: null,
-        phone: null,
-      },
-    });
+    if (options.company !== false) {
+      await t.as(admin, {
+        method: 'PUT',
+        url: '/api/settings/company',
+        payload: {
+          name: 'Voorbeeld 3D',
+          iban: 'NL00 BANK 0000 0000 00',
+          address: 'Voorbeeldstraat 1',
+          email: null,
+          phone: null,
+        },
+      });
+    }
     await t.app.services.indexer.indexAll();
   };
 
@@ -321,6 +323,18 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
       (await t.as(null, { url: `/api/share/${wouter.token}/overview.pdf` })).rawPayload,
     );
     expect(pending).toContain('Prijs volgt');
+  });
+
+  it('renders the Overzicht PDF on a fresh install, before Bedrijfsgegevens is filled in', async () => {
+    await start({}, { company: false });
+    const { token } = await create('Joey');
+    const response = await t.as(null, { url: `/api/share/${token}/overview.pdf` });
+    expect(response.statusCode).toBe(200);
+    const text = pdfPlainText(response.rawPayload);
+    expect(text).toContain('Overzicht');
+    expect(text).toContain('Dit is een overzicht, geen factuur.');
+    // Without a name and IBAN there is nothing to pay to, so no payment sentence.
+    expect(text).not.toContain('overmaken');
   });
 
   it('serves the logo through a working link only', async () => {
