@@ -489,7 +489,8 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** a `pp-card pp-sec` between the viewer and the "nieuw bestand" alert, full width, as in 1.3 (title, SpoolPicker, help).
 - **Also unclear:** files that never count (STL, video, PDF, links) have no order; the app lists them in Bestelling 1's Bestanden. Files in no order are listed under the label "Nog niet in een bestelling" in a card after the alert (as in the AssetListItem preview).
 - **Blocked:** the placement only; the card works as before.
-- **Temporary placeholder approved:** no (shown at the proposed place, marked `ds-gap: GAP-040`, pending your answer)
+- **Owner decision (2026-10-07):** wait for the design system. Until then the whole-print spool card is not shown (files and slots keep their own pickers); files without lines stay listed with Bestelling 1 so they can still be downloaded.
+- **Temporary placeholder approved:** no
 - **Design system version:** 1.4
 
 ## GAP-041 [open] Openstaand: "Markeer als betaald" per line asks an amount, but there is no dialog
@@ -500,6 +501,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** the amount question would be improvised.
 - **Proposal:** a small Dialog (`pp-dialog sm`) titled "Markeer als betaald" with the PaymentPanel field "Betaald bedrag" (€ prefix, default the remainder, same overpayment error `error.overpay`) and the primary "Markeer als betaald". A Nabestelling line is named "{print} (nabestelling {n})", as on the invoice PDF.
 - **Blocked:** the per-line amount question and the Nabestelling line name.
+- **Owner decision (2026-10-07):** wait for the design system. Until then the line action pays the full remainder after a ConfirmDialog, and a line shows the print name as in the preview.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.4
 
@@ -511,5 +513,6 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** invoices cannot be made on a phone.
 - **Proposal:** a secondary "Factuur" button in the `.pp-toolbar` while one klant is selected (next to "Klant verwijderen"), hidden for niet-factureren klanten.
 - **Blocked:** making an invoice on phones.
+- **Owner decision (2026-10-07):** wait for the design system; no invoice action on phones for now.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.4

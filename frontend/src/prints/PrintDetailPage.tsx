@@ -19,7 +19,6 @@ import {
   setLineExcluded,
   setLineOverride,
   setOrderOverrides,
-  setPrintSpool,
   setSalePrice,
   setTimesPrinted,
   undoPayment,
@@ -32,7 +31,6 @@ import { PaymentBadge } from '../finance/money';
 import { NabestellingDialog } from '../finance/NabestellingDialog';
 import { OrderSection } from '../finance/OrderSection';
 import { PaymentPanel } from '../finance/PaymentPanel';
-import { SpoolPicker } from '../finance/SpoolPicker';
 import { deletePrint, fetchPrint, keys, modelUrl, restorePrint, setPrintTags } from './api';
 import { RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList, type AssetControls } from './AssetList';
@@ -224,12 +222,10 @@ export function PrintDetailPage() {
       {canManage ? (
         <ManagedOrders
           detail={detail}
-          spoolmanOn={spoolmanOn}
           controlsFor={controlsFor}
           paymentFor={paymentFor}
           onAdjust={setAdjusting}
           change={change}
-          quiet={quiet}
         />
       ) : (
         <div className="pp-detail">
@@ -307,20 +303,16 @@ function ModelView({ detail }: { detail: PrintDetail }) {
 /** Admin and Editor part of the page: viewer, spool, files in no order and the orders. */
 function ManagedOrders({
   detail,
-  spoolmanOn,
   controlsFor,
   paymentFor,
   onAdjust,
   change,
-  quiet,
 }: {
   detail: PrintDetail;
-  spoolmanOn: boolean;
   controlsFor: (orderId: string | null) => AssetControls | undefined;
   paymentFor: (order: Order) => ReactNode;
   onAdjust: (orderId: string) => void;
   change: (action: () => Promise<unknown>) => Promise<void>;
-  quiet: (action: () => Promise<unknown>) => Promise<void>;
 }) {
   const [creating, setCreating] = useState(false);
   const assets = detail.assets ?? [];
@@ -342,20 +334,7 @@ function ManagedOrders({
   return (
     <>
       <ModelView detail={detail} />
-      {spoolmanOn && (
-        // ds-gap: GAP-040 (placement of "Spoel voor de hele print" with orders)
-        <section className="pp-card pp-sec pp-gap-2" aria-labelledby="spool-title">
-          <b id="spool-title" className="pp-strong">
-            {t('spool.forPrint')}
-          </b>
-          <SpoolPicker
-            value={detail.spool}
-            label={t('spool.forPrint')}
-            onChange={(spoolId) => quiet(() => setPrintSpool(detail.id, spoolId))}
-          />
-          <span className="pp-help">{t('spool.forPrintHelp')}</span>
-        </section>
-      )}
+      {/* "Spoel voor de hele print" waits for GAP-040 (owner decision: wait). */}
       {unassignedCount > 0 && (
         <>
           <div className="pp-alert info" role="status">
