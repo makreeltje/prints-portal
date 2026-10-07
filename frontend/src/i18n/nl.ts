@@ -144,6 +144,13 @@ export const nl = {
   'cost.source.estimated': 'Geschat',
   'cost.noPrinterProfile': 'Geen printerprofiel, stroomkosten zijn niet meegerekend.',
   'cost.incomplete': 'Onvolledig',
+  'cost.missingWattage': 'Geen vermogen voor {printer}.', // component copy: CostBreakdown
+  'cost.missingWattageAndPrice': 'Geen vermogen voor {printer} en geen prijs per kWh.',
+  'cost.setWattage': 'Vermogen instellen',
+  'cost.setInputs': 'Instellen',
+  'cost.askAdmin': 'Vraag een beheerder het vermogen in te stellen.',
+  'cost.missingTariff': 'Geen prijs per kWh.',
+  'menu.more': 'Meer acties', // component copy: OverflowMenu
   'cost.adjust': 'Aanpassen',
   'cost.notCounted': 'Niet meegeteld: {count} bestanden',
   'cost.adjustTitle': 'Kosten aanpassen',

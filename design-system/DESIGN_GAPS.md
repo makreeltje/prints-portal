@@ -836,7 +836,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-072 [open] The card subtitle repeats the print's own name
+## GAP-072 [resolved in v1.9] The card subtitle repeats the print's own name
 - **Type:** improvement idea
 - **Found while:** the UX review of 1.0
 - **Where needed:** PrintCard and PrintTable; `placeOf` in `frontend/src/prints/filter.ts`
@@ -847,7 +847,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-073 [open] "Kosten ontbreken" is shown twice on one print
+## GAP-073 [resolved in v1.9] "Kosten ontbreken" is shown twice on one print
 - **Type:** suspected design bug
 - **Found while:** the UX review of 1.0
 - **Where needed:** CostBreakdown and PaymentPanel on ScreenPrintDetail
@@ -858,7 +858,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-074 [open] The order block nests cards three deep and spaces them unevenly
+## GAP-074 [resolved in v1.9] The order block nests cards three deep and spaces them unevenly
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of 1.0; print 788b996b
 - **Where needed:** OrderSection, CostBreakdown, PaymentPanel on ScreenPrintDetail
@@ -869,7 +869,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-075 [open] The most destructive action is the most prominent one
+## GAP-075 [resolved in v1.9] The most destructive action is the most prominent one
 - **Type:** improvement idea
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenPrintDetail header; CustomerCard on ScreenDashboard
@@ -880,7 +880,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-076 [open] Nothing leads from a missing cost to the setting that causes it
+## GAP-076 [resolved in v1.9] Nothing leads from a missing cost to the setting that causes it
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** CostBreakdown on ScreenPrintDetail; Printers on ScreenSettings
@@ -891,7 +891,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-077 [open] The share page shows the klant the link's internal label
+## GAP-077 [resolved in v1.9] The share page shows the klant the link's internal label
 - **Type:** suspected design bug
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenSharePage header; ShareLinkRow
@@ -902,7 +902,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-078 [open] The share page never says how to pay
+## GAP-078 [resolved in v1.9] The share page never says how to pay
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenSharePage totals card; DocOverview
@@ -913,7 +913,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-079 [open] The share page shows a klant no pictures of their prints
+## GAP-079 [resolved in v1.9] The share page shows a klant no pictures of their prints
 - **Type:** improvement idea
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenSharePage line list

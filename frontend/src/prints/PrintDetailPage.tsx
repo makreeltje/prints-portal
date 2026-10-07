@@ -36,6 +36,7 @@ import { SpoolPicker } from '../finance/SpoolPicker';
 import { deletePrint, fetchPrint, keys, modelUrl, restorePrint, setPrintTags } from './api';
 import { RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList, type AssetControls } from './AssetList';
+import { OverflowMenu } from '../components/OverflowMenu';
 import { TagEditor } from './TagEditor';
 import { placeOf } from './filter';
 import { Meta } from './PrintCard';
@@ -174,17 +175,21 @@ export function PrintDetailPage() {
         <span className="pp-crumb">{placeOf(detail)}</span>
         <div className="pp-ph">
           <h1>{detail.name}</h1>
+          {/* Rare and hard to undo, so it sits in the menu (OverflowMenu 1.9). */}
           {canManage && detail.status !== 'deleted' && (
-            <button
-              type="button"
-              className="pp-btn pp-btn-danger pp-btn-sm"
-              onClick={() => {
-                setConfirmDelete(true);
-              }}
-            >
-              <Trash2 className="pp-ico" aria-hidden="true" />
-              {t('common.delete')}
-            </button>
+            <OverflowMenu
+              items={[
+                {
+                  key: 'delete',
+                  label: t('common.delete'),
+                  icon: <Trash2 className="pp-ico" aria-hidden="true" />,
+                  danger: true,
+                  run: () => {
+                    setConfirmDelete(true);
+                  },
+                },
+              ]}
+            />
           )}
         </div>
         <div className="pp-tags">
@@ -415,6 +420,7 @@ function ManagedOrders({
                     <CostBreakdown
                       cost={order.cost}
                       notBilled={detail.noBilling}
+                      printerModel={detail.printerModel}
                       manual={
                         order.overrides !== undefined &&
                         (order.overrides.pricePerKg !== null ||

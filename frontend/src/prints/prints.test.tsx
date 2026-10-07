@@ -680,7 +680,8 @@ describe('PrintDetailPage', () => {
       'DELETE /api/prints/p1': () => ({ status: 204 }),
     });
     renderDetail('Editor');
-    await userEvent.click(await screen.findByRole('button', { name: 'Verwijderen' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Meer acties' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Verwijderen' }));
     const dialog = screen.getByRole('alertdialog', { name: "Print 'Babybox locks' verwijderen?" });
     expect(dialog).toHaveAccessibleDescription(
       'Verwijderen verbergt de print, maar bewaart de financiële gegevens.',
