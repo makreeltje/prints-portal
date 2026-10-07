@@ -7,6 +7,9 @@
 # The prints folder is mounted read-only; the app never writes to it.
 # Everything the app stores (database, sessions, thumbnails, invoices) lives in
 # the named volume "data".
+#
+# Every setting below comes from .env; an empty value counts as unset, so you only
+# fill in what you use.
 
 services:
   prints-portal:
@@ -37,24 +40,28 @@ services:
       SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env (openssl rand -base64 48)}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
-      # PUBLIC_URL: https://prints.example.com
-      # RATE_LIMIT_LOGIN: '5'
+      # Public address without a path (OIDC redirects and Deel-link URLs).
+      PUBLIC_URL: ${PUBLIC_URL:-}
+      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-}
+      RATE_LIMIT_SHARE: ${RATE_LIMIT_SHARE:-}
 
       # Spoolman (optional; leave empty to hide Spoolman features)
-      # SPOOLMAN_URL: http://spoolman:7912
+      SPOOLMAN_URL: ${SPOOLMAN_URL:-}
+      SPOOLMAN_TIMEOUT_MS: ${SPOOLMAN_TIMEOUT_MS:-}
       # Electricity tariff in €/kWh, used only on the first start
-      # ELECTRICITY_TARIFF_EUR_PER_KWH: '0.25'
+      ELECTRICITY_TARIFF_EUR_PER_KWH: ${ELECTRICITY_TARIFF_EUR_PER_KWH:-}
 
-      # OIDC, e.g. Authentik (optional; local login is disabled when set; needs PUBLIC_URL)
-      # OIDC_ISSUER: https://auth.example.com/application/o/prints-portal/
-      # OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
-      # OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
-      # OIDC_ADMIN_GROUP: authentik Admins
+      # OIDC, e.g. Authentik (optional; local login is disabled when all four are set;
+      # PUBLIC_URL is then required).
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+      OIDC_ADMIN_GROUP: ${OIDC_ADMIN_GROUP:-}
 
       # Reverse proxy: only these addresses may set X-Forwarded-* headers
-      # TRUSTED_PROXIES: 172.18.0.0/16,10.0.0.5
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
       # Other origins that may call the API with cookies (rarely needed)
-      # CORS_ORIGINS: https://tools.example.com
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
 
 volumes:
   data:
