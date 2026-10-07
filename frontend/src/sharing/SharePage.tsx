@@ -64,6 +64,8 @@ export function SharePage() {
       </main>
     );
   }
+  // Without a single price the totals card is left out; no zeros (ScreenSharePage 1.6).
+  const priced = data.billed && data.lines.some((line) => line.price !== null);
   return (
     <main className="pp-share-col">
       <Head token={token} data={data} />
@@ -81,7 +83,7 @@ export function SharePage() {
             />
             {t('invoice.onlyOutstanding')}
           </label>
-          {data.lines.length === 0 ? (
+          {data.lines.length === 0 || (onlyOpen && !priced) ? (
             <p className="pp-muted pp-m0 pp-center-t pp-text-md">{t('overview.nothingOpen')}</p>
           ) : (
             <div className="pp-card pp-share-card">
@@ -92,16 +94,18 @@ export function SharePage() {
               </ul>
             </div>
           )}
-          <div className="pp-card pp-p4 pp-r-xl">
-            <dl className="pp-kv tight">
-              <dt>{t('invoice.total')}</dt>
-              <dd className="pp-num pp-fw-regular">{formatMoney(data.totals.total)}</dd>
-              <dt>{t('invoice.paid')}</dt>
-              <dd className="pp-num pp-fw-regular">{formatMoney(data.totals.paid)}</dd>
-              <dt>{t('invoice.outstanding')}</dt>
-              <dd className="pp-num pp-fw-bold">{formatMoney(data.totals.open)}</dd>
-            </dl>
-          </div>
+          {priced && (
+            <div className="pp-card pp-p4 pp-r-xl">
+              <dl className="pp-kv tight">
+                <dt>{t('invoice.total')}</dt>
+                <dd className="pp-num pp-fw-regular">{formatMoney(data.totals.total)}</dd>
+                <dt>{t('invoice.paid')}</dt>
+                <dd className="pp-num pp-fw-regular">{formatMoney(data.totals.paid)}</dd>
+                <dt>{t('invoice.outstanding')}</dt>
+                <dd className="pp-num pp-fw-bold">{formatMoney(data.totals.open)}</dd>
+              </dl>
+            </div>
+          )}
           <a
             className="pp-btn pp-btn-primary pp-share-cta"
             href={overviewUrl(token, onlyOpen)}
@@ -148,15 +152,15 @@ function Head({ token, data }: { token: string; data: ShareView }) {
   );
 }
 
-/** "Deze link verloopt over {dagen} dagen ({datum})"; tomorrow and today: GAP-051 placeholder copy. */
+/** "Deze link verloopt over {dagen} dagen ({datum})", or morgen / vandaag (ScreenSharePage 1.6). */
 function ExpiryNotice({ expiresAt }: { expiresAt: string }) {
   const days = Math.max(0, calendarDays(new Date(), expiresAt));
   const date = formatDate(expiresAt);
   const text =
     days === 0
-      ? t('overview.expiryToday', { date }) // ds-gap: GAP-051
+      ? t('share.expiresToday', { date })
       : days === 1
-        ? t('overview.expiryTomorrow', { date }) // ds-gap: GAP-051
+        ? t('share.expiresTomorrow', { date })
         : t('overview.expiryNotice', { days, date });
   return (
     <span className="pp-badge info pp-mt">

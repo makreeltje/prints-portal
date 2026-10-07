@@ -15,6 +15,7 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   destructive = false,
+  alert = false,
   onConfirm,
   onClose,
 }: {
@@ -26,6 +27,8 @@ export function ConfirmDialog({
   /** Default "Annuleren". */
   cancelLabel?: string;
   destructive?: boolean;
+  /** `role="alertdialog"` without the destructive styling (TokenReveal 1.6). */
+  alert?: boolean;
   onConfirm: () => Promise<void>;
   onClose: () => void;
 }) {
@@ -58,7 +61,7 @@ export function ConfirmDialog({
       onClose={close}
       busy={busy}
       size="sm"
-      alert={destructive}
+      alert={destructive || alert}
       describedBy={body === undefined ? undefined : bodyId}
       icon={
         destructive ? (

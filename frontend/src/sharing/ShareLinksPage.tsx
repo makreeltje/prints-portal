@@ -110,12 +110,12 @@ function groupByCustomer(links: readonly ShareLink[]): [string, ShareLink[]][] {
   return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, 'nl'));
 }
 
-/** "Over 30 dagen" or "3 dagen geleden" (0 and 1 day: GAP-051 placeholder copy). */
+/** "Over 30 dagen", "Over 1 dag", "Vandaag" or "3 dagen geleden" (ShareLinkRow 1.6). */
 function relativeDays(expiresAt: string): string {
   const days = calendarDays(new Date(), expiresAt);
-  if (days === 0) return t('date.today'); // ds-gap: GAP-051
-  if (days > 0) return days === 1 ? t('share.expiresInOne') : t('share.expiresIn', { days });
-  return days === -1 ? t('share.daysAgoOne') : t('share.daysAgo', { days: -days });
+  if (days === 0) return t('date.today');
+  if (days > 0) return days === 1 ? t('date.daysOne') : t('date.daysOther', { days });
+  return days === -1 ? t('date.agoOne') : t('date.agoOther', { days: -days });
 }
 
 const STATUS = {
@@ -337,7 +337,7 @@ function CreateDialog({
                 <option key={choice.value} value={choice.value}>
                   {choice.days === null
                     ? t('share.expiresNever')
-                    : t('share.expiresIn', { days: choice.days })}
+                    : t('date.daysOther', { days: choice.days })}
                 </option>
               ))}
             </select>
