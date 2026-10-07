@@ -84,11 +84,13 @@ export function SharePage() {
           {data.lines.length === 0 ? (
             <p className="pp-muted pp-m0 pp-center-t pp-text-md">{t('overview.nothingOpen')}</p>
           ) : (
-            <ul className="pp-card pp-share-card app-plain-list" aria-busy={view.isFetching}>
-              {data.lines.map((line) => (
-                <BilledLine key={line.id} line={line} />
-              ))}
-            </ul>
+            <div className="pp-card pp-share-card">
+              <ul className="app-plain-list" aria-busy={view.isFetching}>
+                {data.lines.map((line) => (
+                  <BilledLine key={line.id} line={line} />
+                ))}
+              </ul>
+            </div>
           )}
           <div className="pp-card pp-p4 pp-r-xl">
             <dl className="pp-kv tight">
@@ -218,18 +220,20 @@ function PlainList({ lines }: { lines: readonly PlainShareLine[] }) {
         </div>
       </div>
       <div className="pp-only-phone">
-        <ul className="pp-card pp-share-card app-plain-list">
-          {lines.map((line) => (
-            <li key={line.id} className="pp-row pp-share-line">
-              <div>
-                <b className="pp-strong pp-text-md">{line.description}</b>
-                <div className="pp-muted pp-text-sm">
-                  {line.project === null ? day(line.date) : `${line.project} · ${day(line.date)}`}
+        <div className="pp-card pp-share-card">
+          <ul className="app-plain-list">
+            {lines.map((line) => (
+              <li key={line.id} className="pp-row pp-share-line">
+                <div>
+                  <b className="pp-strong pp-text-md">{line.description}</b>
+                  <div className="pp-muted pp-text-sm">
+                    {line.project === null ? day(line.date) : `${line.project} · ${day(line.date)}`}
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </>
   );
