@@ -56,6 +56,11 @@ directly, so there is no zip to download or unpack:
 The old way (a zip pasted into the repo root) still works: point
 `sync-design-system.sh` at the unpacked folder.
 
+The whole loop is owned by the `design-system-steward` agent
+(`.claude/agents/design-system-steward.md`): it imports, checks, maps the
+changelog onto the gap log, implements, verifies in the running app and drafts
+the feedback that goes back. Ask it rather than repeating these steps by hand.
+
 ## Changelog
 
 - **1.0**: initial export: tokens, 42 components plus `bundle.css`, copy deck (component copy), contrast report, do/don't. Open gaps: GAP-001, GAP-002, GAP-003.
