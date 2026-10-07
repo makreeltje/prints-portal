@@ -61,3 +61,6 @@
 - **Do** open a calendar as `.pp-pop.pp-calpop` in a `.pp-anchor`; on phones it becomes a bottom sheet. **Don't** build a separate date widget.
 - **Don't** let a dialog footer grow beyond 440px: let it wrap, primary action on its own row.
 
+- **Do** explain a locked control with one visible `pp-help` line and `aria-describedby`. **Don't** put the reason in a tooltip only.
+- **Don't** show € 0,00 totals when nothing has a price: leave the totals out.
+

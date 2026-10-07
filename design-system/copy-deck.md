@@ -419,3 +419,21 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | date.clear | Wissen |
 | date.prev / date.next | Vorige maand / Volgende maand |
 
+## Added in 1.6
+
+| Key | Text |
+|---|---|
+| date.pick | Kies een datum |
+| share.closeUncopied | Sluiten zonder kopiëren? |
+| share.closeUncopiedBody | Je ziet deze link daarna niet meer. Je kunt hem wel intrekken en een nieuwe maken. |
+| common.back | Terug |
+| date.daysOne | Over 1 dag |
+| date.daysOther | Over {days} dagen |
+| date.agoOne | 1 dag geleden |
+| date.agoOther | {days} dagen geleden |
+| share.expiresTomorrow | Deze link verloopt morgen ({datum}) |
+| share.expiresToday | Deze link verloopt vandaag ({datum}) |
+| spool.wholePrintSkipped | Spoel gewijzigd in {n, plural, one {# bestelling} other {# bestellingen}}. {m, plural, one {# bestelling} other {# bestellingen}} overgeslagen: staat op een factuur. |
+| api.loadError | API-docs konden niet worden geladen |
+| api.loadErrorBody | De Swagger UI kon niet worden opgehaald. Probeer het opnieuw. |
+

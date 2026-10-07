@@ -11,3 +11,5 @@ CostBreakdown explains how the Totaalkosten of a print are built from Materiaal 
 **Dutch copy.** Materiaal | 2 × 87 g × € 22,50/kg | Spoolman | € 3,92 | Slot 2 · 1,65 g × € 24,00/kg | Stroom | 1,05 kWh × € 0,25/kWh | Geschat | € 0,26 | Totaalkosten | € 4,26 | Aanpassen | Niet meegeteld: 2 bestanden | Geen printerprofiel, stroomkosten ontbreken.
 
 **Inline values (1.4).** Slot rows indent through `tr.slot td:first-child` (`space-9`, 48px); no inline padding remains. Inside an order the breakdown covers that order's items only.
+
+**1.6.** (2026-10-07) **Locked order (GAP-048), confirmed.** On an order that is on a final invoice the "Aanpassen" button is not rendered (cost adjustments are locked, the server refuses them); the badge "Op factuur {nummer}" takes its place in the header, and the OrderSection shows the shared help line "Staat op een definitieve factuur en kan niet meer worden gewijzigd." The table itself stays readable and unchanged.

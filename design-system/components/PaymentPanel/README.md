@@ -17,3 +17,5 @@ PaymentPanel sets the Verkoopprijs and records payment, partial payment and writ
 **Locked by an invoice (1.5).** Finalising an invoice fixes the price: a "Voorstel uit marge" becomes the order's Verkoopprijs, and from then on the price, cost adjustments and "Aantal keer geprint" are locked ("Op factuur {nummer}"); payments and write-offs still work. A credit note (Admin) writes off the credited amount only up to what is still open; what was paid stays paid, because refunds are not tracked. The payment reference for a final invoice is its number; a Concept and a Herinnering use the klant name.
 
 **Text classes (1.5).** `pp-text-lg`, `pp-text-xl`, `pp-text-2xl` and `pp-text-3xl` exist in `bundle.css` (font size and line height from the matching tokens), so the amount renders at `text-xl` / `leading-xl`.
+
+**1.6.** (2026-10-07) **Locked state covers the whole order (GAP-048).** Besides the disabled price field, the lock also applies to "Aanpassen" (CostBreakdown), "Aantal keer geprint", "Telt niet mee in kosten" and the spool pickers (AssetListItem). The reason is one visible help line, linked with `aria-describedby`; it is never a tooltip alone.

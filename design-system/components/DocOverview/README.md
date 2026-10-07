@@ -11,3 +11,5 @@ The overview PDF ("Overzicht") is what a customer downloads from the share page:
 **Dutch copy.** Overzicht | Geldig tot | Prijs volgt | Dit is een overzicht, geen factuur.
 
 **1.5.** One line per order, Datum is the order date, Helvetica (Western European characters only). The payment reference on an Overzicht is the klant name.
+
+**1.6.** (2026-10-07) **No expiry (GAP-049), confirmed as built.** For a link without expiry (Nooit) the meta grid leaves out the "Geldig tot" row (Klant and Datum remain), as the share page leaves out its notice. **No prices yet (GAP-053).** When no line has a price the totals block is left out and the table keeps "Prijs volgt" and "—" on every line. The footer then holds only "Dit is een overzicht, geen factuur." and the page number: payment instructions (amount, IBAN, name, reference) appear only while something is open, and the reference is the klant name. One line per order; archived prints stay, written-off orders and deleted prints never appear; the header shows the logo, else the company name, else "3D Prints Portal". Helvetica only (Western European characters).
