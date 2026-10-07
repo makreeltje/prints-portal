@@ -827,25 +827,28 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 
 ## GAP-071 [open] A dark filament tint swallows the model in the thumbnail
 - **Type:** suspected design bug
-- **Found while:** the owner's walkthrough of 1.0
-- **Where needed:** Thumbnail on PrintCard; ScreenDashboard
-- **What is missing or wrong:** The thumbnail is tinted with the filament colour, which the system calls the only decoration. With a dark or saturated colour (the owner's black and purple spools) the rendered model nearly disappears into its own ground: a dark grey model on a black tint has almost no edge left.
-- **Why it matters:** The thumbnail is the only way to recognise a print at a glance, and it is exactly the dark spools where it stops working.
-- **Proposal:** Give the tint a floor, for example composite it towards `surface` beyond a lightness threshold, or draw the model with a contrasting outline or a lighter material when the tint is dark. The rule has to work in both themes and should keep the colour recognisable.
-- **Blocked:** Nothing is broken; the thumbnails are simply unreadable for dark spools.
+- **Found while:** the owner's walkthrough of 1.0; measured again against the v1.9 mechanism
+- **Where needed:** Thumbnail on PrintCard and PrintRow; `.pp-thumb.tinted` in `bundle.css`
+- **What is missing or wrong:** the thumbnail is tinted with the filament colour, and with a dark or saturated one the model nearly disappears into its own ground.
+- **Correction to an earlier note in this entry:** it previously said the `--mix` floor was not in the v1.9 export. That was wrong, and the mistake was ours: the floor does ship, as `color-mix(in srgb, var(--c1) var(--mix,100%), var(--border-strong))` on `.pp-thumb.tinted` with an inset `border-strong` ring, and the grep that looked for it missed `--mix` inside `var(--mix,100%)`. `scripts/check-design-export.mjs` now reads the export's own claims so this cannot recur.
+- **Why it is still open, measured:** the mechanism cannot reach the 3:1 target, and between 100% and 40% it makes things worse. On a black-filament thumbnail, model against ground: **100% (default) 1.21 darkest / 1.57 lightest; 80% 1.02 / 1.33; 60% 1.34 / 1.03; 40% (the proposed floor) 1.94 / 1.49; 25% 2.60 / 2.00.** The reason is that the model image holds a *range* of luminances, so a ground moving through that range collides with part of it: at 80% it matches the darkest pixels, at 60% the lightest. No single mix clears 3:1 on both ends, and the best measured value (25%) is well past the proposed 40% floor and still short.
+- **The app also cannot set it yet:** `--mix` is not in the checker's list of custom properties an app may set inline (`--tag`, `--tag-ink`, `--c1`, `--c2`). v1.9's changelog calls `--mix` a "new allowed inline data property", so the kit's `scripts/check-design-tokens.sh` needs that list extended before the app may use it. We have not changed the checker, since there is nothing to let through yet.
+- **Proposal:** the ground alone cannot carry this. Either (a) separate the model from the ground rather than lightening it — the inset ring already shipped is a start, and a stronger outline or a drop shadow on the image would not depend on the tint at all; (b) keep the ground neutral for dark filaments and show the colour as a swatch next to the name, as SpoolSwatch already does elsewhere; or (c) state a lower target for this case and say what it is, since 3:1 against a photographic preview may not be reachable at all. We would implement whichever you choose; this needs a visual decision, not a number.
+- **Blocked:** dark and saturated thumbnails stay hard to read. Everything else about the thumbnail works.
 - **Temporary placeholder approved:** no
-- **Design system version:** 1.8
+- **Design system version:** 1.9 (measured against the shipped `--mix` mechanism)
 
-## GAP-072 [resolved in v1.9] The card subtitle repeats the print's own name
+## GAP-072 [open] The card subtitle repeats the print's own name
 - **Type:** improvement idea
-- **Found while:** the UX review of 1.0
-- **Where needed:** PrintCard and PrintTable; `placeOf` in `frontend/src/prints/filter.ts`
-- **What is missing or wrong:** The subtitle is "klant / project", and the print is named after its project folder, so the line reads "Joey / Babybox locks" under the title "Babybox locks". The only new information is the klant.
-- **Why it matters:** It costs a line in every card, and on a phone it wraps, so a quarter of each card repeats the title.
-- **Proposal:** Show the klant alone when the project equals the print name, and keep "klant / project" when they differ. Please confirm, since it changes what the card's second line means.
-- **Blocked:** Nothing.
-- **Temporary placeholder approved:** no
-- **Design system version:** 1.8
+- **Found while:** the UX review of 1.0; status corrected while checking v1.9's claims
+- **Where needed:** PrintCard and PrintTable (`placeOf` in `frontend/src/prints/filter.ts`); ScreenSharePage line subtitle
+- **What is missing or wrong:** the subtitle is "klant / project", and a print is named after its project folder, so the line reads "Joey / Babybox locks" under the title "Babybox locks". The only new information is the klant. On a phone it wraps, so a quarter of each card repeats the title.
+- **Why it matters:** it costs a line in every card, on the screen with the most cards.
+- **Proposal (the design system's, v1.9):** the klant alone when the project equals the print name, and on the share page the date alone. v1.9 marks this **proposed, needs your confirmation**, and its own breaking-changes note says "a klant tile and a print have a changed second line (GAP-072, if confirmed)".
+- **Status in the app, corrected:** this entry briefly said `[resolved in v1.9]`, which was wrong twice over. A gap the export marks *proposed* is not settled, and only half of it is built: the **share page** follows the proposal (`lineSubtitle`, marked `ds-gap: GAP-072`), while the **card and list subtitle** still always reads "klant / project" (`placeOf` is unchanged). `scripts/check-design-export.mjs` now reports which gaps an export leaves unsettled, which is how this was caught.
+- **Blocked:** the card and list subtitle, until the design system confirms the rule.
+- **Temporary placeholder approved:** yes (built as the design system proposed it, pending their confirmation), lines marked `ds-gap: GAP-072` on the share page only.
+- **Design system version:** 1.9
 
 ## GAP-073 [resolved in v1.9] "Kosten ontbreken" is shown twice on one print
 - **Type:** suspected design bug
@@ -1012,11 +1015,11 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-088 [open] DocOverview still puts the internal link label on the customer's PDF
+## GAP-088 [open] Two specs still show the internal link label to the customer
 - **Type:** conflict
 - **Found while:** implementing v1.9, GAP-077
-- **Where needed:** DocOverview; `backend/src/finance/pdf.ts`, `backend/src/sharing/overview.ts`
-- **What is missing or wrong:** ScreenSharePage 1.9 resolves GAP-077 with "The link label is internal and no longer appears on the page, in the PDF title or in the tab title". DocOverview's anatomy was not changed and still reads: 'Title "Overzicht", the sub-line is the link label.' The Overzicht PDF is downloaded by the klant, so leaving the label in its sub-line defeats the gap it is meant to resolve, but the two documents now disagree and nothing says what the sub-line should hold instead.
+- **Where needed:** DocOverview and ScreenSharePage; `backend/src/finance/pdf.ts`, `backend/src/sharing/overview.ts`
+- **What is missing or wrong:** ScreenSharePage 1.9 resolves GAP-077 with "The link label is internal and no longer appears on the page, in the PDF title or in the tab title". Two anatomy paragraphs were not updated to match. DocOverview still reads: 'Title "Overzicht", the sub-line is the link label.' And **ScreenSharePage contradicts itself inside one file**: its own Anatomy still says 'Top: studio name or logo, heading "Overzicht voor {klant}", the link label and the expiry notice.' The Overzicht PDF is downloaded by the klant, so leaving the label in its sub-line defeats the gap it is meant to resolve, but the two documents now disagree and nothing says what the sub-line should hold instead.
 - **Why it matters:** this is the same privacy point as GAP-077, on the one artefact the klant keeps. Labels in this instance read "PR 8 review" and "log check".
 - **Proposal:** drop the sub-line from the Overzicht, or give it something customer-facing such as the period covered or the date of the overview. Please say which, and update DocOverview so the two specs agree.
 - **Blocked:** nothing. The label is left out of the PDF (an empty sub-line) until DocOverview says what belongs there, marked `ds-gap: GAP-088`.
