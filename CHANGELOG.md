@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-10-07
 
 ### Added
 
@@ -77,6 +77,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   print detail; the locked price on a final invoice; the uploaded logo in the sidebar, phone top
   bar and drawer (every signed-in role can read it); the payment sentence on PDFs follows the IBAN
   and what is still open.
+- Documentation (M10): README, a Dutch user guide (`docs/USAGE.md`), every setting with its
+  default (`docs/CONFIGURATION.md`), roles and sign-in (`docs/AUTH.md`), Docker, reverse proxies,
+  databases, backups and upgrades (`docs/DEPLOYMENT.md`), how it is put together
+  (`docs/ARCHITECTURE.md`) and what is protected (`docs/SECURITY.md`).
 - Frontend polish (M9): an OpenAPI document generated from the route schemas and served at
   `/api/openapi.json`, and an `/api-docs` screen that renders it with Scalar in the app's own
   theme, without its AI assistant or platform tools and without contacting anything outside the
@@ -89,6 +93,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   openstaand" and an "Overzicht" PDF; a niet-factureren klant sees the print list only. Unknown,
   expired and revoked links get the same page. `RATE_LIMIT_SHARE` (default 60 per minute) limits
   the public endpoints.
+
+### Security
+
+- Deel-link tokens and OIDC authorization codes are masked in the request log. The token is the
+  only credential a share page has, and it was written to the log in plaintext on every public
+  request, so a log file handed over access until the link expired or was revoked.
+- An unexpected failure is answered with the status alone instead of the thrown error's message,
+  which used to reach the browser. Schema validation and the deliberate 4xx bodies are unchanged.
+- Accessibility pass over every screen (WCAG 2.1 AA), which also fixed keyboard access to the
+  scrollable tables.
 
 ### Changed
 

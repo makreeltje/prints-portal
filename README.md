@@ -1,37 +1,53 @@
 # prints-portal
 
-A self-hosted portal for 3D prints: it indexes a prints folder, tracks costs, payments and invoices per klant, and shares prints with customers. Configuration, local development and Docker are described in [DEVELOPMENT.md](DEVELOPMENT.md).
+A self-hosted portal for 3D prints. Point it at the folder you already keep
+your prints in; it indexes what is there, works out what each print cost in
+filament and electricity, tracks what a klant owes, makes invoices, and gives
+each klant a read-only link to their own prints.
 
-## Sign-in with Authentik (OIDC)
+It reads your prints folder and never writes to it.
 
-Without OIDC the portal uses local accounts (`ADMIN_EMAIL` / `ADMIN_PASSWORD` create the first Admin). With all four `OIDC_*` variables set, local login turns off and everyone signs in through the identity provider. These steps use [Authentik](https://goauthentik.io); any OpenID Connect provider that sends `email` and `groups` works the same way.
+## What it does
 
-### In Authentik
+- **Indexes** a `klant/project` folder tree, reading gram and print time from
+  OrcaSlicer, Creality Print and Bambu Studio files (`.gcode`, `.3mf`), with
+  thumbnails and an STL viewer.
+- **Costs** every print from the spool you used and your electricity tariff,
+  with [Spoolman](https://github.com/Donkie/Spoolman) if you run it.
+- **Prices and payments** per order, including partial payments, write-offs
+  and a Nabestelling on an existing print.
+- **Invoices** with a per-year number, a stored PDF, credit notes, reminders,
+  and an Openstaand overview.
+- **Deel-links**: a page a klant opens without an account, showing only their
+  own prints, prices and status.
+- Dutch interface, light and dark, built for a phone as much as a desktop.
 
-1. **Provider:** create an _OAuth2/OpenID Provider_.
-   - Client type: **Confidential**.
-   - Redirect URI (strict): `https://<portal address>/api/auth/oidc/callback`. Scheme, host and port must match `PUBLIC_URL` exactly.
-   - Scopes: keep the defaults `openid`, `email` and `profile` (the portal asks for exactly these). Authentik's default `profile` mapping also sends the `groups` claim.
-   - Signing key: any key (RS256).
-2. **Application:** create one, link it to the provider and note its **slug** (for example `prints-portal`).
-3. **Admin group:** create a group (for example `prints-admins`) and add the people who should be Admin.
-4. Every user needs an **e-mail address** in Authentik; the portal identifies people by it and refuses a sign-in without one.
+## Getting started
 
-### In the portal's environment
-
-```yaml
-PUBLIC_URL: https://prints.example.com # the address people open; no path, no trailing slash
-OIDC_ISSUER: https://auth.example.com/application/o/prints-portal/ # "OpenID Configuration Issuer" on the provider page
-OIDC_CLIENT_ID: <Client ID from the provider>
-OIDC_CLIENT_SECRET: <Client Secret from the provider>
-OIDC_ADMIN_GROUP: prints-admins # exact group name
+```bash
+cp .env.example .env     # set PRINTS_ROOT, SESSION_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
+docker compose up -d
 ```
 
-- The portal does not start when only some of the four `OIDC_*` variables are set, or when `PUBLIC_URL` is missing while OIDC is on.
-- Check the issuer: `<OIDC_ISSUER>.well-known/openid-configuration` should return JSON in a browser.
-- Behind a reverse proxy, also set `TRUSTED_PROXIES` (for example `uniquelocal`), so the session cookie is marked secure over HTTPS.
+Then open the address you set as `PUBLIC_URL` and sign in with `ADMIN_EMAIL`.
 
-### Roles
+The image is published at `ghcr.io/makreeltje/prints-portal`.
 
-- Members of `OIDC_ADMIN_GROUP` become **Admin** at every sign-in. Someone removed from the group goes back to **User** at the next sign-in, unless an Admin gave them a role by hand.
-- Everyone else starts as **User** and sees only the klanten an Admin grants under **Toegang**. An Admin can make someone **Editor** under **Gebruikers**.
+## Documentation
+
+|                                           |                                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------- |
+| [USAGE.md](docs/USAGE.md)                 | Daily use, in Dutch: folders, costs, invoices, Deel-links.          |
+| [CONFIGURATION.md](docs/CONFIGURATION.md) | Every setting, its default and what it does.                        |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md)       | Docker, reverse proxies, PostgreSQL or MariaDB, backups, upgrading. |
+| [AUTH.md](docs/AUTH.md)                   | Roles, sessions, local accounts and OIDC with Authentik.            |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md)   | How it is put together and why.                                     |
+| [SECURITY.md](docs/SECURITY.md)           | What is protected, how, and what is known to be imperfect.          |
+| [DEVELOPMENT.md](DEVELOPMENT.md)          | Running it locally, tests, the checks.                              |
+| [CHANGELOG.md](CHANGELOG.md)              | What changed per version.                                           |
+
+## Requirements
+
+Docker, a folder of prints, and somewhere to run it. SQLite is the default and
+needs nothing else; PostgreSQL and MariaDB are supported for an existing
+database server.
