@@ -563,7 +563,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.4
 
-## GAP-047 [open] DatePicker: "calendar icon button" in the README, a decorative icon in the preview
+## GAP-047 [resolved in v1.6] DatePicker: "calendar icon button" in the README, a decorative icon in the preview
 - **Type:** unclear spec
 - **Found while:** implementing v1.5 (DatePicker in the invoice export dialog)
 - **Where needed:** DatePicker field (`frontend/src/components/DatePicker.tsx`), invoice export Van / Tot en met
@@ -574,7 +574,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-047`. Built from existing classes: a `pp-btn pp-btn-ghost pp-btn-icon pp-btn-sm` with the label "Kies een datum", placed with `.app-date-btn` (`right: space-1`); it opens the calendar and moves focus into the grid. A click in the field no longer opens the calendar.
 - **Design system version:** 1.5
 
-## GAP-048 [open] Locked order: no locked state for "Aantal keer geprint", Aanpassen and the slot spools
+## GAP-048 [resolved in v1.6] Locked order: no locked state for "Aantal keer geprint", Aanpassen and the slot spools
 - **Type:** missing state
 - **Found while:** implementing v1.5 (PaymentPanel "Vergrendeld"), checking the print detail of an order on a final invoice
 - **Where needed:** AssetListItem (Aantal keer geprint, "Telt niet mee in kosten", slot SpoolPickers), CostBreakdown ("Aanpassen" / CostOverrideDialog), the per-order controls in OrderSection; `frontend/src/prints/AssetList.tsx`, `frontend/src/finance/CostBreakdown.tsx`
@@ -585,7 +585,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-048`. Built: "Aantal keer geprint" as text, the toggle and slot SpoolPickers disabled, no "Aanpassen". Instead of a hover tooltip, the reason (`pay.lockedHelp`) is one visible `pp-help` line at the top of the file list, linked to each control with `aria-describedby`: disabled controls get no hover or keyboard focus, and the Tooltip spec says a tooltip must never be the only place an essential instruction lives. "Spoel voor de hele print" is unchanged.
 - **Design system version:** 1.5
 
-## GAP-049 [open] Overzicht PDF: "Geldig tot" for a link without expiry
+## GAP-049 [resolved in v1.6] Overzicht PDF: "Geldig tot" for a link without expiry
 - **Type:** unclear spec
 - **Found while:** M8, building the Overzicht PDF (DocOverview)
 - **Where needed:** DocOverview meta grid; `backend/src/sharing/` (Overzicht PDF)
@@ -596,7 +596,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07): the row is left out for a Nooit link.
 - **Design system version:** 1.5
 
-## GAP-050 [open] TokenReveal: no copy for "close without copying" confirmation
+## GAP-050 [resolved in v1.6] TokenReveal: no copy for "close without copying" confirmation
 - **Type:** missing state
 - **Found while:** M8, building TokenReveal in ScreenShareLinks
 - **Where needed:** TokenReveal (`frontend/src/sharing/TokenReveal.tsx`), ScreenShareLinks
@@ -607,7 +607,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-050`; the proposal's copy is used.
 - **Design system version:** 1.5
 
-## GAP-051 [open] Day counts: no singular or zero form for "{n} dagen"
+## GAP-051 [resolved in v1.6] Day counts: no singular or zero form for "{n} dagen"
 - **Type:** missing state
 - **Found while:** M8, ShareLinkRow and ScreenSharePage
 - **Where needed:** ShareLinkRow expiry ("Over {days} dagen", "3 dagen geleden" in the preview), ScreenSharePage expiry notice ("Deze link verloopt over {days} dagen ({datum})")
@@ -618,7 +618,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-051`; the proposal's copy is used.
 - **Design system version:** 1.5
 
-## GAP-052 [open] ShareLinkRow: columns shift on rows without Intrekken
+## GAP-052 [resolved in v1.6] ShareLinkRow: columns shift on rows without Intrekken
 - **Type:** suspected design bug
 - **Found while:** M8, comparing ScreenShareLinks at 1280px
 - **Where needed:** ShareLinkRow (`.pp-share`), ScreenShareLinks
@@ -628,3 +628,25 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing; built as specified until the design system changes it.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.5
+
+## GAP-054 [open] `.pp-lockhelp` does not wrap on phones
+- **Type:** missing state
+- **Found while:** checking v1.6 in the browser, print detail of an order on a final invoice at 360px
+- **Where needed:** `.pp-lockhelp` (AssetListItem locked state, OrderSection); `frontend/src/prints/AssetList.tsx`
+- **What is missing or wrong:** `.pp-lockhelp` is `display:flex` with `flex-wrap:nowrap` and no rule below 900px or 480px. At 360px the badge "Op factuur {nummer}" takes 159 of the 292 available pixels, leaving the help text a 93px column that wraps over four lines. Measured in the app, not guessed.
+- **Why it matters:** the sentence that explains why every control is disabled is the hardest thing to read on the screen where it matters most.
+- **Proposal:** `flex-wrap: wrap` on `.pp-lockhelp`, or `flex-direction: column; align-items: flex-start` at 480px and below, so the badge sits above the sentence and the sentence gets the full width.
+- **Blocked:** nothing; it is readable, only cramped.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.6
+
+## GAP-055 [open] CostBreakdown table is clipped on phones
+- **Type:** missing state
+- **Found while:** checking v1.6 in the browser; also present before 1.6 (reproduced on a print without an invoice)
+- **Where needed:** CostBreakdown (`.pp-cost`), ScreenPrintDetail phone layout; `frontend/src/finance/CostBreakdown.tsx`
+- **What is missing or wrong:** `.pp-cost` is `width:100%` with five columns (Post, Berekening, Bron, Bedrag) and no phone treatment. At 360px the table needs 520px inside a 292px card, so it is cut off at the card edge: the "Bedrag" column, the whole point of the breakdown, cannot be reached. The page itself does not scroll sideways, so there is no way to see it. ScreenInvoices solves the same problem by scrolling its table inside its own container, and `pp-only-wide` / `pp-only-phone` exist for swapping a table for cards, but CostBreakdown uses neither.
+- **Why it matters:** on a phone the cost breakdown shows no amounts at all.
+- **Proposal:** either wrap `.pp-cost` in a horizontally scrolling container as ScreenInvoices does, or give the phone layout a card list per row (Post, then Berekening, Bron and Bedrag beneath), reusing `pp-only-wide` / `pp-only-phone`.
+- **Blocked:** nothing; it works on desktop and tablet.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.6 (present since 1.1)

@@ -440,6 +440,8 @@ function table(doc: Doc, root: Struct, document: InvoiceDocument, width: number)
 }
 
 function totals(doc: Doc, root: Struct, document: InvoiceDocument, width: number): void {
+  // Overzicht without a single price: no zeros, so no totals block (DocOverview 1.6).
+  if (document.kind === 'overview' && document.overview?.priced === false) return;
   const rows: [string, number, boolean][] =
     document.kind === 'credit'
       ? [['Totaal', document.totalCents, true]]

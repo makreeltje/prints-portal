@@ -98,10 +98,14 @@ export function PrintDetailPage() {
   };
   const quiet = (action: () => Promise<unknown>) => change(action).catch(() => undefined);
   const spoolmanOn = canManage && spoolman.data?.configured === true;
-  const controlsFor = (orderId: string | null, locked = false): AssetControls | undefined =>
+  const controlsFor = (
+    orderId: string | null,
+    invoice: { number: string } | null = null,
+  ): AssetControls | undefined =>
     canManage
       ? {
-          locked,
+          locked: invoice !== null,
+          ...(invoice === null ? {} : { invoiceNumber: invoice.number }),
           setTimesPrinted: (line, times) =>
             quiet(() => setTimesPrinted(detail.id, line.id, times, orderId ?? undefined)),
           setExcluded: (line, excluded) =>
@@ -236,6 +240,7 @@ export function PrintDetailPage() {
           detail={detail}
           spoolmanOn={spoolmanOn}
           quiet={quiet}
+          toast={toast}
           controlsFor={controlsFor}
           paymentFor={paymentFor}
           onAdjust={setAdjusting}
@@ -319,6 +324,7 @@ function ManagedOrders({
   detail,
   spoolmanOn,
   quiet,
+  toast,
   controlsFor,
   paymentFor,
   onAdjust,
@@ -327,7 +333,11 @@ function ManagedOrders({
   detail: PrintDetail;
   spoolmanOn: boolean;
   quiet: (action: () => Promise<unknown>) => Promise<void>;
-  controlsFor: (orderId: string | null, locked?: boolean) => AssetControls | undefined;
+  toast: ReturnType<typeof useToast>;
+  controlsFor: (
+    orderId: string | null,
+    invoice?: { number: string } | null,
+  ) => AssetControls | undefined;
   paymentFor: (order: Order) => ReactNode;
   onAdjust: (orderId: string) => void;
   change: (action: () => Promise<unknown>) => Promise<void>;
@@ -361,7 +371,17 @@ function ManagedOrders({
           <SpoolPicker
             value={detail.spool}
             label={t('spool.forPrint')}
-            onChange={(spoolId) => quiet(() => setPrintSpool(detail.id, spoolId))}
+            onChange={(spoolId) =>
+              quiet(async () => {
+                const result = await setPrintSpool(detail.id, spoolId);
+                // A locked order keeps its spools; say so instead of failing silently.
+                if (result.skipped > 0) {
+                  toast.success(
+                    t('spool.wholePrintSkipped', { n: result.changed, m: result.skipped }),
+                  );
+                }
+              })
+            }
           />
           <span className="pp-help">{t('spool.forPrintHelp')}</span>
         </section>
@@ -389,10 +409,7 @@ function ManagedOrders({
               files={
                 <>
                   {files.length > 0 && (
-                    <AssetList
-                      assets={files}
-                      controls={controlsFor(order.id, order.invoice != null)}
-                    />
+                    <AssetList assets={files} controls={controlsFor(order.id, order.invoice)} />
                   )}
                   {order.cost !== undefined && (
                     <CostBreakdown
@@ -404,8 +421,9 @@ function ManagedOrders({
                           order.overrides.grams !== null ||
                           order.overrides.printSeconds !== null)
                       }
+                      // An order on a final invoice has no "Aanpassen" (CostBreakdown 1.6).
+                      invoiceNumber={order.invoice?.number ?? null}
                       onAdjust={
-                        // ds-gap: GAP-048 no Aanpassen on an order on a final invoice
                         order.invoice != null
                           ? undefined
                           : () => {

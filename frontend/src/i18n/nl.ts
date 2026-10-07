@@ -489,14 +489,12 @@ export const nl = {
   'share.customer': 'Klant', // component copy: ScreenShareLinks
   'share.label': 'Label',
   'share.expires': 'Verloopt',
-  'share.expiresIn': 'Over {days} dagen',
   'share.expiresNever': 'Nooit',
   'share.noExpiry': 'Verloopt niet',
   'share.neverHelp': 'De link blijft werken tot je hem intrekt.',
   'share.notBilledHint':
     'Deze klant wordt niet gefactureerd. De link toont alleen de printlijst, zonder bedragen.',
   'share.createdOn': 'Gemaakt', // component copy: ShareLinkRow
-  'share.daysAgo': '{days} dagen geleden', // component copy: ShareLinkRow
   'share.revoke': 'Intrekken',
   'share.active': 'Actief',
   'share.expired': 'Verlopen',
@@ -518,15 +516,19 @@ export const nl = {
   'overview.col.print': 'Print', // component copy: ScreenSharePage (not-billed table)
   'overview.col.project': 'Project', // component copy: ScreenSharePage (not-billed table)
   'overview.col.date': 'Datum', // component copy: ScreenSharePage (not-billed table)
-  // Temporary copy approved by the owner until the design system defines it.
-  'share.expiresInOne': 'Over 1 dag', // ds-gap: GAP-051
-  'share.daysAgoOne': '1 dag geleden', // ds-gap: GAP-051
-  'overview.expiryTomorrow': 'Deze link verloopt morgen ({date})', // ds-gap: GAP-051
-  'overview.expiryToday': 'Deze link verloopt vandaag ({date})', // ds-gap: GAP-051
-  'share.closeUncopied': 'Sluiten zonder kopiëren?', // ds-gap: GAP-050
+  // Added in design system 1.6
+  'date.daysOne': 'Over 1 dag',
+  'date.daysOther': 'Over {days} dagen',
+  'date.agoOne': '1 dag geleden',
+  'date.agoOther': '{days} dagen geleden',
+  'share.expiresTomorrow': 'Deze link verloopt morgen ({date})',
+  'share.expiresToday': 'Deze link verloopt vandaag ({date})',
+  'share.closeUncopied': 'Sluiten zonder kopiëren?',
   'share.closeUncopiedBody':
-    'Je ziet deze link daarna niet meer. Je kunt hem wel intrekken en een nieuwe maken.', // ds-gap: GAP-050
-  'common.back': 'Terug', // ds-gap: GAP-050
+    'Je ziet deze link daarna niet meer. Je kunt hem wel intrekken en een nieuwe maken.',
+  'common.back': 'Terug',
+  'spool.wholePrintSkipped':
+    'Spoel gewijzigd in {n, plural, one {# bestelling} other {# bestellingen}}. {m, plural, one {# bestelling} other {# bestellingen}} overgeslagen: staat op een factuur.',
 } as const;
 
 export type MessageKey = keyof typeof nl;

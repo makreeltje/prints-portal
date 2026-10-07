@@ -1,4 +1,4 @@
-import { TriangleAlert } from 'lucide-react';
+import { FileText, TriangleAlert } from 'lucide-react';
 import { useId } from 'react';
 import { formatGrams, formatMoney } from '../i18n/format';
 import { t, type MessageKey } from '../i18n/nl';
@@ -28,12 +28,15 @@ export function CostBreakdown({
   cost,
   notBilled,
   onAdjust,
+  invoiceNumber = null,
   manual,
 }: {
   cost: Cost;
   notBilled: boolean;
-  /** "Aanpassen" for Admins and Editors. */
+  /** "Aanpassen" for Admins and Editors; absent on a locked order. */
   onAdjust?: () => void;
+  /** Set when the order is on a final invoice: the badge replaces "Aanpassen" (1.6). */
+  invoiceNumber?: string | null;
   /** The order has "Handmatig" values. */
   manual: boolean;
 }) {
@@ -46,10 +49,17 @@ export function CostBreakdown({
         <h2 id={titleId} className="app-card-heading">
           <b>{notBilled ? t('cost.titleNotBilled') : t('cost.title')}</b>
         </h2>
-        {onAdjust !== undefined && (
-          <button type="button" className="pp-btn pp-btn-ghost pp-btn-sm" onClick={onAdjust}>
-            {t('cost.adjust')}
-          </button>
+        {invoiceNumber !== null ? (
+          <span className="pp-badge info">
+            <FileText className="pp-ico" aria-hidden="true" />
+            {t('status.onInvoice', { number: invoiceNumber })}
+          </span>
+        ) : (
+          onAdjust !== undefined && (
+            <button type="button" className="pp-btn pp-btn-ghost pp-btn-sm" onClick={onAdjust}>
+              {t('cost.adjust')}
+            </button>
+          )
         )}
       </div>
       {cost.missing.includes('printerProfile') && (

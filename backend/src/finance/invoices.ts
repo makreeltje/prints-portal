@@ -43,8 +43,12 @@ export interface InvoiceDocument {
   openCents: number;
   reference: string;
   company: CompanySettings;
-  /** Overzicht: the Deel-link label (sub-line) and its expiry date ("Geldig tot"); null for Nooit. */
-  overview?: { label: string; validUntil: string | null };
+  /**
+   * Overzicht: the Deel-link label (sub-line), its expiry date ("Geldig tot";
+   * null for Nooit) and whether any line has a price. Without a price the
+   * totals block is left out (DocOverview 1.6).
+   */
+  overview?: { label: string; validUntil: string | null; priced: boolean };
 }
 
 export interface InvoiceQuery {

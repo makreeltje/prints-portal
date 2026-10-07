@@ -11,7 +11,7 @@ const COPIED_MS = 2000;
  * TokenReveal: the full Deel-link URL, shown exactly once. Kopiëren turns
  * into "Gekopieerd" for two seconds; when the clipboard is unavailable the
  * URL is selected for copying by hand. Closing without copying asks first
- * (GAP-050 placeholder copy).
+ * ("Sluiten zonder kopiëren?", 1.6).
  */
 export function TokenReveal({ url, onClose }: { url: string; onClose: () => void }) {
   const id = useId();
@@ -56,7 +56,7 @@ export function TokenReveal({ url, onClose }: { url: string; onClose: () => void
 
   const requestClose = () => {
     if (everCopied) onClose();
-    else setConfirmClose(true); // ds-gap: GAP-050
+    else setConfirmClose(true);
   };
 
   const [first, ...rest] = t('share.onceWarning').split('. ');
@@ -108,10 +108,11 @@ export function TokenReveal({ url, onClose }: { url: string; onClose: () => void
       </Dialog>
       <ConfirmDialog
         open={confirmClose}
-        title={t('share.closeUncopied')} // ds-gap: GAP-050
-        body={t('share.closeUncopiedBody')} // ds-gap: GAP-050
+        alert
+        title={t('share.closeUncopied')}
+        body={t('share.closeUncopiedBody')}
         confirmLabel={t('common.close')}
-        cancelLabel={t('common.back')} // ds-gap: GAP-050
+        cancelLabel={t('common.back')}
         onConfirm={() => {
           onClose();
           return Promise.resolve();
