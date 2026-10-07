@@ -153,6 +153,16 @@ export const nl = {
   'menu.more': 'Meer acties', // component copy: OverflowMenu
   'print.preview': 'Voorbeeld', // component copy: PrintRow
   'invoices.noStatus': 'Geen status', // component copy: ScreenInvoices
+  'settings.dirty': 'Niet opgeslagen', // component copy: ScreenSettings
+  'settings.undo': 'Ongedaan maken',
+  'settings.leave.title': 'Wijzigingen niet opgeslagen',
+  'settings.leave.body':
+    'In {secties} staan wijzigingen die nog niet zijn opgeslagen. Als je nu weggaat, gaan ze verloren.',
+  'settings.leave.stay': 'Terug naar instellingen',
+  'settings.leave.go': 'Verlaten zonder opslaan',
+  'settings.printer.noPower': 'Vermogen ontbreekt',
+  'settings.printer.noPower.help':
+    'Zonder vermogen kunnen de stroomkosten van prints op deze printer niet worden berekend.',
   'shareLinks.filter.label': 'Toon', // component copy: ScreenShareLinks
   'shareLinks.filter.active': 'Actief',
   'shareLinks.filter.inactive': 'Inactief',
