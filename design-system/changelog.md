@@ -1,3 +1,66 @@
+# Changelog 1.7
+
+Resolves GAP-054 and GAP-056 to GAP-059. Version 1.6 follows below.
+
+| Gap | Result |
+|---|---|
+| GAP-056 ScreenApiDocs: Swagger UI or Scalar | **resolved: Scalar is official, Swagger UI is dropped.** Scalar 0.9.78 with `theme: "none"`; the complete variable mapping (every one of the 102 declared variables plus the three `button-1` ones) is in the ScreenApiDocs README and shipped as `.pp-scalar` in `bundle.css`; preview of the themed result in both themes; the three unused Swagger classes are removed |
+| GAP-059 Contrast report does not name the ground | **resolved:** `contrast.md` has a Ground column on every pair, a table *Translucent tokens over every ground* (7 tokens, 3 grounds, 2 themes) with the grounds each is approved over, and a rule at the top. Real alpha values are used |
+| GAP-054 `.pp-lockhelp` does not wrap | **resolved:** `flex-wrap: wrap`; column layout at 480px and below; checked at 360px |
+| GAP-057 First-run folder diagram wraps | **resolved:** `.pp-tree` is `nowrap`; it sits in `.pp-scroll` (focusable, labelled region); verified at 360px |
+| GAP-058 ScreenAccess empty state | **confirmed as built:** EmptyState "Nog geen gebruikers om toegang te geven" with link "Naar Gebruikers"; previews desktop and phone |
+
+## Decisions
+- **Scalar mapping.** Colours: GET `info`, POST `paid`, PUT `warning`, DELETE `unpaid`; text `text-strong`, `text`, `muted`; grounds `surface`, `surface-2`, `bg`. Where I changed what the app built: `--scalar-background-accent` is `primary-tint-soft` (was `primary-tint`, which fails AA over `surface-2` in the light theme); `--scalar-background-alert` and `-danger` are `warning-tint` and `unpaid-tint` (they defaulted to solid orange and red); `button-1`, `-color` and `-hover` are mapped (primary buttons, not black or white); links follow `.pp-link`; borders are 1px; Scalar's 10px text becomes `text-xs` (12px); radius, text, leading and shadow follow our scales. Structural variables (header and address-bar height, brightness, tooltip padding, text-decoration colours, font weights) keep Scalar's value.
+- **The dump list is incomplete.** The section "Still on a value of their own" of the Scalar dump leaves out `--scalar-button-1`, `--scalar-button-1-hover` and the literal heading, line-height, paragraph and size variables of the group "other". All of them are decided in the README mapping now. Regenerate the dump after a Scalar upgrade and compare.
+- **Open question (new, from the matrix):** where do badges on `surface-2` occur in the app? If they do, the light `unpaid` and `warning` tokens need a slightly darker value, or those rows use `surface` instead.
+- **Check in the app:** the callouts that use `--scalar-background-alert` and `-danger` (text colour on the tint) and the `Test request` button.
+
+## New and changed
+- **Tokens:** none added or changed.
+- **Contrast report:** new column Ground, new table of translucent tokens over `bg`, `surface` and `surface-2`; alphas are the real ones from `tokens.css` (until 1.6 rounded: .08, .14, .20; no verdict changed). Not approved (below 4.5:1; light theme unless noted): `primary` on `primary-tint` over `surface-2` (4.34); `muted` on `primary-tint` over `surface-2` (4.27); `primary` on `primary-tint-strong` over `bg` (4.26) and `surface-2` (3.98), and in dark over `surface-2` (4.05); `unpaid` on `unpaid-tint` over `surface-2` (4.29); `warning` on `warning-tint` over `surface-2` (4.32). Everything else is approved over all three grounds. **New finding, not changed in 1.7:** the last two mean a light Open or missing-data badge is below AA when it sits on a `surface-2` ground (for example a hovered table row or a table header). Fixing it needs either darker `unpaid` and `warning` text colours in the light theme (a token change) or a rule that these badges never sit on `surface-2`; please decide (see the open question below). 129 paired checks, 0 fail.
+- **New classes:** `.pp-scalar` (variable mapping), `.pp-sc`, `.pp-sc-side`, `.pp-sc-search`, `.pp-sc-grp`, `.pp-sc-main`, `.pp-sc-op`, `.pp-sc-m`, `.pp-sc-code`, `.pp-sc-note`, `.pp-sc-btn` (illustration of the themed renderer in the preview only).
+- **Changed classes:** `.pp-lockhelp` (wrap, column at 480px), `.pp-tree` (nowrap, `width: max-content; min-width: 100%`).
+- **Components and screens changed:** ScreenApiDocs (preview and README rewritten), AssetListItem, AccessMatrix, ScreenAccess, ScreenSystemStates.
+- **Copy:** `access.empty.title`, `access.empty.body`, `access.empty.link`, `api.title`, `api.noLoginField`, `api.search`, `api.testRequest`, `api.loadErrorBody` (changed text: "De documentatie kon niet worden opgehaald. Probeer het opnieuw.").
+
+## Breaking changes
+- `.pp-api-head`, `.pp-api-row` and `.pp-method` are removed from `bundle.css` (added in 1.6 for the Swagger layout; unused in the app).
+- The `ds-gap: GAP-056`, `GAP-057` and `GAP-058` markers can come out; GAP-056 can use `.pp-scalar` instead of the app's `.app-api` block.
+
+---
+
+# Changelog 1.7
+
+Resolves GAP-054 and GAP-056 to GAP-059. Version 1.6 follows below.
+
+| Gap | Result |
+|---|---|
+| GAP-056 ScreenApiDocs: Swagger UI or Scalar | **resolved: Scalar is official, Swagger UI is dropped.** Scalar 0.9.78 with `theme: "none"`; the complete variable mapping (every one of the 102 declared variables plus the three `button-1` ones) is in the ScreenApiDocs README and shipped as `.pp-scalar` in `bundle.css`; preview of the themed result in both themes; the three unused Swagger classes are removed |
+| GAP-059 Contrast report does not name the ground | **resolved:** `contrast.md` has a Ground column on every pair, a table *Translucent tokens over every ground* (7 tokens, 3 grounds, 2 themes) with the grounds each is approved over, and a rule at the top. Real alpha values are used |
+| GAP-054 `.pp-lockhelp` does not wrap | **resolved:** `flex-wrap: wrap`; column layout at 480px and below; checked at 360px |
+| GAP-057 First-run folder diagram wraps | **resolved:** `.pp-tree` is `nowrap`; it sits in `.pp-scroll` (focusable, labelled region); verified at 360px |
+| GAP-058 ScreenAccess empty state | **confirmed as built:** EmptyState "Nog geen gebruikers om toegang te geven" with link "Naar Gebruikers"; previews desktop and phone |
+
+## Decisions
+- **Scalar mapping.** Colours: GET `info`, POST `paid`, PUT `warning`, DELETE `unpaid`; text `text-strong`, `text`, `muted`; grounds `surface`, `surface-2`, `bg`. Where I changed what the app built: `--scalar-background-accent` is `primary-tint-soft` (was `primary-tint`, which fails AA over `surface-2` in the light theme); `--scalar-background-alert` and `-danger` are `warning-tint` and `unpaid-tint` (they defaulted to solid orange and red); `button-1`, `-color` and `-hover` are mapped (primary buttons, not black or white); links follow `.pp-link`; borders are 1px; Scalar's 10px text becomes `text-xs` (12px); radius, text, leading and shadow follow our scales. Structural variables (header and address-bar height, brightness, tooltip padding, text-decoration colours, font weights) keep Scalar's value.
+- **The dump list is incomplete.** The section "Still on a value of their own" of the Scalar dump leaves out `--scalar-button-1`, `--scalar-button-1-hover` and the literal heading, line-height, paragraph and size variables of the group "other". All of them are decided in the README mapping now. Regenerate the dump after a Scalar upgrade and compare.
+- **Check in the app:** the callouts that use `--scalar-background-alert` and `-danger` (text colour on the tint) and the `Test request` button.
+
+## New and changed
+- **Tokens:** none added or changed.
+- **Contrast report:** new column Ground, new table of translucent tokens over `bg`, `surface` and `surface-2`; alphas are the real ones from `tokens.css` (until 1.6 rounded: .08, .14, .20; no verdict changed). Not approved: `primary` text on `primary-tint` over light `surface-2` (4.34) and over `primary-tint-strong` over `bg` and `surface-2`, and `muted` text on `primary-tint` over light `surface-2` (4.27). 129 paired checks, 0 fail.
+- **New classes:** `.pp-scalar` (variable mapping), `.pp-sc`, `.pp-sc-side`, `.pp-sc-search`, `.pp-sc-grp`, `.pp-sc-main`, `.pp-sc-op`, `.pp-sc-m`, `.pp-sc-code`, `.pp-sc-note`, `.pp-sc-btn` (illustration of the themed renderer in the preview only).
+- **Changed classes:** `.pp-lockhelp` (wrap, column at 480px), `.pp-tree` (nowrap, `width: max-content; min-width: 100%`).
+- **Components and screens changed:** ScreenApiDocs (preview and README rewritten), AssetListItem, AccessMatrix, ScreenAccess, ScreenSystemStates.
+- **Copy:** `access.empty.title`, `access.empty.body`, `access.empty.link`, `api.title`, `api.noLoginField`, `api.search`, `api.testRequest`, `api.loadErrorBody` (changed text: "De documentatie kon niet worden opgehaald. Probeer het opnieuw.").
+
+## Breaking changes
+- `.pp-api-head`, `.pp-api-row` and `.pp-method` are removed from `bundle.css` (added in 1.6 for the Swagger layout; unused in the app).
+- The `ds-gap: GAP-056`, `GAP-057` and `GAP-058` markers can come out; GAP-056 can use `.pp-scalar` instead of the app's `.app-api` block.
+
+---
+
 # Changelog 1.6
 
 Resolves GAP-047 to GAP-053 and cleans the two milestone 9 previews (ScreenSystemStates, ScreenApiDocs). Version 1.5 follows below.

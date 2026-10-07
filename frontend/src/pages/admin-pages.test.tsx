@@ -238,7 +238,10 @@ describe('AccessPage', () => {
     expect(
       screen.getByText('Alleen Admins en Editors bestaan nu; zij zien altijd elke klant.'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Gebruikers' })).toHaveAttribute('href', '/gebruikers');
+    expect(screen.getByRole('link', { name: 'Naar Gebruikers' })).toHaveAttribute(
+      'href',
+      '/gebruikers',
+    );
     // No matrix to show, but the rule about Admins and Editors still holds.
     expect(screen.queryByRole('table')).toBeNull();
     expect(screen.getByText('Admin en Editor hebben altijd toegang.')).toBeInTheDocument();

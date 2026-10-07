@@ -437,3 +437,31 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | api.loadError | API-docs konden niet worden geladen |
 | api.loadErrorBody | De Swagger UI kon niet worden opgehaald. Probeer het opnieuw. |
 
+## Added in 1.7
+
+| Key | Text |
+|---|---|
+| access.empty.title | Nog geen gebruikers om toegang te geven |
+| access.empty.body | Alleen Admins en Editors bestaan nu; zij zien altijd elke klant. |
+| access.empty.link | Naar Gebruikers |
+| api.title | API-docs |
+| api.noLoginField | Er is geen inlogveld: de documentatie gebruikt je sessie. |
+| api.search | Zoeken |
+| api.testRequest | Test request |
+| api.loadErrorBody | De documentatie kon niet worden opgehaald. Probeer het opnieuw. |
+| firstrun.tree.label | Voorbeeld van de mappenstructuur |
+
+## Added in 1.7
+
+| Key | Text |
+|---|---|
+| access.empty.title | Nog geen gebruikers om toegang te geven |
+| access.empty.body | Alleen Admins en Editors bestaan nu; zij zien altijd elke klant. |
+| access.empty.link | Naar Gebruikers |
+| api.title | API-docs |
+| api.noLoginField | Er is geen inlogveld: de documentatie gebruikt je sessie. |
+| api.search | Zoeken |
+| api.testRequest | Test request |
+| api.loadErrorBody | De documentatie kon niet worden opgehaald. Probeer het opnieuw. |
+| firstrun.tree.label | Voorbeeld van de mappenstructuur |
+

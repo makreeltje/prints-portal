@@ -73,9 +73,9 @@ export const nl = {
   'role.User': 'User', // component copy: Avatar
 
   'access.title': 'Toegang',
-  // ds-gap: GAP-058 — ScreenAccess names the empty state but does not describe it.
-  'access.empty.title': 'Nog geen gebruikers om toegang te geven', // ds-gap: GAP-058
-  'access.empty.body': 'Alleen Admins en Editors bestaan nu; zij zien altijd elke klant.', // ds-gap: GAP-058
+  'access.empty.title': 'Nog geen gebruikers om toegang te geven',
+  'access.empty.body': 'Alleen Admins en Editors bestaan nu; zij zien altijd elke klant.',
+  'access.empty.link': 'Naar Gebruikers',
   'access.allAccessRoles': 'Admin en Editor hebben altijd toegang.',
   'access.cell': '{user}: {customer}', // component copy: AccessMatrix (checkbox label)
 
@@ -537,8 +537,8 @@ export const nl = {
   'common.back': 'Terug',
   'api.loadError': 'API-docs konden niet worden geladen',
   // The design system still says "Swagger UI"; we render the document with Scalar.
-  'api.loadErrorBody': 'De documentatie kon niet worden opgehaald. Probeer het opnieuw.', // ds-gap: GAP-056
-  'api.title': '3D Prints Portal API', // component copy: ScreenApiDocs
+  'api.loadErrorBody': 'De documentatie kon niet worden opgehaald. Probeer het opnieuw.',
+  'api.title': 'API-docs', // component copy: ScreenApiDocs
   'spool.wholePrintSkipped':
     'Spoel gewijzigd in {n, plural, one {# bestelling} other {# bestellingen}}. {m, plural, one {# bestelling} other {# bestellingen}} overgeslagen: staat op een factuur.',
 } as const;

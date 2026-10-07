@@ -629,7 +629,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.5
 
-## GAP-054 [open] `.pp-lockhelp` does not wrap on phones
+## GAP-054 [resolved in v1.7] `.pp-lockhelp` does not wrap on phones
 - **Type:** missing state
 - **Found while:** checking v1.6 in the browser, print detail of an order on a final invoice at 360px
 - **Where needed:** `.pp-lockhelp` (AssetListItem locked state, OrderSection); `frontend/src/prints/AssetList.tsx`
@@ -649,7 +649,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** not applicable
 - **Design system version:** 1.6
 
-## GAP-056 [open] ScreenApiDocs specifies Swagger UI; the owner wants Scalar
+## GAP-056 [resolved in v1.7] ScreenApiDocs specifies Swagger UI; the owner wants Scalar
 - **Type:** conflict
 - **Found while:** M9, starting ScreenApiDocs
 - **Where needed:** ScreenApiDocs (`/api-docs`), `frontend/src/pages/ApiDocsPage.tsx`
@@ -660,7 +660,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-056`: Scalar with `theme: 'none'` and its CSS variables mapped onto our tokens. The mapping uses the same marker, because the checker allows a custom property outside `tokens.css` only for an open gap.
 - **Design system version:** 1.6
 
-## GAP-057 [open] First-run folder diagram wraps instead of scrolling
+## GAP-057 [resolved in v1.7] First-run folder diagram wraps instead of scrolling
 - **Type:** suspected design bug
 - **Found while:** M9, building the first-run page from ScreenSystemStates
 - **Where needed:** `.pp-tree` with `.pp-indent-1` to `.pp-indent-4` (ScreenSystemStates first run); `frontend/src/pages/FirstRunState.tsx`
@@ -671,7 +671,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-057`: one rule in `app.css` stops the rows inside `.pp-tree` wrapping, so the card scrolls as the README describes.
 - **Design system version:** 1.6
 
-## GAP-058 [open] ScreenAccess names an empty state but does not describe it
+## GAP-058 [resolved in v1.7] ScreenAccess names an empty state but does not describe it
 - **Type:** missing state
 - **Found while:** M9, going through every screen's empty, loading and error states
 - **Where needed:** ScreenAccess / AccessMatrix; `frontend/src/pages/AccessPage.tsx`
@@ -682,7 +682,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-058`: the proposed EmptyState and its two copy keys.
 - **Design system version:** 1.6
 
-## GAP-059 [open] The contrast report does not say which ground each pair assumes
+## GAP-059 [resolved in v1.7] The contrast report does not say which ground each pair assumes
 - **Type:** improvement idea
 - **Found while:** M9, theming the `/api-docs` renderer and then auditing it with axe
 - **Where needed:** `contrast.md`, and anywhere a translucent tint is used as a background

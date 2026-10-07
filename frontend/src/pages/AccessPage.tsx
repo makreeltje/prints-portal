@@ -144,22 +144,23 @@ export function AccessPage() {
       customers.map((customer) => ({ userId: user.id, customerFolder: customer, granted })),
     );
 
-  // ds-gap: GAP-058 — nobody has the role User, so there is nothing to grant.
+  // Nobody has the role User, so there is nothing to grant (ScreenAccess 1.7:
+  // the help line stays above the AccessMatrix empty state).
   if (grantees.length === 0) {
     return (
       <>
         {title}
+        <p className="pp-help pp-m0">{t('access.allAccessRoles')}</p>
         <div className="pp-empty">
           <div className="pp-illus" aria-hidden="true">
             <Users className="pp-ico pp-ico-24" />
           </div>
           <h3>{t('access.empty.title')}</h3>
           <p>{t('access.empty.body')}</p>
-          <Link className="pp-btn pp-btn-secondary" to="/gebruikers">
-            {t('nav.users')}
+          <Link className="pp-link" to="/gebruikers">
+            {t('access.empty.link')}
           </Link>
         </div>
-        <span className="pp-help">{t('access.allAccessRoles')}</span>
       </>
     );
   }
