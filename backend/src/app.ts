@@ -21,6 +21,7 @@ import { Indexer } from './indexing/indexer.js';
 import { registerPrintRoutes } from './prints/routes.js';
 import { RealtimeHub } from './realtime/hub.js';
 import { registerLiveRoute } from './realtime/routes.js';
+import { registerShareRoutes } from './sharing/routes.js';
 import { ThumbnailService } from './thumbnails/service.js';
 
 /** Long-lived services the server also needs (watcher, startup scan, shutdown). */
@@ -102,6 +103,13 @@ export async function buildApp({
   registerPrintRoutes(app, { db, printsRoot: config.printsRoot, indexer, hub, thumbnails, now });
   registerFinanceRoutes(app, { db, indexer, hub, spoolman, now });
   registerBillingRoutes(app, { db, hub, dataDir: config.dataDir, now });
+  registerShareRoutes(app, {
+    db,
+    dataDir: config.dataDir,
+    publicUrl: config.auth.publicUrl,
+    rateLimit: config.auth.shareRateLimit,
+    now,
+  });
   registerLiveRoute(app, { config, hub, sessions });
   const { oidc, publicUrl } = config.auth;
   if (oidc !== null && publicUrl !== null) {
