@@ -418,6 +418,46 @@ describe.each(TEST_DATABASES)('invoices and Openstaand on $name', ({ url }) => {
     expect(next.json<{ number: string }>().number).toBe('2027-001');
   });
 
+  it('refuses to finalise without name and IBAN; footers follow the rules (GAP-037)', async () => {
+    await t.as(admin, {
+      method: 'PUT',
+      url: '/api/settings/company',
+      payload: { name: 'Voorbeeld 3D', iban: '', address: '', email: null, phone: null },
+    });
+    expect((await preview('Joey')) as Preview & { companyReady: boolean }).toMatchObject({
+      companyReady: false,
+    });
+    expect((await finalise('Joey')).json()).toEqual({ error: 'company_incomplete' });
+    // A concept still works, without the payment sentence.
+    const concept = await t.as(editor, { url: '/api/customers/Joey/invoice/concept.pdf' });
+    expect(concept.statusCode).toBe(200);
+    expect(pdfFlatText(concept.rawPayload)).not.toContain('overmaken naar IBAN');
+
+    await t.as(admin, {
+      method: 'PUT',
+      url: '/api/settings/company',
+      payload: {
+        name: 'Voorbeeld 3D',
+        iban: 'NL00 BANK 0000 0000 00',
+        address: '',
+        email: null,
+        phone: null,
+      },
+    });
+    // Everything paid: the invoice says so instead of asking for € 0,00.
+    await t.as(editor, { method: 'POST', url: '/api/outstanding/Joey/mark-paid' });
+    const created = await finalise('Joey');
+    expect(created.statusCode).toBe(201);
+    const pdf = await t.as(editor, {
+      url: `/api/invoices/${created.json<{ id: string }>().id}/pdf`,
+    });
+    const text = pdfFlatText(pdf.rawPayload);
+    expect(text).toContain('Deze factuur is volledig betaald.');
+    expect(text).not.toContain('overmaken');
+    // The logo is readable for every signed-in role (it replaces the name in the AppShell).
+    expect((await t.as(helper, { url: '/api/settings/logo' })).statusCode).toBe(404);
+  });
+
   it('gives concurrent finalisations distinct numbers and one invoice per order', async () => {
     const [joey, denise] = await Promise.all([finalise('Joey'), finalise('Denise')]);
     const numbers = [joey, denise].map((r) => r.json<{ number: string }>().number).sort();

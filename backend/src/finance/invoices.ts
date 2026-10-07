@@ -205,6 +205,8 @@ export async function finaliseInvoice(
 ): Promise<InvoiceTable> {
   return withNumber(db, now, options.invoiceDir, async (trx, numbering) => {
     const settings = await readSettings(trx);
+    // GAP-037: no final invoice without the name and IBAN for the payment sentence.
+    if (!companyReady(settings)) throw new FinanceError('company_incomplete');
     const draft = await draftInvoice(trx, customer, query, settings);
     if (draft.lines.length === 0) throw new FinanceError('no_lines');
     if (
@@ -441,6 +443,11 @@ async function writeOffCredited(
       .where('id', '=', line.order_id)
       .execute();
   }
+}
+
+/** Bedrijfsgegevens has what the payment sentence needs. */
+export function companyReady(settings: Settings): boolean {
+  return settings.company.name.trim() !== '' && settings.company.iban.trim() !== '';
 }
 
 /** The number the next invoice or credit note of this year would get (for the confirm dialogs). */

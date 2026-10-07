@@ -27,7 +27,8 @@ export type FinanceErrorCode =
   | 'has_payment'
   | 'written_off'
   | 'paid'
-  | 'no_cost';
+  | 'no_cost'
+  | 'company_incomplete';
 
 /** A business rule refused the change; `code` is the API's error code. */
 export class FinanceError extends Error {

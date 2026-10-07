@@ -486,12 +486,19 @@ function totals(doc: Doc, root: Struct, document: InvoiceDocument, width: number
 function footers(doc: Doc, root: Struct, document: InvoiceDocument, width: number): void {
   const range = doc.bufferedPageRange();
   const { company } = document;
+  // Footer rules (DocInvoice 1.5): the payment sentence needs a name and an
+  // IBAN; a fully paid invoice says so instead.
+  const due = document.kind === 'reminder' ? document.totalCents : document.openCents;
+  const canPay = company.name.trim() !== '' && company.iban.trim() !== '';
   const instruction =
     document.kind === 'credit'
       ? `Deze creditnota corrigeert factuur ${document.creditsNumber ?? ''}.`
-      : `Graag ${money(document.kind === 'reminder' ? document.totalCents : document.openCents)} ` +
-        `overmaken naar IBAN ${company.iban} t.n.v. ${company.name}, ` +
-        `onder vermelding van ${document.reference}.`;
+      : due <= 0 && document.kind !== 'reminder'
+        ? 'Deze factuur is volledig betaald.'
+        : canPay
+          ? `Graag ${money(due)} overmaken naar IBAN ${company.iban} t.n.v. ${company.name}, ` +
+            `onder vermelding van ${document.reference}.`
+          : '';
   const pageLabelWidth = 70;
   for (let index = 0; index < range.count; index += 1) {
     doc.switchToPage(range.start + index);

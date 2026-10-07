@@ -351,7 +351,7 @@ const ENDPOINTS: {
   {
     name: 'GET /api/settings/logo',
     request: () => ({ url: '/api/settings/logo' }),
-    allowed: ['Admin'],
+    allowed: ['User', 'Editor', 'Admin'],
   },
   {
     name: 'PUT /api/settings/logo',

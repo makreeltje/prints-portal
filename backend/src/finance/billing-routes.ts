@@ -15,6 +15,7 @@ import {
   documentPeriod,
   draftInvoice,
   finaliseInvoice,
+  companyReady,
   gramsPerOrder,
   nextInvoiceNumber,
   type InvoiceDocument,
@@ -225,6 +226,7 @@ export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDe
           excluded: draft.excluded,
           earlier: draft.earlier,
           nextNumber: await nextInvoiceNumber(db, now()),
+          companyReady: companyReady(await readSettings(db)),
         };
       } catch (error) {
         return billingError(reply, error);
@@ -526,7 +528,8 @@ export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDe
     },
   );
 
-  app.get('/api/settings/logo', { config: { auth: ADMIN } }, async (_request, reply) => {
+  // Every signed-in role: the logo replaces the studio name in the AppShell (GAP-046).
+  app.get('/api/settings/logo', async (_request, reply) => {
     const logo = await readLogo();
     if (logo === null) return reply.code(404).send({ error: 'not_found' });
     return reply
