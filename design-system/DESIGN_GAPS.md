@@ -550,3 +550,15 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing; until then the app lets the button row wrap, right-aligned.
 - **Temporary placeholder approved:** no (no new values; only existing helper classes)
 - **Design system version:** 1.4
+
+## GAP-046 [open] Uploaded logo in the AppShell brand
+- **Type:** missing state
+- **Found while:** M7, owner decision on the logo
+- **Where needed:** AppShell brand (`.pp-brand` in the sidebar, the 40px `.ini` tile in the tablet rail, `.pp-phone-top` on phones, the drawer), `frontend/src/shell/AppShell.tsx`
+- **What is missing or wrong:** the owner decided that an uploaded logo replaces the studio name in the sidebar too (the AppShell README already says "studio name (or uploaded logo)"). `bundle.css` has no rule for an image in `.pp-brand`: no maximum height or width on desktop, nothing for the 40px rail tile (logo, or keep the initial?), the phone top bar or the drawer, and no note on dark mode (a dark logo on the dark sidebar).
+- **Why it matters:** the logo cannot be placed without inventing sizes.
+- **Proposal:** `.pp-brand img` with a max height of `space-8` (or a token) and `max-width:100%`, `object-fit:contain`, left-aligned; in the rail the initial tile stays (a logo is unreadable at 40px); in the phone top bar the same image at the top bar's height; the image keeps the studio name as `alt`. For dark mode, a light surface behind the logo or a second upload (light and dark).
+- **Blocked:** the logo in the sidebar, rail, phone top bar and drawer. Documents already use it. The app will also let every signed-in role read the logo (it is Admin-only today).
+- **Owner decision (2026-10-07):** the logo replaces the name in the sidebar too.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
