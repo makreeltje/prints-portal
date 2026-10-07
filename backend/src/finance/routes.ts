@@ -163,12 +163,12 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
       try {
         const snapshot = await snapshotOf(request.body.spoolId);
         if (snapshot === 'missing') return await reply.code(400).send({ error: 'unknown_spool' });
-        await setPrintSpool(db, print.id, snapshot, iso());
+        const result = await setPrintSpool(db, print.id, snapshot, iso());
+        broadcast('print:updated', print.id, print.customer_folder);
+        return await reply.send(result);
       } catch (error) {
         return financeError(reply, error);
       }
-      broadcast('print:updated', print.id, print.customer_folder);
-      return reply.code(204).send();
     },
   );
 

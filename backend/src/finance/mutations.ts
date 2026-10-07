@@ -255,13 +255,22 @@ export async function setOrderOverrides(
   });
 }
 
-/** "Spoel voor de hele print". */
+/**
+ * "Spoel voor de hele print". Orders on a final invoice keep their spools and
+ * their cost (OrderSection 1.6); the counts let the UI name the reason.
+ */
 export async function setPrintSpool(
   db: Kysely<Database>,
   recordId: string,
   spool: SpoolSnapshot | null,
   now: string,
-): Promise<void> {
+): Promise<{ changed: number; skipped: number }> {
+  const orders = await db
+    .selectFrom('print_orders')
+    .select('invoice_id')
+    .where('print_record_id', '=', recordId)
+    .execute();
+  const skipped = orders.filter((order) => order.invoice_id !== null).length;
   await db.transaction().execute(async (trx) => {
     await trx
       .updateTable('print_records')
@@ -274,6 +283,7 @@ export async function setPrintSpool(
       .execute();
     await recalculatePrint(trx, recordId, now);
   });
+  return { changed: orders.length - skipped, skipped };
 }
 
 async function lineKey(db: Db, recordId: string, lineId: string) {

@@ -365,6 +365,17 @@ describe.each(TEST_DATABASES)('invoices and Openstaand on $name', ({ url }) => {
       const response = await t.as(editor, { method: 'PUT', ...request });
       expect(response.json()).toEqual({ error: 'locked' });
     }
+    // "Spoel voor de hele print" skips a locked order and keeps its cost (1.6).
+    const costBefore = box.orders[0]?.cost?.totalCost ?? null;
+    const spool = await t.as(editor, {
+      method: 'PUT',
+      url: `/api/prints/${box.id}/spool`,
+      payload: { spoolId: null },
+    });
+    expect(spool.statusCode).toBe(200);
+    expect(spool.json()).toEqual({ changed: 0, skipped: 1 });
+    expect((await detail('Babybox locks')).orders[0]?.cost?.totalCost).toBe(costBefore);
+
     const line = box.assets?.find((a) => a.fileName === 'lock_PLA_3h27m.gcode')?.lines.at(0);
     const times = await t.as(editor, {
       method: 'PUT',
@@ -464,6 +475,17 @@ describe.each(TEST_DATABASES)('invoices and Openstaand on $name', ({ url }) => {
     expect(numbers).toEqual(['2026-001', '2026-002']);
 
     const box = await detail('Babybox locks');
+    // "Spoel voor de hele print" skips a locked order and keeps its cost (1.6).
+    const costBefore = box.orders[0]?.cost?.totalCost ?? null;
+    const spool = await t.as(editor, {
+      method: 'PUT',
+      url: `/api/prints/${box.id}/spool`,
+      payload: { spoolId: null },
+    });
+    expect(spool.statusCode).toBe(200);
+    expect(spool.json()).toEqual({ changed: 0, skipped: 1 });
+    expect((await detail('Babybox locks')).orders[0]?.cost?.totalCost).toBe(costBefore);
+
     const line = box.assets?.find((a) => a.fileName === 'lock_PLA_3h27m.gcode')?.lines.at(0);
     await t.as(editor, {
       method: 'POST',

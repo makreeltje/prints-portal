@@ -243,6 +243,8 @@ export async function recalculatePrint(
   if (record === undefined || record.status === 'archived') return;
   const { orders } = await loadPrintCosts(db, recordId, settings);
   for (const { order, breakdown } of orders) {
+    // An order on a final invoice keeps the cost it was invoiced with (1.6).
+    if (order.invoice_id !== null) continue;
     const values = {
       material_cost_cents: centsOrNull(breakdown.materialCost),
       electricity_cost_cents: centsOrNull(breakdown.electricityCost),

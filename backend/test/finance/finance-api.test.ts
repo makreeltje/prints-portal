@@ -241,7 +241,17 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
           payload: { spoolId: 7 },
         })
       ).statusCode,
-    ).toBe(204);
+    ).toBe(200);
+    // Nothing is on a final invoice yet, so every order follows the print's spool.
+    expect(
+      (
+        await t.as(editor, {
+          method: 'PUT',
+          url: `/api/prints/${id}/spool`,
+          payload: { spoolId: 7 },
+        })
+      ).json(),
+    ).toEqual({ changed: 1, skipped: 0 });
     const box = await detail(editor, 'Babybox locks');
     expect(box.spool).toMatchObject({
       id: 7,
@@ -280,7 +290,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
           payload: { spoolId: null },
         })
       ).statusCode,
-    ).toBe(204);
+    ).toBe(200);
   });
 
   it('records sale prices, partial payments, refuses overpayment and undoes the last payment', async () => {

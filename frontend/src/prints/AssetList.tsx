@@ -25,8 +25,10 @@ export interface AssetControls {
   setExcluded: (line: Line, excluded: boolean) => Promise<void>;
   /** Slot 0: the whole file or plate. Absent when Spoolman is not configured. */
   setSpool?: (line: Line, slot: number, spoolId: number | null) => Promise<void>;
-  /** The order is on a final invoice: the controls are read-only (GAP-048 placeholder). */
+  /** The order is on a final invoice: the controls are read-only (AssetListItem 1.6). */
   locked?: boolean;
+  /** Invoice number for the "Op factuur {nummer}" badge above the list. */
+  invoiceNumber?: string;
 }
 
 const ICONS: Record<AssetType, typeof File> = {
@@ -67,8 +69,11 @@ export function AssetList({
         <span className="sub">{t('print.fileCount', { count: assets.length })}</span>
       </div>
       {controls?.locked === true && (
-        // ds-gap: GAP-048 visible reason for the read-only controls of a locked order
-        <div className="pp-p3">
+        <div className="pp-lockhelp">
+          <span className="pp-badge info">
+            <FileText className="pp-ico" aria-hidden="true" />
+            {t('status.onInvoice', { number: controls.invoiceNumber ?? '' })}
+          </span>
           <span id={lockedId} className="pp-help">
             {t('pay.lockedHelp')}
           </span>
@@ -94,7 +99,15 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: RowControls })
   const excluded = own?.excluded === true;
   return (
     <li>
-      <div className={excluded ? 'pp-asset is-excluded' : 'pp-asset'}>
+      <div
+        className={[
+          'pp-asset',
+          excluded ? 'is-excluded' : '',
+          controls?.locked === true ? 'is-locked' : '',
+        ]
+          .filter((name) => name !== '')
+          .join(' ')}
+      >
         <span className="pp-muted">
           <Icon className="pp-ico pp-ico-20" aria-hidden="true" />
         </span>
@@ -137,7 +150,15 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: RowControls })
         <ul className="app-plain-list">
           {plates.map((plate) => (
             <li key={plate.id}>
-              <div className={plate.excluded ? 'pp-asset child is-excluded' : 'pp-asset child'}>
+              <div
+                className={[
+                  'pp-asset child',
+                  plate.excluded ? 'is-excluded' : '',
+                  controls?.locked === true ? 'is-locked' : '',
+                ]
+                  .filter((name) => name !== '')
+                  .join(' ')}
+              >
                 <span className="pp-muted">
                   <Layers className="pp-ico pp-ico-20" aria-hidden="true" />
                 </span>
@@ -244,7 +265,7 @@ function Slots({ line, controls }: { line: Line; controls?: RowControls }) {
             <SpoolPicker
               value={slot.spool}
               label={t('asset.slot', { n: slot.slot })}
-              disabled={controls?.locked === true} // ds-gap: GAP-048
+              disabled={controls?.locked === true}
               describedBy={controls?.lockedHelp}
               onChange={(spoolId) => setSpool(line, slot.slot, spoolId)}
             />
@@ -263,9 +284,9 @@ function LineControls({ line, controls }: { line: Line; controls: RowControls })
     <>
       {line.inOrder &&
         (locked ? (
-          // ds-gap: GAP-048 a locked order shows the count as text
-          <span className="pp-text-sm" aria-describedby={controls.lockedHelp}>
-            {t('asset.timesPrinted')} <b className="pp-num">{line.timesPrinted}</b>
+          <span className="pp-qty-text" aria-describedby={controls.lockedHelp}>
+            <span className="pp-muted pp-text-sm">{t('asset.timesPrinted')}</span>{' '}
+            <b>{t('asset.timesPrintedShort', { count: line.timesPrinted })}</b>
           </span>
         ) : (
           <TimesPrinted line={line} onSave={controls.setTimesPrinted} />
@@ -274,7 +295,7 @@ function LineControls({ line, controls }: { line: Line; controls: RowControls })
         <SpoolPicker
           value={line.spool ?? line.slots[0]?.spool ?? null}
           label={t('asset.pickSpool')}
-          disabled={locked} // ds-gap: GAP-048
+          disabled={locked}
           describedBy={controls.lockedHelp}
           onChange={(spoolId) => setSpool(line, 0, spoolId)}
         />
@@ -284,7 +305,7 @@ function LineControls({ line, controls }: { line: Line; controls: RowControls })
           type="checkbox"
           role="switch"
           className="pp-switch"
-          disabled={locked} // ds-gap: GAP-048
+          disabled={locked}
           aria-describedby={controls.lockedHelp}
           checked={line.excluded}
           onChange={(event) => void controls.setExcluded(line, event.target.checked)}

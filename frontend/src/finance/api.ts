@@ -68,8 +68,12 @@ export const fetchSpoolmanStatus = () => api<SpoolmanStatus>('/api/spoolman/stat
 export const refreshSpoolman = () =>
   api<SpoolmanStatus>('/api/spoolman/refresh', { method: 'POST' });
 
+/** Orders on a final invoice keep their spools; the counts say how many were skipped. */
 export const setPrintSpool = (printId: string, spoolId: number | null) =>
-  api(`/api/prints/${printId}/spool`, { method: 'PUT', body: { spoolId } });
+  api<{ changed: number; skipped: number }>(`/api/prints/${printId}/spool`, {
+    method: 'PUT',
+    body: { spoolId },
+  });
 
 export const setLineOverride = (
   printId: string,
