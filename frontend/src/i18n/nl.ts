@@ -231,7 +231,7 @@ export const nl = {
   'print.weight': 'Gewicht', // component copy: PrintRow
   'print.status': 'Status', // component copy: PrintRow
   'print.files': 'Bestanden', // component copy: ScreenPrintDetail
-  'print.fileCount': '{count} bestanden', // component copy: ScreenPrintDetail preview
+  'print.fileCount': '{count, plural, one {# bestand} other {# bestanden}}', // component copy: ScreenPrintDetail, OrderSection previews
   'print.noWeightOrTime': 'geen gewicht of tijd', // component copy: ScreenPrintDetail preview
   'print.userView': 'Je ziet alleen prijs en status.', // component copy: ScreenPrintDetail
 

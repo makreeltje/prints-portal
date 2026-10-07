@@ -78,7 +78,8 @@ export function InvoiceExportDialog({
         footer={
           <>
             <div className="pp-only-wide">
-              <div className="pp-row pp-gap-2">
+              {/* The three buttons do not fit 440px (GAP-045): the row wraps, right-aligned. */}
+              <div className="pp-row pp-gap-2 pp-end">
                 {cancel}
                 {concept(false)}
                 {finalise}

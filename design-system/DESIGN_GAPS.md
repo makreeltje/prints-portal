@@ -349,7 +349,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.2.1
 
-## GAP-029 [open] Popovers and menus have no stacking level
+## GAP-029 [resolved in v1.4] Popovers and menus have no stacking level
 - **Type:** missing token
 - **Found while:** M5 with v1.3, checking the dashboard and print detail in the browser
 - **Where needed:** FilterBar "Tags" popover (ScreenDashboard), TagEditor popover above 480px (ScreenPrintDetail), later the BulkActionBar "Acties" menu and other Popovers; `frontend/src/prints/FilterBar.tsx`, `frontend/src/prints/TagEditor.tsx`
@@ -361,7 +361,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-030 [open] CustomerCard selected state; restoring a klant on phones
+## GAP-030 [resolved in v1.4] CustomerCard selected state; restoring a klant on phones
 - **Type:** missing state
 - **Found while:** M5, implementing CustomerCard and CustomerChips from v1.3
 - **Where needed:** CustomerCard (ScreenDashboard above 480px), CustomerChips toolbar (480px and below)
@@ -372,7 +372,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-031 [open] Palette colours are announced in English
+## GAP-031 [resolved in v1.4] Palette colours are announced in English
 - **Type:** improvement idea
 - **Found while:** M5, implementing the palette (`.pp-pal`) on the Tags page
 - **Where needed:** ScreenTags edit row, palette radiogroup
@@ -383,7 +383,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-032 [open] ConfirmDialog README and copy deck differ for Klant verwijderen
+## GAP-032 [resolved in v1.4] ConfirmDialog README and copy deck differ for Klant verwijderen
 - **Type:** conflict
 - **Found while:** M5, implementing the delete-klant confirmation from v1.3
 - **Where needed:** ConfirmDialog, `confirm.deleteCustomerBody`
@@ -394,7 +394,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-033 [open] Instellingen has no sections for printer profiles, tariff and material prices
+## GAP-033 [resolved in v1.4] Instellingen has no sections for printer profiles, tariff and material prices
 - **Type:** missing screen
 - **Found while:** M6 planning
 - **Where needed:** ScreenSettings (`/instellingen`), section(s) next to "Prijzen"
@@ -407,7 +407,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-034 [open] Bulk dialogs for "Spoel toewijzen" and "Prijs instellen"
+## GAP-034 [resolved in v1.4] Bulk dialogs for "Spoel toewijzen" and "Prijs instellen"
 - **Type:** missing component
 - **Found while:** M6 planning
 - **Where needed:** BulkActionBar on the dashboard
@@ -420,7 +420,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-035 [open] Screens for several orders in one print (Nabestelling)
+## GAP-035 [resolved in v1.4] Screens for several orders in one print (Nabestelling)
 - **Type:** missing screen
 - **Found while:** M6, owner decision on repeat orders
 - **Where needed:** ScreenPrintDetail, PaymentPanel, AssetListItem, PrintCard/PrintRow status, CostBreakdown, copy deck
@@ -432,7 +432,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-036 [open] M6 component previews still use inline sizes without tokens or classes
+## GAP-036 [resolved in v1.4] M6 component previews still use inline sizes without tokens or classes
 - **Type:** missing token
 - **Found while:** M6, building PaymentPanel, CostBreakdown, CostOverrideDialog and ScreenSettings
 - **Where needed:** PaymentPanel, CostBreakdown, CostOverrideDialog, ScreenSettings
@@ -527,4 +527,26 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** the calendar popover. The field itself (typing `d-m-jjjj`, shown as `5 okt 2026`) is specified and works without it.
 - **Owner decision (2026-10-07):** wait for the design system. Until then the export dialog has no Van / Tot en met: it covers every order of the klant that is not on a final invoice yet (the API keeps its period filter).
 - **Temporary placeholder approved:** no
+- **Design system version:** 1.4
+
+## GAP-044 [open] `.pp-anchor.up` pushes the phone bottom sheet off the screen
+- **Type:** suspected design bug
+- **Found while:** checking the BulkActionBar "Acties" menu at 360px
+- **Where needed:** Popover (`components/bundle.css`), BulkActionBar on phones
+- **What is missing or wrong:** at 480px and below `.pp-anchor>.pp-pop` becomes a fixed bottom sheet (`bottom:0`), but `.pp-anchor.up>.pp-pop{bottom:calc(100% + var(--space-2))}` is more specific and still applies, so the sheet sits above the top of the viewport (measured: top at -302px).
+- **Why it matters:** a popover marked `.up` (for a trigger near the bottom edge, like the sticky bulk bar) cannot be seen on phones.
+- **Proposal:** in the phone media query, also reset `.pp-anchor.up>.pp-pop` (and `.pp-anchor.end>.pp-pop`) to `top:auto;bottom:0;left:0;right:0`.
+- **Blocked:** nothing; the app leaves out `.up` where the panel only opens on phones.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
+
+## GAP-045 [open] Invoice export dialog: three footer buttons do not fit the 440px dialog
+- **Type:** suspected design bug
+- **Found while:** comparing ScreenInvoiceExport at 1280px
+- **Where needed:** ScreenInvoiceExport footer (Annuleren, Concept downloaden, Definitief maken), `frontend/src/finance/InvoiceExportDialog.tsx`
+- **What is missing or wrong:** `.pp-dialog` has `max-width:440px` and `.pp-dialog>footer` does not wrap; the three buttons plus gaps and padding need about 490px, so "Annuleren" spills out of the dialog on the left. The preview places the dialog in a 600px frame, which hides this.
+- **Why it matters:** a button outside the dialog edge, over the backdrop.
+- **Proposal:** a wider dialog variant for this screen (for example `.pp-dialog.lg`, 560px), or `flex-wrap:wrap` on `.pp-dialog>footer`.
+- **Blocked:** nothing; until then the app lets the button row wrap, right-aligned.
+- **Temporary placeholder approved:** no (no new values; only existing helper classes)
 - **Design system version:** 1.4

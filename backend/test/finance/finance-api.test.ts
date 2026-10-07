@@ -319,7 +319,14 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     // Users see the price and status only.
     const seen = await detail(helper, 'Babybox locks');
     expect(seen.orders).toEqual([
-      { id: order.id, number: 1, createdAt: order.createdAt, status: 'partial', price: 11.89 },
+      {
+        id: order.id,
+        number: 1,
+        createdAt: order.createdAt,
+        date: order.date,
+        status: 'partial',
+        price: 11.89,
+      },
     ]);
     expect(seen.money).toMatchObject({ status: 'partial', price: 11.89, cost: null });
     expect(seen.markupPercent).toBeNull();

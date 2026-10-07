@@ -60,6 +60,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the tag editor on the print detail page, the Tags page (`/tags`) to create, rename, recolour
   and delete tags, a fullscreen button on the 3D viewer, dimmed deleted and archived prints and a
   flash on list rows that change live.
+- Invoices and Openstaand (M7): Openstaand per klant with days open, "Alles als betaald",
+  per-line payment and write-off, reminder PDF (read-only for Users, their own klanten); invoice
+  export dialog with preview, concept PDF and "Definitief maken" (yearly numbers shared with
+  credit notes, stored PDF and snapshot, prices locked, "Op factuur {nummer}"); Facturen register
+  with downloads and credit notes (Admin); tagged A4 PDFs; company logo upload (PNG or SVG,
+  stored as PNG).
+- Design system v1.4: one section per order on the print detail (Nabestelling maken and
+  verwijderen, files in no order), sums over orders on cards and rows, bulk dialogs "Spoel
+  toewijzen" and "Prijs instellen" with a reason per print, Stroomtarief, Materiaalprijzen and
+  Printers in Instellingen, floating popovers, the selected klant card, deleted klant chips and
+  Dutch palette names.
 
 ### Changed
 
