@@ -668,7 +668,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** the diagram's whole job is to show which folder sits inside which; a wrapped row shows the wrong nesting on the screen a new installation starts at.
 - **Proposal:** `white-space: nowrap` on the rows inside `.pp-tree` so the card can scroll, and say which container scrolls: `.pp-scroll` (which exists and looks like a card) or `.pp-card` with an overflow of its own.
 - **Blocked:** nothing. Built with `.pp-scroll` and an app rule that stops the rows wrapping, marked `ds-gap: GAP-057`.
-- **Temporary placeholder approved:** not yet asked. The fix is built and marked `ds-gap: GAP-057` so the first-run page is not wrong on a phone; one line in `app.css`, trivially reverted if the owner would rather wait for the design system.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-057`: one rule in `app.css` stops the rows inside `.pp-tree` wrapping, so the card scrolls as the README describes.
 - **Design system version:** 1.6
 
 ## GAP-058 [open] ScreenAccess names an empty state but does not describe it
@@ -679,5 +679,5 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** Toegang is one of the first screens a new installation visits, and it currently explains nothing.
 - **Proposal:** when no account has the role User, replace the matrix with an EmptyState: title "Nog geen gebruikers om toegang te geven", the sentence "Alleen Admins en Editors bestaan nu; zij zien altijd elke klant." and a link to Gebruikers. Keep the `access.allAccessRoles` help line. Copy keys: `access.empty.title`, `access.empty.body`.
 - **Blocked:** that one state. The matrix itself, the per-row and per-column toggles and the phone cards are specified and built.
-- **Temporary placeholder approved:** no
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-058`: the proposed EmptyState and its two copy keys.
 - **Design system version:** 1.6

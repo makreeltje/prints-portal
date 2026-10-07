@@ -227,6 +227,23 @@ describe('AccessPage', () => {
     expect(layout('wide').getByText('Admin en Editor hebben altijd toegang.')).toBeInTheDocument();
   });
 
+  it('says there is nobody to grant access to when no account has the role User', async () => {
+    stubFetch({
+      'GET /api/access': () => ({
+        json: { customers: ['Denise', 'Joey'], users: [{ ...editor, customers: [] }] },
+      }),
+    });
+    renderWithAuth(<AccessPage />);
+    expect(await screen.findByText('Nog geen gebruikers om toegang te geven')).toBeInTheDocument();
+    expect(
+      screen.getByText('Alleen Admins en Editors bestaan nu; zij zien altijd elke klant.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Gebruikers' })).toHaveAttribute('href', '/gebruikers');
+    // No matrix to show, but the rule about Admins and Editors still holds.
+    expect(screen.queryByRole('table')).toBeNull();
+    expect(screen.getByText('Admin en Editor hebben altijd toegang.')).toBeInTheDocument();
+  });
+
   it('saves a cell immediately', async () => {
     const calls = stubFetch({
       'GET /api/access': () => ({ json: matrix }),

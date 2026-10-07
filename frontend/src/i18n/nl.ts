@@ -73,6 +73,9 @@ export const nl = {
   'role.User': 'User', // component copy: Avatar
 
   'access.title': 'Toegang',
+  // ds-gap: GAP-058 — ScreenAccess names the empty state but does not describe it.
+  'access.empty.title': 'Nog geen gebruikers om toegang te geven', // ds-gap: GAP-058
+  'access.empty.body': 'Alleen Admins en Editors bestaan nu; zij zien altijd elke klant.', // ds-gap: GAP-058
   'access.allAccessRoles': 'Admin en Editor hebben altijd toegang.',
   'access.cell': '{user}: {customer}', // component copy: AccessMatrix (checkbox label)
 

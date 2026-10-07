@@ -1,5 +1,6 @@
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Users } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { api } from '../api/client';
 import type { User } from '../auth/types';
 import { useToast } from '../components/toast-context';
@@ -142,6 +143,26 @@ export function AccessPage() {
     void save(
       customers.map((customer) => ({ userId: user.id, customerFolder: customer, granted })),
     );
+
+  // ds-gap: GAP-058 — nobody has the role User, so there is nothing to grant.
+  if (grantees.length === 0) {
+    return (
+      <>
+        {title}
+        <div className="pp-empty">
+          <div className="pp-illus" aria-hidden="true">
+            <Users className="pp-ico pp-ico-24" />
+          </div>
+          <h3>{t('access.empty.title')}</h3>
+          <p>{t('access.empty.body')}</p>
+          <Link className="pp-btn pp-btn-secondary" to="/gebruikers">
+            {t('nav.users')}
+          </Link>
+        </div>
+        <span className="pp-help">{t('access.allAccessRoles')}</span>
+      </>
+    );
+  }
 
   return (
     <>
