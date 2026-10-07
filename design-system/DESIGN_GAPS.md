@@ -650,3 +650,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing; it works on desktop and tablet.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.6 (present since 1.1)
+
+## GAP-056 [open] ScreenApiDocs specifies Swagger UI; the owner wants Scalar
+- **Type:** conflict
+- **Found while:** M9, starting ScreenApiDocs
+- **Where needed:** ScreenApiDocs (`/api-docs`), `frontend/src/pages/ApiDocsPage.tsx`
+- **What is missing or wrong:** the README says the card holds "the Swagger UI iframe or container" with the Swagger styles overridden by our tokens, and the preview illustrates that with `.pp-api-head`, `.pp-api-row` and `.pp-method`. The owner finds plain Swagger UI ugly and inflexible and wants the approach of github.com/connorgallopo/tracearr: the OpenAPI document rendered by **Scalar** (`@scalar/api-reference-react`), with the spec fetched by the page and the credentials preset so "Test request" works. Scalar renders its own layout, so the three `pp-api-*` classes would go unused, and the screen would no longer match its preview.
+- **Why it matters:** CLAUDE.md allows a third-party UI kit only with the owner's approval and only when it is configured to use our tokens; the design system should decide what the screen officially is before it is built twice.
+- **Proposal:** adopt Scalar with `theme: 'none'` and map its CSS variables (`--scalar-color-1/2/3`, `--scalar-color-accent`, `--scalar-background-1/2/3`, `--scalar-border-color` and the sidebar variables) onto our tokens, so no Scalar colour, font or radius survives. The page header, the card and the loading and error states stay ours, exactly as specified. Please either bless Scalar in the spec with a preview of the themed result, or keep Swagger UI and say so.
+- **Blocked:** the official look of `/api-docs`. Everything around it (header, card, loading, error, theme switch) is specified and unaffected.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-056`: Scalar with `theme: 'none'` and its CSS variables mapped onto our tokens. The mapping uses the same marker, because the checker allows a custom property outside `tokens.css` only for an open gap.
+- **Design system version:** 1.6

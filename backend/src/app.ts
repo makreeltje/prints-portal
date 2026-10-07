@@ -4,6 +4,7 @@ import fastifyCookie from '@fastify/cookie';
 import fastifyCors from '@fastify/cors';
 import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyStatic from '@fastify/static';
+import fastifySwagger from '@fastify/swagger';
 import fastifyWebsocket from '@fastify/websocket';
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
 import { registerAdminRoutes } from './auth/admin-routes.js';
@@ -16,6 +17,8 @@ import type { AppDatabase } from './db/connection.js';
 import { registerBillingRoutes } from './finance/billing-routes.js';
 import { registerFinanceRoutes } from './finance/routes.js';
 import { SpoolmanClient } from './finance/spoolman.js';
+import { openapiOptions, registerOpenapiRoute } from './docs/openapi.js';
+import { registerRouteDocs } from './docs/route-docs.js';
 import { checkHealth } from './health/health.js';
 import { Indexer } from './indexing/indexer.js';
 import { registerPrintRoutes } from './prints/routes.js';
@@ -64,6 +67,9 @@ export async function buildApp({
   await app.register(fastifyCookie, { secret: config.auth.sessionSecret });
   await app.register(fastifyRateLimit, { global: false });
   await app.register(fastifyWebsocket, { options: { maxPayload: 64 * 1024 } });
+  // Both must come before the routes: the hook adds the summaries, the plugin reads them.
+  registerRouteDocs(app);
+  await app.register(fastifySwagger, openapiOptions);
   if (corsOrigins.length > 0) {
     await app.register(fastifyCors, { origin: [...corsOrigins], credentials: true });
   }
@@ -111,6 +117,7 @@ export async function buildApp({
     now,
   });
   registerLiveRoute(app, { config, hub, sessions });
+  registerOpenapiRoute(app);
   const { oidc, publicUrl } = config.auth;
   if (oidc !== null && publicUrl !== null) {
     registerOidcRoutes(app, { db, sessions, oidc, publicUrl, now });
