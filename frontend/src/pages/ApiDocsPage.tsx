@@ -9,16 +9,16 @@ import { LoadingRows } from './ErrorState';
 /**
  * ScreenApiDocs (`/api-docs`): the page frame around the rendered OpenAPI
  * document. The document comes from the app itself, so "Test request" runs
- * against the live API with the visitor's own session (ds-gap: GAP-056, the
- * design system still describes Swagger UI here). Scalar renders with
- * `theme: 'none'`; `app.css` maps its variables onto our tokens.
+ * against the live API with the visitor's own session. Scalar renders with
+ * `theme: 'none'` and takes every colour, font, radius and shadow from the
+ * design system's own `.pp-scalar` mapping in `bundle.css`.
  */
 /**
  * The renderer is a large dependency and this page is opened rarely, so it
  * loads only when the page does.
  */
 const ApiReference = lazy(async () => {
-  // Layout only: `theme: 'none'` leaves the colours to the tokens in app.css.
+  // Layout only: `theme: 'none'` leaves every colour to `.pp-scalar`.
   await import('@scalar/api-reference-react/style.css');
   return { default: (await import('@scalar/api-reference-react')).ApiReferenceReact };
 });
@@ -52,9 +52,9 @@ export function ApiDocsPage() {
   return (
     <>
       <div className="pp-ph">
-        <h1>{t('nav.apiDocs')}</h1>
+        <h1>{t('api.title')}</h1>
       </div>
-      <div className="pp-card pp-flush app-api">
+      <div className="pp-card pp-flush pp-scalar">
         {spec.isPending ? (
           <LoadingRows rows={4} />
         ) : spec.isError ? (

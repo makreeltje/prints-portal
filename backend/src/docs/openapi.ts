@@ -26,8 +26,9 @@ export const openapiOptions = {
       title: '3D Prints Portal API',
       version: '1',
       description:
-        'De API achter het portaal. Elk verzoek gaat met de sessiecookie; ' +
-        'wijzigende verzoeken sturen de CSRF-token mee in de header `x-csrf-token`.',
+        'De API achter het portaal. Er is geen inlogveld: de documentatie ' +
+        'gebruikt je sessie. Elk verzoek gaat met de sessiecookie; wijzigende ' +
+        'verzoeken sturen de CSRF-token mee in de header `x-csrf-token`.',
     },
     tags: API_TAGS.map((tag) => ({ ...tag })),
     // No securitySchemes and no `security`: the browser sends the session cookie
