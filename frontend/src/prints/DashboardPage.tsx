@@ -21,6 +21,7 @@ import {
   restoreCustomer,
   restorePrint,
 } from './api';
+import { FirstRunState } from '../pages/FirstRunState';
 import { EmptyState } from './bits';
 import { CustomerStrip } from './CustomerStrip';
 import { FilterBar } from './FilterBar';
@@ -178,16 +179,8 @@ export function DashboardPage() {
         }
       />
     ) : (
-      <EmptyState
-        kind="noPrints"
-        action={
-          reindex === undefined ? undefined : (
-            <button type="button" className="pp-btn pp-btn-secondary" onClick={reindex}>
-              {t('empty.reindex')}
-            </button>
-          )
-        }
-      />
+      // Nothing indexed and no filter: the first-run page explains the folders.
+      <FirstRunState onReindex={reindex} />
     );
   } else {
     const cards = (

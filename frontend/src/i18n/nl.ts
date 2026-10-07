@@ -269,6 +269,11 @@ export const nl = {
   'empty.unreachable.title': 'Prints-map niet bereikbaar',
   'empty.unreachable.body': 'Controleer of de map gekoppeld is.',
   'empty.reindex': 'Opnieuw indexeren', // component copy: EmptyState
+  // First run (ScreenSystemStates): the page with the folder diagram.
+  'system.firstRunBody':
+    'Zet je bestanden in mappen per klant en project, en start daarna een index.',
+  'system.folderCustomer': 'klant',
+  'system.folderProject': 'project',
 
   'confirm.writeOff': 'Afschrijven ({amount})?',
   'confirm.writeOffBody': "De rest van '{name}' ({amount}) wordt afgeschreven.",

@@ -6,6 +6,7 @@ import { Avatar } from '../components/Avatar';
 import { t, type MessageKey } from '../i18n/nl';
 import type { ThemePreference } from '../theme/theme';
 import { useTheme } from '../theme/useTheme';
+import { OfflineBanner } from '../pages/OfflineBanner';
 import { LiveIndicator } from '../prints/LiveIndicator';
 import { useLogo } from './logo';
 import { navItemsFor, type NavItem } from './navigation';
@@ -104,6 +105,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         <main id={MAIN_ID} className="pp-main app-main" tabIndex={-1} inert={drawerOpen}>
+          <OfflineBanner />
           {children}
         </main>
 
