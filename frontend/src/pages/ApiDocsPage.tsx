@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { RotateCw, TriangleAlert } from 'lucide-react';
-import { lazy, Suspense, useMemo } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef } from 'react';
 import { api } from '../api/client';
 import { t } from '../i18n/nl';
 import { useResolvedTheme } from '../theme/useTheme';
@@ -14,6 +14,65 @@ import { LoadingRows } from './ErrorState';
  * design system's own `.pp-scalar` mapping in `bundle.css`.
  */
 /**
+ * Scalar lays its endpoint list out as a sideways-scrolling `ul` on a phone,
+ * and that list holds no focusable element of its own, so a keyboard user
+ * cannot scroll it (axe: scrollable-region-focusable). The markup is Scalar's,
+ * so we mark it after it renders, the same way our own wide tables are marked.
+ * ds-gap: GAP-060
+ */
+function useScrollableRegions(host: React.RefObject<HTMLDivElement | null>, label: string): void {
+  useEffect(() => {
+    const root = host.current;
+    if (root === null) return;
+
+    const isTabbable = (el: Element): boolean =>
+      el.matches('a[href], button:not([disabled]), input, select, textarea, [tabindex]') &&
+      (el.getAttribute('tabindex') ?? '0') !== '-1';
+
+    const mark = (): void => {
+      for (const el of root.querySelectorAll<HTMLElement>('*')) {
+        const style = getComputedStyle(el);
+        const scrolls =
+          (el.scrollWidth > el.clientWidth + 1 && /auto|scroll/.test(style.overflowX)) ||
+          (el.scrollHeight > el.clientHeight + 1 && /auto|scroll/.test(style.overflowY));
+        const needsRegion = scrolls && ![...el.querySelectorAll('*')].some(isTabbable);
+        if (needsRegion && el.dataset.ppRegion === undefined) {
+          // Only a generic element gets `region`: on a list it would replace the
+          // implicit `list` role and orphan every `li` inside it.
+          const generic = el.tagName === 'DIV' || el.tagName === 'SPAN';
+          el.dataset.ppRegion = generic ? 'region' : 'plain'; // ds-gap: GAP-060
+          el.tabIndex = 0; // ds-gap: GAP-060
+          if (generic) el.setAttribute('role', 'region'); // ds-gap: GAP-060
+          el.setAttribute('aria-label', label); // ds-gap: GAP-060
+        } else if (!needsRegion && el.dataset.ppRegion !== undefined) {
+          // A wider window: the region no longer scrolls, so drop the tab stop.
+          if (el.dataset.ppRegion === 'region') el.removeAttribute('role');
+          delete el.dataset.ppRegion;
+          el.removeAttribute('tabindex');
+          el.removeAttribute('aria-label');
+        }
+      }
+    };
+
+    let frame = 0;
+    const schedule = (): void => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(mark);
+    };
+
+    schedule();
+    const observer = new MutationObserver(schedule);
+    observer.observe(root, { childList: true, subtree: true });
+    window.addEventListener('resize', schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener('resize', schedule);
+    };
+  }, [host, label]);
+}
+
+/**
  * The renderer is a large dependency and this page is opened rarely, so it
  * loads only when the page does.
  */
@@ -25,6 +84,8 @@ const ApiReference = lazy(async () => {
 
 export function ApiDocsPage() {
   const resolved = useResolvedTheme();
+  const card = useRef<HTMLDivElement>(null);
+  useScrollableRegions(card, t('api.title'));
   const spec = useQuery({
     queryKey: ['openapi'],
     queryFn: () => api<Record<string, unknown>>('/api/openapi.json'),
@@ -54,7 +115,7 @@ export function ApiDocsPage() {
       <div className="pp-ph">
         <h1>{t('api.title')}</h1>
       </div>
-      <div className="pp-card pp-flush pp-scalar">
+      <div className="pp-card pp-flush pp-scalar" ref={card}>
         {spec.isPending ? (
           <LoadingRows rows={4} />
         ) : spec.isError ? (
