@@ -704,7 +704,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.6
 
-## GAP-060 [open] ScreenApiDocs: Scalar's endpoint list is not reachable by keyboard on a phone
+## GAP-060 [resolved in v1.8] ScreenApiDocs: Scalar's endpoint list is not reachable by keyboard on a phone
 - **Type:** suspected design bug
 - **Found while:** implementing v1.7, checking every changed screen at 360px in both themes
 - **Where needed:** ScreenApiDocs (`/api-docs`); `frontend/src/pages/ApiDocsPage.tsx`
@@ -713,4 +713,15 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** say in the README that the app makes any region Scalar leaves scrollable-but-not-focusable into a labelled region, exactly as `.pp-scroll` does: `tabindex="0"`, `role="region"` and `aria-label` from the existing key `api.title` ("API-docs"), applied after render because the markup is Scalar's. No new copy key and no new visual value; nothing changes on desktop, where the list does not scroll. If you would rather not patch a third-party DOM, the alternative is a rule that the renderer is given a wider minimum and the card scrolls instead, which needs a value.
 - **Blocked:** nothing any more; see the placeholder below.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-060`: an effect in `ApiDocsPage.tsx` gives any region Scalar leaves scrollable-but-not-focusable `tabindex="0"` and `aria-label` from the existing key `api.title`, and takes them away again when a wider window stops it scrolling. `role="region"` is set only on a generic element: on the `ul.endpoints` it would replace the implicit `list` role and orphan all 17 `li` (axe reports exactly that, so the first version of this placeholder traded one serious violation for another). Verified at 360px: the list takes focus and scrolls by keyboard, the list semantics survive, and at 1280px no attribute is left behind. No new copy key and no visual value.
+- **Design system version:** 1.7
+
+## GAP-061 [resolved in v1.8] The contrast report does not cover a translucent token over another translucent token
+- **Type:** improvement idea
+- **Found while:** verifying v1.7, answering the open question about badges on `surface-2`
+- **Where needed:** `contrast.md`, the *Translucent tokens over every ground* table; PrintCard and OutstandingGroup rows
+- **What is missing or wrong:** v1.7's new table checks each translucent token over `bg`, `surface` and `surface-2`, which is exactly the fix GAP-059 asked for. In the app one case still falls outside it: a status badge on a **hovered** row. The row hover paints `primary-tint-soft` on an ancestor, and the badge's own `unpaid-tint` or `warning-tint` then composites over *that*, so the real ground is a tint over a tint over `surface`, which is not one of the three grounds in the table.
+- **Why it matters:** nothing is broken today, and the measurements say so: on a hovered row the `warning` badge is **4.98** and the `unpaid` badge **4.97**, the same as at rest, because the hover tint is light enough not to move the composite. So this is a gap in the report's coverage rather than a bug in the tokens. It matters because the pattern "a tint inside a row that is itself tinted" is used on every list in the app, and the next token whose alpha changes could cross AA without anything in the report noticing — which is precisely the failure mode GAP-059 was logged for.
+- **Proposal:** add the two grounds the app actually produces to the table — `primary-tint-soft over surface` (row hover) and `primary-tint over surface` (selected row) — for at least the badge tokens `unpaid`, `warning`, `paid` and `info`, in both themes. Alternatively state a rule that a translucent ground is never nested inside another translucent ground, and name which of row hover or the badge tint gives way. No token change is proposed: the values measured here pass.
+- **Blocked:** nothing. The app is built and measured; this is about the report catching the case next time.
+- **Temporary placeholder approved:** no
 - **Design system version:** 1.7
