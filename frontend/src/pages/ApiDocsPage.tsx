@@ -18,7 +18,9 @@ import { LoadingRows } from './ErrorState';
  * and that list holds no focusable element of its own, so a keyboard user
  * cannot scroll it (axe: scrollable-region-focusable). The markup is Scalar's,
  * so we mark it after it renders, the same way our own wide tables are marked.
- * ds-gap: GAP-060
+ * ScreenApiDocs 1.8 makes this the rule for any screen a third-party renderer
+ * draws: the app makes a region the renderer leaves scrollable and unfocusable
+ * focusable and labelled, with `role="region"` on generic elements only.
  */
 function useScrollableRegions(host: React.RefObject<HTMLDivElement | null>, label: string): void {
   useEffect(() => {
@@ -40,10 +42,10 @@ function useScrollableRegions(host: React.RefObject<HTMLDivElement | null>, labe
           // Only a generic element gets `region`: on a list it would replace the
           // implicit `list` role and orphan every `li` inside it.
           const generic = el.tagName === 'DIV' || el.tagName === 'SPAN';
-          el.dataset.ppRegion = generic ? 'region' : 'plain'; // ds-gap: GAP-060
-          el.tabIndex = 0; // ds-gap: GAP-060
-          if (generic) el.setAttribute('role', 'region'); // ds-gap: GAP-060
-          el.setAttribute('aria-label', label); // ds-gap: GAP-060
+          el.dataset.ppRegion = generic ? 'region' : 'plain';
+          el.tabIndex = 0;
+          if (generic) el.setAttribute('role', 'region');
+          el.setAttribute('aria-label', label);
         } else if (!needsRegion && el.dataset.ppRegion !== undefined) {
           // A wider window: the region no longer scrolls, so drop the tab stop.
           if (el.dataset.ppRegion === 'region') el.removeAttribute('role');

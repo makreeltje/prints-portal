@@ -82,7 +82,8 @@ describe('AppShell sidebar', () => {
         (child) => `${child.tagName.toLowerCase()}.${child.className}`,
       ),
     ).toEqual([
-      'aside.pp-side',
+      // app-side keeps the sidebar in the viewport on a long page: ds-gap: GAP-063.
+      'aside.pp-side app-side',
       'header.pp-phone-top',
       'main.pp-main app-main',
       'nav.pp-bottomnav',

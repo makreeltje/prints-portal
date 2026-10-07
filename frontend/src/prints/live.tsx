@@ -41,7 +41,10 @@ export function LiveProvider({
     let delay = MIN_DELAY_MS;
     let stopped = false;
     let wasLive = false;
-    let announcedLoss = false;
+    // The id of the "connection lost" warning, so it can be taken back when the
+    // connection returns. Without this each loss leaves a warning that never
+    // auto-dismisses, and a long run of flaps fills the screen with them.
+    let lossToast: number | null = null;
     const flashTimers: number[] = [];
 
     const connect = () => {
@@ -55,11 +58,14 @@ export function LiveProvider({
         const data = JSON.parse(message.data) as { type: string; printId?: string };
         if (data.type === 'subscribed') {
           setStatus('live');
-          if (announcedLoss) toast.success(t('system.reconnected'));
+          if (lossToast !== null) {
+            toast.dismiss(lossToast);
+            lossToast = null;
+            toast.success(t('system.reconnected'));
+          }
           // Anything may have changed while we were away.
           if (wasLive) void queryClient.invalidateQueries({ queryKey: keys.all });
           wasLive = true;
-          announcedLoss = false;
           return;
         }
         if (data.printId === undefined) return;
@@ -81,10 +87,7 @@ export function LiveProvider({
           return;
         }
         setStatus('reconnecting');
-        if (wasLive && !announcedLoss) {
-          announcedLoss = true;
-          toast.warning(t('live.reconnecting'));
-        }
+        if (wasLive && lossToast === null) lossToast = toast.warning(t('live.reconnecting'));
         timer = window.setTimeout(connect, delay);
         delay = Math.min(delay * 2, MAX_DELAY_MS);
       };

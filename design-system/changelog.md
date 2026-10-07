@@ -1,3 +1,29 @@
+# Changelog 1.8
+
+Resolves GAP-060 and GAP-061. Version 1.7 follows below.
+
+| Gap | Result |
+|---|---|
+| GAP-060 ScreenApiDocs: Scalar's endpoint list not reachable by keyboard on a phone | **confirmed as built, and generalised.** The app makes every scrollable-but-unfocusable region of the renderer a labelled, focusable region (`tabindex="0"`, `aria-label` = `api.title`), `role="region"` on generic elements only (never on a list), removed again when it stops scrolling. Written into the ScreenApiDocs README together with a four-point rule for screens drawn by a third-party renderer. Verified by the app at 360px; I have not run Scalar myself |
+| GAP-061 Contrast report: translucent over translucent | **resolved.** `contrast.md` has a table *Translucent token inside a translucent row* (the four state tints over row hover and selected row, both themes) and a rule. The table shows that the nested composite would fall below AA in several light pairs (for example `unpaid` 4.10 on a selected row, 4.44 on a hovered row; `paid` 4.41 and `info` 4.33 on a selected row; dark `unpaid` 4.12 on a selected row), so badges now carry an opaque `surface` base: their ground is `surface` in every row state |
+
+## Decisions
+- **Badges on tinted rows (your choice):** the tint sits on an opaque `surface` base, so a badge on a hovered, selected or `surface-2` row is a slightly lighter pill and always measures like a badge on `surface` (4.93 to 5.33 light). This also settles the open v1.7 finding about light `unpaid` and `warning` badges over `surface-2` (4.29 and 4.32) without a token change.
+- **Your app measurement and mine differ.** You measured 4.98 and 4.97 on a hovered row, because in the app the hover tint does not lie under the badge. The design system's own selected table row (`.pp-table tr.is-selected td`, `primary-tint`) does put the tint under a badge, and your measurement did not cover a selected row. The opaque base makes the result independent of that structure.
+- **Region name:** `api.title` stays as the accessible name; `api.endpoints` ("Lijst met endpoints") is an optional improvement, not added.
+
+## New and changed
+- **Tokens:** none added or changed.
+- **Changed classes:** `.pp-badge.paid/.unpaid/.warning/.info`, `.pp-hint` and the hint inside `.pp-money` (background is the tint over an opaque `surface` base; look: only on tinted grounds).
+- **Contrast report:** new nested table and rule. 129 paired checks, 0 fail.
+- **Components changed:** StatusBadge (preview with a selected row, README), ScreenApiDocs (README: GAP-060 and the third-party renderer rule).
+- **Copy:** none (optional `api.endpoints`).
+
+## Breaking changes
+- None. Visible change: badges on a hovered, selected or `surface-2` row are a slightly lighter pill than before.
+
+---
+
 # Changelog 1.7
 
 Resolves GAP-054 and GAP-056 to GAP-059. Version 1.6 follows below.

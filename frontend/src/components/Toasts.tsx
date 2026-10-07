@@ -57,9 +57,11 @@ export function ToastProvider({
       warning: (title) => {
         const id = nextId.current++;
         setToasts((current) => [...current, { id, tone: 'warning', title }]);
+        return id;
       },
+      dismiss,
     }),
-    [schedule],
+    [schedule, dismiss],
   );
 
   return (
