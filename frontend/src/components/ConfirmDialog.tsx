@@ -13,6 +13,7 @@ export function ConfirmDialog({
   title,
   body,
   confirmLabel,
+  cancelLabel,
   destructive = false,
   onConfirm,
   onClose,
@@ -22,6 +23,8 @@ export function ConfirmDialog({
   /** The consequence sentence; omitted where the design system has no copy yet. */
   body?: string;
   confirmLabel: string;
+  /** Default "Annuleren". */
+  cancelLabel?: string;
   destructive?: boolean;
   onConfirm: () => Promise<void>;
   onClose: () => void;
@@ -74,7 +77,7 @@ export function ConfirmDialog({
             // Initial focus on the safe choice.
             data-autofocus
           >
-            {t('common.cancel')}
+            {cancelLabel ?? t('common.cancel')}
           </button>
           <button
             type="button"

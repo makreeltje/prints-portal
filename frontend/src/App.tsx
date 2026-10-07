@@ -20,6 +20,8 @@ import { PrintDetailPage } from './prints/PrintDetailPage';
 import { InvoicesPage } from './finance/InvoicesPage';
 import { OutstandingPage } from './finance/OutstandingPage';
 import { TagsPage } from './prints/TagsPage';
+import { SharePage } from './sharing/SharePage';
+import { ShareLinksPage } from './sharing/ShareLinksPage';
 import { AppShell } from './shell/AppShell';
 import { canSee, NAV_ITEMS } from './shell/navigation';
 
@@ -54,6 +56,12 @@ const pages = (methods: AuthMethods): Partial<Record<string, ReactNode>> => ({
     <>
       <DocumentTitle title="nav.tags" />
       <TagsPage />
+    </>
+  ),
+  '/deel-links': (
+    <>
+      <DocumentTitle title="nav.shareLinks" />
+      <ShareLinksPage />
     </>
   ),
   '/toegang': (
@@ -127,13 +135,22 @@ const queryClient = new QueryClient({
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ToastProvider dismissLabel={t('common.close')}>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </ToastProvider>
-      </AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* The share page is public: no session, no AppShell, the visitor's own theme. */}
+          <Route path="/share/:token" element={<SharePage />} />
+          <Route
+            path="*"
+            element={
+              <AuthProvider>
+                <ToastProvider dismissLabel={t('common.close')}>
+                  <AppRoutes />
+                </ToastProvider>
+              </AuthProvider>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
