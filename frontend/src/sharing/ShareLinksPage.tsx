@@ -1,11 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ban, ChevronDown, CircleCheck, Clock, Link as LinkIcon, Plus } from 'lucide-react';
 import { useId, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Dialog } from '../components/Dialog';
 import { FieldError, GenericError } from '../components/FieldError';
 import { formatDate } from '../i18n/format';
-import { t } from '../i18n/nl';
+import { t, type MessageKey } from '../i18n/nl';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
 import { fetchCustomers, keys } from '../prints/api';
 import { calendarDays } from './days';
@@ -27,6 +28,10 @@ import { TokenReveal } from './TokenReveal';
  */
 export function ShareLinksPage() {
   const links = useQuery({ queryKey: shareKeys.links, queryFn: fetchShareLinks });
+  const [params, setParams] = useSearchParams();
+  const show = ((value) => (value === 'inactive' || value === 'all' ? value : 'active'))(
+    params.get('toon'),
+  );
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState<CreatedShareLink | null>(null);
 
@@ -42,14 +47,43 @@ export function ShareLinksPage() {
       {t('share.create')}
     </button>
   );
-  const groups = groupByCustomer(links.data?.links ?? []);
+  const all = links.data?.links ?? [];
+  const counts = {
+    active: all.filter((link) => link.status === 'active').length,
+    inactive: all.filter((link) => link.status !== 'active').length,
+    all: all.length,
+  };
+  const shown =
+    show === 'all' ? all : all.filter((link) => (show === 'active') === (link.status === 'active'));
+  const groups = groupByCustomer(shown);
 
   return (
     <>
       <div className="pp-ph">
         <h1>{t('nav.shareLinks')}</h1>
-        {groups.length > 0 && createButton}
+        {all.length > 0 && createButton}
       </div>
+      {all.length > 0 && (
+        <div className="pp-row pp-gap-2 pp-items-center">
+          <span className="pp-muted pp-text-sm">{t('shareLinks.filter.label')}</span>
+          <div className="pp-seg" role="group" aria-label={t('shareLinks.filter.label')}>
+            {(['active', 'inactive', 'all'] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={show === value}
+                onClick={() => {
+                  setParams(value === 'active' ? {} : { toon: value }, { replace: true });
+                }}
+              >
+                {t(`shareLinks.filter.${value}` as MessageKey)}{' '}
+                <span className="n">{counts[value]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <p className="pp-muted pp-text-sm pp-m0">{t('shareLinks.once')}</p>
       {links.isPending ? (
         <LoadingRows rows={3} />
       ) : links.isError ? (
@@ -59,7 +93,8 @@ export function ShareLinksPage() {
           <div className="pp-illus">
             <LinkIcon className="pp-ico pp-ico-24" aria-hidden="true" />
           </div>
-          <h3>{t('share.empty')}</h3>
+          <h3>{all.length === 0 ? t('share.empty') : t('shareLinks.emptyActive.title')}</h3>
+          {all.length > 0 && <p>{t('shareLinks.emptyActive.body')}</p>}
           {createButton}
         </div>
       ) : (
@@ -79,6 +114,7 @@ export function ShareLinksPage() {
       )}
       {creating && (
         <CreateDialog
+          existing={all}
           onCreated={(result) => {
             setCreating(false);
             setCreated(result);
@@ -203,9 +239,12 @@ const DEFAULT_EXPIRY = { value: '30', days: 30 } as const;
 function CreateDialog({
   onCreated,
   onClose,
+  existing,
 }: {
   onCreated: (created: CreatedShareLink) => void;
   onClose: () => void;
+  /** Active links, to warn about a label this klant already uses (GAP-081). */
+  existing: ShareLink[];
 }) {
   const id = useId();
   const queryClient = useQueryClient();
@@ -218,6 +257,17 @@ function CreateDialog({
   const [label, setLabel] = useState('');
   const [expiry, setExpiry] = useState('30');
   const [labelError, setLabelError] = useState(false);
+  // Non-blocking: the same label on an active link of this klant is confusing,
+  // not wrong, so it warns and still allows the link (ScreenShareLinks 1.9).
+  const duplicate =
+    customer !== null &&
+    label.trim() !== '' &&
+    existing.some(
+      (link) =>
+        link.status === 'active' &&
+        link.customer === customer &&
+        link.label.trim().toLocaleLowerCase('nl') === label.trim().toLocaleLowerCase('nl'),
+    );
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const chosen = customer ?? choices[0]?.folder ?? '';
@@ -319,7 +369,14 @@ function CreateDialog({
               setLabelError(false);
             }}
           />
+          {/* The label is a note to self; the klant never sees it (GAP-077). */}
+          <span className="pp-help">{t('shareLinks.label.help')}</span>
           {labelError && <FieldError id={`${id}-label-err`}>{t('error.required')}</FieldError>}
+          {duplicate && (
+            <span className="pp-help" role="status">
+              {t('shareLinks.dup.warning', { klant: customer })}
+            </span>
+          )}
         </div>
         <div className="pp-field">
           <label htmlFor={`${id}-expiry`}>{t('share.expires')}</label>

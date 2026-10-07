@@ -153,6 +153,16 @@ export const nl = {
   'menu.more': 'Meer acties', // component copy: OverflowMenu
   'print.preview': 'Voorbeeld', // component copy: PrintRow
   'invoices.noStatus': 'Geen status', // component copy: ScreenInvoices
+  'shareLinks.filter.label': 'Toon', // component copy: ScreenShareLinks
+  'shareLinks.filter.active': 'Actief',
+  'shareLinks.filter.inactive': 'Inactief',
+  'shareLinks.filter.all': 'Alle',
+  'shareLinks.emptyActive.title': 'Geen actieve Deel-links',
+  'shareLinks.emptyActive.body': 'Alle links zijn verlopen of ingetrokken. Maak een nieuwe link.',
+  'shareLinks.dup.warning':
+    'Je hebt voor {klant} al een link met dit label. Je kunt hem toch maken.',
+  'shareLinks.once':
+    'De volledige link zie je alleen bij het maken. Kwijt? Maak een nieuwe link en trek de oude in.',
   'outstanding.showAll': 'Toon alle {n} regels', // component copy: OutstandingGroup
   'outstanding.groupLabel': '{customer}, {count} prints, oudste {days} dagen, {amount}',
   'strip.overview': 'Overzicht', // component copy: CustomerChips

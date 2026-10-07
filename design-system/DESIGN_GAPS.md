@@ -935,7 +935,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-081 [open] Deel-links cannot be filtered, and duplicate labels pass silently
+## GAP-081 [resolved in v1.9] Deel-links cannot be filtered, and duplicate labels pass silently
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenShareLinks / ShareLinkRow

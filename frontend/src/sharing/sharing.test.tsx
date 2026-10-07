@@ -64,10 +64,17 @@ describe('ShareLinksPage', () => {
   it('groups the links per klant with their expiry and status', async () => {
     stubFetch({ 'GET /api/share-links': () => ({ json: { links } }) });
     renderWithAuth(<ShareLinksPage />, { state: signedIn('Admin') });
-    const joey = await screen.findByRole('region', { name: 'Joey' });
+    await screen.findByRole('region', { name: 'Joey' });
+    // ScreenShareLinks 1.9: the page opens on Actief, so a klant whose links
+    // are all dead is not listed until "Alle".
+    expect(
+      screen.getAllByRole('region').map((region) => region.getAttribute('aria-label')),
+    ).toEqual(['Bas', 'Joey']);
+    await userEvent.click(screen.getByRole('button', { name: /^Alle/ }));
     expect(
       screen.getAllByRole('region').map((region) => region.getAttribute('aria-label')),
     ).toEqual(['Bas', 'Denise', 'Joey']);
+    const joey = screen.getByRole('region', { name: 'Joey' });
     const rows = within(joey).getAllByRole('listitem');
     expect(within(rows[0] as HTMLElement).getByText('Over 30 dagen')).toBeInTheDocument();
     expect(within(joey).queryByText('Over 1 dagen')).toBeNull();
