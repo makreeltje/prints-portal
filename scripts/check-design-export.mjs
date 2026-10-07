@@ -64,7 +64,8 @@ for (const name of [...claimedClasses].sort()) {
 const claimedKeys = new Set();
 for (const line of section.split('\n')) {
   if (!/^- \*\*Copy/i.test(line)) continue;
-  for (const [, key] of line.matchAll(/`([a-z][a-zA-Z0-9]*(?:\.[a-zA-Z0-9]+)+)`/g)) claimedKeys.add(key);
+  for (const [, key] of line.matchAll(/`([a-z][a-zA-Z0-9]*(?:\.[a-zA-Z0-9]+)+)`/g))
+    claimedKeys.add(key);
 }
 for (const key of [...claimedKeys].sort()) {
   if (!copyDeck.includes(`| ${key} |`)) {
@@ -118,7 +119,10 @@ for (const [, id, , resultRaw] of rows) {
   // A gap the design system has not actually closed: it needs something back.
   // "confirmed as built" and "(your decision)" are settled, not pending.
   const settled = /confirmed as built|your decision/i.test(result);
-  if (!settled && /\bproposed\b|needs your|awaiting|to be measured|needs confirmation/i.test(result)) {
+  if (
+    !settled &&
+    /\bproposed\b|needs your|awaiting|to be measured|needs confirmation/i.test(result)
+  ) {
     waiting.push(`${id}: ${result.replace(/\s+/g, ' ').slice(0, 96)}`);
   }
 }
@@ -126,9 +130,11 @@ if (rows.length === 0) problem('the changelog section has no gap table');
 
 // --- Report -----------------------------------------------------------------
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-console.log(`design system ${version}: ${plural(rows.length, 'gap', 'gaps')} in the changelog, ` +
-  `${plural(claimedClasses.size, 'class', 'classes')} and ` +
-  `${plural(claimedKeys.size, 'copy key', 'copy keys')} claimed`);
+console.log(
+  `design system ${version}: ${plural(rows.length, 'gap', 'gaps')} in the changelog, ` +
+    `${plural(claimedClasses.size, 'class', 'classes')} and ` +
+    `${plural(claimedKeys.size, 'copy key', 'copy keys')} claimed`,
+);
 
 if (waiting.length > 0) {
   console.log(`\nNot settled by this export; do not treat as delivered:`);
