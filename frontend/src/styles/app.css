@@ -334,3 +334,29 @@
   max-height: 100%;
   object-fit: contain;
 }
+
+/*
+ * The sidebar is a grid item, so it stretches to the height of the page and
+ * takes its `margin-top:auto` footer (user, theme, Uitloggen, live dot) with
+ * it: on a long page the footer ends up thousands of pixels down.
+ * ds-gap: GAP-063
+ */
+.app-side {
+  /* ds-gap: GAP-063 */
+  position: sticky; /* ds-gap: GAP-063 */
+  top: 0; /* ds-gap: GAP-063 */
+  align-self: start; /* ds-gap: GAP-063 */
+  height: 100vh; /* ds-gap: GAP-063 */
+  overflow-y: auto; /* ds-gap: GAP-063 */
+} /* ds-gap: GAP-063 */
+
+/*
+ * `label.pp-opt` is inline-flex on a text baseline, and `.pp-check:checked`
+ * adds the tick as in-flow content, which changes that baseline, so the box
+ * hops downwards as it is ticked.
+ * ds-gap: GAP-062
+ */
+.app-above-link .pp-opt {
+  /* ds-gap: GAP-062 */
+  vertical-align: top; /* ds-gap: GAP-062 */
+} /* ds-gap: GAP-062 */

@@ -48,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </a>
       <div className="pp-app">
         {/* While the drawer is open the rest of the shell is inert (modal drawer). */}
-        <aside className="pp-side" inert={drawerOpen}>
+        <aside className="pp-side app-side" inert={drawerOpen}>
           <div className={logo === null ? 'pp-brand' : 'pp-brand has-logo'}>
             <span className="ini" aria-hidden="true">
               {t('app.name').charAt(0)}

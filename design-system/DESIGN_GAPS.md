@@ -734,7 +734,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** Selection is the entry point to every bulk action, and the control moving under the pointer reads as a glitch; on a grid of cards the whole row appears to twitch.
 - **Proposal:** Take `.pp-opt` off the baseline, e.g. `vertical-align: top` on it (or make the wrapper a flex container). Verified in the browser: with `vertical-align: top` the box stays at y=491 in both states, and nothing else moves. No token or copy change.
 - **Blocked:** Nothing else; the checkbox works, it only moves.
-- **Temporary placeholder approved:** no
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-062`: `vertical-align: top` on `.pp-opt` inside `.app-above-link`, which takes the label off the text baseline. Verified on the dashboard: the box stays put when ticked and nothing else moves.
 - **Design system version:** 1.8
 
 ## GAP-063 [open] The sidebar footer is unreachable on any page taller than the window
@@ -745,7 +745,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** The footer holds the user badge, the theme control, Uitloggen and the live indicator. On the three screens people spend the most time on, signing out and switching theme cannot be reached without scrolling the whole page, and the live dot, whose whole job is to be glanceable, is never in view.
 - **Proposal:** Make the sidebar its own viewport-height column that does not scroll with the page: `position: sticky; top: 0; height: 100vh` on `.pp-side` (with `overflow-y:auto` for a long nav), or give `.pp-app` a non-scrolling grid with the scroll on `.pp-main`. Both keep the existing `margin-top:auto` footer. Please say which, since it changes where the page scrollbar lives.
 - **Blocked:** Reaching the footer on Dashboard, Openstaand, Instellingen and API-docs.
-- **Temporary placeholder approved:** no
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-063`: an `app-side` class on the existing `aside.pp-side` (the pattern `main.pp-main app-main` already uses) making it `position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto`. The page keeps its own scrollbar. Verified on all nine screens at 1440, 1360, 768 and 390px: the footer is in view everywhere, the rail and the phone layout are unchanged, and no page scrolls horizontally.
 - **Design system version:** 1.8
 
 ## GAP-064 [open] The 3D viewer takes the whole fold on the print detail, including when there is no model
