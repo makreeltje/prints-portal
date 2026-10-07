@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-07T18:00:00Z",
+  "at": "2026-10-07T21:00:00Z",
   "via": "Claude",
-  "note": "v1.8: third-party renderer rule (GAP-060), badges on an opaque surface base and nested-tint contrast table (GAP-061)"
+  "note": "v1.9: GAP-062 to 087 \u2014 share page (studio header, payment block, thumbnails), print detail, dashboard strip and filters, Openstaand groups with age, ModelPicker, VideoPlayer, OverflowMenu"
  },
  "layout": "files",
  "libraries": [],

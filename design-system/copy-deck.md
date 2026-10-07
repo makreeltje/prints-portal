@@ -465,3 +465,86 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | api.loadErrorBody | De documentatie kon niet worden opgehaald. Probeer het opnieuw. |
 | firstrun.tree.label | Voorbeeld van de mappenstructuur |
 
+## Added in 1.9
+
+| Key | Text |
+|---|---|
+| share.pay.title | Betalen |
+| share.pay.iban | IBAN |
+| share.pay.name | T.n.v. |
+| share.pay.amount | Bedrag |
+| share.pay.ref | Kenmerk |
+| share.pay.copy.iban | Kopieer IBAN |
+| share.pay.copy.name | Kopieer naam |
+| share.pay.copy.amount | Kopieer bedrag |
+| share.pay.copy.ref | Kopieer kenmerk |
+| share.pay.copied | {veld} gekopieerd |
+| share.pay.hint | Vermeld bij je betaling het kenmerk. |
+| shareLinks.label.help | Alleen voor jezelf, de klant ziet dit niet. |
+| shareLinks.filter.label | Toon |
+| shareLinks.filter.active | Actief |
+| shareLinks.filter.inactive | Inactief |
+| shareLinks.filter.all | Alle |
+| shareLinks.emptyActive.title | Geen actieve Deel-links |
+| shareLinks.emptyActive.body | Alle links zijn verlopen of ingetrokken. Maak een nieuwe link. |
+| shareLinks.dup.warning | Je hebt voor {klant} al een link met dit label. Je kunt hem toch maken. |
+| shareLinks.once | De volledige link zie je alleen bij het maken. Kwijt? Maak een nieuwe link en trek de oude in. |
+| menu.more | Meer acties |
+| menu.restore | Herstellen |
+| menu.invoice | Factuur maken |
+| menu.deleteCustomer | Klant verwijderen |
+| models.group | Modellen |
+| models.caption | Model {n} van {totaal}: {bestandsnaam} |
+| models.loading | Model laden… |
+| models.select | Model |
+| video.play | Afspelen {bestandsnaam} |
+| video.loading | Video laden… |
+| video.error.title | De video kon niet worden afgespeeld. |
+| video.error.body | Download het bestand om het in een andere speler te openen. |
+| video.unsupported.title | Dit formaat speelt niet in de browser. |
+| video.unsupported.body | Download het bestand om het af te spelen. |
+| cost.incomplete | Onvolledig |
+| cost.missingWattage | Geen vermogen voor {printer}. |
+| cost.missingWattageAndPrice | Geen vermogen voor {printer} en geen prijs per kWh. |
+| cost.setWattage | Vermogen instellen |
+| cost.setInputs | Instellen |
+| cost.askAdmin | Vraag een beheerder het vermogen in te stellen. |
+| filter.sort | Sorteren |
+| filter.status | Status |
+| filter.status.all | Alle statussen |
+| filter.status.noPrice | Geen prijs |
+| filter.status.open | Open |
+| filter.status.paid | Betaald |
+| filter.status.writtenOff | Afgeschreven |
+| filter.status.incompleteCost | Onvolledige kosten |
+| sort.newest | Nieuwste eerst |
+| sort.oldest | Oudste eerst |
+| sort.priceDesc | Prijs: hoog naar laag |
+| sort.priceAsc | Prijs: laag naar hoog |
+| sort.customer | Klant: A tot Z |
+| strip.overview | Overzicht |
+| strip.overview.label | Klantenoverzicht ({n} klanten) |
+| strip.dialog.title | Alle klanten |
+| thumb.label | Voorbeeld |
+| outstanding.oldest | oudste {n} dagen |
+| outstanding.expandAll | Alles uitklappen |
+| outstanding.collapseAll | Alles inklappen |
+| outstanding.showAll | Toon alle {n} regels |
+| outstanding.sub | {n} klanten, oudste bovenaan |
+| invoices.status | Status |
+| invoices.noStatus | Geen status |
+| settings.dirty | Niet opgeslagen |
+| settings.undo | Ongedaan maken |
+| settings.leave.title | Wijzigingen niet opgeslagen |
+| settings.leave.body | In {secties} staan wijzigingen die nog niet zijn opgeslagen. Als je nu weggaat, gaan ze verloren. |
+| settings.leave.stay | Terug naar instellingen |
+| settings.leave.go | Verlaten zonder opslaan |
+| settings.printer.noPower | Vermogen ontbreekt |
+| settings.printer.noPower.help | Zonder vermogen kunnen de stroomkosten van prints op deze printer niet worden berekend. |
+| shell.theme.label | Thema: {stand}. Wissel naar {volgende}. |
+| shell.theme.system | Systeem |
+| shell.theme.light | Licht |
+| shell.theme.dark | Donker |
+| connection.back | Weer verbonden. |
+
+Removed in 1.9: the toast text for a lost connection (the bar keeps "Verbinding verbroken — opnieuw verbinden…"). Changed: the print subtitle "{klant} / {project}" becomes "{klant}" when the project equals the print name; the share-page line subtitle becomes "{datum}" in the same case.

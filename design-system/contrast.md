@@ -109,6 +109,13 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | dark | count and amount label on a selected customer card | `muted` on `primary-tint-soft` | `primary-tint-soft` | 6.01 | 4.5 | pass |
 | dark | reindex progress bar on its track (non-text 3:1) | `primary` on `surface-2` | `surface-2` | 6.01 | 3.0 | pass |
 | dark | selected card border and order section accent (non-text 3:1) | `primary` on `surface` | `surface` | 6.79 | 3.0 | pass |
+| dark | OverflowMenu: destructive item on hover (1.9) | `unpaid` on `primary-tint-soft` | `primary-tint-soft` | 5.68 | 4.5 | pass |
+| dark | OverflowMenu item on hover, selected ModelPicker button, Openstaand group summary on hover (1.9) | `text-strong` on `primary-tint-soft` | `primary-tint-soft` | 12.78 | 4.5 | pass |
+| dark | Openstaand: print count in an open group summary (1.9) | `muted` on `surface-2` | `surface-2` | 6.06 | 4.5 | pass |
+| dark | CostBreakdown: missing-input line (pp-missing, 1.9) | `text` on `surface-2` | `surface-2` | 9.38 | 4.5 | pass |
+| dark | CostBreakdown: warning icon on the missing-input line (non-text 3:1, 1.9) | `warning` on `surface-2` | `surface-2` | 9.60 | 3.0 | pass |
+| dark | Deel-links dialog: duplicate-label warning icon (non-text 3:1, 1.9) | `warning` on `surface` | `surface` | 10.84 | 3.0 | pass |
+| dark | VideoPlayer: error frame border (non-text 3:1, 1.9) | `unpaid` on `surface` | `surface` | 6.46 | 3.0 | pass |
 | light | neutral badge and "slicer" hint text | `muted` on `surface-2` | `surface-2` | 5.18 | 4.5 | pass |
 | light | remaining amount line | `unpaid` on `surface` | `surface` | 6.18 | 4.5 | pass |
 | light | duplicate hint line | `warning` on `surface` | `surface` | 6.11 | 4.5 | pass |
@@ -122,6 +129,13 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | light | count and amount label on a selected customer card | `muted` on `primary-tint-soft` | `primary-tint-soft` | 5.39 | 4.5 | pass |
 | light | reindex progress bar on its track (non-text 3:1) | `primary` on `surface-2` | `surface-2` | 5.27 | 3.0 | pass |
 | light | selected card border and order section accent (non-text 3:1) | `primary` on `surface` | `surface` | 6.12 | 3.0 | pass |
+| light | OverflowMenu: destructive item on hover (1.9) | `unpaid` on `primary-tint-soft` | `primary-tint-soft` | 5.52 | 4.5 | pass |
+| light | OverflowMenu item on hover, selected ModelPicker button, Openstaand group summary on hover (1.9) | `text-strong` on `primary-tint-soft` | `primary-tint-soft` | 15.31 | 4.5 | pass |
+| light | Openstaand: print count in an open group summary (1.9) | `muted` on `surface-2` | `surface-2` | 5.18 | 4.5 | pass |
+| light | CostBreakdown: missing-input line (pp-missing, 1.9) | `text` on `surface-2` | `surface-2` | 10.89 | 4.5 | pass |
+| light | CostBreakdown: warning icon on the missing-input line (non-text 3:1, 1.9) | `warning` on `surface-2` | `surface-2` | 5.26 | 3.0 | pass |
+| light | Deel-links dialog: duplicate-label warning icon (non-text 3:1, 1.9) | `warning` on `surface` | `surface` | 6.11 | 3.0 | pass |
+| light | VideoPlayer: error frame border (non-text 3:1, 1.9) | `unpaid` on `surface` | `surface` | 6.18 | 3.0 | pass |
 | both | tag chip text on palette colour | `#141a33` on `tag-rose` | `tag-rose` | 6.48 | 4.5 | pass |
 | both | tag chip text on palette colour | `#141a33` on `tag-orange` | `tag-orange` | 8.43 | 4.5 | pass |
 | both | tag chip text on palette colour | `#141a33` on `tag-amber` | `tag-amber` | 10.87 | 4.5 | pass |
