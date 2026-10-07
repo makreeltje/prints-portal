@@ -34,6 +34,7 @@ describe('loadConfig', () => {
         bootstrapAdmin: { email: null, password: null },
         oidc: null,
         loginRateLimit: 5,
+        shareRateLimit: 60,
       },
       http: { trustedProxies: [], corsOrigins: [] },
       spoolman: { url: null, timeoutMs: 3000, cacheMs: 60_000 },
@@ -196,6 +197,14 @@ describe('loadConfig: auth', () => {
 
   it.each(['0', '1001', 'many'])('rejects RATE_LIMIT_LOGIN=%s', (value) => {
     expect(() => load({ RATE_LIMIT_LOGIN: value })).toThrow(ConfigError);
+  });
+
+  it.each(['0', '1001', 'many'])('rejects RATE_LIMIT_SHARE=%s', (value) => {
+    expect(() => load({ RATE_LIMIT_SHARE: value })).toThrow(ConfigError);
+  });
+
+  it('reads RATE_LIMIT_SHARE', () => {
+    expect(load({ RATE_LIMIT_SHARE: '20' }).auth.shareRateLimit).toBe(20);
   });
 
   it('reads trusted proxies and CORS origins', () => {

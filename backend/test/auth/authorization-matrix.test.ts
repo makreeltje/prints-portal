@@ -368,6 +368,41 @@ const ENDPOINTS: {
     request: () => ({ method: 'DELETE', url: '/api/settings/logo' }),
     allowed: ['Admin'],
   },
+  {
+    name: 'GET /api/share-links',
+    request: () => ({ url: '/api/share-links' }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'POST /api/share-links',
+    request: () => ({
+      method: 'POST',
+      url: '/api/share-links',
+      payload: { customer: 'Nobody', label: 'x', expiresInDays: 7 },
+    }),
+    allowed: ['Admin'],
+  },
+  {
+    name: 'POST /api/share-links/:id/revoke',
+    request: () => ({ method: 'POST', url: `/api/share-links/${UNKNOWN}/revoke` }),
+    allowed: ['Admin'],
+  },
+  // The share page needs no sign-in; the token is the key.
+  {
+    name: 'GET /api/share/:token',
+    request: () => ({ url: `/api/share/${'A'.repeat(43)}` }),
+    allowed: ['anonymous', 'User', 'Editor', 'Admin'],
+  },
+  {
+    name: 'GET /api/share/:token/overview.pdf',
+    request: () => ({ url: `/api/share/${'A'.repeat(43)}/overview.pdf` }),
+    allowed: ['anonymous', 'User', 'Editor', 'Admin'],
+  },
+  {
+    name: 'GET /api/share/:token/logo',
+    request: () => ({ url: `/api/share/${'A'.repeat(43)}/logo` }),
+    allowed: ['anonymous', 'User', 'Editor', 'Admin'],
+  },
 ];
 
 describe.each(TEST_DATABASES)('authorisation matrix on $name', ({ url }) => {

@@ -584,3 +584,47 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** the locked look of those controls. Until then they stay as they are and the server refuses the change.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-048`. Built: "Aantal keer geprint" as text, the toggle and slot SpoolPickers disabled, no "Aanpassen". Instead of a hover tooltip, the reason (`pay.lockedHelp`) is one visible `pp-help` line at the top of the file list, linked to each control with `aria-describedby`: disabled controls get no hover or keyboard focus, and the Tooltip spec says a tooltip must never be the only place an essential instruction lives. "Spoel voor de hele print" is unchanged.
 - **Design system version:** 1.5
+
+## GAP-049 [open] Overzicht PDF: "Geldig tot" for a link without expiry
+- **Type:** unclear spec
+- **Found while:** M8, building the Overzicht PDF (DocOverview)
+- **Where needed:** DocOverview meta grid; `backend/src/sharing/` (Overzicht PDF)
+- **What is missing or wrong:** the DocOverview meta grid has Klant, Datum and "Geldig tot" (the link's expiry). Since v1.2 a Deel-link can have no expiry (Nooit); ScreenSharePage then leaves out its expiry notice, but DocOverview does not say what "Geldig tot" shows for such a link.
+- **Why it matters:** without a rule, the PDF would print an empty or invented value.
+- **Proposal:** leave the "Geldig tot" row out for a Nooit link, as the share page does.
+- **Blocked:** nothing; the owner chose the proposal.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07): the row is left out for a Nooit link.
+- **Design system version:** 1.5
+
+## GAP-050 [open] TokenReveal: no copy for "close without copying" confirmation
+- **Type:** missing state
+- **Found while:** M8, building TokenReveal in ScreenShareLinks
+- **Where needed:** TokenReveal (`frontend/src/sharing/TokenReveal.tsx`), ScreenShareLinks
+- **What is missing or wrong:** the TokenReveal README says "Closing without copying asks for confirmation", but there is no title, body or button copy for that ConfirmDialog, and no preview of it.
+- **Why it matters:** the token is shown only once; closing by accident loses the link (it must be revoked and made again).
+- **Proposal:** a ConfirmDialog titled "Sluiten zonder kopiëren?" with the body "Je ziet deze link daarna niet meer. Je kunt hem wel intrekken en een nieuwe maken." and the buttons "Terug" (secondary) and "Sluiten" (primary, not destructive). Copy keys: `share.closeUncopied`, `share.closeUncopiedBody`, `common.back`.
+- **Blocked:** the confirmation step only. Until then Sluiten, Esc and the backdrop close the dialog directly; the warning alert stays as specified.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-050`; the proposal's copy is used.
+- **Design system version:** 1.5
+
+## GAP-051 [open] Day counts: no singular or zero form for "{n} dagen"
+- **Type:** missing state
+- **Found while:** M8, ShareLinkRow and ScreenSharePage
+- **Where needed:** ShareLinkRow expiry ("Over {days} dagen", "3 dagen geleden" in the preview), ScreenSharePage expiry notice ("Deze link verloopt over {days} dagen ({datum})")
+- **What is missing or wrong:** the copy only has the plural. A link can expire in 1 day or later today (0 days), or have expired 1 day ago. "Over 1 dagen" and "Over 0 dagen" are wrong Dutch; there is no copy for those cases.
+- **Why it matters:** visible grammar errors on the customer-facing page.
+- **Proposal:** ICU plurals: "Over 1 dag" / "Over {days} dagen", "Vandaag" (reusing `date.today`) for 0; "1 dag geleden" / "{days} dagen geleden"; on the share page "Deze link verloopt morgen ({datum})" for 1 and "Deze link verloopt vandaag ({datum})" for 0.
+- **Blocked:** nothing structural; the wording for 0 and 1 day.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-051`; the proposal's copy is used.
+- **Design system version:** 1.5
+
+## GAP-052 [open] ShareLinkRow: columns shift on rows without Intrekken
+- **Type:** suspected design bug
+- **Found while:** M8, comparing ScreenShareLinks at 1280px
+- **Where needed:** ShareLinkRow (`.pp-share`), ScreenShareLinks
+- **What is missing or wrong:** each `.pp-share` row is its own grid (`1.4fr 1fr 1fr 1fr auto`). An expired or revoked row has an empty `span` in the `auto` column instead of the Intrekken button, so its `fr` columns are wider and its dates and badge sit further right than on the active rows above. The ShareLinkRow preview has the same structure, so it shows there too.
+- **Why it matters:** the columns of one klant's list do not line up.
+- **Proposal:** give the last column a fixed width (the width of a small danger button), or let the list be one grid with `subgrid` rows.
+- **Blocked:** nothing; built as specified until the design system changes it.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.5

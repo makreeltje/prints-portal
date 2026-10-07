@@ -3,8 +3,8 @@ import { formatDate, formatMoney } from '../core/format.js';
 import type { DocumentLine, InvoiceDocument } from './invoices.js';
 
 /**
- * Invoice, concept, credit note and reminder PDFs, laid out after
- * design-system DocInvoice and DocReminder (`.pp-paper`): A4, 20 mm margins,
+ * Invoice, concept, credit note, reminder and overview PDFs, laid out after
+ * design-system DocInvoice, DocReminder and DocOverview (`.pp-paper`): A4, 20 mm margins,
  * black text on white, no fills, status as words. The preview is 794 px wide
  * for 595 pt, so every pixel value there is multiplied by 0.75 here.
  * Built-in Helvetica (tabular digits); tagged PDF with a real table.
@@ -53,6 +53,8 @@ export function documentTitle(document: InvoiceDocument): string {
       return `Creditnota ${document.number ?? ''}`.trim();
     case 'reminder':
       return `Herinnering ${document.customer}`;
+    case 'overview':
+      return `Overzicht ${document.customer}`;
   }
 }
 
@@ -71,7 +73,9 @@ export function renderDocument(
     pdfVersion: '1.7',
     info: {
       Title: documentTitle(document),
-      Author: document.company.name === '' ? undefined : document.company.name,
+      // Keys must be left out rather than set to undefined: pdfkit builds the
+      // file id by calling valueOf() on every info value it finds.
+      ...(document.company.name === '' ? {} : { Author: document.company.name }),
       ...(options.creationDate === undefined ? {} : { CreationDate: options.creationDate }),
     },
   });
@@ -171,7 +175,9 @@ function header(
       ? 'Creditnota'
       : document.kind === 'reminder'
         ? 'Herinnering'
-        : 'Factuur';
+        : document.kind === 'overview'
+          ? 'Overzicht'
+          : 'Factuur';
   const subLine =
     document.kind === 'invoice'
       ? `Factuurnummer ${document.number ?? ''}`
@@ -179,7 +185,9 @@ function header(
         ? `Creditnummer ${document.number ?? ''}`
         : document.kind === 'concept'
           ? 'Concept'
-          : 'Openstaande prints';
+          : document.kind === 'overview'
+            ? (document.overview?.label ?? '')
+            : 'Openstaande prints';
   text(doc, root, 'H1', title, MARGIN, top, { font: BOLD, size: 28 * PX });
   const subTop = top + 34 * PX + 2 * PX;
   text(doc, root, 'P', subLine, MARGIN, subTop, { color: MUTED });
@@ -276,10 +284,19 @@ function meta(doc: Doc, root: Struct, document: InvoiceDocument, width: number):
               ['Betreft', `factuur ${document.creditsNumber ?? ''}`],
               ['Nummer', document.number ?? ''],
             ]
-          : [
-              ['Klant', document.customer],
-              ['Datum', day(document.issuedOn)],
-            ];
+          : document.kind === 'overview'
+            ? [
+                ['Klant', document.customer],
+                ['Datum', day(document.issuedOn)],
+                // A Deel-link without expiry (Nooit) has no "Geldig tot" (GAP-049, owner decision).
+                ...(document.overview?.validUntil == null
+                  ? []
+                  : [['Geldig tot', day(document.overview.validUntil)] as [string, string]]),
+              ]
+            : [
+                ['Klant', document.customer],
+                ['Datum', day(document.issuedOn)],
+              ];
   const gap = 24 * PX;
   const column = (width - gap) / 2;
   let y = doc.y + 20 * PX;
@@ -340,7 +357,7 @@ function columns(width: number): Column[] {
       title: 'Bedrag',
       width: 62,
       align: 'right',
-      value: (l) => money(l.amountCents),
+      value: (l) => (l.noPrice === true ? 'Prijs volgt' : money(l.amountCents)),
     },
     {
       title: 'Status',
@@ -490,15 +507,21 @@ function footers(doc: Doc, root: Struct, document: InvoiceDocument, width: numbe
   // IBAN; a fully paid invoice says so instead.
   const due = document.kind === 'reminder' ? document.totalCents : document.openCents;
   const canPay = company.name.trim() !== '' && company.iban.trim() !== '';
+  const payment = canPay
+    ? `Graag ${money(due)} overmaken naar IBAN ${company.iban} t.n.v. ${company.name}, ` +
+      `onder vermelding van ${document.reference}.`
+    : '';
   const instruction =
     document.kind === 'credit'
       ? `Deze creditnota corrigeert factuur ${document.creditsNumber ?? ''}.`
-      : due <= 0 && document.kind !== 'reminder'
-        ? 'Deze factuur is volledig betaald.'
-        : canPay
-          ? `Graag ${money(due)} overmaken naar IBAN ${company.iban} t.n.v. ${company.name}, ` +
-            `onder vermelding van ${document.reference}.`
-          : '';
+      : document.kind === 'overview'
+        ? // DocOverview: never an invoice; payment instructions only while something is open.
+          ['Dit is een overzicht, geen factuur.', due > 0 ? payment : '']
+            .filter((part) => part !== '')
+            .join(' ')
+        : due <= 0 && document.kind !== 'reminder'
+          ? 'Deze factuur is volledig betaald.'
+          : payment;
   const pageLabelWidth = 70;
   for (let index = 0; index < range.count; index += 1) {
     doc.switchToPage(range.start + index);

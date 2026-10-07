@@ -67,7 +67,7 @@ interface PeriodQuery {
 export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDependencies): void {
   const { db, hub, now } = deps;
   const invoiceDir = path.join(deps.dataDir, 'invoices');
-  const logoFile = path.join(deps.dataDir, 'branding', 'logo.png');
+  const logoFile = logoPath(deps.dataDir);
   const userId = (request: FastifyRequest) => {
     if (request.auth === null) throw new Error('session missing after guard');
     return request.auth.user.id;
@@ -593,6 +593,11 @@ function rasterise(svg: Buffer): Buffer | null {
 }
 
 /** "Factuur-2026-008-Joey.pdf": plain ASCII, safe in every header and file system. */
+/** Where the uploaded logo is kept (always a PNG). */
+export function logoPath(dataDir: string): string {
+  return path.join(dataDir, 'branding', 'logo.png');
+}
+
 export function safeFileName(parts: readonly string[]): string {
   const name = parts
     .map((part) =>

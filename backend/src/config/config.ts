@@ -68,6 +68,8 @@ export interface AuthConfig {
   oidc: OidcConfig | null;
   /** Login attempts per minute per client address. */
   loginRateLimit: number;
+  /** Requests per minute per IP address on the public share endpoints. */
+  shareRateLimit: number;
 }
 
 export class ConfigError extends Error {
@@ -281,12 +283,21 @@ function parseAuth(
     problems.push(`RATE_LIMIT_LOGIN must be a whole number between 1 and 1000 (got "${rateText}")`);
   }
 
+  const shareRateText = read('RATE_LIMIT_SHARE') ?? '60';
+  const shareRateLimit = Number(shareRateText);
+  if (!Number.isInteger(shareRateLimit) || shareRateLimit < 1 || shareRateLimit > 1000) {
+    problems.push(
+      `RATE_LIMIT_SHARE must be a whole number between 1 and 1000 (got "${shareRateText}")`,
+    );
+  }
+
   return {
     sessionSecret,
     publicUrl,
     bootstrapAdmin: { email: adminEmail, password: read('ADMIN_PASSWORD') ?? null },
     oidc,
     loginRateLimit,
+    shareRateLimit,
   };
 }
 

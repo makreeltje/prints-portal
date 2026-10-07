@@ -481,6 +481,52 @@ export const nl = {
   'tags.colour.violet': 'Violet',
   'tags.colour.lilac': 'Lila',
   'tags.colour.grey': 'Grijs',
+  // Deel-links and the share page (M8)
+  'common.copy': 'Kopiëren',
+  'common.copied': 'Gekopieerd',
+  'money.priceTbd': 'Prijs volgt',
+  'share.create': 'Deel-link maken',
+  'share.customer': 'Klant', // component copy: ScreenShareLinks
+  'share.label': 'Label',
+  'share.expires': 'Verloopt',
+  'share.expiresIn': 'Over {days} dagen',
+  'share.expiresNever': 'Nooit',
+  'share.noExpiry': 'Verloopt niet',
+  'share.neverHelp': 'De link blijft werken tot je hem intrekt.',
+  'share.notBilledHint':
+    'Deze klant wordt niet gefactureerd. De link toont alleen de printlijst, zonder bedragen.',
+  'share.createdOn': 'Gemaakt', // component copy: ShareLinkRow
+  'share.daysAgo': '{days} dagen geleden', // component copy: ShareLinkRow
+  'share.revoke': 'Intrekken',
+  'share.active': 'Actief',
+  'share.expired': 'Verlopen',
+  'share.revoked': 'Ingetrokken',
+  'share.created': 'Deel-link gemaakt',
+  'share.onceWarning': 'Deze link zie je maar één keer. Kopieer hem nu.',
+  'share.hint': 'Deel via WhatsApp of mail',
+  'share.copyFailed': 'Selecteer en kopieer handmatig', // component copy: TokenReveal
+  'share.empty': 'Nog geen Deel-links',
+  'share.notFound': 'Deze link is verlopen of ingetrokken',
+  'share.askNew': 'Vraag degene die je de link stuurde om een nieuwe.',
+  'share.notBilledIntro': 'Hier zie je de prints die voor je gemaakt zijn.',
+  'confirm.revokeLink': "Deel-link '{label}' intrekken?",
+  'overview.for': 'Overzicht voor {customer}',
+  'overview.download': 'Download overzicht',
+  'overview.expiryNotice': 'Deze link verloopt over {days} dagen ({date})',
+  'overview.footnote': 'Prijzen in euro. Prints zonder prijs staan niet in de totalen.',
+  'overview.nothingOpen': 'Er staat niets open.',
+  'overview.col.print': 'Print', // component copy: ScreenSharePage (not-billed table)
+  'overview.col.project': 'Project', // component copy: ScreenSharePage (not-billed table)
+  'overview.col.date': 'Datum', // component copy: ScreenSharePage (not-billed table)
+  // Temporary copy approved by the owner until the design system defines it.
+  'share.expiresInOne': 'Over 1 dag', // ds-gap: GAP-051
+  'share.daysAgoOne': '1 dag geleden', // ds-gap: GAP-051
+  'overview.expiryTomorrow': 'Deze link verloopt morgen ({date})', // ds-gap: GAP-051
+  'overview.expiryToday': 'Deze link verloopt vandaag ({date})', // ds-gap: GAP-051
+  'share.closeUncopied': 'Sluiten zonder kopiëren?', // ds-gap: GAP-050
+  'share.closeUncopiedBody':
+    'Je ziet deze link daarna niet meer. Je kunt hem wel intrekken en een nieuwe maken.', // ds-gap: GAP-050
+  'common.back': 'Terug', // ds-gap: GAP-050
 } as const;
 
 export type MessageKey = keyof typeof nl;
