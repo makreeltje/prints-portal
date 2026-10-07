@@ -5,6 +5,7 @@ import * as m0002 from './migrations/0002_auth.js';
 import * as m0003 from './migrations/0003_tags.js';
 import * as m0004 from './migrations/0004_financials.js';
 import * as m0005 from './migrations/0005_invoices.js';
+import * as m0006 from './migrations/0006_share_links.js';
 
 /** Migrations are listed explicitly so the compiled app needs no directory scanning. */
 const MIGRATIONS: Record<string, Migration> = {
@@ -13,6 +14,7 @@ const MIGRATIONS: Record<string, Migration> = {
   '0003_tags': m0003,
   '0004_financials': m0004,
   '0005_invoices': m0005,
+  '0006_share_links': m0006,
 };
 
 const provider: MigrationProvider = {

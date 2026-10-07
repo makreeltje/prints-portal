@@ -269,6 +269,20 @@ export interface InvoiceLineTable {
   status: 'paid' | 'open' | 'partial' | null;
 }
 
+export interface ShareLinkTable {
+  id: string;
+  /** Hex SHA-256 of the token; the token itself is never stored. */
+  token_hash: string;
+  customer_folder: string;
+  label: string;
+  /** Null: Nooit (the link works until it is revoked). */
+  expires_at: string | null;
+  revoked_at: string | null;
+  revoked_by: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
 export interface Database {
   print_records: PrintRecordTable;
   print_assets: PrintAssetTable;
@@ -287,4 +301,5 @@ export interface Database {
   payments: PaymentTable;
   invoices: InvoiceTable;
   invoice_lines: InvoiceLineTable;
+  share_links: ShareLinkTable;
 }
