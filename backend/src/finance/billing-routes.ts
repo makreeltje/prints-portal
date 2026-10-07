@@ -395,7 +395,7 @@ export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDe
           total: row.total_cents / 100,
           paid: row.paid_cents / 100,
           open: row.open_cents / 100,
-          writtenOff: Number(row.written_off_cents ?? 0) / 100,
+          writtenOff: (row.written_off_cents ?? 0) / 100,
           creditsNumber: row.credits_number,
         })),
       };
