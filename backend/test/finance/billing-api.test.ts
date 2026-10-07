@@ -311,6 +311,7 @@ describe.each(TEST_DATABASES)('invoices and Openstaand on $name', ({ url }) => {
 
   it('finalises with yearly numbering, stores the PDF and locks the orders', async () => {
     const draft = await preview('Joey');
+    expect((draft as Preview & { nextNumber: string }).nextNumber).toBe('2026-001');
     const changed = await finalise('Joey', { expectedTotal: draft.total + 1 });
     expect(changed.statusCode).toBe(409);
     expect(changed.json()).toEqual({ error: 'changed' });

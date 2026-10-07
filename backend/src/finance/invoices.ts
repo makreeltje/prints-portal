@@ -443,6 +443,17 @@ async function writeOffCredited(
   }
 }
 
+/** The number the next invoice or credit note of this year would get (for the confirm dialogs). */
+export async function nextInvoiceNumber(db: Db, now: Date): Promise<string> {
+  const year = Number(localDate(now).slice(0, 4));
+  const last = await db
+    .selectFrom('invoices')
+    .select((eb) => eb.fn.max('sequence').as('sequence'))
+    .where('year', '=', year)
+    .executeTakeFirst();
+  return `${String(year)}-${String((last?.sequence ?? 0) + 1).padStart(3, '0')}`;
+}
+
 interface Numbering {
   year: number;
   sequence: number;

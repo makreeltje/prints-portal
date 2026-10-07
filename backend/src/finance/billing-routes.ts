@@ -15,6 +15,7 @@ import {
   draftInvoice,
   finaliseInvoice,
   gramsPerOrder,
+  nextInvoiceNumber,
   type InvoiceDocument,
   type InvoiceQuery,
 } from './invoices.js';
@@ -217,6 +218,7 @@ export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDe
           open: draft.openCents / 100,
           excluded: draft.excluded,
           earlier: draft.earlier,
+          nextNumber: await nextInvoiceNumber(db, now()),
         };
       } catch (error) {
         return billingError(reply, error);
@@ -426,6 +428,7 @@ export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDe
         open: invoice.open_cents / 100,
         credits: credits ?? null,
         creditNotes,
+        nextNumber: await nextInvoiceNumber(db, now()),
         lines: lines.map((line) => ({
           id: line.id,
           orderId: line.order_id,

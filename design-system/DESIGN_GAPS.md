@@ -469,13 +469,13 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no (no placeholder needed: it is how the specs are read)
 - **Design system version:** 1.4
 
-## GAP-039 [open] `pp-text-xl` is used in the PaymentPanel preview but not defined
+## GAP-039 [open] `pp-text-xl`, `pp-text-lg` and `pp-text-2xl` are used in previews but not defined
 - **Type:** suspected design bug
 - **Found while:** implementing GAP-036 from v1.4
 - **Where needed:** PaymentPanel amount (`<span class="pp-money pp-text-xl">`), `frontend/src/finance/PaymentPanel.tsx`
-- **What is missing or wrong:** `components/bundle.css` defines `pp-text-xs`, `pp-text-sm` and `pp-text-md`, but not `pp-text-xl`, which the 1.4 PaymentPanel preview uses for the amount.
+- **What is missing or wrong:** `components/bundle.css` defines `pp-text-xs`, `pp-text-sm` and `pp-text-md`, but not `pp-text-xl` (PaymentPanel amount), `pp-text-lg` (OutstandingGroup header total) or `pp-text-2xl` (ScreenOutstanding phone stat values).
 - **Why it matters:** the class has no effect; the amount would render at body size.
-- **Proposal:** add `.pp-text-xl{font-size:var(--text-xl);line-height:var(--leading-xl)}` to `bundle.css`. The app keeps its existing `app-money-lg` rule (the same two tokens) until then.
+- **Proposal:** add `.pp-text-lg`, `.pp-text-xl` and `.pp-text-2xl` (each `font-size` and `line-height` from the matching tokens) to `bundle.css`. The app keeps its existing M6 `app-money-lg` rule for the PaymentPanel amount; the Openstaand totals use the class names and render at their default size until the classes exist.
 - **Blocked:** nothing.
 - **Temporary placeholder approved:** no (the existing token-only rule from M6 stays)
 - **Design system version:** 1.4
@@ -514,5 +514,17 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** a secondary "Factuur" button in the `.pp-toolbar` while one klant is selected (next to "Klant verwijderen"), hidden for niet-factureren klanten.
 - **Blocked:** making an invoice on phones.
 - **Owner decision (2026-10-07):** wait for the design system; no invoice action on phones for now.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
+
+## GAP-043 [open] DatePicker calendar has no classes in bundle.css
+- **Type:** missing component
+- **Found while:** M7, building the invoice export dialog (Van, Tot en met)
+- **Where needed:** DatePicker, ScreenInvoiceExport, `frontend/src/components/DatePicker.tsx`
+- **What is missing or wrong:** the DatePicker preview draws the month header and the day grid with its own `<style>` block (`.cal`, raw sizes 32px, 6px, 13.5px, 12px, a 2px gap and a 1.5px today ring); none of it is in `components/bundle.css`, so the calendar cannot be built from tokens and classes.
+- **Why it matters:** the calendar popover would need invented values.
+- **Proposal:** add `.pp-cal` (7-column grid, day cells at `--pp-control-h` or a token, `radius-md`, `text-sm`, `.h` weekday header in `muted`/`text-xs`, `.t` today ring in `primary`, `.s` selected in `primary`/`on-primary`) and `.pp-cal-hd` for the month header to `bundle.css`.
+- **Blocked:** the calendar popover. The field itself (typing `d-m-jjjj`, shown as `5 okt 2026`) is specified and works without it.
+- **Owner decision (2026-10-07):** wait for the design system. Until then the export dialog has no Van / Tot en met: it covers every order of the klant that is not on a final invoice yet (the API keeps its period filter).
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.4
