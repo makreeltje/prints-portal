@@ -792,7 +792,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-068 [open] The list view shows no thumbnail
+## GAP-068 [resolved in v1.9] The list view shows no thumbnail
 - **Type:** missing state
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** PrintTable on ScreenDashboard (the "Lijst" view)
@@ -946,7 +946,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-082 [open] The invoice list does not say whether an invoice is paid
+## GAP-082 [resolved in v1.9] The invoice list does not say whether an invoice is paid
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenInvoices

@@ -151,6 +151,8 @@ export const nl = {
   'cost.askAdmin': 'Vraag een beheerder het vermogen in te stellen.',
   'cost.missingTariff': 'Geen prijs per kWh.',
   'menu.more': 'Meer acties', // component copy: OverflowMenu
+  'print.preview': 'Voorbeeld', // component copy: PrintRow
+  'invoices.noStatus': 'Geen status', // component copy: ScreenInvoices
   'strip.overview': 'Overzicht', // component copy: CustomerChips
   'strip.overview.label': 'Klantenoverzicht ({n} klanten)',
   'strip.dialog.title': 'Alle klanten',

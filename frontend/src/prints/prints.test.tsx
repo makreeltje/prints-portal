@@ -153,7 +153,7 @@ describe('DashboardPage', () => {
       within(table)
         .getAllByRole('columnheader')
         .map((th) => th.textContent),
-    ).toEqual(['', 'Naam', 'Materiaal', 'Tijd', 'Gewicht', 'Status', 'Tags']);
+    ).toEqual(['', 'Voorbeeld', 'Naam', 'Materiaal', 'Tijd', 'Gewicht', 'Status', 'Tags']);
   });
 
   it('lets Admins restore a deleted print', async () => {
