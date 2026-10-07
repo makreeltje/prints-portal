@@ -153,6 +153,8 @@ export const nl = {
   'menu.more': 'Meer acties', // component copy: OverflowMenu
   'print.preview': 'Voorbeeld', // component copy: PrintRow
   'invoices.noStatus': 'Geen status', // component copy: ScreenInvoices
+  'outstanding.showAll': 'Toon alle {n} regels', // component copy: OutstandingGroup
+  'outstanding.groupLabel': '{customer}, {count} prints, oudste {days} dagen, {amount}',
   'strip.overview': 'Overzicht', // component copy: CustomerChips
   'strip.overview.label': 'Klantenoverzicht ({n} klanten)',
   'strip.dialog.title': 'Alle klanten',

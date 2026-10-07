@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { CircleCheck, Clock, FileText } from 'lucide-react';
+import { ChevronDown, CircleCheck, Clock, FileText } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useCurrentUser } from '../auth/context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -24,7 +24,19 @@ import {
 import { WriteOffDialog } from './WriteOffDialog';
 
 /** Days open from which the badge turns `unpaid` (OutstandingGroup). */
-const LATE_AFTER_DAYS = 14;
+/**
+ * The three age steps of OutstandingGroup 1.9 (GAP-080). Measured on a real
+ * library these put most lines in the oldest step; the thresholds are the
+ * design system's, so they stay until it revises them.
+ */
+const AGE_WARNING_AFTER_DAYS = 30;
+const AGE_LATE_AFTER_DAYS = 90;
+
+const ageTone = (days: number): string =>
+  days > AGE_LATE_AFTER_DAYS ? 'unpaid' : days > AGE_WARNING_AFTER_DAYS ? 'warning' : 'neutral';
+
+/** At most ten lines before "Toon alle {n} regels". */
+const LINES_BEFORE_MORE = 10;
 
 /**
  * ScreenOutstanding (`/openstaand`): three StatTiles, then one
@@ -123,6 +135,7 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
   const toast = useToast();
   const queryClient = useQueryClient();
   const [confirmAll, setConfirmAll] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const [paying, setPaying] = useState<OutstandingLine | null>(null);
   const [writingOff, setWritingOff] = useState<OutstandingLine | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -146,14 +159,34 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
     }
   };
 
+  const shownLines = showAll ? group.lines : group.lines.slice(0, LINES_BEFORE_MORE);
+
   return (
-    <section className="pp-card pp-group" aria-labelledby={titleId}>
-      <header>
-        <h3 id={titleId}>{group.customer}</h3>
-        <span className="pp-muted pp-text-sm">
-          {t('outstanding.groupMeta', { count: group.count, days: group.oldestDays })}
+    <details className="pp-card pp-group pp-ogrp" aria-labelledby={titleId}>
+      <summary
+        aria-label={t('outstanding.groupLabel', {
+          customer: group.customer,
+          count: group.count,
+          days: group.oldestDays,
+          amount: formatMoney(group.total),
+        })}
+      >
+        <span className="ttl">
+          <h3 id={titleId}>{group.customer}</h3>
+          <span className="pp-muted pp-text-sm">
+            {t('outstanding.groupMeta', { count: group.count, days: group.oldestDays })}
+          </span>
         </span>
-        <span className="pp-money pp-text-lg">{formatMoney(group.total)}</span>
+        <span className={`age pp-badge ${ageTone(group.oldestDays)}`}>
+          <Clock className="pp-ico" aria-hidden="true" />
+          {t('status.daysOpen', { days: group.oldestDays })}
+        </span>
+        <span className="amt pp-money pp-text-lg">{formatMoney(group.total)}</span>
+        <span className="chev">
+          <ChevronDown className="pp-ico" aria-hidden="true" />
+        </span>
+      </summary>
+      <div className="pp-ogrp-bar">
         {busy === group.customer && <span className="pp-spin" aria-hidden="true" />}
         {canManage && (
           <>
@@ -177,9 +210,9 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
             </button>
           </>
         )}
-      </header>
-      <ul className="pp-plain">
-        {group.lines.map((line) => (
+      </div>
+      <ul className="pp-plain pp-ogrp-list">
+        {shownLines.map((line) => (
           <li key={line.orderId} className="pp-line">
             <div>
               <b className="pp-strong">{lineName(line)}</b>
@@ -188,9 +221,7 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
               </div>
             </div>
             <span className="pp-row pp-gap-1">
-              <span
-                className={line.daysOpen > LATE_AFTER_DAYS ? 'pp-badge unpaid' : 'pp-badge neutral'}
-              >
+              <span className={`pp-badge ${ageTone(line.daysOpen)}`}>
                 <Clock className="pp-ico" aria-hidden="true" />
                 {t('status.daysOpen', { days: line.daysOpen })}
               </span>
@@ -239,6 +270,19 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
           </li>
         ))}
       </ul>
+      {group.lines.length > shownLines.length && (
+        <div className="pp-ogrp-more">
+          <button
+            type="button"
+            className="pp-btn pp-btn-ghost pp-btn-sm"
+            onClick={() => {
+              setShowAll(true);
+            }}
+          >
+            {t('outstanding.showAll', { n: group.lines.length })}
+          </button>
+        </div>
+      )}
       <ConfirmDialog
         open={confirmAll}
         title={t('confirm.markAllPaid', { customer: group.customer, count: group.count })}
@@ -271,7 +315,7 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
           }}
         />
       )}
-    </section>
+    </details>
   );
 }
 

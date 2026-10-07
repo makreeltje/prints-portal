@@ -924,7 +924,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-080 [open] Openstaand is one long list and does not show age
+## GAP-080 [resolved in v1.9] Openstaand is one long list and does not show age
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenOutstanding / OutstandingGroup
