@@ -21,6 +21,8 @@ export interface BilledShareLine {
   paid: number;
   remaining: number | null;
   status: ShareLineStatus;
+  /** For the line's thumbnail; the image itself is fetched per link. */
+  printId: string;
 }
 
 /** Niet-factureren klant: Print, Project and Datum only. */
@@ -29,13 +31,28 @@ export interface PlainShareLine {
   description: string;
   project: string | null;
   date: string;
+  printId: string;
 }
 
 interface ShareHead {
   studio: { name: string; hasLogo: boolean };
   customer: string;
-  label: string;
   expiresAt: string | null;
+}
+
+/**
+ * How to pay (ScreenSharePage 1.9, GAP-078). Only while something is open and
+ * the studio has an IBAN; the klant sees no empty frame otherwise.
+ */
+export interface SharePayment {
+  iban: string;
+  name: string;
+  /** The open amount, in euros, matching the Openstaand row. */
+  amount: number;
+  /** What to quote on the transfer: the klant's name. */
+  reference: string;
+  email: string | null;
+  phone: string | null;
 }
 
 export type ShareView =
@@ -44,10 +61,16 @@ export type ShareView =
       lines: BilledShareLine[];
       /** Prints without a price are left out of the totals. */
       totals: { total: number; paid: number; open: number };
+      pay: SharePayment | null;
     })
   | (ShareHead & { billed: false; lines: PlainShareLine[] });
 
 const euros = (cents: number) => cents / 100;
+
+const blankToNull = (value: string | null): string | null => {
+  const text = (value ?? '').trim();
+  return text === '' ? null : text;
+};
 
 function byDateThenName(a: BillableOrder, b: BillableOrder): number {
   return (
@@ -98,7 +121,6 @@ export async function shareView(
       hasLogo: options.hasLogo,
     },
     customer: link.customer_folder,
-    label: link.label,
     expiresAt: link.expires_at,
   };
   if (await notBilled(db, link.customer_folder)) {
@@ -112,6 +134,7 @@ export async function shareView(
         description: orderDescription(item.print.name, item.order.number),
         project: item.print.project,
         date: localDate(item.date),
+        printId: item.print.id,
       })),
     };
   }
@@ -127,11 +150,26 @@ export async function shareView(
       paid: euros(item.money.paidCents),
       remaining: status === 'noPrice' ? null : euros(item.money.remainingCents ?? 0),
       status,
+      printId: item.print.id,
     };
   });
   const priced = orders.filter((item) => lineStatus(item) !== 'noPrice');
   const totalCents = priced.reduce((sum, item) => sum + (item.money.priceCents ?? 0), 0);
   const paidCents = priced.reduce((sum, item) => sum + item.money.paidCents, 0);
+  const openCents = totalCents - paidCents;
+  const iban = settings.company.iban.trim();
+  // Only with something open and an IBAN to pay it into (GAP-078).
+  const pay: SharePayment | null =
+    openCents > 0 && iban !== ''
+      ? {
+          iban,
+          name: settings.company.name.trim(),
+          amount: euros(openCents),
+          reference: link.customer_folder,
+          email: blankToNull(settings.company.email),
+          phone: blankToNull(settings.company.phone),
+        }
+      : null;
   return {
     ...head,
     billed: true,
@@ -139,8 +177,9 @@ export async function shareView(
     totals: {
       total: euros(totalCents),
       paid: euros(paidCents),
-      open: euros(totalCents - paidCents),
+      open: euros(openCents),
     },
+    pay,
   };
 }
 
@@ -186,7 +225,8 @@ export async function overviewDocument(
     reference: link.customer_folder,
     company: settings.company,
     overview: {
-      label: link.label,
+      // The klant downloads this, so the internal label stays out (GAP-077).
+      label: '',
       validUntil: link.expires_at === null ? null : localDate(link.expires_at),
       priced: lines.some((line) => line.noPrice !== true),
     },

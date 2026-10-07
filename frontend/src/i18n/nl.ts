@@ -513,6 +513,18 @@ export const nl = {
   'share.revoked': 'Ingetrokken',
   'share.created': 'Deel-link gemaakt',
   'share.onceWarning': 'Deze link zie je maar één keer. Kopieer hem nu.',
+  'share.pay.title': 'Betalen', // component copy: ScreenSharePage
+  'share.pay.iban': 'IBAN',
+  'share.pay.name': 'T.n.v.',
+  'share.pay.amount': 'Bedrag',
+  'share.pay.ref': 'Kenmerk',
+  'share.pay.copy.iban': 'Kopieer IBAN',
+  'share.pay.copy.name': 'Kopieer naam',
+  'share.pay.copy.amount': 'Kopieer bedrag',
+  'share.pay.copy.ref': 'Kopieer kenmerk',
+  'share.pay.copied': '{veld} gekopieerd',
+  'share.pay.hint': 'Vermeld bij je betaling het kenmerk.',
+  'shareLinks.label.help': 'Alleen voor jezelf, de klant ziet dit niet.',
   'share.hint': 'Deel via WhatsApp of mail',
   'share.copyFailed': 'Selecteer en kopieer handmatig', // component copy: TokenReveal
   'share.empty': 'Nog geen Deel-links',

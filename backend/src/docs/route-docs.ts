@@ -118,6 +118,10 @@ export const ROUTE_DOCS: Record<RouteKey, { tag: ApiTag; summary: string }> = {
   'GET /api/share/:token': { tag: 'Deel-links', summary: 'Publieke overzichtspagina (geen login)' },
   'GET /api/share/:token/overview.pdf': { tag: 'Deel-links', summary: 'Overzicht als PDF' },
   'GET /api/share/:token/logo': { tag: 'Deel-links', summary: 'Logo voor de overzichtspagina' },
+  'GET /api/share/:token/prints/:printId/thumbnail': {
+    tag: 'Deel-links',
+    summary: 'Voorbeeldafbeelding van een regel op de overzichtspagina',
+  },
 
   // ----------------------------------------------------------------- toegang
   'GET /api/auth/config': { tag: 'Toegang', summary: 'Welke aanmeldmethoden aanstaan' },

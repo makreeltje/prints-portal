@@ -129,6 +129,7 @@ export async function buildApp({
   registerShareRoutes(app, {
     db,
     dataDir: config.dataDir,
+    thumbnails,
     publicUrl: config.auth.publicUrl,
     rateLimit: config.auth.shareRateLimit,
     now,

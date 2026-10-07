@@ -1011,3 +1011,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** Nothing; the pile-up itself is fixed.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
+
+## GAP-088 [open] DocOverview still puts the internal link label on the customer's PDF
+- **Type:** conflict
+- **Found while:** implementing v1.9, GAP-077
+- **Where needed:** DocOverview; `backend/src/finance/pdf.ts`, `backend/src/sharing/overview.ts`
+- **What is missing or wrong:** ScreenSharePage 1.9 resolves GAP-077 with "The link label is internal and no longer appears on the page, in the PDF title or in the tab title". DocOverview's anatomy was not changed and still reads: 'Title "Overzicht", the sub-line is the link label.' The Overzicht PDF is downloaded by the klant, so leaving the label in its sub-line defeats the gap it is meant to resolve, but the two documents now disagree and nothing says what the sub-line should hold instead.
+- **Why it matters:** this is the same privacy point as GAP-077, on the one artefact the klant keeps. Labels in this instance read "PR 8 review" and "log check".
+- **Proposal:** drop the sub-line from the Overzicht, or give it something customer-facing such as the period covered or the date of the overview. Please say which, and update DocOverview so the two specs agree.
+- **Blocked:** nothing. The label is left out of the PDF (an empty sub-line) until DocOverview says what belongs there, marked `ds-gap: GAP-088`.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
