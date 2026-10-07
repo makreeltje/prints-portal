@@ -1,3 +1,71 @@
+# Changelog 1.9
+
+Resolves GAP-062 to GAP-087 (26 gaps from the walkthrough of app 1.0.0). Version 1.8 follows below.
+
+| Gap | About | Result |
+|---|---|---|
+| GAP-062 | Checkbox hops 4.5px when ticked | **confirmed as built**: `vertical-align: top` on `.pp-opt` is now in `bundle.css` |
+| GAP-063 | Sidebar footer unreachable on tall pages | **confirmed as built**: `.pp-app>.pp-side` is sticky, `100vh`, `overflow-y:auto`; the page scrollbar stays on the page |
+| GAP-064 | Viewer 4:3 and 1090x830 | **resolved**: `.pp-viewer.fluid` caps at 560px (420px high); no model is `pp-viewer is-empty`, a 72px strip |
+| GAP-065 | Theme control always a moon | **resolved**: icon shows the current state (monitor, sun, moon); accessible name names state and next state |
+| GAP-066 | No sort and no status filter | **resolved**: Sorteren and Status Selects in FilterBar, server-side, in the URL |
+| GAP-067 | Klant strip grows without limit | **resolved** (your decision): one scrollable chip row on all widths plus "Overzicht" dialog with the tiles; about 56px |
+| GAP-068 | No thumbnail in the list view | **resolved**: 40px `pp-thumb sm` first column in PrintRow, rule for the phone block |
+| GAP-069 | Bulk bar not sticky above 480px | **resolved**: sticky at every width (`bottom: space-4` floating, flush on phones) |
+| GAP-070 | Only the klant name is clickable | **confirmed as built, whole tile** (stretched button, `aria-pressed`, controls above it) |
+| GAP-071 | Dark tint swallows the model | **proposed, needs your measurement**: `--mix` floor towards `border-strong` (40% minimum); I need the model/ground ratio |
+| GAP-072 | Subtitle repeats the print name | **proposed, needs your confirmation**: klant alone when the project equals the print name; share page shows the date |
+| GAP-073 | "Kosten ontbreken" twice | **resolved**: PaymentPanel line is official; the cost card says "Onvolledig" and names the missing input |
+| GAP-074 | Order block nests three cards | **resolved**: one order card, sections with hairlines; 360, 768 and 1280px drawn |
+| GAP-075 | Verwijderen too prominent | **resolved** (your decision): OverflowMenu "⋯" on the print detail and the klant tile; ConfirmDialog stays |
+| GAP-076 | Missing cost has no link to the setting | **resolved**: `pp-missing` line "Geen vermogen voor {printer}." with link; "Vermogen ontbreekt" badge in Printers |
+| GAP-077 | Share page shows the internal label | **resolved** (your decision): label dropped, header studio, klant, expiry; dialog says it is internal |
+| GAP-078 | Share page gives no payment instructions | **resolved** (your decision): "Betalen" block with IBAN, t.n.v., bedrag, kenmerk and contact, copy buttons |
+| GAP-079 | No thumbnails on the share page | **resolved** (your decision): 48px neutral `surface-2` thumbnail per line, no tint |
+| GAP-080 | Openstaand is one long list, age invisible | **resolved** (your decision): collapsed groups, age badge in three steps (30 and 90 days), max 10 lines then "Toon alle"; thresholds to be measured |
+| GAP-081 | Deel-links cannot be filtered, duplicates | **resolved**: Actief / Inactief / Alle, numbered duplicate suffix, create warning; "shown once" line once per page (deviation) |
+| GAP-082 | No payment status on invoices | **resolved**: Status column with Betaald / Open / Deels betaald / Afgeschreven, creditnota "—"; preview **rejected** (browser viewer) |
+| GAP-083 | Settings saves without unsaved warning | **resolved** (your decision): per section, "Niet opgeslagen" marker, Opslaan only when dirty, leave confirmation |
+| GAP-084 | Card around Scalar | **resolved**: no card; the renderer meets the page padding; rule point 5 for third-party renderers |
+| GAP-085 | No video player or thumbnail | **resolved with a new component**: VideoPlayer (dialog, poster, states, mkv fallback), poster as thumbnail with play badge |
+| GAP-086 | Only one model viewable | **resolved with a new component**: ModelPicker (strip up to 6, Select above, caption "Model n van m") |
+| GAP-087 | Loss of connection announced twice | **resolved**: bar is the state, loss toast dropped, "Weer verbonden." toast kept |
+
+## Decisions you made (asked in this round)
+GAP-077 label is internal; GAP-078 payment block with IBAN, t.n.v., bedrag, kenmerk and contact; GAP-079 neutral thumbnail ground; GAP-063 sticky sidebar; GAP-080 collapsed groups and age steps; GAP-067 one scrollable chip row; GAP-075 overflow menu; GAP-083 per-section save with a changed state.
+
+## Defaults I chose; please confirm or change
+- **GAP-072** (shown as proposed): klant alone when the project equals the print name. It changes what the card's second line means.
+- **GAP-070**: whole tile as the control; **GAP-073**: PaymentPanel's sentence is official; **GAP-087**: bar kept, loss toast dropped; **GAP-065**: icon shows the current state; **GAP-069**: sticky at every width.
+- **GAP-066**: five sort options, six status options (the ones you listed), both server-side.
+- **GAP-081**: "shown once" is one line on the page, not on every row (deviation). **GAP-082**: no in-app invoice preview.
+- **GAP-064**: cap of 560px; **GAP-086**: strip up to 6 models, Select above that.
+
+## What I need you to measure
+- **GAP-080:** days-open distribution of the open lines (thresholds 30 and 90).
+- **GAP-071:** the rendered model colour and the ground colour of a black and a dark-purple thumbnail after the change (aim 3:1).
+- **GAP-086:** how many models a print holds (largest and median).
+- **GAP-085:** how many prints are video-only, and how many videos are `.mkv`.
+- **GAP-064:** the y-position of the price field at 1360x900 and 390x844.
+
+## Long screens drawn at real size
+Openstaand with 90 lines and 10 klanten (desktop and 360px, collapsed and one group open); the dashboard strip with 20 klanten at 1280 and 360px, plus the overview dialog with 20 tiles; the print detail at 360px with and without a model; the order block at 360, 768 and 1280px. Checked for horizontal overflow; the only flags are the known preview artefacts.
+
+## New and changed
+- **Tokens:** none added, renamed or removed. New allowed inline data property: `--mix` (thumbnail tint floor).
+- **New components:** ModelPicker, VideoPlayer, OverflowMenu.
+- **New classes:** `pp-sharepay`, `pp-sharepay-row`, `pp-share-lead`, `pp-share-thumb`, `pp-models`, `pp-modelbtn`, `pp-model-cap`, `pp-video`, `pp-play`, `pp-menu`, `pp-missing`, `pp-strip`, `pp-allcust`, `pp-ogrp` (with `-bar`, `-more`, `-list`), `pp-sl-tools`, `pp-sec-hd`, `pp-sec-ft`, `pp-theme`, `pp-warnico`, `pp-scrollframe`, helpers `pp-w-160`, `pp-w-720`, `pp-w-768`, `pp-w-1280`, modifiers `is-empty` (viewer), `poster` and `sm` (thumb), `is-overflow` (chips), `sel` (filter selects), `dup`.
+- **Changed classes:** `.pp-viewer.fluid` (560px cap), `.pp-order` family (flattened cards, sections), `.pp-cust` and `.pp-cust-name` (whole tile), `.pp-bulk` (sticky at every width), `.pp-opt` (`vertical-align: top`), `.pp-app>.pp-side` (sticky), `.pp-thumb.tinted` (`--mix` floor, inset ring), `.pp-dialog h2` (`min-width: 0`).
+- **Components changed:** ScreenSharePage, ScreenShareLinks, ShareLinkRow, Viewer3D, OrderSection, CostBreakdown, PaymentPanel, AssetListItem, ScreenPrintDetail, CustomerCard, CustomerChips, FilterBar, BulkActionBar, PrintRow, PrintCard, ScreenDashboard, AppShell, Checkbox, ScreenApiDocs, Toast, ScreenSystemStates, LiveIndicator, OutstandingGroup, ScreenOutstanding, ScreenInvoices, ScreenSettings.
+- **Contrast report:** seven new pairs, 143 in all, 0 fail.
+- **Copy deck:** "Added in 1.9" (about 90 keys); one removed (the loss toast).
+
+## Breaking changes
+- **Visual only, no renamed or removed names:** the viewer on the print detail shrinks from unbounded to 560px; cards inside an order are flattened by CSS; the dashboard no longer shows the klant card strip on the page (the tiles moved into the overview dialog) and the klant tile has no delete icon; a klant tile and a print have a changed second line (GAP-072, if confirmed); Openstaand groups are `<details>` and their group actions moved from the header into the body.
+- **App changes needed:** the share-page header and PDF title drop the label; the loss-of-connection toast is removed.
+
+---
+
 # Changelog 1.8
 
 Resolves GAP-060 and GAP-061. Version 1.7 follows below.

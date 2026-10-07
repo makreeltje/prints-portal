@@ -726,7 +726,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.7
 
-## GAP-062 [open] The selection checkbox moves down when it is ticked
+## GAP-062 [resolved in v1.9] The selection checkbox moves down when it is ticked
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of 1.0, dashboard cards
 - **Where needed:** `.pp-opt` and `.pp-check` (PrintCard, PrintTable); `frontend/src/prints/PrintCard.tsx`
@@ -737,7 +737,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-062`: `vertical-align: top` on `.pp-opt` inside `.app-above-link`, which takes the label off the text baseline. Verified on the dashboard: the box stays put when ticked and nothing else moves.
 - **Design system version:** 1.8
 
-## GAP-063 [open] The sidebar footer is unreachable on any page taller than the window
+## GAP-063 [resolved in v1.9] The sidebar footer is unreachable on any page taller than the window
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of 1.0; reproduced across every screen
 - **Where needed:** `.pp-side` and `.pp-side .foot` (AppShell); every desktop screen
@@ -748,7 +748,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-063`: an `app-side` class on the existing `aside.pp-side` (the pattern `main.pp-main app-main` already uses) making it `position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto`. The page keeps its own scrollbar. Verified on all nine screens at 1440, 1360, 768 and 390px: the footer is in view everywhere, the rail and the phone layout are unchanged, and no page scrolls horizontally.
 - **Design system version:** 1.8
 
-## GAP-064 [open] The 3D viewer takes the whole fold on the print detail, including when there is no model
+## GAP-064 [resolved in v1.9] The 3D viewer takes the whole fold on the print detail, including when there is no model
 - **Type:** suspected design bug
 - **Found while:** the UX review of 1.0 and the owner's walkthrough
 - **Where needed:** Viewer3D on ScreenPrintDetail; `frontend/src/prints/PrintDetailPage.tsx`
@@ -759,7 +759,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-065 [open] The theme control always shows a moon, whatever the theme is
+## GAP-065 [resolved in v1.9] The theme control always shows a moon, whatever the theme is
 - **Type:** missing state
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** AppShell footer and drawer, "Thema"; `frontend/src/shell/AppShell.tsx`
@@ -770,7 +770,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-066 [open] The dashboard cannot be sorted and cannot be filtered by status
+## GAP-066 [resolved in v1.9] The dashboard cannot be sorted and cannot be filtered by status
 - **Type:** missing component
 - **Found while:** the UX review of 1.0; confirmed in `frontend/src/prints/filter.ts`
 - **Where needed:** FilterBar on ScreenDashboard; `frontend/src/prints/filter.ts`
@@ -781,7 +781,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-067 [open] The customer strip grows without limit and owns the fold
+## GAP-067 [resolved in v1.9] The customer strip grows without limit and owns the fold
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** CustomerCard / CustomerChips on ScreenDashboard
@@ -792,7 +792,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-068 [open] The list view shows no thumbnail
+## GAP-068 [resolved in v1.9] The list view shows no thumbnail
 - **Type:** missing state
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** PrintTable on ScreenDashboard (the "Lijst" view)
@@ -803,7 +803,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-069 [open] The bulk bar sits at the end of the page on desktop
+## GAP-069 [resolved in v1.9] The bulk bar sits at the end of the page on desktop
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** BulkActionBar on ScreenDashboard
@@ -814,7 +814,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-070 [open] Nothing says the klant tile is clickable, and only the name is
+## GAP-070 [resolved in v1.9] Nothing says the klant tile is clickable, and only the name is
 - **Type:** unclear spec
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** CustomerCard on ScreenDashboard
@@ -836,7 +836,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-072 [open] The card subtitle repeats the print's own name
+## GAP-072 [resolved in v1.9] The card subtitle repeats the print's own name
 - **Type:** improvement idea
 - **Found while:** the UX review of 1.0
 - **Where needed:** PrintCard and PrintTable; `placeOf` in `frontend/src/prints/filter.ts`
@@ -847,7 +847,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-073 [open] "Kosten ontbreken" is shown twice on one print
+## GAP-073 [resolved in v1.9] "Kosten ontbreken" is shown twice on one print
 - **Type:** suspected design bug
 - **Found while:** the UX review of 1.0
 - **Where needed:** CostBreakdown and PaymentPanel on ScreenPrintDetail
@@ -858,7 +858,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-074 [open] The order block nests cards three deep and spaces them unevenly
+## GAP-074 [resolved in v1.9] The order block nests cards three deep and spaces them unevenly
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of 1.0; print 788b996b
 - **Where needed:** OrderSection, CostBreakdown, PaymentPanel on ScreenPrintDetail
@@ -869,7 +869,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-075 [open] The most destructive action is the most prominent one
+## GAP-075 [resolved in v1.9] The most destructive action is the most prominent one
 - **Type:** improvement idea
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenPrintDetail header; CustomerCard on ScreenDashboard
@@ -880,7 +880,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-076 [open] Nothing leads from a missing cost to the setting that causes it
+## GAP-076 [resolved in v1.9] Nothing leads from a missing cost to the setting that causes it
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** CostBreakdown on ScreenPrintDetail; Printers on ScreenSettings
@@ -891,7 +891,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-077 [open] The share page shows the klant the link's internal label
+## GAP-077 [resolved in v1.9] The share page shows the klant the link's internal label
 - **Type:** suspected design bug
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenSharePage header; ShareLinkRow
@@ -902,7 +902,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-078 [open] The share page never says how to pay
+## GAP-078 [resolved in v1.9] The share page never says how to pay
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenSharePage totals card; DocOverview
@@ -913,7 +913,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-079 [open] The share page shows a klant no pictures of their prints
+## GAP-079 [resolved in v1.9] The share page shows a klant no pictures of their prints
 - **Type:** improvement idea
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenSharePage line list
@@ -924,7 +924,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-080 [open] Openstaand is one long list and does not show age
+## GAP-080 [resolved in v1.9] Openstaand is one long list and does not show age
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenOutstanding / OutstandingGroup
@@ -935,7 +935,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-081 [open] Deel-links cannot be filtered, and duplicate labels pass silently
+## GAP-081 [resolved in v1.9] Deel-links cannot be filtered, and duplicate labels pass silently
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenShareLinks / ShareLinkRow
@@ -946,7 +946,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-082 [open] The invoice list does not say whether an invoice is paid
+## GAP-082 [resolved in v1.9] The invoice list does not say whether an invoice is paid
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenInvoices
@@ -957,7 +957,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-083 [open] Instellingen saves per section with no warning about unsaved edits
+## GAP-083 [resolved in v1.9] Instellingen saves per section with no warning about unsaved edits
 - **Type:** missing state
 - **Found while:** the UX review of 1.0
 - **Where needed:** ScreenSettings
@@ -968,7 +968,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-084 [open] API-docs puts a bordered card around a renderer that draws its own frame
+## GAP-084 [resolved in v1.9] API-docs puts a bordered card around a renderer that draws its own frame
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** ScreenApiDocs
@@ -979,7 +979,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-085 [open] Video files are indexed but can never be watched
+## GAP-085 [resolved in v1.9] Video files are indexed but can never be watched
 - **Type:** missing component
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** AssetListItem on ScreenPrintDetail
@@ -990,7 +990,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-086 [open] Only one model can be viewed when a print has several
+## GAP-086 [resolved in v1.9] Only one model can be viewed when a print has several
 - **Type:** missing state
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** Viewer3D on ScreenPrintDetail
@@ -1001,7 +1001,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-087 [open] The lost-connection state is announced twice at once
+## GAP-087 [resolved in v1.9] The lost-connection state is announced twice at once
 - **Type:** improvement idea
 - **Found while:** fixing the toast pile-up from the owner's walkthrough
 - **Where needed:** OfflineBanner and Toasts; ScreenSystemStates
@@ -1011,3 +1011,25 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** Nothing; the pile-up itself is fixed.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
+
+## GAP-088 [open] DocOverview still puts the internal link label on the customer's PDF
+- **Type:** conflict
+- **Found while:** implementing v1.9, GAP-077
+- **Where needed:** DocOverview; `backend/src/finance/pdf.ts`, `backend/src/sharing/overview.ts`
+- **What is missing or wrong:** ScreenSharePage 1.9 resolves GAP-077 with "The link label is internal and no longer appears on the page, in the PDF title or in the tab title". DocOverview's anatomy was not changed and still reads: 'Title "Overzicht", the sub-line is the link label.' The Overzicht PDF is downloaded by the klant, so leaving the label in its sub-line defeats the gap it is meant to resolve, but the two documents now disagree and nothing says what the sub-line should hold instead.
+- **Why it matters:** this is the same privacy point as GAP-077, on the one artefact the klant keeps. Labels in this instance read "PR 8 review" and "log check".
+- **Proposal:** drop the sub-line from the Overzicht, or give it something customer-facing such as the period covered or the date of the overview. Please say which, and update DocOverview so the two specs agree.
+- **Blocked:** nothing. The label is left out of the PDF (an empty sub-line) until DocOverview says what belongs there, marked `ds-gap: GAP-088`.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-089 [open] A video-only print cannot show a poster frame as its thumbnail
+- **Type:** missing component
+- **Found while:** implementing v1.9, GAP-085
+- **Where needed:** VideoPlayer and Thumbnail; `backend/src/thumbnails/service.ts`
+- **What is missing or wrong:** VideoPlayer 1.9 says "when a print has no image and no model, its thumbnail is the poster frame of its first video (`pp-thumb poster` ... with a 20px play badge)". The player itself is built and the dialog shows a frame, because a browser can decode the file. The **thumbnail is served by the backend**, which has no video decoder: it renders PNG, reads 3MF previews and rasterises STL, and the only media library it carries is `@resvg/resvg-js` (SVG). Extracting a frame server-side needs a new dependency such as ffmpeg, which is a decision about what the image must ship, not a design decision.
+- **Why it matters:** small in this library (2 prints of 83 are video-only), but those 2 show "Geen voorbeeld" while a perfectly good frame exists, and the share page shows them to a klant.
+- **Proposal:** either (a) add a video decoder to the image and generate the poster at index time, with the `pp-thumb poster` look and the play badge as specified, or (b) say the thumbnail stays "Geen voorbeeld" for a video-only print and drop the poster rule from VideoPlayer. The owner decides, since (a) grows the container.
+- **Blocked:** the poster thumbnail only. The player, its states, the unsupported-container case and the download all work.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9

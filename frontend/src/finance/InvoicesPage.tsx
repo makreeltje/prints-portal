@@ -4,6 +4,7 @@ import { useId, useState } from 'react';
 import { useCurrentUser } from '../auth/context';
 import { Dialog } from '../components/Dialog';
 import { GenericError } from '../components/FieldError';
+import { PaymentBadge } from './money';
 import { formatDate, formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
@@ -134,6 +135,7 @@ export function InvoicesPage() {
                       {t('invoices.col.amount')}
                     </th>
                     <th scope="col">{t('invoice.type')}</th>
+                    <th scope="col">{t('print.status')}</th>
                     <th scope="col" className="r">
                       {t('invoices.col.actions')}
                     </th>
@@ -153,6 +155,9 @@ export function InvoicesPage() {
                             {t('invoices.relates', { number: invoice.creditsNumber })}
                           </div>
                         )}
+                      </td>
+                      <td>
+                        <InvoiceStatus invoice={invoice} />
                       </td>
                       <td className="r">
                         <div className="pp-row pp-end pp-gap-1 pp-nowrap">
@@ -330,4 +335,26 @@ function CreditDialog({ invoice, onClose }: { invoice: InvoiceSummary; onClose: 
       </div>
     </Dialog>
   );
+}
+
+/**
+ * An invoice's state is read from its orders now, not stored (ScreenInvoices
+ * 1.9, GAP-082). A creditnota is not collected, so it shows no status.
+ */
+function InvoiceStatus({ invoice }: { invoice: InvoiceSummary }) {
+  if (invoice.kind === 'credit') {
+    return (
+      <span className="pp-muted" aria-label={t('invoices.noStatus')}>
+        —
+      </span>
+    );
+  }
+  const settled = invoice.paid + invoice.writtenOff;
+  if (invoice.open <= 0 && invoice.writtenOff >= invoice.total && invoice.paid <= 0) {
+    return <span className="pp-badge neutral">{t('status.writtenOff')}</span>;
+  }
+  // A mix of paid and written off with nothing open counts as paid.
+  if (invoice.open <= 0) return <PaymentBadge status="paid" />;
+  if (settled <= 0) return <PaymentBadge status="open" />;
+  return <PaymentBadge status="partial" />;
 }

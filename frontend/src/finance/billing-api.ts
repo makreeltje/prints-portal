@@ -69,6 +69,8 @@ export interface InvoiceSummary {
   total: number;
   paid: number;
   open: number;
+  /** Written off on this invoice's orders (ScreenInvoices 1.9). */
+  writtenOff: number;
   creditsNumber: string | null;
 }
 

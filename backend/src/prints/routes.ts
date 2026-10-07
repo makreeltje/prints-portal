@@ -26,6 +26,10 @@ import {
   listCustomers,
   listPrints,
   MAX_PAGE_SIZE,
+  PRINT_SORTS,
+  PRINT_STATUS_FILTERS,
+  type PrintSort,
+  type PrintStatusFilter,
 } from './queries.js';
 
 export interface PrintRouteDependencies {
@@ -41,10 +45,12 @@ export interface PrintRouteDependencies {
 const MANAGE: readonly Role[] = ['Admin', 'Editor'];
 const ADMIN: readonly Role[] = ['Admin'];
 
+const UUID_PARAM = { type: 'string', pattern: '^[0-9a-fA-F-]{36}$' } as const;
+
 const idParams = {
   type: 'object',
   required: ['id'],
-  properties: { id: { type: 'string', pattern: '^[0-9a-fA-F-]{36}$' } },
+  properties: { id: UUID_PARAM },
 } as const;
 const folderParams = {
   type: 'object',
@@ -124,6 +130,8 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
       deleted?: boolean;
       offset?: number;
       limit?: number;
+      sort?: PrintSort;
+      status?: PrintStatusFilter;
     };
   }>(
     '/api/prints',
@@ -139,6 +147,8 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
             deleted: { type: 'boolean' },
             offset: { type: 'integer', minimum: 0 },
             limit: { type: 'integer', minimum: 1, maximum: MAX_PAGE_SIZE },
+            sort: { type: 'string', enum: [...PRINT_SORTS] },
+            status: { type: 'string', enum: [...PRINT_STATUS_FILTERS] },
           },
         },
       },
@@ -153,6 +163,8 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
         includeDeleted: query.deleted === true && isAdmin(request),
         offset: query.offset,
         limit: query.limit,
+        sort: query.sort,
+        status: query.status,
         withCost: sessionUser(request).role !== 'User',
       });
     },
@@ -187,20 +199,31 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
     },
   );
 
-  // The 3D viewer's model: newest STL, else newest 3MF. Users may see it (owner decision).
-  app.get<{ Params: { id: string } }>(
+  /**
+   * The viewer's model. Without `asset` the first by file name, which is the
+   * one the thumbnail is rendered from; with it, that model of this print
+   * (ModelPicker 1.9, GAP-086). Users may see it (owner decision).
+   */
+  app.get<{ Params: { id: string }; Querystring: { asset?: string } }>(
     '/api/prints/:id/model',
-    { schema: { params: idParams } },
+    {
+      schema: {
+        params: idParams,
+        querystring: { type: 'object', properties: { asset: UUID_PARAM } },
+      },
+    },
     async (request, reply) => {
       if ((await authorise(request, reply, request.params.id)) === null) return reply;
-      const model = await db
+      let query = db
         .selectFrom('print_assets')
         .select(['relative_path', 'file_name', 'type'])
         .where('print_record_id', '=', request.params.id)
-        .where('type', 'in', ['stl', '3mf'])
-        .orderBy('type', 'desc') // 'stl' before '3mf'
-        .orderBy('last_write_utc', 'desc')
-        .executeTakeFirst();
+        .where('type', 'in', ['stl', '3mf']);
+      query =
+        request.query.asset === undefined
+          ? query.orderBy('file_name')
+          : query.where('id', '=', request.query.asset);
+      const model = await query.executeTakeFirst();
       if (model === undefined) return reply.code(404).send({ error: 'no_model' });
       return sendPrintFile(request, reply, deps.printsRoot, model.relative_path, {
         download: false,

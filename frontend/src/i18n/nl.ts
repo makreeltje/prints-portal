@@ -144,6 +144,65 @@ export const nl = {
   'cost.source.estimated': 'Geschat',
   'cost.noPrinterProfile': 'Geen printerprofiel, stroomkosten zijn niet meegerekend.',
   'cost.incomplete': 'Onvolledig',
+  'cost.missingWattage': 'Geen vermogen voor {printer}.', // component copy: CostBreakdown
+  'cost.missingWattageAndPrice': 'Geen vermogen voor {printer} en geen prijs per kWh.',
+  'cost.setWattage': 'Vermogen instellen',
+  'cost.setInputs': 'Instellen',
+  'cost.askAdmin': 'Vraag een beheerder het vermogen in te stellen.',
+  'cost.missingTariff': 'Geen prijs per kWh.',
+  'menu.more': 'Meer acties', // component copy: OverflowMenu
+  'print.preview': 'Voorbeeld', // component copy: PrintRow
+  'invoices.noStatus': 'Geen status', // component copy: ScreenInvoices
+  'video.play': 'Afspelen {bestandsnaam}', // component copy: VideoPlayer
+  'video.loading': 'Video laden…',
+  'video.error.title': 'De video kon niet worden afgespeeld.',
+  'video.error.body': 'Download het bestand om het in een andere speler te openen.',
+  'video.unsupported.title': 'Dit formaat speelt niet in de browser.',
+  'video.unsupported.body': 'Download het bestand om het af te spelen.',
+  'models.group': 'Modellen', // component copy: ModelPicker
+  'models.caption': 'Model {n} van {totaal}: {bestandsnaam}',
+  'models.loading': 'Model laden…',
+  'models.select': 'Model',
+  'settings.dirty': 'Niet opgeslagen', // component copy: ScreenSettings
+  'settings.undo': 'Ongedaan maken',
+  'settings.leave.title': 'Wijzigingen niet opgeslagen',
+  'settings.leave.body':
+    'In {secties} staan wijzigingen die nog niet zijn opgeslagen. Als je nu weggaat, gaan ze verloren.',
+  'settings.leave.stay': 'Terug naar instellingen',
+  'settings.leave.go': 'Verlaten zonder opslaan',
+  'settings.printer.noPower': 'Vermogen ontbreekt',
+  'settings.printer.noPower.help':
+    'Zonder vermogen kunnen de stroomkosten van prints op deze printer niet worden berekend.',
+  'shareLinks.filter.label': 'Toon', // component copy: ScreenShareLinks
+  'shareLinks.filter.active': 'Actief',
+  'shareLinks.filter.inactive': 'Inactief',
+  'shareLinks.filter.all': 'Alle',
+  'shareLinks.emptyActive.title': 'Geen actieve Deel-links',
+  'shareLinks.emptyActive.body': 'Alle links zijn verlopen of ingetrokken. Maak een nieuwe link.',
+  'shareLinks.dup.warning':
+    'Je hebt voor {klant} al een link met dit label. Je kunt hem toch maken.',
+  'shareLinks.once':
+    'De volledige link zie je alleen bij het maken. Kwijt? Maak een nieuwe link en trek de oude in.',
+  'outstanding.showAll': 'Toon alle {n} regels', // component copy: OutstandingGroup
+  'outstanding.groupLabel': '{customer}, {count} prints, oudste {days} dagen, {amount}',
+  'strip.overview': 'Overzicht', // component copy: CustomerChips
+  'strip.overview.label': 'Klantenoverzicht ({n} klanten)',
+  'strip.dialog.title': 'Alle klanten',
+  'menu.invoice': 'Factuur maken', // component copy: CustomerCard
+  'customers.tile': '{customer}, {count, plural, one {# print} other {# prints}}',
+  'filter.sort': 'Sorteren', // component copy: FilterBar
+  'filter.status': 'Status',
+  'filter.status.all': 'Alle statussen',
+  'filter.status.noPrice': 'Geen prijs',
+  'filter.status.open': 'Open',
+  'filter.status.paid': 'Betaald',
+  'filter.status.writtenOff': 'Afgeschreven',
+  'filter.status.incompleteCost': 'Onvolledige kosten',
+  'sort.newest': 'Nieuwste eerst',
+  'sort.oldest': 'Oudste eerst',
+  'sort.priceDesc': 'Prijs: hoog naar laag',
+  'sort.priceAsc': 'Prijs: laag naar hoog',
+  'sort.customer': 'Klant: A tot Z',
   'cost.adjust': 'Aanpassen',
   'cost.notCounted': 'Niet meegeteld: {count} bestanden',
   'cost.adjustTitle': 'Kosten aanpassen',
@@ -321,6 +380,10 @@ export const nl = {
   'customers.notBilledHelp':
     'Voor een klant die niet wordt gefactureerd (bijvoorbeeld je eigen prints) zie je alleen de kosten.',
   'settings.theme': 'Thema',
+  'shell.theme.label': 'Thema: {stand}. Wissel naar {volgende}.', // component copy: AppShell
+  'shell.theme.system': 'Systeem',
+  'shell.theme.light': 'Licht',
+  'shell.theme.dark': 'Donker',
   'settings.theme.system': 'Systeem', // component copy: ScreenSettings
   'settings.theme.light': 'Licht', // component copy: ScreenSettings
   'settings.theme.dark': 'Donker', // component copy: ScreenSettings
@@ -509,6 +572,18 @@ export const nl = {
   'share.revoked': 'Ingetrokken',
   'share.created': 'Deel-link gemaakt',
   'share.onceWarning': 'Deze link zie je maar één keer. Kopieer hem nu.',
+  'share.pay.title': 'Betalen', // component copy: ScreenSharePage
+  'share.pay.iban': 'IBAN',
+  'share.pay.name': 'T.n.v.',
+  'share.pay.amount': 'Bedrag',
+  'share.pay.ref': 'Kenmerk',
+  'share.pay.copy.iban': 'Kopieer IBAN',
+  'share.pay.copy.name': 'Kopieer naam',
+  'share.pay.copy.amount': 'Kopieer bedrag',
+  'share.pay.copy.ref': 'Kopieer kenmerk',
+  'share.pay.copied': '{veld} gekopieerd',
+  'share.pay.hint': 'Vermeld bij je betaling het kenmerk.',
+  'shareLinks.label.help': 'Alleen voor jezelf, de klant ziet dit niet.',
   'share.hint': 'Deel via WhatsApp of mail',
   'share.copyFailed': 'Selecteer en kopieer handmatig', // component copy: TokenReveal
   'share.empty': 'Nog geen Deel-links',

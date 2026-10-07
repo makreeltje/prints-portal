@@ -21,6 +21,8 @@ function listQuery(filter: PrintFilter, offset: number): string {
   if (filter.search.trim() !== '') params.set('q', filter.search.trim());
   if (filter.archived) params.set('archived', 'true');
   if (filter.deleted) params.set('deleted', 'true');
+  if (filter.sort !== 'newest') params.set('sort', filter.sort);
+  if (filter.status !== null) params.set('status', filter.status);
   params.set('offset', String(offset));
   params.set('limit', String(PAGE_SIZE));
   return params.toString();
@@ -47,8 +49,10 @@ export function fetchTags() {
 
 export const thumbnailUrl = (print: { id: string; version: string }) =>
   `/api/prints/${print.id}/thumbnail?v=${encodeURIComponent(print.version)}`;
-export const modelUrl = (print: { id: string; version: string }) =>
-  `/api/prints/${print.id}/model?v=${encodeURIComponent(print.version)}`;
+export const modelUrl = (print: { id: string; version: string }, assetId?: string) =>
+  `/api/prints/${print.id}/model?v=${encodeURIComponent(print.version)}${
+    assetId === undefined ? '' : `&asset=${encodeURIComponent(assetId)}`
+  }`;
 export const downloadUrl = (assetId: string) => `/api/assets/${assetId}/download`;
 
 export const deletePrint = (id: string) => api(`/api/prints/${id}`, { method: 'DELETE' });

@@ -319,12 +319,14 @@ describe('CostBreakdown', () => {
         notBilled
         manual={false}
         onAdjust={() => undefined}
+        printerModel="Creality K2"
       />,
       { state: signedIn('Editor'), path: '/' },
     );
-    expect(
-      screen.getByText('Geen printerprofiel, stroomkosten zijn niet meegerekend.'),
-    ).toBeInTheDocument();
+    // CostBreakdown 1.9: one line naming the input and where to set it, and
+    // never the old "Kosten ontbreken" repeat (GAP-073, GAP-076).
+    expect(screen.getByText(/Geen vermogen voor Creality K2\./)).toBeInTheDocument();
+    expect(screen.queryByText('Kosten ontbreken')).not.toBeInTheDocument();
     expect(screen.getByText('Onvolledig')).toBeInTheDocument();
     // Niet factureren: the title reads "Kosten".
     expect(screen.getByRole('heading', { name: 'Kosten' })).toBeInTheDocument();

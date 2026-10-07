@@ -64,10 +64,17 @@ describe('ShareLinksPage', () => {
   it('groups the links per klant with their expiry and status', async () => {
     stubFetch({ 'GET /api/share-links': () => ({ json: { links } }) });
     renderWithAuth(<ShareLinksPage />, { state: signedIn('Admin') });
-    const joey = await screen.findByRole('region', { name: 'Joey' });
+    await screen.findByRole('region', { name: 'Joey' });
+    // ScreenShareLinks 1.9: the page opens on Actief, so a klant whose links
+    // are all dead is not listed until "Alle".
+    expect(
+      screen.getAllByRole('region').map((region) => region.getAttribute('aria-label')),
+    ).toEqual(['Bas', 'Joey']);
+    await userEvent.click(screen.getByRole('button', { name: /^Alle/ }));
     expect(
       screen.getAllByRole('region').map((region) => region.getAttribute('aria-label')),
     ).toEqual(['Bas', 'Denise', 'Joey']);
+    const joey = screen.getByRole('region', { name: 'Joey' });
     const rows = within(joey).getAllByRole('listitem');
     expect(within(rows[0] as HTMLElement).getByText('Over 30 dagen')).toBeInTheDocument();
     expect(within(joey).queryByText('Over 1 dagen')).toBeNull();
@@ -161,7 +168,6 @@ const billed: ShareView = {
   billed: true,
   studio: { name: 'Voorbeeld 3D', hasLogo: false },
   customer: 'Joey',
-  label: 'Q2 overzicht',
   expiresAt: inDays(30),
   lines: [
     {
@@ -173,6 +179,7 @@ const billed: ShareView = {
       paid: 5,
       remaining: 6.89,
       status: 'partial',
+      printId: 'p1',
     },
     {
       id: 'o2',
@@ -183,9 +190,11 @@ const billed: ShareView = {
       paid: 0,
       remaining: null,
       status: 'noPrice',
+      printId: 'p1',
     },
   ],
   totals: { total: 11.89, paid: 5, open: 6.89 },
+  pay: null,
 };
 
 function renderShare() {
@@ -211,7 +220,8 @@ describe('SharePage', () => {
     ).toBeInTheDocument();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByText('Voorbeeld 3D')).toBeInTheDocument();
-    expect(screen.getByText('Q2 overzicht')).toBeInTheDocument();
+    // The link label is internal: the klant never sees it (ScreenSharePage 1.9).
+    expect(screen.queryByText('Q2 overzicht')).not.toBeInTheDocument();
     expect(screen.getByText(/^Deze link verloopt over 30 dagen \(/)).toBeInTheDocument();
     const items = screen.getAllByRole('listitem');
     expect(items).toHaveLength(2);
@@ -258,6 +268,7 @@ describe('SharePage', () => {
       ...billed,
       lines: [billed.lines[1]],
       totals: { total: 0, paid: 0, open: 0 },
+      pay: null,
     };
     stubFetch({
       [`GET /api/share/${TOKEN}`]: () => ({ json: unpriced }),

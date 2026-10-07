@@ -1,6 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CircleCheck, RotateCw, TriangleAlert } from 'lucide-react';
-import { useId, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { joinSections, useDirtySections } from './useDirtySections';
+
+/** What a section calls to say whether it holds unsaved edits. */
+type DirtyReport = (key: string, title: string, isDirty: boolean) => void;
 import { api } from '../api/client';
 import { FieldError, GenericError } from '../components/FieldError';
 import { useToast } from '../components/toast-context';
@@ -35,11 +41,60 @@ const THEME_LABELS: Record<(typeof THEME_ORDER)[number], MessageKey> = {
  */
 export function SettingsPage() {
   const settings = useQuery({ queryKey: financeKeys.settings, queryFn: fetchSettings });
+  const { titles, report } = useDirtySections();
+  const navigate = useNavigate();
+  const [leaveTo, setLeaveTo] = useState<string | null>(null);
+  const dirtyRef = useRef(false);
+  useEffect(() => {
+    dirtyRef.current = titles.length > 0;
+  }, [titles.length]);
+
+  /*
+   * Leaving with unsaved edits asks first (ScreenSettings 1.9). The app uses a
+   * plain BrowserRouter, so there is no useBlocker; catching the link before it
+   * navigates does the same job for every in-app link, and the browser's own
+   * prompt covers closing the tab.
+   */
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      if (!dirtyRef.current || event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const link = (event.target as HTMLElement | null)?.closest('a');
+      const href = link?.getAttribute('href');
+      if (link === null || link === undefined || href === null || href === undefined) return;
+      if (link.target === '_blank' || link.hasAttribute('download')) return;
+      if (!href.startsWith('/') || href.startsWith('//')) return;
+      if (href === window.location.pathname) return;
+      event.preventDefault();
+      setLeaveTo(href);
+    };
+    document.addEventListener('click', onClick, true);
+    return () => {
+      document.removeEventListener('click', onClick, true);
+    };
+  }, []);
   return (
     <>
       <div className="pp-ph">
         <h1>{t('settings.title')}</h1>
       </div>
+      <ConfirmDialog
+        open={leaveTo !== null}
+        title={t('settings.leave.title')}
+        body={t('settings.leave.body', { secties: joinSections(titles) })}
+        confirmLabel={t('settings.leave.go')}
+        cancelLabel={t('settings.leave.stay')}
+        destructive
+        onConfirm={() => {
+          const target = leaveTo;
+          setLeaveTo(null);
+          if (target !== null) void navigate(target);
+          return Promise.resolve();
+        }}
+        onClose={() => {
+          setLeaveTo(null);
+        }}
+      />
       <div className="pp-col pp-gap-4">
         <GeneralSection />
         {settings.isPending ? (
@@ -50,7 +105,7 @@ export function SettingsPage() {
           <>
             <PricingSection pricing={settings.data.pricing} />
             <PrintersSection printers={settings.data.printers} />
-            <CompanySection company={settings.data.company} />
+            <CompanySection company={settings.data.company} report={report} />
           </>
         )}
         <CustomersSection />
@@ -60,11 +115,28 @@ export function SettingsPage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  children,
+  dirty = false,
+}: {
+  title: string;
+  children: ReactNode;
+  /** Shows the "Niet opgeslagen" badge (ScreenSettings 1.9, GAP-083). */
+  dirty?: boolean;
+}) {
   const id = useId();
   return (
     <section className="pp-card pp-sec" aria-labelledby={id}>
-      <h2 id={id}>{title}</h2>
+      <div className="pp-row pp-items-center pp-gap-2">
+        <h2 id={id}>{title}</h2>
+        {dirty && (
+          <span className="pp-badge info">
+            <TriangleAlert className="pp-ico" aria-hidden="true" />
+            {t('settings.dirty')}
+          </span>
+        )}
+      </div>
       {children}
     </section>
   );
@@ -132,17 +204,29 @@ function GeneralSection() {
   );
 }
 
-function CompanySection({ company }: { company: Settings['company'] }) {
+function CompanySection({
+  company,
+  report,
+}: {
+  company: Settings['company'];
+  report: DirtyReport;
+}) {
   const id = useId();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const [values, setValues] = useState({
+  const saved = {
     name: company.name,
     iban: company.iban,
     address: company.address,
     email: company.email ?? '',
     phone: company.phone ?? '',
-  });
+  };
+  const [values, setValues] = useState(saved);
+  const title = t('settings.company');
+  const dirty = JSON.stringify(values) !== JSON.stringify(saved);
+  useEffect(() => {
+    report('company', title, dirty);
+  }, [report, title, dirty]);
   const [emailInvalid, setEmailInvalid] = useState(false);
   const [busy, setBusy] = useState(false);
   const field = (key: keyof typeof values, label: MessageKey, multiline = false) => (
@@ -199,7 +283,7 @@ function CompanySection({ company }: { company: Settings['company'] }) {
     }
   };
   return (
-    <Section title={t('settings.company')}>
+    <Section title={title} dirty={dirty}>
       <span className="pp-help">{t('settings.companyHelp')}</span>
       <form
         className="pp-col pp-gap-3"
@@ -218,11 +302,27 @@ function CompanySection({ company }: { company: Settings['company'] }) {
           {field('phone', 'settings.phoneOptional')}
         </div>
         <LogoField />
-        <div>
-          <button type="submit" className="pp-btn pp-btn-primary" disabled={busy} aria-busy={busy}>
+        <div className="pp-row pp-gap-2">
+          <button
+            type="submit"
+            className="pp-btn pp-btn-primary"
+            disabled={busy || !dirty}
+            aria-busy={busy}
+          >
             {busy && <span className="pp-spin" aria-hidden="true" />}
             {t('common.save')}
           </button>
+          {dirty && (
+            <button
+              type="button"
+              className="pp-btn pp-btn-ghost"
+              onClick={() => {
+                setValues(saved);
+              }}
+            >
+              {t('settings.undo')}
+            </button>
+          )}
         </div>
       </form>
     </Section>

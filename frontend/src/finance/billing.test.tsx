@@ -78,6 +78,14 @@ const outstanding: Outstanding = {
   ],
 };
 
+/** OutstandingGroup 1.9 is a `<details>`: open a klant's group and return it. */
+async function openGroup(name: string): Promise<HTMLElement> {
+  const group = await screen.findByRole('group', { name });
+  const summary = group.querySelector('summary');
+  if (summary !== null && !(group as HTMLDetailsElement).open) await userEvent.click(summary);
+  return group;
+}
+
 describe('OutstandingPage', () => {
   it('shows tiles and groups, and marks a klant paid after confirming', async () => {
     const calls = stubFetch({
@@ -85,19 +93,20 @@ describe('OutstandingPage', () => {
       'POST /api/outstanding/Joey/mark-paid': () => ({ json: { orders: 2, amount: 40.67 } }),
     });
     renderWithAuth(<OutstandingPage />, { state: signedIn('Editor'), path: '/openstaand' });
-    const joey = await screen.findByRole('region', { name: 'Joey' });
+    const joey = await openGroup('Joey');
     expect(screen.getAllByText('Totaal openstaand').length).toBeGreaterThan(0);
     expect(screen.getByText('uit 3 prints')).toBeInTheDocument();
     expect(screen.getByText('Telefoonhouder · Denise')).toBeInTheDocument();
     // Oldest klant first; partial lines show the remainder of the price.
-    const regions = screen.getAllByRole('region').map((r) => r.getAttribute('aria-labelledby'));
-    expect(regions).toHaveLength(2);
+    const groups = screen.getAllByRole('group').map((r) => r.getAttribute('aria-labelledby'));
+    expect(groups).toHaveLength(2);
     expect(within(joey).getByText('2 prints · oudste 12 dagen open')).toBeInTheDocument();
     expect(text(within(joey).getByText(/^van /).textContent)).toBe('van € 11,89');
     expect(within(joey).getByText('Gearchiveerd')).toBeInTheDocument();
-    const late = screen.getByText('20 dagen open');
-    expect(late.closest('.pp-badge')).toHaveClass('unpaid');
-    expect(within(joey).getByText('12 dagen open').closest('.pp-badge')).toHaveClass('neutral');
+    // Three age steps now (GAP-080): neutral to 30 days, warning to 90, unpaid above.
+    expect(within(joey).getAllByText('12 dagen open')[0]?.closest('.pp-badge')).toHaveClass(
+      'neutral',
+    );
     expect(within(joey).getByRole('link', { name: 'Herinnering (PDF)' })).toHaveAttribute(
       'href',
       '/api/customers/Joey/reminder.pdf',
@@ -122,7 +131,7 @@ describe('OutstandingPage', () => {
       'POST /api/orders/o1/payments': () => ({ json: {} }),
     });
     renderWithAuth(<OutstandingPage />, { state: signedIn('Editor') });
-    const joey = await screen.findByRole('region', { name: 'Joey' });
+    const joey = await openGroup('Joey');
     const line = within(joey).getByText('Babybox locks').closest('li') as HTMLElement;
     await userEvent.click(within(line).getByRole('button', { name: 'Markeer als betaald' }));
     const dialog = screen.getByRole('dialog', { name: 'Markeer als betaald' });
@@ -147,7 +156,7 @@ describe('OutstandingPage', () => {
   it('is read-only for Users and says when nothing is open', async () => {
     stubFetch({ 'GET /api/outstanding': () => ({ json: outstanding }) });
     const view = renderWithAuth(<OutstandingPage />, { state: signedIn('User') });
-    await screen.findByRole('region', { name: 'Joey' });
+    await openGroup('Joey');
     expect(screen.queryByRole('button')).toBeNull();
     expect(screen.queryByRole('link')).toBeNull();
     view.unmount();

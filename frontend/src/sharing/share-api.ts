@@ -30,6 +30,7 @@ export interface BilledShareLine {
   paid: number;
   remaining: number | null;
   status: 'paid' | 'open' | 'partial' | 'noPrice';
+  printId: string;
 }
 
 export interface PlainShareLine {
@@ -37,13 +38,23 @@ export interface PlainShareLine {
   description: string;
   project: string | null;
   date: string;
+  printId: string;
 }
 
 interface ShareHead {
   studio: { name: string; hasLogo: boolean };
   customer: string;
-  label: string;
   expiresAt: string | null;
+}
+
+/** How to pay; absent when nothing is open or the studio has no IBAN. */
+export interface SharePayment {
+  iban: string;
+  name: string;
+  amount: number;
+  reference: string;
+  email: string | null;
+  phone: string | null;
 }
 
 export type ShareView =
@@ -51,6 +62,7 @@ export type ShareView =
       billed: true;
       lines: BilledShareLine[];
       totals: { total: number; paid: number; open: number };
+      pay: SharePayment | null;
     })
   | (ShareHead & { billed: false; lines: PlainShareLine[] });
 
@@ -80,3 +92,6 @@ export const overviewUrl = (token: string, onlyOpen: boolean) =>
   `${tokenPath(token)}/overview.pdf${onlyOpen ? '?onlyOpen=true' : ''}`;
 
 export const shareLogoUrl = (token: string) => `${tokenPath(token)}/logo`;
+
+export const shareThumbnailUrl = (token: string, printId: string) =>
+  `${tokenPath(token)}/prints/${printId}/thumbnail`;

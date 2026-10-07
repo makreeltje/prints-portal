@@ -357,6 +357,18 @@ export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDe
           'i.paid_cents',
           'i.open_cents',
           'c.number as credits_number',
+          // Written off on this invoice's own orders, so the list can tell
+          // "Afgeschreven" from "Betaald" (ScreenInvoices 1.9, GAP-082).
+          (eb) =>
+            eb
+              .selectFrom('print_orders as o')
+              .select((inner) =>
+                inner.fn
+                  .coalesce(inner.fn.sum<number>('o.written_off_cents'), inner.val(0))
+                  .as('written_off'),
+              )
+              .whereRef('o.invoice_id', '=', 'i.id')
+              .as('written_off_cents'),
         ])
         .orderBy('i.year', 'desc')
         .orderBy('i.sequence', 'desc');
@@ -383,6 +395,7 @@ export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDe
           total: row.total_cents / 100,
           paid: row.paid_cents / 100,
           open: row.open_cents / 100,
+          writtenOff: (row.written_off_cents ?? 0) / 100,
           creditsNumber: row.credits_number,
         })),
       };

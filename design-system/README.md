@@ -1,4 +1,4 @@
-Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 1.8 (see `changelog.md`).
+Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 1.9 (see `changelog.md`).
 
 ## Principles
 
@@ -99,7 +99,7 @@ Customers Joey, Denise, Wouter (and Rick, niet factureren); project "Babybox loc
 - **Admin** and **Editor** delete prints (a project folder is one print) and whole klanten, and manage tags on the page "Tags". Only **Admin** sees and restores deleted prints and klanten ("Toon verwijderde"). **User** sees name, price, status, thumbnail, 3D model and tags read-only: no files, downloads, costs or notes, and no Tags page.
 - The print colour sits behind the thumbnail through `.pp-thumb.tinted` and `--c1`.
 - Tags are case-insensitively unique, at most 64 characters, with an optional colour from ten tokens (`tag-rose` to `tag-grey`). Chip text is `#141a33` or `#ffffff`.
-- Screens contain no raw layout values: use tokens and `bundle.css` classes. Only the data properties `--c1`, `--tag`, `--tag-ink` and preview scaffolding (`min-height` on `.pp-device`) remain inline.
+- Screens contain no raw layout values: use tokens and `bundle.css` classes. Only the data properties `--c1`, `--mix`, `--tag`, `--tag-ink` and preview scaffolding (`min-height` on `.pp-device`) remain inline.
 
 ## Orders, settings and stacking (1.4)
 
@@ -125,3 +125,6 @@ Scalar is the API-docs renderer (`.pp-scalar` mapping), the contrast report name
 
 ## Versie 1.8 (2026-10-07)
 Badges sit on an opaque `surface` base, the contrast report covers translucent tokens inside tinted rows, and a rule for third-party renderers (focusable scroll regions). Details: `changelog.md`.
+
+## Versie 1.9 (2026-10-07)
+A round driven by the real app (83 prints, 10 klanten): the share page (studio header, payment block, thumbnails), a print detail that fits the screen (capped viewer, one order card with sections, "⋯" menu), a finite dashboard and Openstaand (klant strip as one row, collapsed groups with age steps), sort and status filter, and three new components: ModelPicker, VideoPlayer and OverflowMenu. No token added, renamed or removed. Details: `changelog.md`.

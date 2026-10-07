@@ -163,9 +163,10 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     expect(data).toMatchObject({
       billed: true,
       customer: 'Joey',
-      label: 'Q4 overzicht',
       studio: { name: 'Voorbeeld 3D', hasLogo: false },
     });
+    // The label is internal: it never reaches the klant (ScreenSharePage 1.9).
+    expect(response.body).not.toContain('Q4 overzicht');
     if (!data.billed) throw new Error('billed view expected');
     expect(data.lines.map((line) => line.description)).toEqual(['Babybox locks', 'Joey']);
     expect(data.lines[0]).toMatchObject({
@@ -282,7 +283,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     expect(data.billed).toBe(false);
     expect(data.lines.length).toBeGreaterThan(0);
     for (const line of data.lines) {
-      expect(Object.keys(line).sort()).toEqual(['date', 'description', 'id', 'project']);
+      expect(Object.keys(line).sort()).toEqual(['date', 'description', 'id', 'printId', 'project']);
     }
     expect(response.body).not.toMatch(/price|paid|total|open/i);
     const pdf = await t.as(null, { url: `/api/share/${token}/overview.pdf` });
@@ -301,7 +302,6 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     const text = pdfPlainText(response.rawPayload);
     for (const part of [
       'Overzicht',
-      'Q4 overzicht',
       'Geldig tot',
       '4 nov 2026',
       'Babybox locks',
@@ -365,6 +365,91 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     expect(logo.statusCode).toBe(200);
     expect(logo.headers['content-type']).toBe('image/png');
     expect((await view(token)).studio.hasLogo).toBe(true);
+  });
+
+  it('gives the payment details only while something is open and an IBAN is set', async () => {
+    await start();
+    const { token } = await create('Joey');
+
+    // Without an IBAN there is nothing to pay into: no block, no empty frame.
+    await t.as(admin, {
+      method: 'PUT',
+      url: '/api/settings/company',
+      payload: {
+        name: 'Voorbeeld 3D',
+        iban: '',
+        address: 'Voorbeeldstraat 1',
+        email: null,
+        phone: null,
+      },
+    });
+    const before = await view(token);
+    if (!before.billed) throw new Error('billed view expected');
+    expect(before.totals.open).toBeGreaterThan(0);
+    expect(before.pay).toBeNull();
+
+    await t.as(admin, {
+      method: 'PUT',
+      url: '/api/settings/company',
+      payload: {
+        name: 'Voorbeeld 3D',
+        iban: 'NL00 BANK 0000 0000 00',
+        address: 'Voorbeeldstraat 1',
+        email: 'hallo@voorbeeld.nl',
+        phone: null,
+      },
+    });
+    const withIban = await view(token);
+    if (!withIban.billed) throw new Error('billed view expected');
+    expect(withIban.pay).toMatchObject({
+      iban: 'NL00 BANK 0000 0000 00',
+      name: 'Voorbeeld 3D',
+      // The amount is the open total, and the reference is the klant.
+      amount: withIban.totals.open,
+      reference: 'Joey',
+      email: 'hallo@voorbeeld.nl',
+      phone: null,
+    });
+
+    // Nothing open: no payment block either. Settle every line that is open.
+    for (const line of withIban.lines) {
+      if (line.remaining === null || line.remaining <= 0) continue;
+      await t.as(admin, {
+        method: 'POST',
+        url: `/api/orders/${line.id}/payments`,
+        payload: { amount: line.remaining },
+      });
+    }
+    const settled = await view(token);
+    if (!settled.billed) throw new Error('billed view expected');
+    expect(settled.totals.open).toBe(0);
+    expect(settled.pay).toBeNull();
+  });
+
+  it("serves a line thumbnail only for a print of this link's klant", async () => {
+    await start();
+    const { token } = await create('Joey');
+    const mine = await view(token);
+    const printId = mine.lines[0]?.printId;
+    expect(printId).toBeTypeOf('string');
+
+    // Another klant's print is not reachable with this token: the same 404.
+    const others = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
+      items: PrintSummary[];
+    }>();
+    const foreign = others.items.find((print) => print.customerFolder !== 'Joey');
+    expect(foreign).toBeDefined();
+    const refused = await t.as(null, {
+      url: `/api/share/${token}/prints/${foreign?.id ?? ''}/thumbnail`,
+    });
+    expect(refused.statusCode).toBe(404);
+    expect(refused.json()).toEqual({ error: 'not_found' });
+
+    // And a dead token reaches nothing at all.
+    const dead = await t.as(null, {
+      url: `/api/share/deadtoken/prints/${printId ?? ''}/thumbnail`,
+    });
+    expect(dead.statusCode).toBe(404);
   });
 
   it('rate-limits the public endpoints per address', async () => {

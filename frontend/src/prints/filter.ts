@@ -8,7 +8,8 @@ export function isFiltered(filter: PrintFilter): boolean {
     filter.tagIds.length > 0 ||
     filter.search.trim() !== '' ||
     filter.archived ||
-    filter.deleted
+    filter.deleted ||
+    filter.status !== null
   );
 }
 

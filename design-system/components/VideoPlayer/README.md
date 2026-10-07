@@ -1,0 +1,13 @@
+VideoPlayer plays a video asset of a print (GAP-085, new in 1.9). Timelapses were indexed and named but could only be downloaded.
+
+**Anatomy.** In AssetListItem a video row gets an icon button "Afspelen {bestandsnaam}" (`play` icon) before "Downloaden". It opens a Dialog (a bottom sheet at 480px and below) titled with the file name, holding the player and the footer buttons "Downloaden" and "Sluiten". The player is `pp-video`: 16:9, max 720px, `surface-2` ground, `border`, `radius-lg`, an HTML `<video controls preload="metadata">` with `object-fit: contain`. The browser's own controls are kept (they are keyboard and screen-reader accessible; we do not draw our own). **No autoplay**, no sound until the user presses play. **Poster frame:** the app asks for a frame at 1 second; the file list shows no poster, only the dialog does. **Print thumbnail:** when a print has no image and no model, its thumbnail is the poster frame of its first video (`pp-thumb poster`: `surface-2` ground, `contain`, no filament tint because a camera frame is not a rendering) with a 20px play badge (`pp-play`) at the bottom right; a print with a model keeps the model thumbnail. **States:** loading ("Video laden…" with a spinner), playing, error (`pp-alert unpaid`, role="alert": "De video kon niet worden afgespeeld." with a hint to download), **unsupported container** (`.mkv`, and any file the browser cannot decode: an `info` alert "Dit formaat speelt niet in de browser." in place of the player; the Download button stays and is the primary action). A user without access to the klant gets no play button, as for downloads. Archived prints whose files are gone show no play button, as for the model.
+
+**Tokens.** `surface-2`, `border`, `radius-lg`, `unpaid`/`unpaid-tint`, `info`/`info-tint`, `muted`, Dialog tokens.
+
+**States.** Closed, loading, playing, error, unsupported, phone sheet.
+
+**Accessibility.** Dialog focus is trapped and returns to the play button; Esc closes; the video has `aria-label` "Timelapse {naam}"; the native controls are used as they are; errors are `role="alert"`; the play badge on a thumbnail is decorative and has no name of its own (the print's name is the name).
+
+**Dutch copy.** Afspelen {bestandsnaam} | Video laden… | De video kon niet worden afgespeeld. | Download het bestand om het in een andere speler te openen. | Dit formaat speelt niet in de browser. | Download het bestand om het af te spelen. | Downloaden | Sluiten
+
+**To measure (owner):** how many prints have only a video and no model (the thumbnail rule), and how many videos are `.mkv` (those cannot play inline; converting to `.mp4` on upload would remove that state).

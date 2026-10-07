@@ -9,6 +9,7 @@ import {
   Layers,
   Link as LinkIcon,
   PenTool,
+  Play,
   TriangleAlert,
 } from 'lucide-react';
 import { useId, useState } from 'react';
@@ -16,6 +17,7 @@ import { SpoolPicker } from '../finance/SpoolPicker';
 import { formatDuration, formatFileSize, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { downloadUrl } from './api';
+import { VideoPlayer } from './VideoPlayer';
 import { ColourDot, StatusBadge } from './bits';
 import type { Asset, AssetType, Line } from './types';
 
@@ -93,6 +95,7 @@ type RowControls = AssetControls & { lockedHelp?: string };
 
 function AssetRow({ asset, controls }: { asset: Asset; controls?: RowControls }) {
   const Icon = ICONS[asset.type];
+  const [playing, setPlaying] = useState<Asset | null>(null);
   // A sliced 3MF: the parent row has only the download; plates are child rows.
   const plates = asset.type === '3mf' ? asset.lines : [];
   const own = asset.type === '3mf' ? undefined : asset.lines[0];
@@ -135,6 +138,18 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: RowControls })
           {own !== undefined && controls !== undefined && (
             <LineControls line={own} controls={controls} />
           )}
+          {asset.type === 'video' && (
+            <button
+              type="button"
+              className="pp-btn pp-btn-ghost pp-btn-icon"
+              aria-label={t('video.play', { bestandsnaam: asset.fileName })}
+              onClick={() => {
+                setPlaying(asset);
+              }}
+            >
+              <Play className="pp-ico" aria-hidden="true" />
+            </button>
+          )}
           <a
             className="pp-btn pp-btn-ghost pp-btn-icon"
             href={downloadUrl(asset.id)}
@@ -145,6 +160,15 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: RowControls })
           </a>
         </div>
       </div>
+      {playing !== null && (
+        <VideoPlayer
+          assetId={playing.id}
+          fileName={playing.fileName}
+          onClose={() => {
+            setPlaying(null);
+          }}
+        />
+      )}
       {own !== undefined && own.slots.length > 1 && <Slots line={own} controls={controls} />}
       {plates.length > 0 && (
         <ul className="app-plain-list">

@@ -37,6 +37,7 @@ function detail(): PrintDetail {
     printerModel: null,
     archivedAt: null,
     hasModel: false,
+    models: [],
     noBilling: false,
     markupPercent: null,
     spool: null,

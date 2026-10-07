@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Clock, Download, Link as LinkIcon } from 'lucide-react';
+import { Box, Check, Clock, Copy, Download, Link as LinkIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { ApiError } from '../api/client';
@@ -12,6 +12,8 @@ import {
   fetchShareView,
   overviewUrl,
   shareKeys,
+  shareThumbnailUrl,
+  type SharePayment,
   shareLogoUrl,
   type BilledShareLine,
   type PlainShareLine,
@@ -89,7 +91,7 @@ export function SharePage() {
             <div className="pp-card pp-share-card">
               <ul className="app-plain-list" aria-busy={view.isFetching}>
                 {data.lines.map((line) => (
-                  <BilledLine key={line.id} line={line} />
+                  <BilledLine key={line.id} token={token} line={line} />
                 ))}
               </ul>
             </div>
@@ -106,6 +108,7 @@ export function SharePage() {
               </dl>
             </div>
           )}
+          {data.pay !== null && <PaymentCard pay={data.pay} />}
           <a
             className="pp-btn pp-btn-primary pp-share-cta"
             href={overviewUrl(token, onlyOpen)}
@@ -146,7 +149,6 @@ function Head({ token, data }: { token: string; data: ShareView }) {
         <div className="pp-brand pp-p0">{data.studio.name}</div>
       )}
       <h1>{t('overview.for', { customer: data.customer })}</h1>
-      <span className="pp-muted">{data.label}</span>
       {data.expiresAt !== null && <ExpiryNotice expiresAt={data.expiresAt} />}
     </header>
   );
@@ -170,13 +172,173 @@ function ExpiryNotice({ expiresAt }: { expiresAt: string }) {
   );
 }
 
-function BilledLine({ line }: { line: BilledShareLine }) {
-  const sub = line.project === null ? day(line.date) : `${line.project} · ${day(line.date)}`;
+/** IBAN in groups of four, as the spec shows it; copied without the spaces. */
+const groupIban = (iban: string) =>
+  iban
+    .replace(/\s+/g, '')
+    .replace(/(.{4})/g, '$1 ')
+    .trim();
+
+/** The amount pastes into a banking app: no currency sign, comma decimal. */
+const plainAmount = (amount: number) => amount.toFixed(2).replace('.', ',');
+
+/**
+ * "Betalen" (ScreenSharePage 1.9, GAP-078): shown only while something is open
+ * and the studio has an IBAN, so the klant never sees an empty frame.
+ */
+function PaymentCard({ pay }: { pay: SharePayment }) {
+  const [copied, setCopied] = useState<string | null>(null);
+  const [said, setSaid] = useState('');
+  useEffect(() => {
+    if (copied === null) return;
+    const timer = window.setTimeout(() => {
+      setCopied(null);
+    }, 2000);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [copied]);
+
+  const rows: {
+    key: string;
+    label: string;
+    shown: string;
+    copy: string;
+    action: string;
+    mono?: boolean;
+  }[] = [
+    {
+      key: 'iban',
+      label: t('share.pay.iban'),
+      shown: groupIban(pay.iban),
+      copy: pay.iban.replace(/\s+/g, ''),
+      action: t('share.pay.copy.iban'),
+      mono: true,
+    },
+    {
+      key: 'name',
+      label: t('share.pay.name'),
+      shown: pay.name,
+      copy: pay.name,
+      action: t('share.pay.copy.name'),
+    },
+    {
+      key: 'amount',
+      label: t('share.pay.amount'),
+      shown: formatMoney(pay.amount),
+      copy: plainAmount(pay.amount),
+      action: t('share.pay.copy.amount'),
+    },
+    {
+      key: 'ref',
+      label: t('share.pay.ref'),
+      shown: pay.reference,
+      copy: pay.reference,
+      action: t('share.pay.copy.ref'),
+    },
+  ];
+
+  const copy = (row: { key: string; label: string; copy: string }) => {
+    void navigator.clipboard.writeText(row.copy).then(
+      () => {
+        setCopied(row.key);
+        setSaid(t('share.pay.copied', { veld: row.label }));
+      },
+      () => {
+        // A refused clipboard leaves the value on screen to copy by hand.
+      },
+    );
+  };
+
+  return (
+    <section className="pp-card pp-sharepay" aria-labelledby="pp-pay-title">
+      <h2 id="pp-pay-title">{t('share.pay.title')}</h2>
+      {rows.map((row) => (
+        <div className="pp-sharepay-row" key={row.key}>
+          <div>
+            <small>{row.label}</small>
+            <b className={row.mono === true ? 'pp-mono' : undefined}>{row.shown}</b>
+          </div>
+          <button
+            type="button"
+            className={`pp-btn pp-btn-ghost pp-btn-icon${copied === row.key ? ' done' : ''}`}
+            aria-label={row.action}
+            onClick={() => {
+              copy(row);
+            }}
+          >
+            {copied === row.key ? (
+              <Check className="pp-ico" aria-hidden="true" />
+            ) : (
+              <Copy className="pp-ico" aria-hidden="true" />
+            )}
+          </button>
+        </div>
+      ))}
+      <p className="pp-muted pp-text-sm pp-m0">
+        {t('share.pay.hint')}{' '}
+        {pay.email !== null ? (
+          <a className="pp-link" href={`mailto:${pay.email}`}>
+            {pay.email}
+          </a>
+        ) : pay.phone !== null ? (
+          <a className="pp-link" href={`tel:${pay.phone}`}>
+            {pay.phone}
+          </a>
+        ) : null}
+      </p>
+      <span className="pp-sr" role="status">
+        {said}
+      </span>
+    </section>
+  );
+}
+
+/**
+ * The second line: project and date, or the date alone when the project only
+ * repeats the print's name (ScreenSharePage 1.9, GAP-072).
+ */
+function lineSubtitle(line: { description: string; project: string | null; date: string }): string {
+  const squash = (value: string) => value.toLocaleLowerCase('nl').replace(/\s+/g, '');
+  if (line.project === null || squash(line.project) === squash(line.description))
+    return day(line.date);
+  return `${line.project} · ${day(line.date)}`;
+}
+
+/**
+ * The line's thumbnail on a neutral ground: no filament tint here, because a
+ * dark filament hid the model on the customer's page (GAP-079). The image is
+ * decorative; the line's name carries the meaning.
+ */
+function LineThumbnail({ token, printId }: { token: string; printId: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <span className="pp-share-thumb">
+      {failed ? (
+        <Box className="pp-ico" aria-hidden="true" />
+      ) : (
+        <img
+          src={shareThumbnailUrl(token, printId)}
+          alt=""
+          loading="lazy"
+          onError={() => {
+            setFailed(true);
+          }}
+        />
+      )}
+    </span>
+  );
+}
+
+function BilledLine({ token, line }: { token: string; line: BilledShareLine }) {
   return (
     <li className="pp-row pp-share-line">
-      <div>
-        <b className="pp-strong pp-text-md">{line.description}</b>
-        <div className="pp-muted pp-text-sm">{sub}</div>
+      <div className="pp-share-lead">
+        <LineThumbnail token={token} printId={line.printId} />
+        <div>
+          <b className="pp-strong pp-text-md">{line.description}</b>
+          <div className="pp-muted pp-text-sm">{lineSubtitle(line)}</div>
+        </div>
       </div>
       <div className="pp-share-amt">
         {line.price === null ? (

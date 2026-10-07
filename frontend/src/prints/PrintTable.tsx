@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { formatDuration, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { PaymentBadge } from '../finance/money';
-import { ColourDot, RecordBadge, TagChip } from './bits';
+import { ColourDot, RecordBadge, TagChip, Thumbnail } from './bits';
 import { subLine } from './orders';
 import { PriceBlock } from './PrintCard';
 import type { PrintSummary } from './types';
@@ -56,6 +56,9 @@ export function PrintTable({
                 />
               </th>
             )}
+            <th scope="col" className="img">
+              <span className="pp-sr">{t('print.preview')}</span>
+            </th>
             <th scope="col">{t('print.name')}</th>
             <th scope="col">{t('print.material')}</th>
             <th scope="col" className="r">
@@ -101,6 +104,9 @@ export function PrintTable({
                     />
                   </td>
                 )}
+                <td className="img">
+                  <Thumbnail print={print} small />
+                </td>
                 <td className="name">
                   <Link className="app-row-link" to={`/prints/${print.id}`}>
                     {print.name}

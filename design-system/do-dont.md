@@ -73,3 +73,8 @@
 - **Do** give a translucent chip an opaque `surface` base when it can sit inside a tinted row. **Don't** assume its ground is `surface`.
 - **Do** make a region that a third-party renderer leaves scrollable a focusable, labelled region (`role="region"` on a generic element only). **Don't** put `role="region"` on a `ul`.
 
+- **Do** let a list that grows have a cap: collapse groups, scroll a row, show "Toon alle {n}". **Don't** render every row of every group at once.
+- **Do** keep the destructive action behind the "⋯" menu with a ConfirmDialog. **Don't** put a red button beside the heading or a delete icon on every tile.
+- **Do** make a whole tile the control when its job is to filter (one `button`, the controls inside above it). **Don't** make only the name clickable.
+- **Do** floor the thumbnail tint with `--mix` for dark filaments. **Don't** tint the customer-facing share page: it uses the neutral `surface-2` ground.
+- **Do** name the missing input in a cost warning and link to the setting. **Don't** report the same condition twice in the same words.

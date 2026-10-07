@@ -14,11 +14,14 @@ import {
   revokeShareLink,
   type ExpiryDays,
 } from './links.js';
+import type { ThumbnailService } from '../thumbnails/service.js';
 import { overviewDocument, shareView } from './overview.js';
 
 export interface ShareRouteDependencies {
   db: AppDatabase;
   dataDir: string;
+  /** Thumbnails for the share page's lines (ScreenSharePage 1.9, GAP-079). */
+  thumbnails: ThumbnailService;
   /** Origin for the link shown after creating it; else the request's own origin. */
   publicUrl: string | null;
   /** Requests per minute per IP address on the public endpoints. */
@@ -49,6 +52,12 @@ const tokenParams = {
   type: 'object',
   required: ['token'],
   properties: { token: { type: 'string', maxLength: 128 } },
+} as const;
+
+const sharePrintParams = {
+  type: 'object',
+  required: ['token', 'printId'],
+  properties: { token: { type: 'string', maxLength: 128 }, printId: UUID },
 } as const;
 
 /**
@@ -173,6 +182,35 @@ export function registerShareRoutes(app: FastifyInstance, deps: ShareRouteDepend
           `attachment; filename="${safeFileName(['Overzicht', link.customer_folder, document.issuedOn])}"`,
         )
         .send(pdf);
+    },
+  );
+
+  /**
+   * A line's thumbnail. The print must belong to this link's klant, so a token
+   * cannot be used to read any other klant's images (GAP-079).
+   */
+  app.get<{ Params: { token: string; printId: string } }>(
+    '/api/share/:token/prints/:printId/thumbnail',
+    { config: publicConfig, schema: { params: sharePrintParams } },
+    async (request, reply) => {
+      const link = await linkFor(request.params.token);
+      if (link === null) return gone(reply);
+      const print = await db
+        .selectFrom('print_records')
+        .select(['id'])
+        .where('id', '=', request.params.printId)
+        .where('customer_folder', '=', link.customer_folder)
+        .where('deleted_at', 'is', null)
+        .executeTakeFirst();
+      if (print === undefined) return gone(reply);
+      const thumbnail = await deps.thumbnails.get(request.params.printId);
+      if (thumbnail === null) return gone(reply);
+      reply.header('etag', thumbnail.etag);
+      if (request.headers['if-none-match'] === thumbnail.etag) return reply.code(304).send();
+      return privateHeaders(reply)
+        .header('content-type', thumbnail.contentType)
+        .header('x-content-type-options', 'nosniff')
+        .send(thumbnail.data);
     },
   );
 

@@ -1,5 +1,7 @@
 import { FileText, TriangleAlert } from 'lucide-react';
 import { useId } from 'react';
+import { Link } from 'react-router';
+import { useCurrentUser } from '../auth/context';
 import { formatGrams, formatMoney } from '../i18n/format';
 import { t, type MessageKey } from '../i18n/nl';
 import type { Cost, PriceSource } from '../prints/types';
@@ -9,6 +11,41 @@ const SOURCE: Record<PriceSource, { key: MessageKey; tone: string }> = {
   manual: { key: 'cost.source.manual', tone: 'neutral' },
   estimated: { key: 'cost.source.estimated', tone: 'neutral' },
 };
+
+/**
+ * One line naming what is missing and where to fix it (CostBreakdown 1.9,
+ * GAP-073 and GAP-076). The cost card used to repeat "Kosten ontbreken";
+ * PaymentPanel says the consequence, this says the cause.
+ */
+function MissingInputs({ cost, printer }: { cost: Cost; printer: string | null }) {
+  const user = useCurrentUser();
+  const noWattage = cost.missing.includes('printerProfile');
+  const noTariff = cost.missing.includes('tariff');
+  if (!noWattage && !noTariff) return null;
+
+  const both = noWattage && noTariff;
+  const sentence = both
+    ? t('cost.missingWattageAndPrice', { printer: printer ?? '—' })
+    : noWattage
+      ? t('cost.missingWattage', { printer: printer ?? '—' })
+      : t('cost.missingTariff');
+  const isAdmin = user.role === 'Admin';
+  return (
+    <p className="pp-missing pp-m0" role="status">
+      <TriangleAlert className="pp-ico" aria-hidden="true" />
+      <span>
+        {sentence}{' '}
+        {isAdmin ? (
+          <Link className="pp-link" to="/instellingen#printers">
+            {both ? t('cost.setInputs') : t('cost.setWattage')}
+          </Link>
+        ) : (
+          t('cost.askAdmin')
+        )}
+      </span>
+    </p>
+  );
+}
 
 function SourceBadge({ source }: { source: PriceSource | null }) {
   if (source === null) return null;
@@ -22,7 +59,8 @@ const dash = '—';
 /**
  * CostBreakdown: Materiaal (one sub-row per counted file, one per slot for
  * multi-colour files), Stroom and Totaalkosten, each with its calculation
- * and source. A missing input shows a warning and "Onvolledig".
+ * and source. A missing input shows "Onvolledig" and one line naming the
+ * input and where to set it (1.9).
  */
 export function CostBreakdown({
   cost,
@@ -30,9 +68,12 @@ export function CostBreakdown({
   onAdjust,
   invoiceNumber = null,
   manual,
+  printerModel = null,
 }: {
   cost: Cost;
   notBilled: boolean;
+  /** Named in the "Geen vermogen voor {printer}." line (GAP-076). */
+  printerModel?: string | null;
   /** "Aanpassen" for Admins and Editors; absent on a locked order. */
   onAdjust?: () => void;
   /** Set when the order is on a final invoice: the badge replaces "Aanpassen" (1.6). */
@@ -62,18 +103,6 @@ export function CostBreakdown({
           )
         )}
       </div>
-      {cost.missing.includes('printerProfile') && (
-        <div className="pp-alert warning" role="status">
-          <TriangleAlert className="pp-ico" aria-hidden="true" />
-          <div>{t('cost.noPrinterProfile')}</div>
-        </div>
-      )}
-      {(cost.missing.includes('price') || cost.missing.includes('grams')) && (
-        <div className="pp-alert warning" role="status">
-          <TriangleAlert className="pp-ico" aria-hidden="true" />
-          <div>{t('status.noCost')}</div>
-        </div>
-      )}
       <div className="pp-scroll" tabIndex={0} role="region" aria-label={t('cost.title')}>
         <table className="pp-cost">
           <thead>
@@ -164,6 +193,7 @@ export function CostBreakdown({
           </tbody>
         </table>
       </div>
+      <MissingInputs cost={cost} printer={printerModel} />
       {cost.excludedCount > 0 && (
         <div className="pp-card-hd">
           <span className="pp-muted pp-text-sm">

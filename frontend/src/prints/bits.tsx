@@ -102,7 +102,7 @@ export function ColourDot({ colour, slicer = false }: { colour: string | null; s
  * image (.pp-thumb.tinted, --c1), surface-2 without colour, "Geen voorbeeld"
  * when there is no image.
  */
-export function Thumbnail({ print }: { print: PrintSummary }) {
+export function Thumbnail({ print, small = false }: { print: PrintSummary; small?: boolean }) {
   const tinted = print.colour !== null;
   const content = print.hasThumbnail ? (
     <img
@@ -115,15 +115,17 @@ export function Thumbnail({ print }: { print: PrintSummary }) {
   ) : (
     <span className="app-thumb-none">
       <Box className="pp-ico pp-ico-24" aria-hidden="true" />
-      <span>{t('print.noPreview')}</span>
+      {/* The list's 40px square has no room for a caption (PrintRow 1.9). */}
+      {!small && <span>{t('print.noPreview')}</span>}
     </span>
   );
+  const base = small ? 'pp-thumb sm' : 'pp-thumb';
   return tinted ? (
-    <div className="pp-thumb tinted" style={{ '--c1': print.colour } as CSSProperties}>
+    <div className={`${base} tinted`} style={{ '--c1': print.colour } as CSSProperties}>
       {content}
     </div>
   ) : (
-    <div className="pp-thumb">{content}</div>
+    <div className={base}>{content}</div>
   );
 }
 
