@@ -629,6 +629,17 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.5
 
+## GAP-053 [resolved in v1.6] Share page: totals read "€ 0,00" when no print has a price yet
+- **Type:** missing state
+- **Found while:** M8 review, opening a Deel-link for a klant whose prints are all still unpriced (real data)
+- **Where needed:** ScreenSharePage totals card and "Download overzicht"; DocOverview totals; `frontend/src/sharing/SharePage.tsx`
+- **What is missing or wrong:** the totals card leaves out prints without a price, which is right, but no state is drawn for "every line is Prijs volgt". The klant then reads Totaal € 0,00, Betaald € 0,00 and Openstaand € 0,00 under a list of real prints, and the Overzicht PDF prints the same three zeros. The footnote explains why, but the zeros read as "this is free".
+- **Why it matters:** this is the first thing a new klant sees, before any price is set, and it suggests an amount that is not true.
+- **Proposal:** when no line has a price, leave the totals card out on the page and the totals block out of the PDF, keep the list and the footnote, and keep "Download overzicht". Alternatively show "Prijs volgt" in place of the three amounts. Please also say whether the empty state "Er staat niets open." or this one wins when "Alleen openstaand" is on and nothing is priced.
+- **Blocked:** nothing; built as specified until the design system decided.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.5
+
 ## GAP-054 [resolved in v1.7] `.pp-lockhelp` does not wrap on phones
 - **Type:** missing state
 - **Found while:** checking v1.6 in the browser, print detail of an order on a final invoice at 360px
