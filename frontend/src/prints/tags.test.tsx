@@ -151,7 +151,7 @@ describe('TagsPage', () => {
     expect(name).toHaveValue('cadeau');
     const palette = screen.getByRole('radiogroup', { name: 'Kleur' });
     expect(within(palette).getAllByRole('radio')).toHaveLength(11);
-    expect(within(palette).getByRole('radio', { name: 'lilac' })).toHaveAttribute(
+    expect(within(palette).getByRole('radio', { name: 'Lila' })).toHaveAttribute(
       'aria-checked',
       'true',
     );
@@ -166,13 +166,13 @@ describe('TagsPage', () => {
     await userEvent.clear(name);
     await userEvent.type(name, 'Cadeau');
     // Arrow keys move the choice; "Geen kleur" is the last option.
-    within(palette).getByRole('radio', { name: 'lilac' }).focus();
+    within(palette).getByRole('radio', { name: 'Lila' }).focus();
     await userEvent.keyboard('{ArrowRight}');
-    expect(within(palette).getByRole('radio', { name: 'grey' })).toHaveAttribute(
+    expect(within(palette).getByRole('radio', { name: 'Grijs' })).toHaveAttribute(
       'aria-checked',
       'true',
     );
-    await userEvent.click(within(palette).getByRole('radio', { name: 'rose' }));
+    await userEvent.click(within(palette).getByRole('radio', { name: 'Roze' }));
     await userEvent.click(screen.getByRole('button', { name: 'Opslaan' }));
     await waitFor(() => {
       expect(calls.find((c) => c.method === 'PATCH')?.body).toEqual({
@@ -206,7 +206,7 @@ describe('TagsPage', () => {
     expect(await screen.findByText('Nog geen tags.')).toBeInTheDocument();
     await userEvent.click(screen.getAllByRole('button', { name: 'Tag maken' })[0] as HTMLElement);
     await userEvent.type(screen.getByRole('textbox', { name: 'Naam' }), 'prio');
-    await userEvent.click(screen.getByRole('radio', { name: 'teal' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Turquoise' }));
     await userEvent.click(screen.getByRole('button', { name: 'Opslaan' }));
     expect(await screen.findByText('Deze tag bestaat al.')).toBeInTheDocument();
     expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ name: 'prio', colour: 'teal' });

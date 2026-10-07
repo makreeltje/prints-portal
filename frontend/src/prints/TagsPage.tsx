@@ -335,7 +335,7 @@ function Palette({
             type="button"
             role="radio"
             aria-checked={checked}
-            aria-label={option}
+            aria-label={t(`tags.colour.${option}`)}
             data-c={option}
             tabIndex={checked ? 0 : -1}
             onClick={() => {

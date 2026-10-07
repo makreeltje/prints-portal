@@ -16,12 +16,28 @@ export type FinanceErrorCode =
   | 'no_payment'
   | 'not_written_off'
   | 'not_in_order'
-  | 'archived';
+  | 'archived'
+  | 'locked'
+  | 'no_lines'
+  | 'changed'
+  | 'not_an_invoice'
+  | 'unknown_line'
+  | 'already_credited'
+  | 'first_order'
+  | 'has_payment'
+  | 'written_off'
+  | 'paid'
+  | 'no_cost'
+  | 'company_incomplete';
 
 /** A business rule refused the change; `code` is the API's error code. */
 export class FinanceError extends Error {
   override name = 'FinanceError';
-  constructor(readonly code: FinanceErrorCode) {
+  /** Extra facts for a per-print result ("Nabestelling 2 is al betaald.", "Staat op factuur …"). */
+  constructor(
+    readonly code: FinanceErrorCode,
+    readonly detail: { orderNumber?: number; invoiceNumber?: string } = {},
+  ) {
     super(code);
   }
 }
@@ -34,6 +50,11 @@ async function orderById(db: Db, orderId: string): Promise<PrintOrderTable> {
     .executeTakeFirst();
   if (order === undefined) throw new FinanceError('not_found');
   return order;
+}
+
+/** An order on a final invoice keeps its price, grams and items (correct it with a credit note). */
+function assertUnlocked(order: PrintOrderTable): void {
+  if (order.invoice_id !== null) throw new FinanceError('locked');
 }
 
 async function moneyOf(db: Db, order: PrintOrderTable) {
@@ -53,6 +74,7 @@ export async function setSalePrice(
 ): Promise<PrintOrderTable> {
   return db.transaction().execute(async (trx) => {
     const order = await orderById(trx, orderId);
+    assertUnlocked(order);
     const { money, noBilling } = await moneyOf(trx, order);
     if (noBilling) throw new FinanceError('not_billed');
     if (cents !== null && cents < money.paidCents + money.writtenOffCents) {
@@ -217,6 +239,7 @@ export async function setOrderOverrides(
 ): Promise<PrintOrderTable> {
   return db.transaction().execute(async (trx) => {
     const order = await orderById(trx, orderId);
+    assertUnlocked(order);
     await trx
       .updateTable('print_orders')
       .set({
@@ -353,7 +376,7 @@ export async function setTimesPrinted(
     let query = trx
       .selectFrom('order_items as i')
       .innerJoin('print_orders as o', 'o.id', 'i.order_id')
-      .select(['i.order_id'])
+      .select(['i.order_id', 'o.invoice_id'])
       .where('o.print_record_id', '=', recordId)
       .where('i.path_hash', '=', key.path_hash)
       .where('i.plate_index', '=', key.plate_index)
@@ -361,6 +384,7 @@ export async function setTimesPrinted(
     if (orderId !== null) query = query.where('i.order_id', '=', orderId);
     const item = await query.executeTakeFirst();
     if (item === undefined) throw new FinanceError('not_in_order');
+    if (item.invoice_id !== null) throw new FinanceError('locked');
     await trx
       .updateTable('order_items')
       .set({ times_printed: times })
@@ -400,4 +424,38 @@ export async function setNoBilling(
       .where('customer_folder', '=', folder)
       .execute();
   }
+}
+
+/**
+ * "Nabestelling verwijderen" (Admin, Editor): only a later order without
+ * payment or write-off that is not on an invoice; Bestelling 1 never. Its
+ * files go back to "Niet in een bestelling". Undone payments go with it.
+ */
+export async function deleteRepeatOrder(
+  db: Kysely<Database>,
+  orderId: string,
+  now: string,
+): Promise<PrintOrderTable> {
+  return db.transaction().execute(async (trx) => {
+    const order = await orderById(trx, orderId);
+    if (order.number === 1) throw new FinanceError('first_order');
+    assertUnlocked(order);
+    if (order.written_off_cents !== null) throw new FinanceError('written_off');
+    const active = await trx
+      .selectFrom('payments')
+      .select('id')
+      .where('order_id', '=', orderId)
+      .where('undone_at', 'is', null)
+      .executeTakeFirst();
+    if (active !== undefined) throw new FinanceError('has_payment');
+    await trx.deleteFrom('payments').where('order_id', '=', orderId).execute();
+    await trx.deleteFrom('order_items').where('order_id', '=', orderId).execute();
+    await trx.deleteFrom('print_orders').where('id', '=', orderId).execute();
+    await trx
+      .updateTable('print_records')
+      .set({ updated_at: now })
+      .where('id', '=', order.print_record_id)
+      .execute();
+    return order;
+  });
 }

@@ -153,15 +153,8 @@
   height: var(--pp-control-h);
 }
 
-.app-bulk {
-  position: relative;
-  display: inline-block;
-}
-
+/* Menu panels inside .pp-anchor (Popover positions and stacks them). */
 .app-bulk-menu {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  left: 0;
   gap: 0;
   padding: var(--space-1);
   align-items: stretch;
@@ -274,9 +267,6 @@
 }
 
 .app-tag-pop {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  left: 0;
   gap: 0;
   padding: var(--space-2) var(--space-3);
   align-items: flex-start;
@@ -289,11 +279,6 @@
 }
 
 /* ScreenPrintDetail */
-/* TagEditor: the popover takes its own line under the tag chips. */
-.app-tagpop-line {
-  flex-basis: 100%;
-}
-
 .app-alert-row {
   gap: var(--space-3);
 }
@@ -343,8 +328,16 @@
   color: var(--warning);
 }
 
-/* PaymentPanel: the amount next to the badge (the text-xl token, as in the preview). */
-.app-money-lg {
-  font-size: var(--text-xl);
-  line-height: var(--leading-xl);
+/* The uploaded logo inside .pp-logo-box keeps its proportions. */
+.app-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
+
+/* DatePicker: the calendar button inside the field (temporary, ds-gap: GAP-047). */
+.app-date-btn {
+  /* ds-gap: GAP-047 */
+  position: absolute; /* ds-gap: GAP-047 */
+  right: var(--space-1); /* ds-gap: GAP-047 */
+} /* ds-gap: GAP-047 */

@@ -9,3 +9,5 @@ Skeleton holds the layout while data loads; match the shape of the content it re
 **Accessibility.** Container carries `aria-busy="true"`; skeleton blocks are `aria-hidden`; announce "Laden…" with a visually hidden status.
 
 **Dutch copy.** "Prints laden…"
+
+**Inline values (1.5).** Placeholders use `pp-skel` with the heights `pp-h12`, `pp-h14`, `pp-h16` and the width as the data property `--w` (class `pp-vw`); the thumbnail uses `pp-ratio-43 pp-r0`.

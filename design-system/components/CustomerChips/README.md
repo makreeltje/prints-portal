@@ -9,3 +9,7 @@ CustomerChips replaces the customer cards on phones: one horizontally scrolling 
 **Accessibility.** Native buttons with `aria-pressed`; the group is labelled "Klanten"; focus ring is 2px `focus-ring`.
 
 **Dutch copy.** Alle klanten | Klant verwijderen | {n, plural, one {# print} other {# prints}}
+
+**Deleted klant (1.4).** With "Toon verwijderde" an Admin also gets the deleted klanten as chips (`.pp-chip.is-deleted`: `muted` text, dashed border). While a deleted klant is selected the toolbar shows the Verwijderd badge and the secondary button "Herstellen" instead of "Klant verwijderen"; restoring brings the klant and its prints back. Editors never see deleted klanten.
+
+**Factuur on phones (1.5).** While one klant is selected the toolbar shows the secondary "Factuur" button (receipt icon, `pp-btn-secondary pp-btn-sm`) next to "Klant verwijderen"; it opens the invoice export dialog as a sheet (see ScreenInvoiceExport). It is hidden for klanten that are niet factureren and for the role User; with "Alle klanten" selected there is no Factuur button because an invoice is made for one klant.

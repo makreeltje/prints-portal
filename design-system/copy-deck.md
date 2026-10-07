@@ -329,3 +329,93 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | error.tagExists | Deze tag bestaat al. |
 | error.tagTooLong | Een tag mag maximaal 64 tekens hebben. |
 
+## Added in 1.4
+
+| Key | Text |
+|---|---|
+| settings.electricityTariff | Stroomtarief |
+| settings.electricityTariffHelp | Gebruikt voor de stroomkosten van elke print: kWh × tarief. |
+| settings.materialPrices | Materiaalprijzen |
+| settings.materialPricesHelp | Geschatte prijs per kg als Spoolman geen prijs heeft. Volgorde: Spoolman, handmatig, dit standaardbedrag. |
+| settings.material | Materiaal |
+| settings.pricePerKg | Prijs per kg |
+| settings.addMaterial | Materiaal toevoegen |
+| settings.printers | Printers |
+| settings.printersHelp | Het vermogen (watt) bepaalt de stroomkosten van prints op deze printer. |
+| settings.addPrinter | Printer toevoegen |
+| settings.deletePrinter | Printer verwijderen |
+| settings.printerName | Naam |
+| settings.printerWatts | Vermogen |
+| settings.printerAliases | Aliassen |
+| settings.printerAliasesHelp | Andere namen voor deze printer. |
+| settings.printerPrefixes | Timelapse-voorvoegsels |
+| settings.printerPrefixesHelp | Beginletters van de bestandsnamen van timelapses van deze printer. |
+| settings.printersEmpty | Nog geen printers. Zonder printerprofiel zijn stroomkosten niet meegerekend. |
+| error.materialExists | Dit materiaal staat er al. |
+| error.invalidWatts | Vul een aantal watt in, bijvoorbeeld 350. |
+| error.invalidTariff | Vul een bedrag in, bijvoorbeeld 0,30. |
+| confirm.deletePrinter | Printer '{name}' verwijderen? |
+| confirm.deletePrinterBody | De stroomkosten van prints op deze printer worden daarna niet meer meegerekend. |
+| orders.first | Bestelling 1 |
+| orders.repeat | Nabestelling {n} |
+| orders.create | Nabestelling maken |
+| orders.createIntro | Kies de bestanden voor deze nabestelling en hoe vaak ze worden geprint. |
+| orders.unassignedGroup | Nog niet in een bestelling |
+| orders.previousGroup | Eerder besteld |
+| orders.pickOne | Kies minstens één bestand. |
+| orders.delete | Nabestelling verwijderen |
+| orders.deleteHelp | Een nabestelling zonder betaling kan worden verwijderd. De bestanden gaan terug naar "Niet in een bestelling". |
+| orders.deleteLocked | Staat op factuur {number} en kan niet worden verwijderd. |
+| orders.count | {count, plural, one {# bestelling} other {# bestellingen}} |
+| orders.notInOrder | Niet in een bestelling |
+| orders.notInOrderHint | Nieuw bestand. Voeg het toe aan een nabestelling. |
+| orders.unassignedAlert | {count, plural, one {# nieuw bestand staat} other {# nieuwe bestanden staan}} in geen bestelling. Voeg het toe aan een nabestelling. |
+| confirm.deleteOrder | Nabestelling {n} verwijderen? |
+| confirm.deleteOrderBody | De bestanden gaan terug naar "Niet in een bestelling". De nabestelling heeft geen betaling of afschrijving. |
+| payment.undoLast | Maakt de laatste betaling ({amount}) ongedaan. |
+| payment.undoneBy | Ongedaan gemaakt door {name} op {date}. |
+| error.overpay | Een betaling kan niet hoger zijn dan het openstaande bedrag ({amount}). |
+| bulk.spoolTitle | Spoel toewijzen aan {count, plural, one {# print} other {# prints}} |
+| bulk.spoolIntro | De gekozen spoel geldt voor de hele print, op elke geselecteerde print. |
+| bulk.spoolKeep | Bestanden en slots met een eigen spoel houden die. |
+| bulk.assign | Toewijzen |
+| bulk.priceTitle | Prijs instellen voor {count, plural, one {# print} other {# prints}} |
+| bulk.priceIntro | De prijs komt op de nieuwste bestelling van elke print. |
+| bulk.priceSame | Dezelfde prijs voor elke print |
+| bulk.priceSuggested | Voorstel uit marge per print ({margin}%) |
+| bulk.priceSkipNoCost | Prints zonder kosten worden overgeslagen. |
+| bulk.result | {ok} van {total} bijgewerkt |
+| bulk.failedTitle | {count, plural, one {# print niet bijgewerkt} other {# prints niet bijgewerkt}} |
+| bulk.reason.paid | Nabestelling {n} is al betaald. |
+| bulk.reason.writtenOff | Nabestelling {n} is afgeschreven. |
+| bulk.reason.invoiced | Staat op factuur {number}. |
+| bulk.reason.notBilled | Deze klant wordt niet gefactureerd. |
+| bulk.reason.noCost | Kosten ontbreken. |
+| bulk.reason.noAccess | Geen toegang. |
+| customers.restore | Herstellen |
+| tags.colour.rose | Roze |
+| tags.colour.orange | Oranje |
+| tags.colour.amber | Amber |
+| tags.colour.lime | Limoen |
+| tags.colour.teal | Turquoise |
+| tags.colour.sky | Hemelsblauw |
+| tags.colour.blue | Blauw |
+| tags.colour.violet | Violet |
+| tags.colour.lilac | Lila |
+| tags.colour.grey | Grijs |
+
+## Added in 1.5
+
+| Key | Text |
+|---|---|
+| invoice.line.reorder | {print} (nabestelling {n}) |
+| invoice.finalize.blocked | Naam en IBAN ontbreken. Vul ze in bij Instellingen, Bedrijfsgegevens. Een concept kan wel worden gedownload, zonder betaalzin. |
+| invoice.paidfull | Deze factuur is volledig betaald. |
+| order.locked | Op factuur {nummer} |
+| order.unassigned | Nog niet in een bestelling |
+| spool.wholePrint | Spoel voor de hele print |
+| outstanding.line.pay | Markeer als betaald |
+| date.today | Vandaag |
+| date.clear | Wissen |
+| date.prev / date.next | Vorige maand / Volgende maand |
+

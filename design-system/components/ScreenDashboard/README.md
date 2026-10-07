@@ -9,3 +9,7 @@ Dashboard (`/`) is the working view: customers with print counts, filters and th
 **Accessibility.** One `<h1>`; the grid is a list; the result count is announced politely; bulk bar is a region labelled "Acties voor selectie".
 
 **Dutch copy.** Dashboard | Factuur | Alles betaald | Niet factureren | Toon verwijderde | Gearchiveerd tonen | {shown} van {total} prints | Nog geen prints | Geen resultaten | Prints-map niet bereikbaar | Filters | Acties
+
+**1.4.** Cards and rows of a print with several orders show the summed price, the least settled status, the open amount and "{n} bestellingen" (see PrintCard). The tags popover of the filter bar floats above the cards (`z-popover`). The selected klant card has `.is-selected`; on phones a deleted klant chip offers "Herstellen" (CustomerChips). "Spoel toewijzen" and "Prijs instellen" open BulkDialogs.
+
+**Factuur on phones (1.5).** The CustomerChips toolbar has "Factuur" next to "Klant verwijderen" while one klant is selected (hidden for niet-factureren klanten).

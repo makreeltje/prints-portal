@@ -220,7 +220,7 @@ function TagPicker(props: FilterBarProps) {
   }
 
   return (
-    <div ref={wrapper} className="app-bulk">
+    <div ref={wrapper} className="pp-anchor">
       <button
         ref={trigger}
         type="button"

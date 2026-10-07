@@ -9,3 +9,5 @@ PrintCard is one print in the grid view: thumbnail, identity, key numbers, statu
 **Accessibility.** The card is a link to the detail page with the name as accessible text; the checkbox and Herstellen are separate controls. Status is text plus icon.
 
 **Dutch copy.** Babybox locks | Joey · Babybox locks | PLA · 1 u 20 min · 87 g | € 11,89 | Betaald / Open / Deels betaald | Nog € 6,89 open | Kosten | Niet factureren | Verwijderd | Herstellen | Gearchiveerd | Geen voorbeeld
+
+**Orders (1.4).** A print with more than one order shows the **sum** of the order prices, the **least settled** status of its orders (Open before Deels betaald before Betaald; Afgeschreven counts as settled), the open amount over all orders ("Nog € x open") and "{n} bestellingen" in the meta line. A deleted Nabestelling no longer counts.

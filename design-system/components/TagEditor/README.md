@@ -9,3 +9,7 @@ TagEditor is the popover (bottom sheet on phones) that sets the tags of one prin
 **Accessibility.** `role="dialog"` with label "Tags bewerken"; focus starts in the search field; Esc closes; the create row is a button reachable with Tab and Enter; rows are real checkboxes.
 
 **Dutch copy.** Tags bewerken | Zoek of maak een tag | Tag '{naam}' maken | Een tag mag maximaal 64 tekens hebben. | Geen tags gevonden
+
+**Stacking (1.4).** Above 480px the editor is `.pp-anchor > .pp-pop` and floats under the tags it edits, above the viewer and cards (`z-popover`); it does not push the page down. At 480px and below it is the bottom sheet (`z-overlay`).
+
+**Colour names (1.4).** The palette swatches in `.pp-pal` have Dutch accessible names (`tags.colour.rose` … `tags.colour.grey`: Roze, Oranje, Amber, Limoen, Turquoise, Hemelsblauw, Blauw, Violet, Lila, Grijs, plus "Geen kleur"); the `data-c` keys stay English because they are data, not copy.

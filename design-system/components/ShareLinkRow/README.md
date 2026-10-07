@@ -9,3 +9,5 @@ ShareLinkRow is one Deel-link in the list: who it is for, when it expires, and w
 **Accessibility.** Row is a list item; status is text plus icon; relative time has the absolute date in `title`.
 
 **Dutch copy.** Q2 overzicht | Joey | Verloopt over 30 dagen | 4 nov 2026 | Verloopt niet | Actief | Verlopen | Ingetrokken | Intrekken.
+
+**Inline values (1.5).** The row and its list use `pp-flush` and `pp-rule-t`; no `style` attributes remain.

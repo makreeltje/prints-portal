@@ -11,7 +11,7 @@ import {
   PenTool,
   TriangleAlert,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { SpoolPicker } from '../finance/SpoolPicker';
 import { formatDuration, formatFileSize, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
@@ -25,6 +25,8 @@ export interface AssetControls {
   setExcluded: (line: Line, excluded: boolean) => Promise<void>;
   /** Slot 0: the whole file or plate. Absent when Spoolman is not configured. */
   setSpool?: (line: Line, slot: number, spoolId: number | null) => Promise<void>;
+  /** The order is on a final invoice: the controls are read-only (GAP-048 placeholder). */
+  locked?: boolean;
 }
 
 const ICONS: Record<AssetType, typeof File> = {
@@ -46,28 +48,45 @@ const ICONS: Record<AssetType, typeof File> = {
 export function AssetList({
   assets,
   controls,
+  title,
 }: {
   assets: readonly Asset[];
   controls?: AssetControls;
+  /** Card title; default "Bestanden" ("Nog niet in een bestelling" for files in no order). */
+  title?: string;
 }) {
+  const titleId = useId();
+  const lockedId = useId();
+  const rowControls = controls?.locked === true ? { ...controls, lockedHelp: lockedId } : controls;
   return (
-    <section className="pp-card pp-assetlist pp-flush" aria-labelledby="files-title">
+    <section className="pp-card pp-assetlist pp-flush" aria-labelledby={titleId}>
       <div className="pp-card-hd rule">
-        <h2 id="files-title" className="app-card-heading">
-          <b>{t('print.files')}</b>
+        <h2 id={titleId} className="app-card-heading">
+          <b>{title ?? t('print.files')}</b>
         </h2>
         <span className="sub">{t('print.fileCount', { count: assets.length })}</span>
       </div>
+      {controls?.locked === true && (
+        // ds-gap: GAP-048 visible reason for the read-only controls of a locked order
+        <div className="pp-p3">
+          <span id={lockedId} className="pp-help">
+            {t('pay.lockedHelp')}
+          </span>
+        </div>
+      )}
       <ul className="app-plain-list">
         {assets.map((asset) => (
-          <AssetRow key={asset.id} asset={asset} controls={controls} />
+          <AssetRow key={asset.id} asset={asset} controls={rowControls} />
         ))}
       </ul>
     </section>
   );
 }
 
-function AssetRow({ asset, controls }: { asset: Asset; controls?: AssetControls }) {
+/** Controls as rows get them: `lockedHelp` is the id of the locked reason. */
+type RowControls = AssetControls & { lockedHelp?: string };
+
+function AssetRow({ asset, controls }: { asset: Asset; controls?: RowControls }) {
   const Icon = ICONS[asset.type];
   // A sliced 3MF: the parent row has only the download; plates are child rows.
   const plates = asset.type === '3mf' ? asset.lines : [];
@@ -86,7 +105,11 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: AssetControls 
             {own !== undefined && <LineMeta line={own} />}
             {plates.length > 0 && <span>{t('asset.plates', { count: plates.length })}</span>}
             {own?.possibleDuplicate === true && <StatusBadge kind="duplicate" />}
+            {own !== undefined && !own.inOrder && <NotInOrderBadge />}
           </div>
+          {own !== undefined && !own.inOrder && (
+            <span className="pp-help">{t('orders.notInOrderHint')}</span>
+          )}
           {own?.duplicateOf != null && (
             <div className="pp-reason app-reason-warning">
               <TriangleAlert className="pp-ico" aria-hidden="true" />
@@ -124,7 +147,9 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: AssetControls 
                   </div>
                   <div className="pp-meta">
                     <LineMeta line={plate} />
+                    {!plate.inOrder && <NotInOrderBadge />}
                   </div>
+                  {!plate.inOrder && <span className="pp-help">{t('orders.notInOrderHint')}</span>}
                   <ExclusionReason line={plate} />
                 </div>
                 {controls !== undefined && (
@@ -140,6 +165,10 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: AssetControls 
       )}
     </li>
   );
+}
+
+function NotInOrderBadge() {
+  return <span className="pp-badge warning">{t('orders.notInOrder')}</span>;
 }
 
 /** File name truncated in the middle: the end (with the extension) always stays visible. */
@@ -190,7 +219,7 @@ function ExclusionReason({ line }: { line: Line }) {
  * Multi-colour: one indented row per used slot. Without an assigned spool
  * the slicer colour shows with the hint chip "slicer".
  */
-function Slots({ line, controls }: { line: Line; controls?: AssetControls }) {
+function Slots({ line, controls }: { line: Line; controls?: RowControls }) {
   const setSpool = controls?.setSpool;
   return (
     <ul className="app-plain-list">
@@ -215,6 +244,8 @@ function Slots({ line, controls }: { line: Line; controls?: AssetControls }) {
             <SpoolPicker
               value={slot.spool}
               label={t('asset.slot', { n: slot.slot })}
+              disabled={controls?.locked === true} // ds-gap: GAP-048
+              describedBy={controls?.lockedHelp}
               onChange={(spoolId) => setSpool(line, slot.slot, spoolId)}
             />
           )}
@@ -225,15 +256,26 @@ function Slots({ line, controls }: { line: Line; controls?: AssetControls }) {
 }
 
 /** "Aantal keer geprint", the file's own spool (one slot) and "Telt niet mee in kosten". */
-function LineControls({ line, controls }: { line: Line; controls: AssetControls }) {
+function LineControls({ line, controls }: { line: Line; controls: RowControls }) {
   const setSpool = controls.setSpool;
+  const locked = controls.locked === true;
   return (
     <>
-      {line.inOrder && <TimesPrinted line={line} onSave={controls.setTimesPrinted} />}
+      {line.inOrder &&
+        (locked ? (
+          // ds-gap: GAP-048 a locked order shows the count as text
+          <span className="pp-text-sm" aria-describedby={controls.lockedHelp}>
+            {t('asset.timesPrinted')} <b className="pp-num">{line.timesPrinted}</b>
+          </span>
+        ) : (
+          <TimesPrinted line={line} onSave={controls.setTimesPrinted} />
+        ))}
       {setSpool !== undefined && line.slots.length <= 1 && (
         <SpoolPicker
           value={line.spool ?? line.slots[0]?.spool ?? null}
           label={t('asset.pickSpool')}
+          disabled={locked} // ds-gap: GAP-048
+          describedBy={controls.lockedHelp}
           onChange={(spoolId) => setSpool(line, 0, spoolId)}
         />
       )}
@@ -242,6 +284,8 @@ function LineControls({ line, controls }: { line: Line; controls: AssetControls 
           type="checkbox"
           role="switch"
           className="pp-switch"
+          disabled={locked} // ds-gap: GAP-048
+          aria-describedby={controls.lockedHelp}
           checked={line.excluded}
           onChange={(event) => void controls.setExcluded(line, event.target.checked)}
         />

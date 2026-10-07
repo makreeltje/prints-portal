@@ -17,12 +17,15 @@ interface CustomerStripProps {
   onDelete?: (folder: string) => Promise<void>;
   /** Herstellen on a deleted klant, for Admins. */
   onRestore?: (folder: string) => void;
+  /** "Factuur" (ScreenInvoiceExport), for Admins and Editors. */
+  onInvoice?: (folder: string) => void;
 }
 
 /**
  * Customer strip of ScreenDashboard: CustomerCard per klant above 480px,
  * CustomerChips with a toolbar at 480px and below (one DOM, pp-only-wide /
- * pp-only-phone). Amounts and Factuur arrive with M6/M7.
+ * pp-only-phone). "Factuur" on the card, and on phones in the toolbar while
+ * one klant is selected, opens the invoice export dialog.
  */
 export function CustomerStrip(props: CustomerStripProps) {
   const { customers, onDelete } = props;
@@ -69,10 +72,19 @@ function CustomerCard({
   onSelect,
   onAskDelete,
   onRestore,
+  onInvoice,
 }: WithAsk & { customer: Customer }) {
   const isSelected = selected === customer.folder;
   return (
-    <div className={customer.deleted ? 'pp-card pp-cust is-deleted' : 'pp-card pp-cust'}>
+    <div
+      className={[
+        'pp-card pp-cust',
+        customer.deleted ? 'is-deleted' : '',
+        isSelected ? 'is-selected' : '',
+      ]
+        .filter((name) => name !== '')
+        .join(' ')}
+    >
       <div className="hd">
         <b>
           <button
@@ -103,6 +115,20 @@ function CustomerCard({
         </span>
       </div>
       {!customer.deleted && <CustomerMoney customer={customer} />}
+      {!customer.deleted && !customer.noBilling && onInvoice !== undefined && (
+        <div className="acts">
+          <button
+            type="button"
+            className="pp-btn pp-btn-secondary pp-btn-sm"
+            onClick={() => {
+              onInvoice(customer.folder);
+            }}
+          >
+            <Receipt className="pp-ico" aria-hidden="true" />
+            {t('invoice.button')}
+          </button>
+        </div>
+      )}
       {customer.deleted && (
         <>
           <div>
@@ -150,7 +176,15 @@ function CustomerMoney({ customer }: { customer: Customer }) {
 }
 
 /** CustomerChips: "Alle klanten" plus one chip per klant; exactly one is pressed. */
-function CustomerChips({ customers, selected, onSelect, total, onAskDelete }: WithAsk) {
+function CustomerChips({
+  customers,
+  selected,
+  onSelect,
+  total,
+  onAskDelete,
+  onRestore,
+  onInvoice,
+}: WithAsk) {
   const current = customers.find((customer) => customer.folder === selected);
   return (
     <div className="pp-col">
@@ -169,7 +203,7 @@ function CustomerChips({ customers, selected, onSelect, total, onAskDelete }: Wi
           <button
             key={customer.folder}
             type="button"
-            className="pp-chip"
+            className={customer.deleted ? 'pp-chip is-deleted' : 'pp-chip'}
             aria-pressed={selected === customer.folder}
             onClick={() => {
               onSelect(customer.folder);
@@ -185,17 +219,49 @@ function CustomerChips({ customers, selected, onSelect, total, onAskDelete }: Wi
           <span className="pp-muted pp-text-sm">
             {total === null ? null : t('customers.printCount', { count: total })}
           </span>
-          {current !== undefined && !current.deleted && onAskDelete !== undefined && (
-            <button
-              type="button"
-              className="pp-btn pp-btn-ghost pp-btn-sm"
-              onClick={() => {
-                onAskDelete(current);
-              }}
-            >
-              <Trash2 className="pp-ico" aria-hidden="true" />
-              {t('customers.delete')}
-            </button>
+          {current?.deleted === true && (
+            <span className="pp-row pp-gap-2">
+              <StatusBadge kind="deleted" />
+              {onRestore !== undefined && (
+                <button
+                  type="button"
+                  className="pp-btn pp-btn-secondary pp-btn-sm"
+                  onClick={() => {
+                    onRestore(current.folder);
+                  }}
+                >
+                  {t('common.restore')}
+                </button>
+              )}
+            </span>
+          )}
+          {current !== undefined && !current.deleted && (
+            <span className="pp-row pp-gap-2">
+              {!current.noBilling && onInvoice !== undefined && (
+                <button
+                  type="button"
+                  className="pp-btn pp-btn-secondary pp-btn-sm"
+                  onClick={() => {
+                    onInvoice(current.folder);
+                  }}
+                >
+                  <Receipt className="pp-ico" aria-hidden="true" />
+                  {t('invoice.button')}
+                </button>
+              )}
+              {onAskDelete !== undefined && (
+                <button
+                  type="button"
+                  className="pp-btn pp-btn-ghost pp-btn-sm"
+                  onClick={() => {
+                    onAskDelete(current);
+                  }}
+                >
+                  <Trash2 className="pp-ico" aria-hidden="true" />
+                  {t('customers.delete')}
+                </button>
+              )}
+            </span>
           )}
         </div>
       )}

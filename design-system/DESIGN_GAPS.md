@@ -349,7 +349,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.2.1
 
-## GAP-029 [open] Popovers and menus have no stacking level
+## GAP-029 [resolved in v1.4] Popovers and menus have no stacking level
 - **Type:** missing token
 - **Found while:** M5 with v1.3, checking the dashboard and print detail in the browser
 - **Where needed:** FilterBar "Tags" popover (ScreenDashboard), TagEditor popover above 480px (ScreenPrintDetail), later the BulkActionBar "Acties" menu and other Popovers; `frontend/src/prints/FilterBar.tsx`, `frontend/src/prints/TagEditor.tsx`
@@ -361,7 +361,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-030 [open] CustomerCard selected state; restoring a klant on phones
+## GAP-030 [resolved in v1.4] CustomerCard selected state; restoring a klant on phones
 - **Type:** missing state
 - **Found while:** M5, implementing CustomerCard and CustomerChips from v1.3
 - **Where needed:** CustomerCard (ScreenDashboard above 480px), CustomerChips toolbar (480px and below)
@@ -372,7 +372,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-031 [open] Palette colours are announced in English
+## GAP-031 [resolved in v1.4] Palette colours are announced in English
 - **Type:** improvement idea
 - **Found while:** M5, implementing the palette (`.pp-pal`) on the Tags page
 - **Where needed:** ScreenTags edit row, palette radiogroup
@@ -383,7 +383,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-032 [open] ConfirmDialog README and copy deck differ for Klant verwijderen
+## GAP-032 [resolved in v1.4] ConfirmDialog README and copy deck differ for Klant verwijderen
 - **Type:** conflict
 - **Found while:** M5, implementing the delete-klant confirmation from v1.3
 - **Where needed:** ConfirmDialog, `confirm.deleteCustomerBody`
@@ -394,7 +394,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-033 [open] Instellingen has no sections for printer profiles, tariff and material prices
+## GAP-033 [resolved in v1.4] Instellingen has no sections for printer profiles, tariff and material prices
 - **Type:** missing screen
 - **Found while:** M6 planning
 - **Where needed:** ScreenSettings (`/instellingen`), section(s) next to "Prijzen"
@@ -403,10 +403,11 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** under Prijzen: NumberInput "Stroomtarief" (`€/kWh`), a small table "Materiaalprijzen" (Materiaal, €/kg, add and remove rows); a section "Printers" with one row per profile (Naam, Watt as NumberInput, aliases as chips), and "Printer toevoegen".
 - **Blocked:** editing these values in the UI. The API (`/api/settings/pricing`, `/api/settings/printers`) is built; the K1 family is seeded and the tariff is seeded from `ELECTRICITY_TARIFF_EUR_PER_KWH`.
 - **Owner decision (2026-10-06):** API now, the UI waits for the design system.
+- **Owner decision (2026-10-06, asked by the design system):** tariff (€/kWh) and a "Materiaalprijzen" table (material, €/kg) under Prijzen next to Standaardmarge; a separate section "Printers" with one row per profile (name, watts, aliases).
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-034 [open] Bulk dialogs for "Spoel toewijzen" and "Prijs instellen"
+## GAP-034 [resolved in v1.4] Bulk dialogs for "Spoel toewijzen" and "Prijs instellen"
 - **Type:** missing component
 - **Found while:** M6 planning
 - **Where needed:** BulkActionBar on the dashboard
@@ -415,10 +416,11 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** "Spoel toewijzen": a Dialog with the SpoolPicker that sets the spool for the whole print on every selected print; "Prijs instellen": a Dialog with one Verkoopprijs NumberInput applied to every selected print, plus "Voorstel uit marge" per print. Results: a toast "{ok} van {totaal} bijgewerkt" and, on failures, an alert listing the prints and reasons.
 - **Blocked:** those two buttons. The bulk API with per-print results is built; Markeer als betaald, Tags and Verwijderen are offered.
 - **Owner decision (2026-10-06):** wait for the design system.
+- **Owner decision (2026-10-06, asked by the design system):** "Prijs instellen" sets the price on the newest order of each print; if that order is already paid or written off, that print fails with a reason and the others go ahead.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-035 [open] Screens for several orders in one print (Nabestelling)
+## GAP-035 [resolved in v1.4] Screens for several orders in one print (Nabestelling)
 - **Type:** missing screen
 - **Found while:** M6, owner decision on repeat orders
 - **Where needed:** ScreenPrintDetail, PaymentPanel, AssetListItem, PrintCard/PrintRow status, CostBreakdown, copy deck
@@ -426,10 +428,11 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** repeat orders cannot be created or paid from the UI; new files after an order is priced do not count until they are in an order.
 - **Proposal:** on the detail page a section per order ("Bestelling 1", "Nabestelling 2 · {datum}") with its items, CostBreakdown and PaymentPanel; a secondary button "Nabestelling maken" opening a Dialog with checkbox rows per file/plate and an "Aantal keer geprint" NumberInput; AssetListItem badge "Niet in een bestelling" with the hint "Nieuw bestand. Voeg het toe aan een nabestelling."; PrintCard shows the summed price and the least settled badge, with "{n} bestellingen" in the meta line.
 - **Blocked:** making a Nabestelling and showing more than one order. The data model, API and status rules are built; the screens show order 1 as designed.
+- **Owner decision (2026-10-06, asked by the design system):** stacked sections per order ("Bestelling 1", "Nabestelling 2 · {datum}"), newest first, each with its files, CostBreakdown and PaymentPanel; settled orders collapsed; the same on phone and desktop. A Nabestelling may be deleted by Admin and Editor while it has no payment, no write-off and (from M7) is not on an invoice; order 1 can never be deleted; its files go back to "not in an order".
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
-## GAP-036 [open] M6 component previews still use inline sizes without tokens or classes
+## GAP-036 [resolved in v1.4] M6 component previews still use inline sizes without tokens or classes
 - **Type:** missing token
 - **Found while:** M6, building PaymentPanel, CostBreakdown, CostOverrideDialog and ScreenSettings
 - **Where needed:** PaymentPanel, CostBreakdown, CostOverrideDialog, ScreenSettings
@@ -441,3 +444,143 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.3
 
+
+## GAP-037 [resolved in v1.5] Invoice PDF payment sentence without IBAN or with nothing open
+- **Type:** unclear spec
+- **Found while:** M7, rendering the Factuur, Concept and Herinnering PDFs (DocInvoice, DocReminder)
+- **Where needed:** `backend/src/finance/pdf.ts` (footer of Factuur, Concept and Herinnering)
+- **What is missing or wrong:** the footer always reads "Graag € {bedrag} overmaken naar IBAN {iban} t.n.v. {naam}, onder vermelding van {referentie}." The spec does not say what to print when (a) Bedrijfsgegevens has no IBAN or name yet, or (b) the invoice is fully paid (a full invoice includes paid prints, so Openstaand can be € 0,00).
+- **Why it matters:** the klant would read "Graag € 0,00 overmaken" or "naar IBAN  t.n.v. ,".
+- **Proposal:** (a) refuse "Definitief maken" until name and IBAN are filled in (Concept still works, without the sentence); (b) with nothing open, replace the sentence with "Deze factuur is volledig betaald."
+- **Blocked:** nothing else; the PDFs follow the spec literally until this is decided.
+- **Owner decision (2026-10-06):** wait for the design system, no placeholder.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.3
+
+## GAP-038 [resolved in v1.5] v1.4 export: 18 component READMEs contain only their 1.4 paragraph
+- **Type:** suspected design bug
+- **Found while:** importing design system v1.4
+- **Where needed:** README.md of AssetListItem, BulkActionBar, ConfirmDialog, CostBreakdown, CostOverrideDialog, CustomerChips, FilterBar, MoneyDisplay, PaymentPanel, PrintCard, PrintRow, ScreenDashboard, ScreenInvoiceExport, ScreenInvoices, ScreenOutstanding, ScreenPrintDetail, SpoolPicker, TagEditor
+- **What is missing or wrong:** each of these files now holds only the new "1.4" paragraph (e.g. "**Inline values (1.4).** …"); the anatomy, tokens, states, accessibility and Dutch copy from 1.3 are gone. The changelog says these components were changed, not rewritten.
+- **Why it matters:** the specs the screens are built from (and checked against) are incomplete.
+- **Proposal:** read each as the 1.3 README plus the 1.4 paragraph (the 1.4 text amends the 1.3 text where they differ); ask Claude's Design System to re-export the full READMEs in the next version.
+- **Blocked:** reading these specs as complete; nothing else if the proposal is accepted.
+- **Owner decision (2026-10-06):** use the proposal (1.3 README plus the 1.4 paragraph) until a re-export.
+- **Temporary placeholder approved:** no (no placeholder needed: it is how the specs are read)
+- **Design system version:** 1.4
+
+## GAP-039 [resolved in v1.5] `pp-text-xl`, `pp-text-lg` and `pp-text-2xl` are used in previews but not defined
+- **Type:** suspected design bug
+- **Found while:** implementing GAP-036 from v1.4
+- **Where needed:** PaymentPanel amount (`<span class="pp-money pp-text-xl">`), `frontend/src/finance/PaymentPanel.tsx`
+- **What is missing or wrong:** `components/bundle.css` defines `pp-text-xs`, `pp-text-sm` and `pp-text-md`, but not `pp-text-xl` (PaymentPanel amount), `pp-text-lg` (OutstandingGroup header total) or `pp-text-2xl` (ScreenOutstanding phone stat values).
+- **Why it matters:** the class has no effect; the amount would render at body size.
+- **Proposal:** add `.pp-text-lg`, `.pp-text-xl` and `.pp-text-2xl` (each `font-size` and `line-height` from the matching tokens) to `bundle.css`. The app keeps its existing M6 `app-money-lg` rule for the PaymentPanel amount; the Openstaand totals use the class names and render at their default size until the classes exist.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** no (the existing token-only rule from M6 stays)
+- **Design system version:** 1.4
+
+## GAP-040 [resolved in v1.5] Where "Spoel voor de hele print" goes on the print detail with orders
+- **Type:** unclear spec
+- **Found while:** implementing GAP-035 (OrderSection on ScreenPrintDetail)
+- **Where needed:** ScreenPrintDetail, `frontend/src/prints/PrintDetailPage.tsx`
+- **What is missing or wrong:** in 1.3 the "Spoel voor de hele print" card sat in the right column above CostBreakdown. The 1.4 orders variant puts the viewer full width and gives each OrderSection its own files, costs and payment, but does not show the print-level spool card anywhere. The spool belongs to the print, not to one order.
+- **Why it matters:** without a place, the whole-print spool cannot be set (files and slots keep their own pickers).
+- **Proposal:** a `pp-card pp-sec` between the viewer and the "nieuw bestand" alert, full width, as in 1.3 (title, SpoolPicker, help).
+- **Also unclear:** files that never count (STL, video, PDF, links) have no order; the app lists them in Bestelling 1's Bestanden. Files in no order are listed under the label "Nog niet in een bestelling" in a card after the alert (as in the AssetListItem preview).
+- **Blocked:** the placement only; the card works as before.
+- **Owner decision (2026-10-07):** wait for the design system. Until then the whole-print spool card is not shown (files and slots keep their own pickers); files without lines stay listed with Bestelling 1 so they can still be downloaded.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
+
+## GAP-041 [resolved in v1.5] Openstaand: "Markeer als betaald" per line asks an amount, but there is no dialog
+- **Type:** missing component
+- **Found while:** M7, building ScreenOutstanding
+- **Where needed:** ScreenOutstanding / OutstandingGroup line action, `frontend/src/finance/OutstandingPage.tsx`
+- **What is missing or wrong:** the README says the line action "asks the amount, default the remainder", but no dialog or inline field is drawn and the copy deck has no title for it. Also not drawn: how a Nabestelling line is named (the preview only has order-1 lines).
+- **Why it matters:** the amount question would be improvised.
+- **Proposal:** a small Dialog (`pp-dialog sm`) titled "Markeer als betaald" with the PaymentPanel field "Betaald bedrag" (€ prefix, default the remainder, same overpayment error `error.overpay`) and the primary "Markeer als betaald". A Nabestelling line is named "{print} (nabestelling {n})", as on the invoice PDF.
+- **Blocked:** the per-line amount question and the Nabestelling line name.
+- **Owner decision (2026-10-07):** wait for the design system. Until then the line action pays the full remainder after a ConfirmDialog, and a line shows the print name as in the preview.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
+
+## GAP-042 [resolved in v1.5] "Factuur maken" on phones
+- **Type:** missing state
+- **Found while:** M7, wiring the invoice export dialog
+- **Where needed:** ScreenDashboard on phones (CustomerChips toolbar), ScreenInvoiceExport
+- **What is missing or wrong:** the export dialog opens from CustomerCard's "Factuur" button, which is `pp-only-wide`. On phones (CustomerChips) there is no "Factuur" action, though the export dialog has a phone (sheet) layout.
+- **Why it matters:** invoices cannot be made on a phone.
+- **Proposal:** a secondary "Factuur" button in the `.pp-toolbar` while one klant is selected (next to "Klant verwijderen"), hidden for niet-factureren klanten.
+- **Blocked:** making an invoice on phones.
+- **Owner decision (2026-10-07):** wait for the design system; no invoice action on phones for now.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
+
+## GAP-043 [resolved in v1.5] DatePicker calendar has no classes in bundle.css
+- **Type:** missing component
+- **Found while:** M7, building the invoice export dialog (Van, Tot en met)
+- **Where needed:** DatePicker, ScreenInvoiceExport, `frontend/src/components/DatePicker.tsx`
+- **What is missing or wrong:** the DatePicker preview draws the month header and the day grid with its own `<style>` block (`.cal`, raw sizes 32px, 6px, 13.5px, 12px, a 2px gap and a 1.5px today ring); none of it is in `components/bundle.css`, so the calendar cannot be built from tokens and classes.
+- **Why it matters:** the calendar popover would need invented values.
+- **Proposal:** add `.pp-cal` (7-column grid, day cells at `--pp-control-h` or a token, `radius-md`, `text-sm`, `.h` weekday header in `muted`/`text-xs`, `.t` today ring in `primary`, `.s` selected in `primary`/`on-primary`) and `.pp-cal-hd` for the month header to `bundle.css`.
+- **Blocked:** the calendar popover. The field itself (typing `d-m-jjjj`, shown as `5 okt 2026`) is specified and works without it.
+- **Owner decision (2026-10-07):** wait for the design system. Until then the export dialog has no Van / Tot en met: it covers every order of the klant that is not on a final invoice yet (the API keeps its period filter).
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
+
+## GAP-044 [resolved in v1.5] `.pp-anchor.up` pushes the phone bottom sheet off the screen
+- **Type:** suspected design bug
+- **Found while:** checking the BulkActionBar "Acties" menu at 360px
+- **Where needed:** Popover (`components/bundle.css`), BulkActionBar on phones
+- **What is missing or wrong:** at 480px and below `.pp-anchor>.pp-pop` becomes a fixed bottom sheet (`bottom:0`), but `.pp-anchor.up>.pp-pop{bottom:calc(100% + var(--space-2))}` is more specific and still applies, so the sheet sits above the top of the viewport (measured: top at -302px).
+- **Why it matters:** a popover marked `.up` (for a trigger near the bottom edge, like the sticky bulk bar) cannot be seen on phones.
+- **Proposal:** in the phone media query, also reset `.pp-anchor.up>.pp-pop` (and `.pp-anchor.end>.pp-pop`) to `top:auto;bottom:0;left:0;right:0`.
+- **Blocked:** nothing; the app leaves out `.up` where the panel only opens on phones.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
+
+## GAP-045 [resolved in v1.5] Invoice export dialog: three footer buttons do not fit the 440px dialog
+- **Type:** suspected design bug
+- **Found while:** comparing ScreenInvoiceExport at 1280px
+- **Where needed:** ScreenInvoiceExport footer (Annuleren, Concept downloaden, Definitief maken), `frontend/src/finance/InvoiceExportDialog.tsx`
+- **What is missing or wrong:** `.pp-dialog` has `max-width:440px` and `.pp-dialog>footer` does not wrap; the three buttons plus gaps and padding need about 490px, so "Annuleren" spills out of the dialog on the left. The preview places the dialog in a 600px frame, which hides this.
+- **Why it matters:** a button outside the dialog edge, over the backdrop.
+- **Proposal:** a wider dialog variant for this screen (for example `.pp-dialog.lg`, 560px), or `flex-wrap:wrap` on `.pp-dialog>footer`.
+- **Blocked:** nothing; until then the app lets the button row wrap, right-aligned.
+- **Temporary placeholder approved:** no (no new values; only existing helper classes)
+- **Design system version:** 1.4
+
+## GAP-046 [resolved in v1.5] Uploaded logo in the AppShell brand
+- **Type:** missing state
+- **Found while:** M7, owner decision on the logo
+- **Where needed:** AppShell brand (`.pp-brand` in the sidebar, the 40px `.ini` tile in the tablet rail, `.pp-phone-top` on phones, the drawer), `frontend/src/shell/AppShell.tsx`
+- **What is missing or wrong:** the owner decided that an uploaded logo replaces the studio name in the sidebar too (the AppShell README already says "studio name (or uploaded logo)"). `bundle.css` has no rule for an image in `.pp-brand`: no maximum height or width on desktop, nothing for the 40px rail tile (logo, or keep the initial?), the phone top bar or the drawer, and no note on dark mode (a dark logo on the dark sidebar).
+- **Why it matters:** the logo cannot be placed without inventing sizes.
+- **Proposal:** `.pp-brand img` with a max height of `space-8` (or a token) and `max-width:100%`, `object-fit:contain`, left-aligned; in the rail the initial tile stays (a logo is unreadable at 40px); in the phone top bar the same image at the top bar's height; the image keeps the studio name as `alt`. For dark mode, a light surface behind the logo or a second upload (light and dark).
+- **Blocked:** the logo in the sidebar, rail, phone top bar and drawer. Documents already use it. The app will also let every signed-in role read the logo (it is Admin-only today).
+- **Owner decision (2026-10-07):** the logo replaces the name in the sidebar too.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.4
+
+## GAP-047 [open] DatePicker: "calendar icon button" in the README, a decorative icon in the preview
+- **Type:** unclear spec
+- **Found while:** implementing v1.5 (DatePicker in the invoice export dialog)
+- **Where needed:** DatePicker field (`frontend/src/components/DatePicker.tsx`), invoice export Van / Tot en met
+- **What is missing or wrong:** the README's anatomy says the field has "a calendar icon button on the right", and its accessibility notes say "typing `d-m-jjjj` in the field works without opening the calendar". The preview, however, shows a plain `svg.pp-ico.r` inside `.pp-iwrap`, and `bundle.css` gives `.pp-iwrap>.pp-ico` `pointer-events:none`, so the icon cannot be clicked. There is no class for a button inside `.pp-iwrap` (size, position, hover and focus ring inside the field), and no `aria-label` copy for it (for example "Kies een datum").
+- **Why it matters:** with only the decorative icon, a mouse or touch user can open the calendar only by clicking the field itself. Building a real button would mean inventing its size, position and focus style.
+- **Proposal:** a `.pp-iwrap>.pp-btn.pp-btn-icon.r` rule (ghost icon button at `right: space-1`, height `--pp-tap` minus the border, `focus-ring` inside the field) with the label "Kies een datum" (copy key `date.pick`), and say whether a click in the field itself should open the calendar.
+- **Blocked:** the icon button only. As built now (no new visuals): the icon stays decorative, as in the preview; a click in the field opens the calendar but leaves focus in the field so typing works; Alt+Down or Down moves into the grid; Enter or Tab after typing closes it.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-047`. Built from existing classes: a `pp-btn pp-btn-ghost pp-btn-icon pp-btn-sm` with the label "Kies een datum", placed with `.app-date-btn` (`right: space-1`); it opens the calendar and moves focus into the grid. A click in the field no longer opens the calendar.
+- **Design system version:** 1.5
+
+## GAP-048 [open] Locked order: no locked state for "Aantal keer geprint", Aanpassen and the slot spools
+- **Type:** missing state
+- **Found while:** implementing v1.5 (PaymentPanel "Vergrendeld"), checking the print detail of an order on a final invoice
+- **Where needed:** AssetListItem (Aantal keer geprint, "Telt niet mee in kosten", slot SpoolPickers), CostBreakdown ("Aanpassen" / CostOverrideDialog), the per-order controls in OrderSection; `frontend/src/prints/AssetList.tsx`, `frontend/src/finance/CostBreakdown.tsx`
+- **What is missing or wrong:** the PaymentPanel README (1.5) says that after finalising "the price, cost adjustments and Aantal keer geprint are locked ("Op factuur {nummer}")". Only PaymentPanel has a locked variant (disabled price field plus help text). AssetListItem, CostBreakdown and OrderSection list no locked state, so it is not specified whether these controls are disabled, hidden or read-only, which help text or tooltip explains why, and whether spool choices (which change the cost) are locked too.
+- **Why it matters:** the server already refuses these changes on a locked order, so today the controls look editable and a change ends in the error toast "Opslaan mislukt".
+- **Proposal:** on a locked order, show "Aantal keer geprint" as plain text (as the role User sees it), disable the "Telt niet mee in kosten" toggle and the slot SpoolPickers with their existing disabled state, hide "Aanpassen" in CostBreakdown, and give all of them the tooltip `pay.lockedHelp`. Also say whether "Spoel voor de hele print" may still change a locked order.
+- **Blocked:** the locked look of those controls. Until then they stay as they are and the server refuses the change.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-048`. Built: "Aantal keer geprint" as text, the toggle and slot SpoolPickers disabled, no "Aanpassen". Instead of a hover tooltip, the reason (`pay.lockedHelp`) is one visible `pp-help` line at the top of the file list, linked to each control with `aria-describedby`: disabled controls get no hover or keyboard focus, and the Tooltip spec says a tooltip must never be the only place an essential instruction lives. "Spoel voor de hele print" is unchanged.
+- **Design system version:** 1.5

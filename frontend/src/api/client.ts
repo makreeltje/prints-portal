@@ -30,18 +30,30 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 export async function api<T>(
   path: string,
-  options: { method?: string; body?: unknown; quiet401?: boolean } = {},
+  options: {
+    method?: string;
+    body?: unknown;
+    /** A file sent as it is (logo upload), with its media type. */
+    raw?: { data: Blob; type: string };
+    quiet401?: boolean;
+  } = {},
 ): Promise<T> {
   const method = options.method ?? 'GET';
   const headers: Record<string, string> = { accept: 'application/json' };
-  if (options.body !== undefined) headers['content-type'] = 'application/json';
+  if (options.raw !== undefined) headers['content-type'] = options.raw.type;
+  else if (options.body !== undefined) headers['content-type'] = 'application/json';
   if (!SAFE_METHODS.has(method) && csrfToken !== null) headers['x-csrf-token'] = csrfToken;
 
   const response = await fetch(path, {
     method,
     headers,
     credentials: 'same-origin',
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body:
+      options.raw !== undefined
+        ? options.raw.data
+        : options.body === undefined
+          ? undefined
+          : JSON.stringify(options.body),
   });
   if (!response.ok) {
     const code = await response

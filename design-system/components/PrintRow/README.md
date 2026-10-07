@@ -9,3 +9,5 @@ PrintRow is one print in the list view: the same data as PrintCard, compact, in 
 **Accessibility.** `<table>` with `<th scope="col">`; header checkbox selects all (indeterminate for partial); the row name is the link.
 
 **Dutch copy.** Naam, Materiaal, Tijd, Gewicht, Prijs, Status, Tags, Herstellen, Nog {bedrag} open.
+
+**Orders (1.4).** Price is the sum over all orders with "Nog € x open" under it, status is the least settled order, and the sub line adds "{n} bestellingen".

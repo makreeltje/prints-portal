@@ -9,3 +9,5 @@ FilterBar narrows the dashboard by klant, tags, free text and view type.
 **Accessibility.** `role="search"` region; chip removal announces "<tag> verwijderd uit filter"; the tag filter states AND semantics in text, not only in the tooltip.
 
 **Dutch copy.** Alle klanten | Tags | Zoek op naam, klant of tag | Kaarten | Lijst | Filters wissen | Toont prints met alle gekozen tags (EN) | 12 van 61 prints
+
+**Stacking (1.4).** The "Tags" popover sits in `.pp-anchor` and floats above the print cards (`z-popover`); no page needs its own z-index.

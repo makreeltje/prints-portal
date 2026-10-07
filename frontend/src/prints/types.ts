@@ -91,6 +91,8 @@ export interface Order {
   id: string;
   number: number;
   createdAt: string;
+  /** Newest counted G-code in the order, else its creation time. */
+  date: string;
   status: OrderStatus;
   price: number | null;
   salePrice?: number | null;
@@ -103,6 +105,8 @@ export interface Order {
   overrides?: { pricePerKg: number | null; grams: number | null; printSeconds: number | null };
   cost?: Cost;
   items?: { lineId: string | null; timesPrinted: number }[];
+  /** "Op factuur {nummer}" (M7). */
+  invoice?: { id: string; number: string } | null;
 }
 
 export interface TagWithCount extends Tag {

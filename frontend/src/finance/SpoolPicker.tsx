@@ -11,19 +11,22 @@ import { SpoolSwatch } from './money';
  * SpoolPicker: a trigger (swatch, name, chevron) and a popover with a search
  * field and a listbox of Spoolman spools, "Geen spoel" last. Combobox
  * keyboard: arrows move, Enter picks, Esc closes and returns focus. The
- * popover opens in the page flow; floating needs a stacking level (GAP-029).
+ * popover floats under the trigger in `.pp-anchor` (Popover, z-popover).
  */
 export function SpoolPicker({
   value,
   onChange,
   disabled = false,
   label,
+  describedBy,
 }: {
   value: Spool | null;
   onChange: (spoolId: number | null) => Promise<void>;
   disabled?: boolean;
   /** Accessible name of the trigger when it says only the spool name. */
   label?: string;
+  /** Id of a help text, e.g. why the picker is disabled. */
+  describedBy?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -43,17 +46,18 @@ export function SpoolPicker({
     }
   };
   return (
-    <>
+    <span className="pp-anchor">
       <button
         ref={trigger}
         type="button"
-        className="pp-btn pp-btn-secondary pp-btn-sm pp-spoolbtn"
+        className="pp-btn pp-btn-secondary pp-btn-sm pp-spoolbtn pp-minw-200 pp-start"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={
           label === undefined ? undefined : `${label}: ${value?.name ?? t('spool.choose')}`
         }
         aria-busy={busy}
+        aria-describedby={describedBy}
         disabled={disabled || busy}
         onClick={() => {
           setOpen((current) => !current);
@@ -73,20 +77,27 @@ export function SpoolPicker({
           onClose={close}
         />
       )}
-    </>
+    </span>
   );
 }
 
-function SpoolPopover({
+/**
+ * The search field and spool listbox. As a popover it closes on an outside
+ * click and Esc; `inline` (BulkDialogs) keeps it in place inside a dialog,
+ * where Esc belongs to the dialog.
+ */
+export function SpoolPopover({
   selected,
   trigger,
   onPick,
   onClose,
+  inline = false,
 }: {
   selected: number | null;
-  trigger: RefObject<HTMLButtonElement | null>;
+  trigger?: RefObject<HTMLButtonElement | null>;
   onPick: (spoolId: number | null) => void;
-  onClose: () => void;
+  onClose?: () => void;
+  inline?: boolean;
 }) {
   const id = useId();
   const queryClient = useQueryClient();
@@ -101,19 +112,20 @@ function SpoolPopover({
   });
 
   useEffect(() => {
+    if (inline) return;
     input.current?.focus();
     const onPointer = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (panel.current?.contains(target) || trigger.current?.contains(target)) return;
+      if (panel.current?.contains(target) || trigger?.current?.contains(target)) return;
       setTimeout(() => {
-        latestClose.current();
+        latestClose.current?.();
       });
     };
     document.addEventListener('pointerdown', onPointer);
     return () => {
       document.removeEventListener('pointerdown', onPointer);
     };
-  }, [trigger]);
+  }, [trigger, inline]);
 
   const needle = query.trim().toLocaleLowerCase('nl-NL');
   const matches = (spools.data?.spools ?? []).filter((spool) => {
@@ -144,21 +156,22 @@ function SpoolPopover({
       event.preventDefault();
       const option = options[activeIndex];
       onPick(option === undefined || option === null ? null : option.id);
-    } else if (event.key === 'Escape') {
+    } else if (event.key === 'Escape' && !inline) {
       event.preventDefault();
       event.stopPropagation();
-      onClose();
+      onClose?.();
     }
   };
 
   const unreachable = spools.isError;
   return (
-    <div ref={panel} className="pp-pop pp-picker">
+    <div ref={panel} className={inline ? 'pp-pop pp-picker pp-fill' : 'pp-pop pp-picker'}>
       <div className="pp-iwrap" role="search">
         <Search className="pp-ico" aria-hidden="true" />
         <input
           ref={input}
           className="pp-input"
+          data-autofocus={inline ? true : undefined}
           role="combobox"
           aria-expanded="true"
           aria-controls={`${id}-list`}

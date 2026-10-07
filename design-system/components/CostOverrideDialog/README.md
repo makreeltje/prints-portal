@@ -9,3 +9,5 @@ CostOverrideDialog lets an editor enter a price per kg, a weight and a print tim
 **Accessibility.** Each input has a label with its unit; the disabled field keeps its help text linked with `aria-describedby`; Enter submits, Esc closes.
 
 **Dutch copy.** Kosten aanpassen | Prijs per kg | Gewicht | Printtijd | Waarden die je invult krijgen de bron Handmatig. | Prijs komt uit Spoolman. | Terug naar berekend | Opslaan | Annuleren
+
+**Inline values (1.4).** The two print-time inputs use `.pp-time` (120px); the "voorgesteld" hint is `.pp-hint`; the disabled suggestion button is `aria-disabled` (`opacity-disabled`).

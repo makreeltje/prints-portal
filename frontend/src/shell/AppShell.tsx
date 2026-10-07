@@ -7,6 +7,7 @@ import { t, type MessageKey } from '../i18n/nl';
 import type { ThemePreference } from '../theme/theme';
 import { useTheme } from '../theme/useTheme';
 import { LiveIndicator } from '../prints/LiveIndicator';
+import { useLogo } from './logo';
 import { navItemsFor, type NavItem } from './navigation';
 
 const MAIN_ID = 'inhoud';
@@ -27,6 +28,7 @@ const THEME_LABELS: Record<ThemePreference, MessageKey> = {
 export function AppShell({ children }: { children: ReactNode }) {
   const theme = useTheme();
   const user = useCurrentUser();
+  const logo = useLogo();
   const { logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const items = navItemsFor(user.role);
@@ -46,11 +48,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="pp-app">
         {/* While the drawer is open the rest of the shell is inert (modal drawer). */}
         <aside className="pp-side" inert={drawerOpen}>
-          <div className="pp-brand">
+          <div className={logo === null ? 'pp-brand' : 'pp-brand has-logo'}>
             <span className="ini" aria-hidden="true">
               {t('app.name').charAt(0)}
             </span>
             <span className="full">{t('app.name')}</span>
+            {logo !== null && <img className="logo pp-logo" src={logo} alt={t('app.name')} />}
           </div>
           <nav className="pp-nav" aria-label={t('nav.main')}>
             <NavItems items={items} />
@@ -92,7 +95,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <Menu className="pp-ico pp-ico-20" aria-hidden="true" />
           </button>
-          <b>{t('app.name')}</b>
+          {logo === null ? (
+            <b>{t('app.name')}</b>
+          ) : (
+            <img className="pp-logo" src={logo} alt={t('app.name')} />
+          )}
           <LiveIndicator dotOnly />
         </header>
 
@@ -135,7 +142,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             setDrawerOpen(false);
           }}
         >
-          <div className="pp-brand">{t('app.name')}</div>
+          {logo === null ? (
+            <div className="pp-brand">{t('app.name')}</div>
+          ) : (
+            <div className="pp-brand has-logo">
+              <img className="logo pp-logo" src={logo} alt={t('app.name')} />
+            </div>
+          )}
           <nav className="app-drawer-nav" aria-label={t('nav.main')}>
             <NavItems items={items} />
           </nav>

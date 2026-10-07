@@ -9,3 +9,5 @@ CostBreakdown explains how the Totaalkosten of a print are built from Materiaal 
 **Accessibility.** Real `<table>`; amounts right-aligned with tabular figures; the warning is `role="status"`; the calculation text is visible, not hidden in a tooltip; sub-rows use `aria-level` or indentation plus a visually hidden "onderdeel van".
 
 **Dutch copy.** Materiaal | 2 × 87 g × € 22,50/kg | Spoolman | € 3,92 | Slot 2 · 1,65 g × € 24,00/kg | Stroom | 1,05 kWh × € 0,25/kWh | Geschat | € 0,26 | Totaalkosten | € 4,26 | Aanpassen | Niet meegeteld: 2 bestanden | Geen printerprofiel, stroomkosten ontbreken.
+
+**Inline values (1.4).** Slot rows indent through `tr.slot td:first-child` (`space-9`, 48px); no inline padding remains. Inside an order the breakdown covers that order's items only.

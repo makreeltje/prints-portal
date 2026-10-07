@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { calculateCost } from '../core/cost.js';
+import { suggestSalePrice } from '../core/pricing.js';
 import { toCents } from '../core/money.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { Role } from '../db/schema.js';
@@ -9,6 +10,7 @@ import type { LiveEvent, RealtimeHub } from '../realtime/hub.js';
 import { recalculateAll } from './costs.js';
 import {
   addPayment,
+  deleteRepeatOrder,
   FinanceError,
   setLineOverride,
   setNoBilling,
@@ -551,6 +553,24 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
     },
   );
 
+  /** "Nabestelling verwijderen". */
+  app.delete<{ Params: { orderId: string } }>(
+    '/api/orders/:orderId',
+    { config: { auth: MANAGE }, schema: { params: orderParams } },
+    async (request, reply) => {
+      const print = await orderFor(request, reply, request.params.orderId);
+      if (print === null) return reply;
+      try {
+        await deleteRepeatOrder(db, request.params.orderId, iso());
+      } catch (error) {
+        return financeError(reply, error);
+      }
+      await indexer.recalculateRecord(print.id);
+      broadcast('print:updated', print.id, print.customer_folder);
+      return reply.code(204).send();
+    },
+  );
+
   /** The print's version changes with its money, so lists and thumbnails refresh. */
   async function touch(recordId: string): Promise<void> {
     await db
@@ -617,6 +637,11 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
   // --------------------------------------------------------------- settings
 
   app.get('/api/settings', { config: { auth: ADMIN } }, () => readSettings(db));
+
+  /** Standaardmarge for "Voorstel uit marge per print" (BulkDialogs); Editors may read it. */
+  app.get('/api/settings/markup', { config: { auth: MANAGE } }, async () => ({
+    defaultMarkupPercent: (await readSettings(db)).pricing.defaultMarkupPercent,
+  }));
 
   const settingsSchemas: Record<keyof Settings, object> = {
     pricing: {
@@ -737,7 +762,7 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
 
   type BulkBody =
     | { action: 'markPaid'; ids: string[] }
-    | { action: 'setPrice'; ids: string[]; salePrice: number | null }
+    | { action: 'setPrice'; ids: string[]; salePrice?: number | null; suggested?: boolean }
     | { action: 'assignSpool'; ids: string[]; spoolId: number | null }
     | { action: 'delete'; ids: string[] }
     | { action: 'addTags' | 'removeTags'; ids: string[]; tagIds: string[] };
@@ -758,6 +783,8 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
             },
             ids: { type: 'array', minItems: 1, maxItems: 200, items: UUID },
             salePrice: nullable(EUROS),
+            // "Voorstel uit marge per print": each print gets its own suggested price.
+            suggested: { type: 'boolean' },
             spoolId: nullable({ type: 'integer', minimum: 1 }),
             tagIds: { type: 'array', maxItems: 50, items: UUID },
           },
@@ -777,7 +804,16 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
           return financeError(reply, error);
         }
       }
-      const results: { id: string; ok: boolean; error?: string }[] = [];
+      if (body.action === 'setPrice' && body.suggested !== true && body.salePrice === undefined) {
+        return reply.code(400).send({ error: 'missing_price' });
+      }
+      const results: {
+        id: string;
+        ok: boolean;
+        error?: string;
+        orderNumber?: number;
+        invoiceNumber?: string;
+      }[] = [];
       for (const id of ids) {
         const print = await db
           .selectFrom('print_records')
@@ -797,8 +833,9 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
             print.customer_folder,
           );
         } catch (error) {
-          if (error instanceof FinanceError) results.push({ id, ok: false, error: error.code });
-          else if (error instanceof UnknownTagError) {
+          if (error instanceof FinanceError) {
+            results.push({ id, ok: false, error: error.code, ...error.detail });
+          } else if (error instanceof UnknownTagError) {
             results.push({ id, ok: false, error: 'unknown_tag' });
           } else throw error;
         }
@@ -831,19 +868,39 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
         return;
       }
       case 'setPrice': {
-        const newest = await db
-          .selectFrom('print_orders')
-          .select('id')
-          .where('print_record_id', '=', recordId)
-          .orderBy('number', 'desc')
-          .executeTakeFirstOrThrow();
-        await setSalePrice(
-          db,
-          newest.id,
-          body.salePrice === null ? null : toCents(body.salePrice),
-          userId(request),
-          stamp,
-        );
+        // Owner decision (GAP-034): the newest order; paid, written-off or invoiced fails.
+        const orders = (await ordersWithMoney(db, [recordId])).get(recordId) ?? [];
+        const newest = orders.at(-1);
+        if (newest === undefined) throw new FinanceError('not_found');
+        const orderNumber = newest.order.number;
+        if (newest.noBilling) throw new FinanceError('not_billed');
+        if (newest.order.invoice_id !== null) {
+          const invoice = await db
+            .selectFrom('invoices')
+            .select('number')
+            .where('id', '=', newest.order.invoice_id)
+            .executeTakeFirst();
+          throw new FinanceError('locked', { orderNumber, invoiceNumber: invoice?.number ?? '' });
+        }
+        if (newest.money.status === 'paid') throw new FinanceError('paid', { orderNumber });
+        if (newest.money.status === 'writtenOff') {
+          throw new FinanceError('written_off', { orderNumber });
+        }
+        let cents: number | null;
+        if (body.suggested === true) {
+          const suggestion = suggestSalePrice(
+            newest.order.total_cost_cents === null ? null : newest.order.total_cost_cents / 100,
+            (await readSettings(db)).pricing.defaultMarkupPercent,
+          );
+          if (!suggestion.ok) throw new FinanceError('no_cost', { orderNumber });
+          cents = toCents(suggestion.salePrice);
+        } else {
+          cents =
+            body.salePrice === null || body.salePrice === undefined
+              ? null
+              : toCents(body.salePrice);
+        }
+        await setSalePrice(db, newest.order.id, cents, userId(request), stamp);
         await touch(recordId);
         return;
       }

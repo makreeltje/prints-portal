@@ -173,6 +173,7 @@ export const nl = {
   'pay.notBilledNote': 'Deze klant wordt niet gefactureerd.',
   'pay.userNote': 'Je ziet alleen prijs en status.',
   'pay.adminOnly': 'Alleen zichtbaar voor beheerders.',
+  'pay.lockedHelp': 'Staat op een definitieve factuur en kan niet meer worden gewijzigd.',
   'pay.writtenOffAmount': 'Afgeschreven', // component copy: PaymentPanel
   'pay.paidAmount': 'Betaald', // component copy: PaymentPanel
   'pay.date': 'Datum', // component copy: PaymentPanel
@@ -231,7 +232,7 @@ export const nl = {
   'print.weight': 'Gewicht', // component copy: PrintRow
   'print.status': 'Status', // component copy: PrintRow
   'print.files': 'Bestanden', // component copy: ScreenPrintDetail
-  'print.fileCount': '{count} bestanden', // component copy: ScreenPrintDetail preview
+  'print.fileCount': '{count, plural, one {# bestand} other {# bestanden}}', // component copy: ScreenPrintDetail, OrderSection previews
   'print.noWeightOrTime': 'geen gewicht of tijd', // component copy: ScreenPrintDetail preview
   'print.userView': 'Je ziet alleen prijs en status.', // component copy: ScreenPrintDetail
 
@@ -315,6 +316,171 @@ export const nl = {
   'settings.theme.system': 'Systeem', // component copy: ScreenSettings
   'settings.theme.light': 'Licht', // component copy: ScreenSettings
   'settings.theme.dark': 'Donker', // component copy: ScreenSettings
+  'settings.logoUpload': 'Logo uploaden',
+  'settings.logoHelp': 'PNG of SVG. Vervangt de naam op het scherm en op documenten.',
+  'settings.reindexProgress': 'Indexeren… {done} van {total} bestanden',
+  'settings.logoOptional': 'Logo (optioneel)', // component copy: ScreenSettings preview
+  'settings.addAlias': 'Alias toevoegen', // component copy: ScreenSettings preview (aria-label)
+  'settings.addPrefix': 'Voorvoegsel toevoegen', // component copy: ScreenSettings preview (aria-label)
+  'settings.addPlaceholder': 'Toevoegen…', // component copy: ScreenSettings preview
+  // Openstaand, invoices (copy deck)
+  'invoices.col.customer': 'Klant', // component copy: ScreenInvoices
+  'invoices.col.date': 'Datum', // component copy: ScreenInvoices
+  'invoices.col.amount': 'Bedrag', // component copy: ScreenInvoices
+  'invoices.col.actions': 'Acties', // component copy: ScreenInvoices preview
+  'invoices.kind.invoice': 'Factuur', // component copy: ScreenInvoices
+  'invoices.kind.credit': 'Creditnota', // component copy: ScreenInvoices
+  'invoices.relates': 'betreft {number}', // component copy: ScreenInvoices
+  'invoices.allTypes': 'Alle types', // component copy: ScreenInvoices preview
+  'invoices.search': 'Zoek op nummer of klant', // component copy: ScreenInvoices preview
+  'invoices.downloadNumber': 'Downloaden {number}', // component copy: ScreenInvoices preview (aria-label)
+  'invoices.creditNote': 'Creditnota', // component copy: ScreenInvoices preview (credit summary)
+  'invoices.relatesShort': 'Betreft', // component copy: ScreenInvoices preview (credit summary)
+  'invoices.relatesValue': 'factuur {number}', // component copy: ScreenInvoices preview (credit summary)
+  'invoice.button': 'Factuur', // component copy: CustomerCard
+  'outstanding.totalDetail': '{count, plural, one {uit # print} other {uit # prints}}', // component copy: ScreenOutstanding preview
+  'outstanding.customersDetail': 'met een openstaand bedrag', // component copy: ScreenOutstanding preview
+  'outstanding.oldestShort': 'Oudste', // component copy: ScreenOutstanding preview (phone)
+  'outstanding.days': '{count, plural, one {# dag} other {# dagen}}', // component copy: ScreenOutstanding preview
+  'outstanding.of': 'van {amount}', // component copy: OutstandingGroup ("van € 11,89")
+  'outstanding.markAllBody': 'Het openstaande bedrag van {amount} wordt als betaald geregistreerd.', // component copy: ScreenOutstanding preview
+  'outstanding.total': 'Totaal openstaand',
+  'outstanding.customers': 'Aantal klanten',
+  'outstanding.oldest': 'Oudste openstaande print',
+  'outstanding.groupMeta': '{count} prints · oudste {days} dagen open',
+  'outstanding.empty': 'Niets openstaand',
+  'outstanding.emptyHint': 'Alle prints zijn betaald.',
+  'pay.reminderPdf': 'Herinnering (PDF)',
+  'pay.markAllPaid': 'Alles als betaald',
+  'confirm.markAllPaid': 'Alles als betaald markeren voor {customer} ({count} prints)?',
+  'confirm.finalize': 'Definitief maken?',
+  'confirm.finalizeBody':
+    'Je maakt een factuur voor {customer} met {count} prints, totaal {amount}. De factuur krijgt nummer {number} en de regels worden vergrendeld.',
+  'status.onInvoice': 'Op factuur {number}',
+  'invoice.title': 'Factuur',
+  'invoice.registerTitle': 'Facturen',
+  'invoice.number': 'Nummer',
+  'invoice.type': 'Type',
+  'invoice.createFor': 'Factuur maken voor {customer}',
+  'invoice.onlyOutstanding': 'Alleen openstaand',
+  'invoice.preview': 'Voorbeeld',
+  'invoice.lines': 'Regels',
+  'invoice.total': 'Totaal',
+  'invoice.paid': 'Betaald',
+  'invoice.outstanding': 'Openstaand',
+  'invoice.omitted': '{count} prints zonder verkoopprijs zijn weggelaten: {names}.',
+  'invoice.conceptDownload': 'Concept downloaden',
+  'invoice.finalize': 'Definitief maken',
+  'invoice.noLines': 'Geen regels in deze periode.',
+  'invoice.relatesTo': 'Betreft factuur {number}',
+  'invoice.createCredit': 'Creditnota maken',
+  'invoice.createCreditFor': 'Creditnota maken voor factuur {number}',
+  'invoice.pickLines': 'Kies de regels die je wilt crediteren.',
+  'invoice.empty': 'Nog geen facturen',
+  'invoice.emptyHint': 'Maak een factuur vanaf het dashboard.',
+  'invoice.date': 'Factuurdatum',
+  'invoice.from': 'Van',
+  'invoice.to': 'Tot en met',
+  // Added in design system 1.5
+  'invoice.line.reorder': '{print} (nabestelling {n})',
+  'invoice.finalize.blocked':
+    'Naam en IBAN ontbreken. Vul ze in bij Instellingen, Bedrijfsgegevens. Een concept kan wel worden gedownload, zonder betaalzin.',
+  'invoice.paidfull': 'Deze factuur is volledig betaald.',
+  'invoice.finalize.blockedTitle': 'Naam en IBAN ontbreken.', // component copy: ScreenInvoiceExport
+  'invoice.toSettings': 'Naar Instellingen', // component copy: ScreenInvoiceExport
+  'invoice.periodHelp': 'De periode werkt op de datum van de bestelling.', // component copy: ScreenInvoiceExport preview
+  'order.locked': 'Op factuur {nummer}',
+  'order.lockedNote': 'Op factuur {nummer}.', // component copy: ScreenPrintDetail (Vergrendeld alert)
+  'outstanding.line.pay': 'Markeer als betaald',
+  'outstanding.payHelp':
+    'Standaard het openstaande bedrag ({amount}). Een lager bedrag is een deelbetaling.', // component copy: ScreenOutstanding preview
+  'date.today': 'Vandaag',
+  'date.clear': 'Wissen',
+  'date.prev': 'Vorige maand',
+  'date.next': 'Volgende maand',
+  'date.pick': 'Kies een datum', // component copy: DatePicker
+  'date.outOfRange': 'Kies een datum binnen de periode.', // component copy: DatePicker
+  // Added in design system 1.4
+  Key: 'Text',
+  'settings.electricityTariff': 'Stroomtarief',
+  'settings.electricityTariffHelp': 'Gebruikt voor de stroomkosten van elke print: kWh × tarief.',
+  'settings.materialPrices': 'Materiaalprijzen',
+  'settings.materialPricesHelp':
+    'Geschatte prijs per kg als Spoolman geen prijs heeft. Volgorde: Spoolman, handmatig, dit standaardbedrag.',
+  'settings.material': 'Materiaal',
+  'settings.pricePerKg': 'Prijs per kg',
+  'settings.addMaterial': 'Materiaal toevoegen',
+  'settings.printers': 'Printers',
+  'settings.printersHelp':
+    'Het vermogen (watt) bepaalt de stroomkosten van prints op deze printer.',
+  'settings.addPrinter': 'Printer toevoegen',
+  'settings.deletePrinter': 'Printer verwijderen',
+  'settings.printerName': 'Naam',
+  'settings.printerWatts': 'Vermogen',
+  'settings.printerAliases': 'Aliassen',
+  'settings.printerAliasesHelp': 'Andere namen voor deze printer.',
+  'settings.printerPrefixes': 'Timelapse-voorvoegsels',
+  'settings.printerPrefixesHelp':
+    'Beginletters van de bestandsnamen van timelapses van deze printer.',
+  'settings.printersEmpty':
+    'Nog geen printers. Zonder printerprofiel zijn stroomkosten niet meegerekend.',
+  'error.materialExists': 'Dit materiaal staat er al.',
+  'error.invalidWatts': 'Vul een aantal watt in, bijvoorbeeld 350.',
+  'error.invalidTariff': 'Vul een bedrag in, bijvoorbeeld 0,30.',
+  'confirm.deletePrinter': "Printer '{name}' verwijderen?",
+  'confirm.deletePrinterBody':
+    'De stroomkosten van prints op deze printer worden daarna niet meer meegerekend.',
+  'orders.first': 'Bestelling 1',
+  'orders.repeat': 'Nabestelling {n}',
+  'orders.create': 'Nabestelling maken',
+  'orders.createIntro': 'Kies de bestanden voor deze nabestelling en hoe vaak ze worden geprint.',
+  'orders.unassignedGroup': 'Nog niet in een bestelling',
+  'orders.previousGroup': 'Eerder besteld',
+  'orders.pickOne': 'Kies minstens één bestand.',
+  'orders.delete': 'Nabestelling verwijderen',
+  'orders.deleteHelp':
+    'Een nabestelling zonder betaling kan worden verwijderd. De bestanden gaan terug naar "Niet in een bestelling".',
+  'orders.deleteLocked': 'Staat op factuur {number} en kan niet worden verwijderd.',
+  'orders.count': '{count, plural, one {# bestelling} other {# bestellingen}}',
+  'orders.notInOrder': 'Niet in een bestelling',
+  'orders.notInOrderHint': 'Nieuw bestand. Voeg het toe aan een nabestelling.',
+  'orders.unassignedAlert':
+    '{count, plural, one {# nieuw bestand staat} other {# nieuwe bestanden staan}} in geen bestelling. Voeg het toe aan een nabestelling.',
+  'confirm.deleteOrder': 'Nabestelling {n} verwijderen?',
+  'confirm.deleteOrderBody':
+    'De bestanden gaan terug naar "Niet in een bestelling". De nabestelling heeft geen betaling of afschrijving.',
+  'payment.undoLast': 'Maakt de laatste betaling ({amount}) ongedaan.',
+  'payment.undoneBy': 'Ongedaan gemaakt door {name} op {date}.',
+  'error.overpay': 'Een betaling kan niet hoger zijn dan het openstaande bedrag ({amount}).',
+  'bulk.spoolTitle': 'Spoel toewijzen aan {count, plural, one {# print} other {# prints}}',
+  'bulk.spoolIntro': 'De gekozen spoel geldt voor de hele print, op elke geselecteerde print.',
+  'bulk.spoolKeep': 'Bestanden en slots met een eigen spoel houden die.',
+  'bulk.assign': 'Toewijzen',
+  'bulk.priceTitle': 'Prijs instellen voor {count, plural, one {# print} other {# prints}}',
+  'bulk.priceIntro': 'De prijs komt op de nieuwste bestelling van elke print.',
+  'bulk.priceSame': 'Dezelfde prijs voor elke print',
+  'bulk.priceSuggested': 'Voorstel uit marge per print ({margin}%)',
+  'bulk.priceSkipNoCost': 'Prints zonder kosten worden overgeslagen.',
+  'bulk.result': '{ok} van {total} bijgewerkt',
+  'bulk.failedTitle':
+    '{count, plural, one {# print niet bijgewerkt} other {# prints niet bijgewerkt}}',
+  'bulk.reason.paid': 'Nabestelling {n} is al betaald.',
+  'bulk.reason.writtenOff': 'Nabestelling {n} is afgeschreven.',
+  'bulk.reason.invoiced': 'Staat op factuur {number}.',
+  'bulk.reason.notBilled': 'Deze klant wordt niet gefactureerd.',
+  'bulk.reason.noCost': 'Kosten ontbreken.',
+  'bulk.reason.noAccess': 'Geen toegang.',
+  'customers.restore': 'Herstellen',
+  'tags.colour.rose': 'Roze',
+  'tags.colour.orange': 'Oranje',
+  'tags.colour.amber': 'Amber',
+  'tags.colour.lime': 'Limoen',
+  'tags.colour.teal': 'Turquoise',
+  'tags.colour.sky': 'Hemelsblauw',
+  'tags.colour.blue': 'Blauw',
+  'tags.colour.violet': 'Violet',
+  'tags.colour.lilac': 'Lila',
+  'tags.colour.grey': 'Grijs',
 } as const;
 
 export type MessageKey = keyof typeof nl;

@@ -9,3 +9,11 @@ PaymentPanel sets the Verkoopprijs and records payment, partial payment and writ
 **Accessibility.** Each input has a label; the suggestion result and the remaining amount are announced with `aria-live="polite"`; undo and write-off always open a ConfirmDialog; admin-only actions are not rendered for other roles.
 
 **Dutch copy.** Betaling | Verkoopprijs | Voorstel uit marge ({markup}%) | Opslaan | Betaald bedrag | Markeer als betaald | Betaald € {bedrag} van € {totaal} | Nog {bedrag} open | Betaald op {datum} | Betaling ongedaan maken | Afschrijven | Afschrijving ongedaan maken | Reden | Deze klant wordt niet gefactureerd. | Kosten | Staat op een definitieve factuur en kan niet meer worden gewijzigd.
+
+**Rules (1.4).** A payment can be at most the open remainder of the order; a higher amount is refused with the field error "Een betaling kan niet hoger zijn dan het openstaande bedrag ({bedrag})." and the button stays `aria-disabled`. "Betaling ongedaan maken" (Admin only) reverses the **most recent** payment of this order and says which one ("Maakt de laatste betaling ({bedrag}) ongedaan."). Undone payments stay in the history, struck through, with a line "Ongedaan gemaakt door {naam} op {datum}." Inside an order (see OrderSection) the panel belongs to that order and every amount is that order's.
+
+**Inline values (1.4).** The panel no longer needs inline styles: sizes and layout come from `pp-pay`, `pp-kv narrow`, `pp-between`, `pp-text-xl`, `pp-text-sm`, `pp-self-start` and `pp-plain`.
+
+**Locked by an invoice (1.5).** Finalising an invoice fixes the price: a "Voorstel uit marge" becomes the order's Verkoopprijs, and from then on the price, cost adjustments and "Aantal keer geprint" are locked ("Op factuur {nummer}"); payments and write-offs still work. A credit note (Admin) writes off the credited amount only up to what is still open; what was paid stays paid, because refunds are not tracked. The payment reference for a final invoice is its number; a Concept and a Herinnering use the klant name.
+
+**Text classes (1.5).** `pp-text-lg`, `pp-text-xl`, `pp-text-2xl` and `pp-text-3xl` exist in `bundle.css` (font size and line height from the matching tokens), so the amount renders at `text-xl` / `leading-xl`.

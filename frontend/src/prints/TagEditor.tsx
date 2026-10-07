@@ -22,7 +22,7 @@ export function TagEditor({ printId, current }: { printId: string; current: read
     trigger.current?.focus();
   };
   return (
-    <>
+    <span className="pp-anchor">
       <button
         ref={trigger}
         type="button"
@@ -37,22 +37,20 @@ export function TagEditor({ printId, current }: { printId: string; current: read
         {t('tags.add')}
       </button>
       {open && (
-        // Its own line under the chips; on phones the design system makes it a bottom sheet.
-        <div className="app-tagpop-line">
-          <TagPopover
-            stateOf={(tagId) => (current.some((tag) => tag.id === tagId) ? 'on' : 'off')}
-            apply={async ({ add, remove }) => {
-              const next = new Set(current.map((tag) => tag.id));
-              for (const tagId of add) next.add(tagId);
-              for (const tagId of remove) next.delete(tagId);
-              await setPrintTags(printId, [...next]);
-            }}
-            trigger={trigger}
-            onClose={close}
-          />
-        </div>
+        // Floats under the trigger (Popover, z-popover); a bottom sheet on phones.
+        <TagPopover
+          stateOf={(tagId) => (current.some((tag) => tag.id === tagId) ? 'on' : 'off')}
+          apply={async ({ add, remove }) => {
+            const next = new Set(current.map((tag) => tag.id));
+            for (const tagId of add) next.add(tagId);
+            for (const tagId of remove) next.delete(tagId);
+            await setPrintTags(printId, [...next]);
+          }}
+          trigger={trigger}
+          onClose={close}
+        />
       )}
-    </>
+    </span>
   );
 }
 

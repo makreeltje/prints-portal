@@ -51,6 +51,7 @@ export function emptyOrder(
     total_cost_cents: null,
     cost_missing: null,
     updated_at: now,
+    invoice_id: null,
   };
 }
 

@@ -9,3 +9,5 @@ MoneyDisplay renders every euro amount: tabular figures, Dutch format `€ 1.234
 **Accessibility.** Strikethrough text is wrapped in `<s>` and followed by a visually hidden "was". Units and symbols are never separated from the number on wrapping.
 
 **Dutch copy.** € 11,89 | € 14,50 → € 11,89 | € 11,89 voorgesteld | van € 11,89, Nog € 6,89 open | € -11,89 | Prijs volgt | Kosten € 2,30
+
+**Inline values (1.4).** Weight and size come from `pp-fw-medium`, `pp-text-sm` and `pp-text-xl`.

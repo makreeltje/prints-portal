@@ -9,3 +9,5 @@ The reminder PDF ("Herinnering") asks a klant politely to pay what is still open
 **Accessibility.** Tagged PDF; the paragraph is real text.
 
 **Dutch copy.** Herinnering | Openstaande prints | Beste {klant}, volgens onze administratie staan de onderstaande prints nog open. Wil je het bedrag overmaken? Heb je al betaald, dan kun je deze herinnering negeren. Alvast bedankt! | Totaal openstaand
+
+**1.5.** The reference is the klant name. Without a name and an IBAN the payment sentence is left out. A Herinnering only exists while something is open, so "volledig betaald" does not occur. One line per order ("{print} (nabestelling {n})" for a Nabestelling); Datum is the order date; Helvetica, Western European characters only.

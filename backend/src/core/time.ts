@@ -67,3 +67,22 @@ function offsetMs(date: Date, timeZone: string): number {
   );
   return wallClock - (date.getTime() - date.getUTCMilliseconds());
 }
+
+const isoDateParts = new Intl.DateTimeFormat('en-CA', {
+  timeZone: APP_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+/** The calendar date in Europe/Amsterdam as YYYY-MM-DD. */
+export function localDate(value: Date | string): string {
+  return isoDateParts.format(new Date(value));
+}
+
+/** Whole calendar days from `from` to `to` (Europe/Amsterdam); never negative. */
+export function daysBetween(from: Date | string, to: Date | string): number {
+  const start = Date.parse(`${localDate(from)}T00:00:00Z`);
+  const end = Date.parse(`${localDate(to)}T00:00:00Z`);
+  return Math.max(0, Math.round((end - start) / 86_400_000));
+}

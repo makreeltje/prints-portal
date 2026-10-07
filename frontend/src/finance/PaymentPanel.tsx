@@ -1,4 +1,4 @@
-import { CircleCheck, Info, RotateCcw, TriangleAlert } from 'lucide-react';
+import { CircleCheck, FileText, Info, RotateCcw, TriangleAlert } from 'lucide-react';
 import { useId, useState } from 'react';
 import { ApiError } from '../api/client';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -47,10 +47,11 @@ export function PaymentPanel({
   role: 'Admin' | 'Editor' | 'User';
   actions: PaymentActions;
 }) {
+  const titleId = useId();
   if (notBilled) {
     return (
-      <section className="pp-card pp-pay" aria-labelledby="pay-title">
-        <h3 id="pay-title">{t('pay.title')}</h3>
+      <section className="pp-card pp-pay" aria-labelledby={titleId}>
+        <h3 id={titleId}>{t('pay.title')}</h3>
         <div className="pp-alert info">
           <Info className="pp-ico" aria-hidden="true" />
           <div>{t('pay.notBilledNote')}</div>
@@ -64,8 +65,8 @@ export function PaymentPanel({
   }
   if (role === 'User') {
     return (
-      <section className="pp-card pp-pay" aria-labelledby="pay-title">
-        <h3 id="pay-title">{t('pay.title')}</h3>
+      <section className="pp-card pp-pay" aria-labelledby={titleId}>
+        <h3 id={titleId}>{t('pay.title')}</h3>
         <div className="pp-row pp-between">
           <PaymentBadge status={order.status} />
           {order.price === null ? null : <Money amount={order.price} />}
@@ -99,6 +100,9 @@ function ManagedPanel({
   actions: PaymentActions;
 }) {
   const id = useId();
+  // On a final invoice the price is locked (Vergrendeld); payments and write-offs go on.
+  const invoice = order.invoice ?? null;
+  const locked = invoice !== null;
   const paid = order.paid ?? 0;
   const remaining = order.remaining ?? null;
   const active = (order.payments ?? []).filter((p) => p.undoneAt === null);
@@ -184,8 +188,8 @@ function ManagedPanel({
     ) : null;
 
   return (
-    <section className="pp-card pp-pay" aria-labelledby="pay-title">
-      <h3 id="pay-title">{t('pay.title')}</h3>
+    <section className="pp-card pp-pay" aria-labelledby={`${id}-title`}>
+      <h3 id={`${id}-title`}>{t('pay.title')}</h3>
       {failed && (
         <div className="pp-alert unpaid" role="alert">
           <TriangleAlert className="pp-ico" aria-hidden="true" />
@@ -193,11 +197,20 @@ function ManagedPanel({
         </div>
       )}
 
+      {invoice !== null && (
+        <div className="pp-row pp-gap-2">
+          <span className="pp-badge info">
+            <FileText className="pp-ico" aria-hidden="true" />
+            {t('order.locked', { nummer: invoice.number })}
+          </span>
+        </div>
+      )}
+
       {order.status !== 'open' && order.status !== 'noPrice' && (
         <div className="pp-row pp-between">
           <PaymentBadge status={order.status} />
           {order.price === null ? null : (
-            <span className="pp-money app-money-lg">{formatMoney(order.price)}</span>
+            <span className="pp-money pp-text-xl">{formatMoney(order.price)}</span>
           )}
         </div>
       )}
@@ -224,7 +237,7 @@ function ManagedPanel({
       {order.status === 'writtenOff' &&
       order.writtenOff !== null &&
       order.writtenOff !== undefined ? (
-        <dl className="pp-kv">
+        <dl className="pp-kv narrow">
           <dt>{t('pay.paidAmount')}</dt>
           <dd>{formatMoney(paid)}</dd>
           <dt>{t('pay.writtenOffAmount')}</dt>
@@ -246,7 +259,7 @@ function ManagedPanel({
 
       {(order.status === 'open' || order.status === 'noPrice') && (
         <>
-          {suggestion?.reason === 'noCost' && (
+          {!locked && suggestion?.reason === 'noCost' && (
             <div className="pp-alert warning" role="status">
               <TriangleAlert className="pp-ico" aria-hidden="true" />
               <div>
@@ -262,8 +275,11 @@ function ManagedPanel({
                 className="pp-input"
                 inputMode="decimal"
                 value={priceText}
+                disabled={locked}
                 aria-invalid={priceError !== null || undefined}
-                aria-describedby={priceError === null ? undefined : `${id}-price-err`}
+                aria-describedby={
+                  priceError !== null ? `${id}-price-err` : locked ? `${id}-price-help` : undefined
+                }
                 onChange={(event) => {
                   setPriceText(event.target.value);
                   setPriceSuggested(false);
@@ -272,41 +288,48 @@ function ManagedPanel({
               <span className="pp-suffix">€</span>
             </div>
             {priceError !== null && <FieldError id={`${id}-price-err`}>{priceError}</FieldError>}
+            {locked && (
+              <span id={`${id}-price-help`} className="pp-help">
+                {t('pay.lockedHelp')}
+              </span>
+            )}
           </div>
-          {priceSuggested && priceText !== '' && (
+          {!locked && priceSuggested && priceText !== '' && (
             <span className="pp-money">
               <span className="pp-hint">{t('money.suggested')}</span>
             </span>
           )}
-          <div className="pp-row">
-            {markupPercent !== null && (
+          {!locked && (
+            <div className="pp-row">
+              {markupPercent !== null && (
+                <button
+                  type="button"
+                  className="pp-btn pp-btn-secondary"
+                  aria-disabled={
+                    suggestion?.salePrice === null || suggestion?.salePrice === undefined
+                  }
+                  onClick={() => {
+                    const value = suggestion?.salePrice;
+                    if (value === null || value === undefined) return;
+                    setPriceText(formatAmountInput(value));
+                    setPriceSuggested(true);
+                  }}
+                >
+                  {t('pay.suggest', { markup: markupPercent })}
+                </button>
+              )}
               <button
                 type="button"
-                className="pp-btn pp-btn-secondary"
-                aria-disabled={
-                  suggestion?.salePrice === null || suggestion?.salePrice === undefined
-                }
-                onClick={() => {
-                  const value = suggestion?.salePrice;
-                  if (value === null || value === undefined) return;
-                  setPriceText(formatAmountInput(value));
-                  setPriceSuggested(true);
-                }}
+                className="pp-btn pp-btn-primary"
+                disabled={busy !== null}
+                aria-busy={busy === 'price'}
+                onClick={() => void savePrice()}
               >
-                {t('pay.suggest', { markup: markupPercent })}
+                {busy === 'price' && <span className="pp-spin" aria-hidden="true" />}
+                {t('common.save')}
               </button>
-            )}
-            <button
-              type="button"
-              className="pp-btn pp-btn-primary"
-              disabled={busy !== null}
-              aria-busy={busy === 'price'}
-              onClick={() => void savePrice()}
-            >
-              {busy === 'price' && <span className="pp-spin" aria-hidden="true" />}
-              {t('common.save')}
-            </button>
-          </div>
+            </div>
+          )}
         </>
       )}
 

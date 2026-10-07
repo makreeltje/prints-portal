@@ -17,6 +17,8 @@ import { DashboardPage } from './prints/DashboardPage';
 import { LiveProvider } from './prints/live';
 import { SettingsPage } from './finance/SettingsPage';
 import { PrintDetailPage } from './prints/PrintDetailPage';
+import { InvoicesPage } from './finance/InvoicesPage';
+import { OutstandingPage } from './finance/OutstandingPage';
 import { TagsPage } from './prints/TagsPage';
 import { AppShell } from './shell/AppShell';
 import { canSee, NAV_ITEMS } from './shell/navigation';
@@ -34,6 +36,18 @@ const pages = (methods: AuthMethods): Partial<Record<string, ReactNode>> => ({
     <>
       <DocumentTitle title="nav.settings" />
       <SettingsPage />
+    </>
+  ),
+  '/openstaand': (
+    <>
+      <DocumentTitle title="nav.outstanding" />
+      <OutstandingPage />
+    </>
+  ),
+  '/facturen': (
+    <>
+      <DocumentTitle title="nav.invoices" />
+      <InvoicesPage />
     </>
   ),
   '/tags': (

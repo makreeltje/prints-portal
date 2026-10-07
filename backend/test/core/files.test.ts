@@ -11,7 +11,7 @@ import {
   isIgnoredPath,
   locatePrintFile,
 } from '../../src/core/files.js';
-import { zonedTimeToUtc } from '../../src/core/time.js';
+import { daysBetween, localDate, zonedTimeToUtc } from '../../src/core/time.js';
 
 describe('classifyAsset', () => {
   it.each([
@@ -238,5 +238,21 @@ describe('zonedTimeToUtc', () => {
     [{ year: 2026, month: 10, day: 25, hour: 4, minute: 0 }, '2026-10-25T03:00:00Z'],
   ])('converts %j', (local, iso) => {
     expect(zonedTimeToUtc(local).toISOString()).toBe(new Date(iso).toISOString());
+  });
+});
+
+describe('local dates in Europe/Amsterdam', () => {
+  it('takes the calendar day of the business time zone', () => {
+    expect(localDate('2026-10-04T23:30:00Z')).toBe('2026-10-05');
+    expect(localDate('2026-01-15T22:59:00Z')).toBe('2026-01-15');
+    expect(localDate('2026-01-15T23:00:00Z')).toBe('2026-01-16');
+  });
+
+  it('counts whole calendar days, never negative', () => {
+    expect(daysBetween('2026-10-01T10:00:00Z', '2026-10-01T21:00:00Z')).toBe(0);
+    expect(daysBetween('2026-10-01T21:59:00Z', '2026-10-01T22:00:00Z')).toBe(1);
+    // Across the switch to winter time (25 October 2026).
+    expect(daysBetween('2026-10-20T12:00:00Z', '2026-10-30T12:00:00Z')).toBe(10);
+    expect(daysBetween('2026-10-30T12:00:00Z', '2026-10-20T12:00:00Z')).toBe(0);
   });
 });

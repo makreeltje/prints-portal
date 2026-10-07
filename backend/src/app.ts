@@ -13,6 +13,7 @@ import { registerAuthRoutes } from './auth/routes.js';
 import { SessionStore } from './auth/sessions.js';
 import type { AppConfig } from './config/config.js';
 import type { AppDatabase } from './db/connection.js';
+import { registerBillingRoutes } from './finance/billing-routes.js';
 import { registerFinanceRoutes } from './finance/routes.js';
 import { SpoolmanClient } from './finance/spoolman.js';
 import { checkHealth } from './health/health.js';
@@ -100,6 +101,7 @@ export async function buildApp({
   app.decorate('services', { indexer, hub, spoolman });
   registerPrintRoutes(app, { db, printsRoot: config.printsRoot, indexer, hub, thumbnails, now });
   registerFinanceRoutes(app, { db, indexer, hub, spoolman, now });
+  registerBillingRoutes(app, { db, hub, dataDir: config.dataDir, now });
   registerLiveRoute(app, { config, hub, sessions });
   const { oidc, publicUrl } = config.auth;
   if (oidc !== null && publicUrl !== null) {

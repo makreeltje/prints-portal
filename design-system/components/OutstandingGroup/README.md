@@ -9,3 +9,5 @@ OutstandingGroup lists everything one klant still owes, with age and actions.
 **Accessibility.** Header is an `<h3>`; lines are a list; days-open and remaining are text with an icon, not colour alone.
 
 **Dutch copy.** Joey · 4 prints · oudste 16 dagen open | € 40,67 | Herinnering (PDF) | Alles als betaald | 12 dagen open | Deels betaald | van € 11,89 | Nog € 6,89 open | Markeer als betaald | Afschrijven.
+
+**1.5.** Lines are orders: a Nabestelling line is named "{print} (nabestelling {n})" and Bestelling 1 shows the print name. Days open count from the invoice date, else the date the Verkoopprijs was set, else the order date. "Markeer als betaald" opens the amount dialog (see ScreenOutstanding). For the role User the group is read-only: no buttons.

@@ -9,3 +9,5 @@ Dialog is a modal window for a focused task such as creating a Deel-link or expo
 **Accessibility.** `role="dialog"`, `aria-modal="true"`, `aria-labelledby` the title; trap focus; Esc closes (unless a request is running); return focus to the trigger; lock page scroll.
 
 **Dutch copy.** Deel-link maken, Label, Verloopt, Maken, Annuleren.
+
+**1.5.** Dialogs have three widths: `pp-dialog sm` 380px, the default 440px and `pp-dialog lg` 560px (the invoice export dialog). The footer wraps when the buttons do not fit and stays right-aligned. In previews the frames `pp-scrim f-sm`, `f-md` and `f-lg` match these widths (dialog plus 24px scrim padding on both sides) so overflow is not hidden by a wider frame.

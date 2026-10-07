@@ -9,3 +9,5 @@ The overview PDF ("Overzicht") is what a customer downloads from the share page:
 **Accessibility.** Tagged PDF with a real table.
 
 **Dutch copy.** Overzicht | Geldig tot | Prijs volgt | Dit is een overzicht, geen factuur.
+
+**1.5.** One line per order, Datum is the order date, Helvetica (Western European characters only). The payment reference on an Overzicht is the klant name.
