@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-07T13:00:00Z",
+  "at": "2026-10-07T15:00:00Z",
   "via": "Claude",
-  "note": "v1.6: resolves GAP-047 to GAP-053 (share page and PDF without prices, share-link columns, calendar button, locked-order help, M9 previews)"
+  "note": "v1.7: Scalar as API-docs renderer (.pp-scalar mapping), contrast report with grounds, lock help wrap, folder diagram scroll, empty Toegang"
  },
  "layout": "files",
  "libraries": [],

@@ -64,3 +64,9 @@
 - **Do** explain a locked control with one visible `pp-help` line and `aria-describedby`. **Don't** put the reason in a tooltip only.
 - **Don't** show € 0,00 totals when nothing has a price: leave the totals out.
 
+- **Do** check the Ground column in `contrast.md` before using a translucent token: it is approved only over the grounds listed. **Don't** assume "passes on `surface`" holds on `surface-2`.
+- **Do** map a third-party UI kit through CSS variables onto our tokens (`.pp-scalar`). **Don't** let a literal colour, font or radius of the kit survive.
+
+- **Do** check the Ground column in `contrast.md` before using a translucent token: it is approved only over the grounds listed. **Don't** assume "passes on `surface`" holds on `surface-2`.
+- **Do** map a third-party UI kit through CSS variables onto our tokens (`.pp-scalar`). **Don't** let a literal colour, font or radius of the kit survive.
+

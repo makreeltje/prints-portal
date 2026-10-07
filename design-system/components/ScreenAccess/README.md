@@ -9,3 +9,5 @@ Toegang (`/access`, admin only) grants each user access to klant folders.
 **Accessibility.** See AccessMatrix.
 
 **Dutch copy.** Toegang | Gebruiker | Admin en Editor hebben altijd toegang. | Alles selecteren | Niets selecteren
+
+**1.7.** (2026-10-07) **Empty state (GAP-058).** With no User accounts the page shows the help line and the EmptyState of AccessMatrix instead of the matrix; see AccessMatrix. States line: loading, default, saving cell, error (revert and toast), empty (no accounts with the role User).

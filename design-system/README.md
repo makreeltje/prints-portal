@@ -1,4 +1,4 @@
-Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 1.6 (see `changelog.md`).
+Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 1.7 (see `changelog.md`).
 
 ## Principles
 
@@ -116,3 +116,9 @@ Date picker (`.pp-cal`), per-line payment in Openstaand, invoice footer rules, l
 
 ## Versie 1.6 (2026-10-07)
 Share page and PDF without prices, aligned share-link columns, calendar button, locked-order help line, M9 previews without inline values. Details: `changelog.md`.
+
+## Versie 1.7 (2026-10-07)
+Scalar is the API-docs renderer (`.pp-scalar` mapping), the contrast report names the ground of every pair, wrapping lock help, scrolling folder diagram, empty Toegang. Details: `changelog.md`.
+
+## Versie 1.7 (2026-10-07)
+Scalar is the API-docs renderer (`.pp-scalar` mapping), the contrast report names the ground of every pair, wrapping lock help, scrolling folder diagram, empty Toegang. Details: `changelog.md`.
