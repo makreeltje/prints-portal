@@ -150,7 +150,7 @@ for file in "${files[@]}"; do
     if $is_style; then
       # Check each declaration on the line separately.
       IFS=$'\n' read -r -d '' -a decls < <(tr ';{}' '\n\n\n' <<<"$scan" && printf '\0')
-      for decl in "${decls[@]}"; do
+      for decl in ${decls[@]+"${decls[@]}"}; do
         [[ "$decl" =~ ^[[:space:]]*--[A-Za-z0-9_-]+[[:space:]]*: ]] && continue  # already reported (rule 4)
         # 2. Raw lengths (allow 0 and 1px hairlines; ignore url()).
         stripped="$(sed -E 's/url\([^)]*\)//g; s/(^|[^0-9.])1px/\1/g; s/(^|[^0-9.])0(px|rem|em)?([^0-9.]|$)/\1\3/g' <<<"$decl")"
