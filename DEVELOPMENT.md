@@ -24,13 +24,16 @@ npm ci
 mkdir -p .local/data .local/prints
 
 # Terminal 1: API on :8080 (NODE_ENV=development keeps development conveniences on)
-NODE_ENV=development DATA_DIR=.local/data PRINTS_ROOT=.local/prints npm run dev:backend
+# The paths must be absolute: npm runs the backend from backend/, so a relative
+# path would resolve against that folder instead of the repository root.
+NODE_ENV=development DATA_DIR="$PWD/.local/data" PRINTS_ROOT="$PWD/.local/prints" npm run dev:backend
 
 # Terminal 2: Vite dev server on :5173, proxies /api and /healthz to :8080
 npm run dev:frontend
 ```
 
-`.local/` is git-ignored.
+`.local/` is git-ignored, so it is also the place to put a real prints folder to
+develop against.
 
 ## Checks
 
