@@ -17,6 +17,7 @@ import type { AppDatabase } from './db/connection.js';
 import { registerBillingRoutes } from './finance/billing-routes.js';
 import { registerFinanceRoutes } from './finance/routes.js';
 import { SpoolmanClient } from './finance/spoolman.js';
+import { registerErrorHandler } from './core/error-handler.js';
 import { redactUrl } from './core/log-redaction.js';
 import { openapiOptions, registerOpenapiRoute } from './docs/openapi.js';
 import { registerRouteDocs } from './docs/route-docs.js';
@@ -87,6 +88,8 @@ export async function buildApp({
   if (corsOrigins.length > 0) {
     await app.register(fastifyCors, { origin: [...corsOrigins], credentials: true });
   }
+
+  registerErrorHandler(app);
 
   const sessions = new SessionStore(db, config.auth.sessionSecret, now);
   registerAuthGuard(app, sessions);
