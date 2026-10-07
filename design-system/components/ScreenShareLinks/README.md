@@ -9,3 +9,5 @@ Deel-links (`/share-links`, admin only) manages the read-only links customers op
 **Accessibility.** Status is text plus icon; token box is focusable and selectable; confirm before revoke.
 
 **Dutch copy.** Deel-links | Deel-link maken | Klant | Label | Verloopt | Maken | Nog geen Deel-links | Deel-link {label} intrekken? | Over 7 dagen | Over 30 dagen | Over 90 dagen | Nooit | Verloopt niet | De link blijft werken tot je hem intrekt. | Deze klant wordt niet gefactureerd. De link toont alleen de printlijst, zonder bedragen.
+
+**Inline values (1.5).** Lists use `pp-flush` and `pp-rule-t`.

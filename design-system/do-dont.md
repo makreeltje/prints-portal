@@ -58,3 +58,6 @@
 - **Do** report every bulk action per print (toast plus list of reasons). **Don't** stop the whole action because one print fails.
 - **Do** use the width, gap and weight helpers (`pp-w-*`, `pp-gap-*`, `pp-fw-*`). **Don't** copy `style` attributes from previews; only the data properties `--c1`, `--c2`, `--v`, `--tag` and `--tag-ink` are inline.
 
+- **Do** open a calendar as `.pp-pop.pp-calpop` in a `.pp-anchor`; on phones it becomes a bottom sheet. **Don't** build a separate date widget.
+- **Don't** let a dialog footer grow beyond 440px: let it wrap, primary action on its own row.
+

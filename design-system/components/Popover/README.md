@@ -9,3 +9,5 @@ Popover shows a small interactive panel anchored to a trigger, such as the spool
 **Accessibility.** Trigger has `aria-expanded` and `aria-haspopup`; focus moves into the panel on open and back to the trigger on close; Tab order follows the DOM, so put the panel right after its trigger.
 
 **Dutch copy.** Kies een spoel | Tags bewerken
+
+**Phone (1.5).** At 480px and below every anchored panel is a bottom sheet, including `.pp-anchor.up` and `.pp-anchor.end`: both are reset to `bottom:0; left:0; right:0` so the sheet is always visible.

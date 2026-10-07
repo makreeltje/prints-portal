@@ -9,3 +9,5 @@ The share page (`/share/:token`) is what a customer sees when opening a Deel-lin
 **Accessibility.** One `<h1>`; list semantics for the prints; status in text plus icon; the switch has a visible label.
 
 **Dutch copy.** Overzicht voor {klant} | Deze link verloopt over {dagen} dagen ({datum}) | Alleen openstaand | Prijs volgt | Totaal | Betaald | Openstaand | Download overzicht | Prijzen in euro. Prints zonder prijs staan niet in de totalen. | Er staat niets open. | Deze link is verlopen of ingetrokken | Vraag degene die je de link stuurde om een nieuwe. | Hier zie je de prints die voor je gemaakt zijn.
+
+**Inline values (1.5).** The share page uses only classes: `pp-share-line`, `pp-share-amt`, `pp-share-card`, `pp-share-body`, `pp-share-col`, `pp-share-cta`, `pp-illus-box`, `pp-share-h404` plus the helpers `pp-text-sm`, `pp-text-md`, `pp-center-t`, `pp-p4`, `pp-r-xl`, `pp-m0` and `pp-maxch`. Billed and niet-factureren variants share these classes.

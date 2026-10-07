@@ -9,3 +9,5 @@ CustomerCard summarises one klant on the dashboard (desktop and tablet): name, n
 **Accessibility.** The delete button has `aria-label="Klant verwijderen"`; the card name is a button that sets the filter; deleted cards stay readable (45% opacity only dims decoration, text keeps contrast).
 
 **Dutch copy.** Klant verwijderen | Herstellen | Alles betaald | openstaand | Factuur | {n, plural, one {# print} other {# prints}}
+
+**1.5.** The name is a real button (`pp-cust-name`, `aria-pressed`) that sets the filter; the "Factuur" button stays `pp-only-wide` because phones get the same action in the CustomerChips toolbar.

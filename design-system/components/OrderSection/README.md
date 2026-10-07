@@ -9,3 +9,5 @@ OrderSection is one order of a print: "Bestelling 1" or "Nabestelling {n}". A pr
 **Accessibility.** `details` and `summary` give the toggle role and keyboard support (Enter, Space); the summary text reads title, date, status, total and remainder; the focus ring is 2px `focus-ring`; the chevron is decorative (`aria-hidden`).
 
 **Dutch copy.** Bestelling 1 | Nabestelling {n} | {datum} | Nog {bedrag} open | Nabestelling maken | Nabestelling verwijderen | Staat op factuur {nummer} en kan niet worden verwijderd. | Een nabestelling zonder betaling kan worden verwijderd. De bestanden gaan terug naar "Niet in een bestelling".
+
+**Order date (1.5).** The date in the header is the modification time of the newest counted G-code in the order, else the date the order was created. It is the Datum column on invoices and the date the Van / Tot en met filter works on. Days open count from the invoice date, else the date the Verkoopprijs was set, else the order date. On the PDFs one invoice line is made per order: Bestelling 1 shows the print name, a Nabestelling reads "{print} (nabestelling {n})".

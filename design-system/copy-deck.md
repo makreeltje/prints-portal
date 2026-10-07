@@ -404,3 +404,18 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | tags.colour.lilac | Lila |
 | tags.colour.grey | Grijs |
 
+## Added in 1.5
+
+| Key | Text |
+|---|---|
+| invoice.line.reorder | {print} (nabestelling {n}) |
+| invoice.finalize.blocked | Naam en IBAN ontbreken. Vul ze in bij Instellingen, Bedrijfsgegevens. Een concept kan wel worden gedownload, zonder betaalzin. |
+| invoice.paidfull | Deze factuur is volledig betaald. |
+| order.locked | Op factuur {nummer} |
+| order.unassigned | Nog niet in een bestelling |
+| spool.wholePrint | Spoel voor de hele print |
+| outstanding.line.pay | Markeer als betaald |
+| date.today | Vandaag |
+| date.clear | Wissen |
+| date.prev / date.next | Vorige maand / Volgende maand |
+

@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-06T21:30:00Z",
+  "at": "2026-10-07T12:00:00Z",
   "via": "Claude",
-  "note": "v1.4: resolves GAP-029 to GAP-036 (stacking tokens, Instellingen printers and prices, orders, bulk dialogs, inline audit)"
+  "note": "v1.5: resolves GAP-037 to GAP-045 (DatePicker, per-line payment, print-detail placement, phone Factuur button, invoice footer rules, READMEs, text sizes, popover sheet, dialog footer, logo)"
  },
  "layout": "files",
  "libraries": [],

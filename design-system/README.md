@@ -1,4 +1,4 @@
-Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 1.4 (see `changelog.md`).
+Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 1.5 (see `changelog.md`).
 
 ## Principles
 
@@ -109,3 +109,7 @@ Customers Joey, Denise, Wouter (and Rick, niet factureren); project "Babybox loc
 - Stacking: popovers use `.pp-anchor` and `z-popover` (30); sticky bars 10, tooltips 40, drawers, sheets and dialogs 50. Apps never choose a z-index.
 - Fixed-size helpers (`pp-w-*`, `pp-minh-*`, `pp-gap-*`, `pp-text-*`, `pp-fw-*`) replace inline values; the previews no longer need `style` attributes except for data properties.
 
+
+
+## Versie 1.5 (2026-10-07)
+Date picker (`.pp-cal`), per-line payment in Openstaand, invoice footer rules, logo in the shell, one invoice line per order. Details: `changelog.md`.
