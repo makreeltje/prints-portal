@@ -337,6 +337,20 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     expect(text).not.toContain('overmaken');
   });
 
+  it('leaves the totals block out of the PDF while no print has a price', async () => {
+    await start();
+    // Wouter's print has no files, so no price at all.
+    const { token } = await create('Wouter');
+    const text = pdfPlainText(
+      (await t.as(null, { url: `/api/share/${token}/overview.pdf` })).rawPayload,
+    );
+    expect(text).toContain('Prijs volgt');
+    expect(text).toContain('Dit is een overzicht, geen factuur.');
+    for (const word of ['Totaal', 'Betaald', 'Openstaand', 'overmaken']) {
+      expect(text).not.toContain(word);
+    }
+  });
+
   it('serves the logo through a working link only', async () => {
     await start();
     const { token } = await create('Joey');

@@ -70,6 +70,7 @@ describe('ShareLinksPage', () => {
     ).toEqual(['Bas', 'Denise', 'Joey']);
     const rows = within(joey).getAllByRole('listitem');
     expect(within(rows[0] as HTMLElement).getByText('Over 30 dagen')).toBeInTheDocument();
+    expect(within(joey).queryByText('Over 1 dagen')).toBeNull();
     expect(within(rows[0] as HTMLElement).getByText('Actief')).toBeInTheDocument();
     expect(within(rows[1] as HTMLElement).getByText('3 dagen geleden')).toBeInTheDocument();
     expect(within(rows[1] as HTMLElement).getByText('Verlopen')).toBeInTheDocument();
@@ -145,7 +146,7 @@ describe('ShareLinksPage', () => {
     );
     // Closing before copying asks first; Terug returns to the link.
     await userEvent.click(within(reveal).getByRole('button', { name: 'Sluiten' }));
-    const ask = screen.getByRole('dialog', { name: 'Sluiten zonder kopiëren?' });
+    const ask = screen.getByRole('alertdialog', { name: 'Sluiten zonder kopiëren?' });
     await userEvent.click(within(ask).getByRole('button', { name: 'Terug' }));
     const again = screen.getByRole('dialog', { name: 'Deel-link gemaakt' });
     await userEvent.click(within(again).getByRole('button', { name: 'Kopiëren' }));
@@ -250,6 +251,30 @@ describe('SharePage', () => {
     renderShare();
     await screen.findByRole('heading', { level: 1 });
     expect(screen.queryByText(/verloopt/)).toBeNull();
+  });
+
+  it('leaves the totals out while no print has a price', async () => {
+    const unpriced = {
+      ...billed,
+      lines: [billed.lines[1]],
+      totals: { total: 0, paid: 0, open: 0 },
+    };
+    stubFetch({
+      [`GET /api/share/${TOKEN}`]: () => ({ json: unpriced }),
+      [`GET /api/share/${TOKEN}?onlyOpen=true`]: () => ({ json: unpriced }),
+    });
+    renderShare();
+    expect(await screen.findByText('Prijs volgt')).toBeInTheDocument();
+    // No zeros: the totals card is gone, the list and the footnote stay.
+    expect(screen.queryByText('Totaal')).toBeNull();
+    expect(screen.queryByText(/€/)).toBeNull();
+    expect(
+      screen.getByText('Prijzen in euro. Prints zonder prijs staan niet in de totalen.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Download overzicht' })).toBeInTheDocument();
+    // With "Alleen openstaand" on, the empty state wins.
+    await userEvent.click(screen.getByRole('switch', { name: 'Alleen openstaand' }));
+    expect(await screen.findByText('Er staat niets open.')).toBeInTheDocument();
   });
 
   it('shows only Print, Project and Datum for a niet-factureren klant', async () => {

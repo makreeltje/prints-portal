@@ -188,6 +188,7 @@ export async function overviewDocument(
     overview: {
       label: link.label,
       validUntil: link.expires_at === null ? null : localDate(link.expires_at),
+      priced: lines.some((line) => line.noPrice !== true),
     },
   };
 }
