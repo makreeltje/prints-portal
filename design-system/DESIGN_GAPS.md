@@ -1030,9 +1030,26 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Type:** missing component
 - **Found while:** implementing v1.9, GAP-085
 - **Where needed:** VideoPlayer and Thumbnail; `backend/src/thumbnails/service.ts`
-- **What is missing or wrong:** VideoPlayer 1.9 says "when a print has no image and no model, its thumbnail is the poster frame of its first video (`pp-thumb poster` ... with a 20px play badge)". The player itself is built and the dialog shows a frame, because a browser can decode the file. The **thumbnail is served by the backend**, which has no video decoder: it renders PNG, reads 3MF previews and rasterises STL, and the only media library it carries is `@resvg/resvg-js` (SVG). Extracting a frame server-side needs a new dependency such as ffmpeg, which is a decision about what the image must ship, not a design decision.
-- **Why it matters:** small in this library (2 prints of 83 are video-only), but those 2 show "Geen voorbeeld" while a perfectly good frame exists, and the share page shows them to a klant.
-- **Proposal:** either (a) add a video decoder to the image and generate the poster at index time, with the `pp-thumb poster` look and the play badge as specified, or (b) say the thumbnail stays "Geen voorbeeld" for a video-only print and drop the poster rule from VideoPlayer. The owner decides, since (a) grows the container.
-- **Blocked:** the poster thumbnail only. The player, its states, the unsupported-container case and the download all work.
+- **What is missing or wrong:** VideoPlayer 1.9 says the thumbnail of a print with no image and no model is the poster frame of its first video, with a play badge. The player is built, but the thumbnail is rendered by the backend, which has no video decoder: it renders PNG, reads 3MF previews and rasterises STL, and its only media library is `@resvg/resvg-js` (SVG).
+- **Owner's decision (2026-10-07): no video decoder in the container image.** So option (a) of the earlier proposal is off the table, and the poster rule should come out of VideoPlayer. Only 2 prints of 83 are video-only, so little is lost.
+- **What the owner asked for instead:** not a prettier thumbnail but a *warning* — see GAP-090, which asks for missing files to be visible on the dashboard tile.
+- **Proposal:** drop the poster-thumbnail rule from VideoPlayer and say what a video-only print shows instead (today it is the "Geen voorbeeld" placeholder, which is honest). Keep the play badge only if a poster ever exists.
+- **Blocked:** nothing in the app. Waiting on VideoPlayer dropping the rule so the spec matches what is built.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-090 [open] A print's missing files are not visible until you open it
+- **Type:** missing state
+- **Found while:** the owner's use of 1.0 after v1.9 (their request, 2026-10-07)
+- **Where needed:** PrintCard and PrintRow on ScreenDashboard
+- **What is missing or wrong:** a print can be short of the files that matter — no G-code, no 3MF, no STL, no timelapse — and nothing says so until it is opened. The owner wants to see at a glance which files a print lacks, and suggests small icons on the tile rather than the big "Geen prijs"-style labels, with the worry that the tile becomes busy.
+- **Why it matters:** the library is the source of truth and the folders are maintained by hand, so a print missing its model or its G-code is a real gap in the archive, not a cosmetic one. Today it is invisible from the dashboard.
+- **Measured on the real library (83 prints), to settle how busy a tile becomes:** showing what is **missing** is quiet — **37% of tiles would carry no icon, 51% exactly one, 8% two, 4% three**. Showing what is **present** would be the busy version: 88% of tiles would carry three or four icons. So the owner's instinct is right, and the proposal below follows it.
+- **Per type, how often it would appear:** no G-code **22%**, no 3MF **8%**, no STL **8%**, no video **40%**.
+- **Two things the design system has to decide, which the numbers raise:**
+  1. **Video is the noisy one.** At 40% it would mark two tiles in five, and a timelapse is not something every print is expected to have. Either leave video out of the indicator, or only flag it where one is expected (the printer has a timelapse prefix set in Instellingen).
+  2. **"Incomplete 3MF" needs a definition.** A proxy for "unsliced" (no plate with a weight) matched **92%** of prints, because a project file downloaded from MakerWorld is normally unsliced and the G-code beside it is what carries the slice. Flagging 92% of tiles is useless, so either the condition is something narrower (a 3MF that failed to parse, say) or it is not a signal at all.
+- **Proposal:** a small row of icons on the card, under or beside the existing badges, drawn only for what is **missing**, using the file icons the system already names (`file-code` for G-code, `package` for 3MF, `box` for STL, `film` for video) in `muted` or `warning`, each with an accessible name ("Geen G-code"). No icon when nothing is missing, so a complete print stays clean. The same information in the list view's existing columns. Needs the Dutch copy, the phone layout, and a decision on whether this is `muted` (a note) or `warning` (a problem).
+- **Blocked:** the whole indicator. The data behind it already exists in the app; nothing is drawn.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
