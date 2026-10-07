@@ -979,7 +979,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-085 [open] Video files are indexed but can never be watched
+## GAP-085 [resolved in v1.9] Video files are indexed but can never be watched
 - **Type:** missing component
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** AssetListItem on ScreenPrintDetail
@@ -1020,5 +1020,16 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** this is the same privacy point as GAP-077, on the one artefact the klant keeps. Labels in this instance read "PR 8 review" and "log check".
 - **Proposal:** drop the sub-line from the Overzicht, or give it something customer-facing such as the period covered or the date of the overview. Please say which, and update DocOverview so the two specs agree.
 - **Blocked:** nothing. The label is left out of the PDF (an empty sub-line) until DocOverview says what belongs there, marked `ds-gap: GAP-088`.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
+## GAP-089 [open] A video-only print cannot show a poster frame as its thumbnail
+- **Type:** missing component
+- **Found while:** implementing v1.9, GAP-085
+- **Where needed:** VideoPlayer and Thumbnail; `backend/src/thumbnails/service.ts`
+- **What is missing or wrong:** VideoPlayer 1.9 says "when a print has no image and no model, its thumbnail is the poster frame of its first video (`pp-thumb poster` ... with a 20px play badge)". The player itself is built and the dialog shows a frame, because a browser can decode the file. The **thumbnail is served by the backend**, which has no video decoder: it renders PNG, reads 3MF previews and rasterises STL, and the only media library it carries is `@resvg/resvg-js` (SVG). Extracting a frame server-side needs a new dependency such as ffmpeg, which is a decision about what the image must ship, not a design decision.
+- **Why it matters:** small in this library (2 prints of 83 are video-only), but those 2 show "Geen voorbeeld" while a perfectly good frame exists, and the share page shows them to a klant.
+- **Proposal:** either (a) add a video decoder to the image and generate the poster at index time, with the `pp-thumb poster` look and the play badge as specified, or (b) say the thumbnail stays "Geen voorbeeld" for a video-only print and drop the poster rule from VideoPlayer. The owner decides, since (a) grows the container.
+- **Blocked:** the poster thumbnail only. The player, its states, the unsupported-container case and the download all work.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9

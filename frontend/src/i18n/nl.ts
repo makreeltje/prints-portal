@@ -153,6 +153,12 @@ export const nl = {
   'menu.more': 'Meer acties', // component copy: OverflowMenu
   'print.preview': 'Voorbeeld', // component copy: PrintRow
   'invoices.noStatus': 'Geen status', // component copy: ScreenInvoices
+  'video.play': 'Afspelen {bestandsnaam}', // component copy: VideoPlayer
+  'video.loading': 'Video laden…',
+  'video.error.title': 'De video kon niet worden afgespeeld.',
+  'video.error.body': 'Download het bestand om het in een andere speler te openen.',
+  'video.unsupported.title': 'Dit formaat speelt niet in de browser.',
+  'video.unsupported.body': 'Download het bestand om het af te spelen.',
   'models.group': 'Modellen', // component copy: ModelPicker
   'models.caption': 'Model {n} van {totaal}: {bestandsnaam}',
   'models.loading': 'Model laden…',
