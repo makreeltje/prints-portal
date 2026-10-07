@@ -179,6 +179,28 @@ describe('PaymentPanel', () => {
     expect(a.writeOff).toHaveBeenCalledWith('Vriendenprijs');
   });
 
+  it('locks the price once the order is on a final invoice, payments still work', async () => {
+    const a = renderPanel(
+      order({
+        salePrice: 11.89,
+        price: 11.89,
+        remaining: 11.89,
+        priceSuggested: false,
+        invoice: { id: 'i7', number: '2026-007' },
+      }),
+    );
+    expect(screen.getByText('Op factuur 2026-007')).toHaveClass('pp-badge', 'info');
+    const price = screen.getByLabelText('Verkoopprijs');
+    expect(price).toBeDisabled();
+    expect(price).toHaveAccessibleDescription(
+      'Staat op een definitieve factuur en kan niet meer worden gewijzigd.',
+    );
+    expect(screen.queryByRole('button', { name: 'Opslaan' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Voorstel uit marge (400%)' })).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Markeer als betaald' }));
+    expect(a.addPayment).toHaveBeenCalledWith(11.89);
+  });
+
   it('lets only Admins undo a payment', () => {
     const paid = order({
       status: 'paid',

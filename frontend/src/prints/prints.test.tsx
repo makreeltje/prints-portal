@@ -271,6 +271,34 @@ describe('DashboardPage', () => {
     });
   });
 
+  it('offers Factuur on the card and in the phone toolbar', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary()], total: 12 } }),
+      'GET /api/customers': () => ({
+        json: { customers: [{ folder: 'Joey', printCount: 12, deleted: false }] },
+      }),
+      'GET /api/tags': () => ({ json: tags }),
+      'GET /api/customers/Joey/invoice/preview': () => ({
+        json: {
+          lines: [],
+          total: 0,
+          paid: 0,
+          open: 0,
+          excluded: [],
+          earlier: [],
+          nextNumber: '2026-001',
+          companyReady: true,
+        },
+      }),
+    });
+    renderDashboard('/?klant=Joey', 'Editor');
+    const buttons = await screen.findAllByRole('button', { name: 'Factuur' });
+    expect(buttons).toHaveLength(2);
+    expect(buttons[1]?.closest('.pp-only-phone')).not.toBeNull();
+    await userEvent.click(buttons[1] as HTMLElement);
+    expect(screen.getByRole('dialog', { name: 'Factuur maken voor Joey' })).toBeInTheDocument();
+  });
+
   it('lets Admins restore a deleted klant from its card', async () => {
     const calls = stubFetch({
       'GET /api/prints': () => ({ json: { items: [], total: 0 } }),

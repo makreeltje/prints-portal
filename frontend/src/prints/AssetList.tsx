@@ -46,35 +46,19 @@ const ICONS: Record<AssetType, typeof File> = {
 export function AssetList({
   assets,
   controls,
-  label,
+  title,
 }: {
   assets: readonly Asset[];
   controls?: AssetControls;
-  /** Files in no order: a label above a card without its own header (AssetListItem preview). */
-  label?: string;
+  /** Card title; default "Bestanden" ("Nog niet in een bestelling" for files in no order). */
+  title?: string;
 }) {
   const titleId = useId();
-  if (label !== undefined) {
-    return (
-      <section className="pp-col pp-gap-2" aria-labelledby={titleId}>
-        <h2 id={titleId} className="pp-label app-card-heading">
-          {label}
-        </h2>
-        <div className="pp-card pp-assetlist pp-flush">
-          <ul className="app-plain-list">
-            {assets.map((asset) => (
-              <AssetRow key={asset.id} asset={asset} controls={controls} />
-            ))}
-          </ul>
-        </div>
-      </section>
-    );
-  }
   return (
     <section className="pp-card pp-assetlist pp-flush" aria-labelledby={titleId}>
       <div className="pp-card-hd rule">
         <h2 id={titleId} className="app-card-heading">
-          <b>{t('print.files')}</b>
+          <b>{title ?? t('print.files')}</b>
         </h2>
         <span className="sub">{t('print.fileCount', { count: assets.length })}</span>
       </div>

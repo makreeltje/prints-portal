@@ -194,8 +194,7 @@ export function BulkActionBar({
         </div>
       </div>
       <div className="pp-only-phone">
-        {/* No `.up` here: on phones the panel is a bottom sheet (GAP-044). */}
-        <span className="pp-anchor">
+        <span className="pp-anchor up">
           <button
             ref={actionsButton}
             type="button"

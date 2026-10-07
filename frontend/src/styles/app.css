@@ -328,12 +328,6 @@
   color: var(--warning);
 }
 
-/* PaymentPanel: the amount next to the badge (the text-xl token, as in the preview). */
-.app-money-lg {
-  font-size: var(--text-xl);
-  line-height: var(--leading-xl);
-}
-
 /* The uploaded logo inside .pp-logo-box keeps its proportions. */
 .app-logo-img {
   max-width: 100%;

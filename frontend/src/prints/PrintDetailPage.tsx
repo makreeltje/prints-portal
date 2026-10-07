@@ -18,6 +18,7 @@ import {
   financeKeys,
   setLineExcluded,
   setLineOverride,
+  setPrintSpool,
   setOrderOverrides,
   setSalePrice,
   setTimesPrinted,
@@ -31,6 +32,7 @@ import { PaymentBadge } from '../finance/money';
 import { NabestellingDialog } from '../finance/NabestellingDialog';
 import { OrderSection } from '../finance/OrderSection';
 import { PaymentPanel } from '../finance/PaymentPanel';
+import { SpoolPicker } from '../finance/SpoolPicker';
 import { deletePrint, fetchPrint, keys, modelUrl, restorePrint, setPrintTags } from './api';
 import { RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList, type AssetControls } from './AssetList';
@@ -201,6 +203,15 @@ export function PrintDetailPage() {
           <div>{t('records.archivedNote')}</div>
         </div>
       )}
+      {canManage &&
+        newestFirst(detail.orders).map((order) =>
+          order.invoice == null ? null : (
+            <div key={order.id} className="pp-alert info" role="status">
+              <Info className="pp-ico" aria-hidden="true" />
+              <div>{t('order.lockedNote', { nummer: order.invoice.number })}</div>
+            </div>
+          ),
+        )}
       {detail.status === 'deleted' && detail.deletedAt !== null && (
         <div className="pp-alert unpaid">
           <TriangleAlert className="pp-ico" aria-hidden="true" />
@@ -222,6 +233,8 @@ export function PrintDetailPage() {
       {canManage ? (
         <ManagedOrders
           detail={detail}
+          spoolmanOn={spoolmanOn}
+          quiet={quiet}
           controlsFor={controlsFor}
           paymentFor={paymentFor}
           onAdjust={setAdjusting}
@@ -303,12 +316,16 @@ function ModelView({ detail }: { detail: PrintDetail }) {
 /** Admin and Editor part of the page: viewer, spool, files in no order and the orders. */
 function ManagedOrders({
   detail,
+  spoolmanOn,
+  quiet,
   controlsFor,
   paymentFor,
   onAdjust,
   change,
 }: {
   detail: PrintDetail;
+  spoolmanOn: boolean;
+  quiet: (action: () => Promise<unknown>) => Promise<void>;
   controlsFor: (orderId: string | null) => AssetControls | undefined;
   paymentFor: (order: Order) => ReactNode;
   onAdjust: (orderId: string) => void;
@@ -334,7 +351,20 @@ function ManagedOrders({
   return (
     <>
       <ModelView detail={detail} />
-      {/* "Spoel voor de hele print" waits for GAP-040 (owner decision: wait). */}
+      {spoolmanOn && (
+        // Spoel voor de hele print: full width under the viewer (ScreenPrintDetail 1.5).
+        <section className="pp-card pp-sec pp-gap-2" aria-labelledby="spool-title">
+          <b id="spool-title" className="pp-strong">
+            {t('spool.forPrint')}
+          </b>
+          <SpoolPicker
+            value={detail.spool}
+            label={t('spool.forPrint')}
+            onChange={(spoolId) => quiet(() => setPrintSpool(detail.id, spoolId))}
+          />
+          <span className="pp-help">{t('spool.forPrintHelp')}</span>
+        </section>
+      )}
       {unassignedCount > 0 && (
         <>
           <div className="pp-alert info" role="status">
@@ -344,11 +374,7 @@ function ManagedOrders({
               <div className="pp-mt">{createButton(true)}</div>
             </div>
           </div>
-          <AssetList
-            assets={unassigned}
-            controls={controlsFor(null)}
-            label={t('orders.unassignedGroup')}
-          />
+          <AssetList assets={unassigned} title={t('orders.unassignedGroup')} />
         </>
       )}
       <div className="pp-orders">
