@@ -571,7 +571,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** with only the decorative icon, a mouse or touch user can open the calendar only by clicking the field itself. Building a real button would mean inventing its size, position and focus style.
 - **Proposal:** a `.pp-iwrap>.pp-btn.pp-btn-icon.r` rule (ghost icon button at `right: space-1`, height `--pp-tap` minus the border, `focus-ring` inside the field) with the label "Kies een datum" (copy key `date.pick`), and say whether a click in the field itself should open the calendar.
 - **Blocked:** the icon button only. As built now (no new visuals): the icon stays decorative, as in the preview; a click in the field opens the calendar but leaves focus in the field so typing works; Alt+Down or Down moves into the grid; Enter or Tab after typing closes it.
-- **Temporary placeholder approved:** no
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-047`. Built from existing classes: a `pp-btn pp-btn-ghost pp-btn-icon pp-btn-sm` with the label "Kies een datum", placed with `.app-date-btn` (`right: space-1`); it opens the calendar and moves focus into the grid. A click in the field no longer opens the calendar.
 - **Design system version:** 1.5
 
 ## GAP-048 [open] Locked order: no locked state for "Aantal keer geprint", Aanpassen and the slot spools
@@ -582,5 +582,5 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** the server already refuses these changes on a locked order, so today the controls look editable and a change ends in the error toast "Opslaan mislukt".
 - **Proposal:** on a locked order, show "Aantal keer geprint" as plain text (as the role User sees it), disable the "Telt niet mee in kosten" toggle and the slot SpoolPickers with their existing disabled state, hide "Aanpassen" in CostBreakdown, and give all of them the tooltip `pay.lockedHelp`. Also say whether "Spoel voor de hele print" may still change a locked order.
 - **Blocked:** the locked look of those controls. Until then they stay as they are and the server refuses the change.
-- **Temporary placeholder approved:** no
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-048`. Built: "Aantal keer geprint" as text, the toggle and slot SpoolPickers disabled, no "Aanpassen". Instead of a hover tooltip, the reason (`pay.lockedHelp`) is one visible `pp-help` line at the top of the file list, linked to each control with `aria-describedby`: disabled controls get no hover or keyboard focus, and the Tooltip spec says a tooltip must never be the only place an essential instruction lives. "Spoel voor de hele print" is unchanged.
 - **Design system version:** 1.5
