@@ -781,7 +781,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-067 [open] The customer strip grows without limit and owns the fold
+## GAP-067 [resolved in v1.9] The customer strip grows without limit and owns the fold
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** CustomerCard / CustomerChips on ScreenDashboard
@@ -803,7 +803,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-069 [open] The bulk bar sits at the end of the page on desktop
+## GAP-069 [resolved in v1.9] The bulk bar sits at the end of the page on desktop
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** BulkActionBar on ScreenDashboard
@@ -814,7 +814,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-070 [open] Nothing says the klant tile is clickable, and only the name is
+## GAP-070 [resolved in v1.9] Nothing says the klant tile is clickable, and only the name is
 - **Type:** unclear spec
 - **Found while:** the owner's walkthrough of 1.0
 - **Where needed:** CustomerCard on ScreenDashboard

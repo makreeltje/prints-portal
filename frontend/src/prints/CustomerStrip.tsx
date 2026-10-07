@@ -1,6 +1,8 @@
-import { Receipt, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { LayoutGrid, Receipt, RotateCcw, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { Dialog } from '../components/Dialog';
+import { OverflowMenu } from '../components/OverflowMenu';
 import { formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { StatusBadge } from './bits';
@@ -32,18 +34,40 @@ export function CustomerStrip(props: CustomerStripProps) {
   const [confirming, setConfirming] = useState<Customer | null>(null);
   const ask = onDelete === undefined ? undefined : setConfirming;
 
+  const [overviewOpen, setOverviewOpen] = useState(false);
   return (
     <>
-      <div className="pp-only-wide">
-        <div className="pp-custs">
+      <CustomerChips
+        {...props}
+        onAskDelete={ask}
+        onOpenOverview={() => {
+          setOverviewOpen(true);
+        }}
+      />
+      <Dialog
+        open={overviewOpen}
+        title={t('strip.dialog.title')}
+        size="lg"
+        footer={null}
+        onClose={() => {
+          setOverviewOpen(false);
+        }}
+      >
+        <div className="pp-allcust">
           {customers.map((customer) => (
-            <CustomerCard key={customer.folder} customer={customer} {...props} onAskDelete={ask} />
+            <CustomerCard
+              key={customer.folder}
+              customer={customer}
+              {...props}
+              onAskDelete={ask}
+              onSelect={(folder) => {
+                props.onSelect(folder);
+                setOverviewOpen(false);
+              }}
+            />
           ))}
         </div>
-      </div>
-      <div className="pp-only-phone">
-        <CustomerChips {...props} onAskDelete={ask} />
-      </div>
+      </Dialog>
       {onDelete !== undefined && (
         <ConfirmDialog
           open={confirming !== null}
@@ -63,7 +87,58 @@ export function CustomerStrip(props: CustomerStripProps) {
   );
 }
 
-type WithAsk = CustomerStripProps & { onAskDelete?: (customer: Customer) => void };
+type WithAsk = CustomerStripProps & {
+  onAskDelete?: (customer: Customer) => void;
+  onOpenOverview?: () => void;
+};
+
+/** The tile's rare actions (OverflowMenu 1.9): Factuur maken, Klant verwijderen. */
+function CustomerMenu({
+  customer,
+  onAskDelete,
+  onRestore,
+  onInvoice,
+}: {
+  customer: Customer;
+  onAskDelete?: (customer: Customer) => void;
+  onRestore?: (folder: string) => void;
+  onInvoice?: (folder: string) => void;
+}) {
+  const items = [];
+  if (!customer.deleted && !customer.noBilling && onInvoice !== undefined) {
+    items.push({
+      key: 'invoice',
+      label: t('menu.invoice'),
+      icon: <Receipt className="pp-ico" aria-hidden="true" />,
+      run: () => {
+        onInvoice(customer.folder);
+      },
+    });
+  }
+  if (customer.deleted && onRestore !== undefined) {
+    items.push({
+      key: 'restore',
+      label: t('common.restore'),
+      icon: <RotateCcw className="pp-ico" aria-hidden="true" />,
+      run: () => {
+        onRestore(customer.folder);
+      },
+    });
+  }
+  if (!customer.deleted && onAskDelete !== undefined) {
+    items.push({
+      key: 'delete',
+      label: t('customers.delete'),
+      icon: <Trash2 className="pp-ico" aria-hidden="true" />,
+      danger: true,
+      separated: items.length > 0,
+      run: () => {
+        onAskDelete(customer);
+      },
+    });
+  }
+  return <OverflowMenu items={items} />;
+}
 
 /** CustomerCard: the name sets the klant filter; delete and restore per the spec. */
 function CustomerCard({
@@ -87,31 +162,29 @@ function CustomerCard({
     >
       <div className="hd">
         <b>
+          {/* The button is stretched over the tile, so the amount filters too. */}
           <button
             type="button"
-            className="app-name-button"
+            className="pp-cust-name"
             aria-pressed={isSelected}
             onClick={() => {
               onSelect(isSelected ? null : customer.folder);
             }}
           >
-            {customer.folder}
+            {t('customers.tile', {
+              customer: customer.folder,
+              count: customer.printCount,
+            })}
           </button>
         </b>
         <span className="end">
           <span className="cnt">{t('customers.printCount', { count: customer.printCount })}</span>
-          {!customer.deleted && onAskDelete !== undefined && (
-            <button
-              type="button"
-              className="pp-btn pp-btn-ghost pp-btn-sm pp-btn-icon"
-              aria-label={t('customers.delete')}
-              onClick={() => {
-                onAskDelete(customer);
-              }}
-            >
-              <Trash2 className="pp-ico" aria-hidden="true" />
-            </button>
-          )}
+          <CustomerMenu
+            customer={customer}
+            onAskDelete={onAskDelete}
+            onRestore={onRestore}
+            onInvoice={onInvoice}
+          />
         </span>
       </div>
       {!customer.deleted && <CustomerMoney customer={customer} />}
@@ -184,35 +257,89 @@ function CustomerChips({
   onAskDelete,
   onRestore,
   onInvoice,
+  onOpenOverview,
 }: WithAsk) {
   const current = customers.find((customer) => customer.folder === selected);
+  const row = useRef<HTMLDivElement>(null);
+  const [overflows, setOverflows] = useState(false);
+  // The fade at the end only makes sense while the row really does continue.
+  useEffect(() => {
+    const element = row.current;
+    if (element === null) return;
+    const measure = () => {
+      setOverflows(element.scrollWidth > element.clientWidth + 1);
+    };
+    measure();
+    // The fade is an enhancement: without a ResizeObserver (jsdom, older
+    // browsers) the window's own resize is close enough.
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', measure);
+      return () => {
+        window.removeEventListener('resize', measure);
+      };
+    }
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+    };
+  }, [customers.length]);
+  // After choosing in the overview, bring the selected chip into view.
+  useEffect(() => {
+    const chip = row.current?.querySelector('[aria-pressed="true"]');
+    // jsdom has no scrollIntoView; bringing the chip into view is cosmetic.
+    if (chip instanceof HTMLElement && typeof chip.scrollIntoView === 'function') {
+      chip.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+    }
+  }, [selected]);
+
   return (
     <div className="pp-col">
-      <div className="pp-chips" role="group" aria-label={t('customers.label')}>
-        <button
-          type="button"
-          className="pp-chip"
-          aria-pressed={selected === null}
-          onClick={() => {
-            onSelect(null);
-          }}
+      <div className="pp-strip">
+        <div
+          ref={row}
+          className={overflows ? 'pp-chips is-overflow' : 'pp-chips'}
+          role="group"
+          aria-label={t('customers.label')}
         >
-          {t('filters.allCustomers')}
-        </button>
-        {customers.map((customer) => (
           <button
-            key={customer.folder}
             type="button"
-            className={customer.deleted ? 'pp-chip is-deleted' : 'pp-chip'}
-            aria-pressed={selected === customer.folder}
+            className="pp-chip"
+            aria-pressed={selected === null}
             onClick={() => {
-              onSelect(customer.folder);
+              onSelect(null);
             }}
           >
-            {customer.folder}
-            <span className="n">{customer.printCount}</span>
+            {t('filters.allCustomers')}
           </button>
-        ))}
+          {customers.map((customer) => (
+            <button
+              key={customer.folder}
+              type="button"
+              className={customer.deleted ? 'pp-chip is-deleted' : 'pp-chip'}
+              aria-pressed={selected === customer.folder}
+              onClick={() => {
+                onSelect(customer.folder);
+              }}
+            >
+              {customer.folder}
+              <span className="n">{customer.printCount}</span>
+              {customer.openAmount !== null && customer.openAmount > 0 && (
+                <span className="amt">{formatMoney(customer.openAmount)}</span>
+              )}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="pp-btn pp-btn-secondary pp-btn-sm"
+          aria-haspopup="dialog"
+          aria-label={t('strip.overview.label', { n: customers.length })}
+          onClick={onOpenOverview}
+        >
+          <LayoutGrid className="pp-ico" aria-hidden="true" />
+          {t('strip.overview')}
+        </button>
       </div>
       {(total !== null || current !== undefined) && (
         <div className="pp-toolbar">

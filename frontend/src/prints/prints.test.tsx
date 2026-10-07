@@ -231,7 +231,7 @@ describe('DashboardPage', () => {
     list.unmount();
   });
 
-  it('shows customer cards with counts and filters by klant from the card or a chip', async () => {
+  it('shows the klant chips with counts and filters from a chip or the overview', async () => {
     const calls = stubFetch({
       'GET /api/prints': () => ({ json: { items: [summary()], total: 12 } }),
       'GET /api/customers': () => ({
@@ -245,12 +245,14 @@ describe('DashboardPage', () => {
       'GET /api/tags': () => ({ json: tags }),
     });
     renderDashboard('/', 'User');
-    expect(await screen.findByText('1 print')).toBeInTheDocument();
-    expect(screen.getAllByText('12 prints').length).toBeGreaterThan(0);
+    const chipsGroup = await screen.findByRole('group', { name: 'Klanten' });
+    // CustomerChips 1.9: one row on every width, the cards behind "Overzicht".
+    expect(within(chipsGroup).getByRole('button', { name: /^Joey/ })).toBeInTheDocument();
+    expect(within(chipsGroup).getByRole('button', { name: /^Anouk/ })).toBeInTheDocument();
     // Users cannot delete customers.
-    expect(screen.queryByRole('button', { name: 'Klant verwijderen' })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: 'Klant verwijderen' })).toBeNull();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Joey' }));
+    await userEvent.click(within(chipsGroup).getByRole('button', { name: /^Joey/ }));
     await waitFor(() => {
       expect(calls.some((c) => c.path.includes('customer=Joey'))).toBe(true);
     });
@@ -276,10 +278,12 @@ describe('DashboardPage', () => {
       'DELETE /api/customers/Joey': () => ({ status: 204, json: { deleted: 12 } }),
     });
     renderDashboard('/?klant=Joey', 'Editor');
-    // The card's icon button and the phone toolbar's button (one shows per screen size).
-    const buttons = await screen.findAllByRole('button', { name: 'Klant verwijderen' });
-    expect(buttons).toHaveLength(2);
-    await userEvent.click(buttons[0] as HTMLElement);
+    // Delete lives in the tile's menu now (OverflowMenu 1.9), inside "Overzicht".
+    await userEvent.click(await screen.findByRole('button', { name: /Klantenoverzicht/ }));
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Meer acties' }),
+    );
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Klant verwijderen' }));
     const dialog = screen.getByRole('alertdialog', { name: "Klant 'Joey' verwijderen?" });
     expect(dialog).toHaveAccessibleDescription(
       'Alle 12 prints van deze klant worden verborgen. De financiële gegevens blijven bewaard en een beheerder kan de klant herstellen.',
@@ -292,7 +296,7 @@ describe('DashboardPage', () => {
     });
   });
 
-  it('offers Factuur on the card and in the phone toolbar', async () => {
+  it('offers Factuur in the tile menu and in the phone toolbar', async () => {
     stubFetch({
       'GET /api/prints': () => ({ json: { items: [summary()], total: 12 } }),
       'GET /api/customers': () => ({
@@ -313,14 +317,12 @@ describe('DashboardPage', () => {
       }),
     });
     renderDashboard('/?klant=Joey', 'Editor');
-    const buttons = await screen.findAllByRole('button', { name: 'Factuur' });
-    expect(buttons).toHaveLength(2);
-    expect(buttons[1]?.closest('.pp-only-phone')).not.toBeNull();
-    await userEvent.click(buttons[1] as HTMLElement);
+    // The toolbar keeps its own Factuur button; the tile's moved into the menu.
+    await userEvent.click(await screen.findByRole('button', { name: 'Factuur' }));
     expect(screen.getByRole('dialog', { name: 'Factuur maken voor Joey' })).toBeInTheDocument();
   });
 
-  it('lets Admins restore a deleted klant from its card', async () => {
+  it('lets Admins restore a deleted klant from the tile menu', async () => {
     const calls = stubFetch({
       'GET /api/prints': () => ({ json: { items: [], total: 0 } }),
       'GET /api/customers': () => ({
@@ -331,9 +333,12 @@ describe('DashboardPage', () => {
       'POST /api/customers/Bas/restore': () => ({ json: { restored: 4 } }),
     });
     const view = renderDashboard('/?verwijderd=1');
-    await screen.findByRole('button', { name: 'Bas' });
+    await userEvent.click(await screen.findByRole('button', { name: /Klantenoverzicht/ }));
     expect(view.container.querySelector('.pp-cust')).toHaveClass('is-deleted');
-    await userEvent.click(screen.getByRole('button', { name: 'Herstellen' }));
+    await userEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Meer acties' }),
+    );
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Herstellen' }));
     await waitFor(() => {
       expect(calls.some((c) => c.path === '/api/customers/Bas/restore')).toBe(true);
     });
