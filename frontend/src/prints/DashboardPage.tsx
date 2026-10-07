@@ -141,6 +141,14 @@ export function DashboardPage() {
     ? () => void run(() => api('/api/admin/reindex', { method: 'POST' }))
     : undefined;
 
+  // A first run: nothing indexed and nothing filtered, so there is nothing to filter.
+  const firstRun =
+    !prints.isPending &&
+    !prints.isError &&
+    items.length === 0 &&
+    !isFiltered(filter) &&
+    health.data?.checks.printsRoot.status !== 'down';
+
   let body;
   if (prints.isPending) {
     body = <LoadingRows rows={4} />;
@@ -268,17 +276,19 @@ export function DashboardPage() {
           onRestore={isAdmin ? (folder) => void run(() => restoreCustomer(folder)) : undefined}
         />
       )}
-      <FilterBar
-        filter={filter}
-        onChange={setFilter}
-        customers={customers.data?.customers ?? []}
-        tags={tags.data?.tags ?? []}
-        view={view}
-        onView={setView}
-        showDeletedOption={isAdmin}
-        shown={items.length}
-        total={total}
-      />
+      {!firstRun && (
+        <FilterBar
+          filter={filter}
+          onChange={setFilter}
+          customers={customers.data?.customers ?? []}
+          tags={tags.data?.tags ?? []}
+          view={view}
+          onView={setView}
+          showDeletedOption={isAdmin}
+          shown={items.length}
+          total={total}
+        />
+      )}
       {bulkFailures !== null && <BulkFailures failures={bulkFailures} />}
       {invoiceFor !== null && (
         <InvoiceExportDialog

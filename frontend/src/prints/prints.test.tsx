@@ -89,10 +89,31 @@ describe('DashboardPage', () => {
   });
 
   it('only offers "Toon verwijderde" to Admins', async () => {
+    // With prints indexed, so the filter bar is there to be checked.
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary()], total: 1 } }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
     renderDashboard('/', 'Editor');
-    await screen.findByText('Nog geen prints');
+    await screen.findByText('Babybox locks');
     expect(screen.queryByLabelText('Toon verwijderde')).toBeNull();
     expect(screen.getAllByLabelText('Gearchiveerd tonen').length).toBeGreaterThan(0);
+  });
+
+  it('leaves the filter bar out while nothing is indexed', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [], total: 0 } }),
+      'GET /api/customers': () => ({ json: { customers: [] } }),
+      'GET /api/tags': () => ({ json: tags }),
+      'GET /healthz': () => ({ json: { checks: { printsRoot: { status: 'up' } } } }),
+    });
+    renderDashboard('/', 'Admin');
+    await screen.findByText('Nog geen prints');
+    // Nothing to filter, so no filter bar and no count line.
+    expect(screen.queryByLabelText('Gearchiveerd tonen')).toBeNull();
+    expect(screen.queryByText(/van 0 prints/)).toBeNull();
+    expect(screen.getByRole('button', { name: 'Opnieuw indexeren' })).toBeInTheDocument();
   });
 
   it('shows "Geen resultaten" with Filters wissen when a filter matches nothing', async () => {

@@ -367,3 +367,9 @@
   --scalar-color-yellow: var(--warning); /* ds-gap: GAP-056 */
   --scalar-color-blue: var(--info); /* ds-gap: GAP-056 */
 }
+
+/* The folder diagram must scroll in its card, not wrap: ds-gap: GAP-057. */
+.pp-tree > div {
+  /* ds-gap: GAP-057 */
+  white-space: nowrap; /* ds-gap: GAP-057 */
+} /* ds-gap: GAP-057 */

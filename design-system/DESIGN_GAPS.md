@@ -661,3 +661,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** the official look of `/api-docs`. Everything around it (header, card, loading, error, theme switch) is specified and unaffected.
 - **Temporary placeholder approved:** yes (by the owner, 2026-10-07), lines marked `ds-gap: GAP-056`: Scalar with `theme: 'none'` and its CSS variables mapped onto our tokens. The mapping uses the same marker, because the checker allows a custom property outside `tokens.css` only for an open gap.
 - **Design system version:** 1.6
+
+## GAP-057 [open] First-run folder diagram wraps instead of scrolling
+- **Type:** suspected design bug
+- **Found while:** M9, building the first-run page from ScreenSystemStates
+- **Where needed:** `.pp-tree` with `.pp-indent-1` to `.pp-indent-4` (ScreenSystemStates first run); `frontend/src/pages/FirstRunState.tsx`
+- **What is missing or wrong:** the README says "on a phone the diagram scrolls inside its card", but `.pp-tree` sets only `line-height` and colour, the indent classes only `padding-left`, and nothing sets `white-space` or an overflow. At 360px the longest row ("└─ **Babybox locks**/ project") therefore wraps, and the `project` chip lands on the next line under the wrong indent level, which reads as a separate folder. The preview has the same markup, so it wraps there too.
+- **Why it matters:** the diagram's whole job is to show which folder sits inside which; a wrapped row shows the wrong nesting on the screen a new installation starts at.
+- **Proposal:** `white-space: nowrap` on the rows inside `.pp-tree` so the card can scroll, and say which container scrolls: `.pp-scroll` (which exists and looks like a card) or `.pp-card` with an overflow of its own.
+- **Blocked:** nothing. Built with `.pp-scroll` and an app rule that stops the rows wrapping, marked `ds-gap: GAP-057`.
+- **Temporary placeholder approved:** not yet asked. The fix is built and marked `ds-gap: GAP-057` so the first-run page is not wrong on a phone; one line in `app.css`, trivially reverted if the owner would rather wait for the design system.
+- **Design system version:** 1.6
