@@ -553,6 +553,28 @@ describe('missing-files chip (GAP-090)', () => {
     ).toBeInTheDocument();
   });
 
+  it('shows a tooltip on hover and hides it on Escape', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary({ lacks: ['gcode'] })], total: 1 } }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    await screen.findByRole('link', { name: 'Babybox locks' });
+    const chip = document.querySelector('.pp-lacks');
+    if (chip === null) throw new Error('no chip');
+    expect(screen.queryByRole('tooltip', { hidden: true })).toBeNull();
+    // Not the native title: the bubble is ours, and it appears at once.
+    expect(chip.getAttribute('title')).toBeNull();
+    await userEvent.hover(chip);
+    const tip = await screen.findByRole('tooltip', { hidden: true });
+    expect(tip).toHaveTextContent('Deze print heeft geen G-code-bestand.');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(screen.queryByRole('tooltip', { hidden: true })).toBeNull();
+    });
+  });
+
   it('shows a single missing type without a list', async () => {
     stubFetch({
       'GET /api/prints': () => ({ json: { items: [summary({ lacks: ['gcode'] })], total: 1 } }),

@@ -38,10 +38,10 @@ export function PrintCard({
       <Thumbnail print={print} />
       <div className="pp-info">
         <div>
-          <h3 className="pp-row pp-gap-2">
+          <h3>
             <Link className="app-card-link" to={`/prints/${print.id}`}>
               {print.name}
-            </Link>
+            </Link>{' '}
             {/*
               ds-gap: GAP-109 — beside the name rather than in the tag row.
               2.1 puts the icons first in the tag row, which gives a print with

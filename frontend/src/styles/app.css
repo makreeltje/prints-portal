@@ -334,3 +334,35 @@
   max-height: 100%;
   object-fit: contain;
 }
+
+/*
+  Tooltip bubble inside .pp-anchor. The design system styles .pp-tip but does
+  not say where it goes; this mirrors its own .pp-anchor > .pp-pop rule, one
+  step above the trigger instead of below it.
+  ds-gap: GAP-110
+*/
+.app-tip {
+  position: absolute;
+  bottom: calc(100% + var(--space-1));
+  left: 0;
+  z-index: var(--z-tooltip);
+  white-space: normal;
+  width: max-content;
+  pointer-events: none;
+}
+
+/*
+  A card clips its content so the thumbnail keeps the card's rounded corners,
+  which also cuts a tooltip in half. While one is open the card stops clipping.
+  The thumbnail has no radius of its own — it borrows the card's — so it is
+  given one for as long as the clip is off, or its corners would square.
+  ds-gap: GAP-110
+*/
+.pp-card:has(.app-tip) {
+  overflow: visible;
+}
+
+.pp-card:has(.app-tip) .pp-thumb {
+  border-start-start-radius: var(--radius-lg);
+  border-start-end-radius: var(--radius-lg);
+}

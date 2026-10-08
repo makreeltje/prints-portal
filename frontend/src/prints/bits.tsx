@@ -11,6 +11,7 @@ import {
   X,
 } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
+import { Tooltip } from '../components/Tooltip';
 import { t } from '../i18n/nl';
 import { thumbnailUrl } from './api';
 import { isPaletteKey } from './tag-palette';
@@ -31,7 +32,8 @@ const LACKS_ICON = {
 /** "a", "a en b", "a, b en c" — the Dutch list the accessible name is built from. */
 function joinDutch(parts: readonly string[]): string {
   if (parts.length <= 1) return parts.join('');
-  return `${parts.slice(0, -1).join(', ')} en ${parts[parts.length - 1]}`;
+  const last = parts.at(-1) ?? '';
+  return `${parts.slice(0, -1).join(', ')} en ${last}`;
 }
 
 /**
@@ -55,26 +57,28 @@ export function LacksChip({
   });
   if (withText) {
     return (
-      <span className="pp-lacks has-text" role="img" aria-label={name} title={name}>
+      <span className="pp-lacks has-text" role="img" aria-label={name}>
         <TriangleAlert className="pp-ico" aria-hidden="true" />
         {t('print.lacks', { types: types.join(', ') })}
       </span>
     );
   }
   return (
-    <span className="pp-lacks" role="img" aria-label={name} title={name}>
-      {lacks.map((type) => {
-        const Icon = LACKS_ICON[type];
-        // The slash is the "no" convention, drawn in the same SVG; the thicker
-        // line underneath knocks a gap out of the glyph so it reads at 16px.
-        return (
-          <Icon key={type} className="pp-ico" aria-hidden="true">
-            <line className="sl-bg" x1="3" y1="21" x2="21" y2="3" />
-            <line className="sl" x1="3" y1="21" x2="21" y2="3" />
-          </Icon>
-        );
-      })}
-    </span>
+    <Tooltip label={name}>
+      <span className="pp-lacks" role="img" aria-label={name}>
+        {lacks.map((type) => {
+          const Icon = LACKS_ICON[type];
+          // The slash is the "no" convention, drawn in the same SVG; the thicker
+          // line underneath knocks a gap out of the glyph so it reads at 16px.
+          return (
+            <Icon key={type} className="pp-ico" aria-hidden="true">
+              <line className="sl-bg" x1="3" y1="21" x2="21" y2="3" />
+              <line className="sl" x1="3" y1="21" x2="21" y2="3" />
+            </Icon>
+          );
+        })}
+      </span>
+    </Tooltip>
   );
 }
 

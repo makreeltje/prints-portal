@@ -1262,3 +1262,15 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing.
 - **Temporary placeholder approved:** yes (2026-10-08, the owner did not want to wait). The icons sit at the end of the `h3` beside the name, marked `ds-gap: GAP-109`. Built from the 2.1 icon group unchanged — only its parent differs — so adopting the official answer is moving one element.
 - **Design system version:** 2.1
+
+## GAP-110 [open] A tooltip has no placement, and 400ms is too slow for an icon you do not know yet
+- **Type:** unclear spec
+- **Found while:** adding a tooltip to the missing-file icons at the owner's request (2026-10-08)
+- **Where needed:** Tooltip; the `pp-lacks` icon group on PrintCard and PrintRow
+- **What is missing or wrong:** two things. **Placement:** the system styles `.pp-tip` (ground, radius, shadow, 240px cap) but never says where it sits. `.pp-anchor > .pp-pop` has a rule; `.pp-tip` has none, and the Tooltip preview places the bubble statically beside its trigger, which is a preview layout rather than a position. **Timing:** the spec says the bubble appears "after 400ms on hover and immediately on keyboard focus". The owner asked for it to appear immediately: *"Gebruik geen native oplossing, maar een custom oplossing, dan verschijnt de tooltip direct."* A 400ms delay is right for a tooltip that repeats a label you can already read; it is wrong for an icon whose meaning is the only thing the tooltip carries, which is exactly the GAP-106 icons.
+- **Why it matters:** without a placement rule every app invents one, and they will differ. Without a timing distinction, the icon set from GAP-106 is learnable only by waiting almost half a second per glyph.
+- **Proposal:** add a placement rule to the system (`.pp-anchor > .pp-tip` above the trigger, `z-tooltip`, `pointer-events: none`), and say that a tooltip which **is** the only explanation of a glyph appears at once, while one that repeats visible text keeps its 400ms. A third question for you: the bubble's text here repeats the trigger's own accessible name exactly, so this build marks it `aria-hidden` to stop a screen reader saying the sentence twice. Please confirm, because the spec's `aria-describedby` wording assumes the tooltip adds something the name does not.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** yes (2026-10-08). `app-tip` places the bubble from tokens only, and it appears at once. Marked `ds-gap: GAP-110`.
+- **Design system version:** 2.1
+
