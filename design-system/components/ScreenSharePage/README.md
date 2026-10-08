@@ -26,3 +26,24 @@ The share page (`/share/:token`) is what a customer sees when opening a Deel-lin
 **Rejected:** an online payment button (iDEAL, a payment request, a provider's checkout). That needs a payment provider, an account, webhooks and a reconciliation story in a self-hosted app that deliberately has no VAT handling and no accounting; and a generic payment link cannot carry the amount, so it would show a different number from the page. A bank transfer with a copyable amount and reference is the honest answer for this product. If you want it anyway, say so and I will design the slot — see *Proposals* in the changelog; it is a product decision, not a design one.
 
 **To measure (owner):** is an IBAN filled in in Bedrijfsgegevens in the running install, and does the "Betalen" block appear on a link whose klant has an open amount? If the IBAN is set and the block is missing, this gap is an app bug, not a design gap, and should be logged as one.
+
+**2.0.1.** (2026-10-08) **The per-klant pasted payment link (GAP-103, re-decided; my rejection answered a question you had not asked).** You are right: I rejected a provider integration, and the gap proposes a URL the studio pastes per klant, which carries its own amount and needs no provider. Of my four reasons, three do not apply to that. **Accepted, with the rank and the staleness made explicit**, because the one reason that does still apply is the serious one.
+
+**What is still true.** A pasted link freezes an amount and often an expiry at the moment it is pasted, while the klant's Openstaand moves with every payment, every new order and every write-off. A customer paying a stale amount creates exactly the partial-payment state the rest of this app works hardest to explain, and a Tikkie link that expired is a dead button on a page the studio cannot see. So the link is a convenience, never the authority.
+
+**The design.**
+
+- **Where it is stored:** per klant, in Instellingen → Klanten, beside "Niet factureren" — one optional field **"Betaallink"** (a URL). Not in Bedrijfsgegevens: it is per klant by nature. See ScreenSettings.
+- **Where it appears:** inside the existing **"Betalen"** block, **below** the IBAN, T.n.v., Bedrag and Kenmerk rows, as a **secondary** full-width control 48px high (`pp-btn pp-btn-secondary pp-share-cta pp-fill`), labelled **"Betalen via {studio}"** — and **the label never carries an amount**, because the amount in the link is not ours to quote. Under it, in `muted` `text-sm`: **"Deze link is door {studio} gemaakt en kan een ander bedrag bevatten dan hierboven staat."**
+- **Rank, which is the whole point:** the IBAN rows come first and are always correct; the link comes second and is merely quick. The transfer details are never hidden behind it, and the link is never the primary action on the page.
+- **When it is not drawn:** no link set; Openstaand is 0 (nothing to pay, so no stale button is left behind); a not-billed klant; or no IBAN *and* no link (then there is no "Betalen" block at all, as in 1.9).
+- **A link with no IBAN** still gets the block: the heading, Bedrag, Kenmerk and the link, without the IBAN and T.n.v. rows. The Instellingen warning about a missing IBAN then changes to "Deze klant heeft wel een betaallink." (`settings.customer.payLink.only`).
+- **Accessibility.** A real link (`<a>`), `rel="noopener noreferrer"`, `target="_blank"` with "(opent in een nieuw tabblad)" in its accessible name; the note under it is plain text, linked with `aria-describedby`, not a tooltip.
+- **Colour.** A secondary button on `surface` inside `pp-sharepay`: existing pairs, no new row in `contrast.md`.
+
+**What I am not doing:** no expiry tracking, no amount in the label, no check that the URL is reachable, and no primary styling. If the owner wants the amount to be right, the IBAN rows are where it is right.
+
+**Dutch copy (new).** Betalen via {studio} | Deze link is door {studio} gemaakt en kan een ander bedrag bevatten dan hierboven staat.
+
+**And the correction to my own row:** GAP-103's "the share page offers no way to pay" is false — you verified the block renders with heading, IBAN and the owed amount on a live share page. The 2.0 warning for a missing IBAN stays (it is still a real hole, just not this one), and nothing about it was wrong; only my reading of why the gap was written was.
+

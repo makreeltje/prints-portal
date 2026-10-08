@@ -578,3 +578,18 @@ Removed in 1.9: the toast text for a lost connection (the bar keeps "Verbinding 
 **Removed in 2.0:** nothing. `order.unassigned` ("Nog niet in een bestelling") is no longer a card title; it stays as the badge on a file row in the print's Bestanden card.
 
 **Also fixed in 2.0:** the section *Added in 1.7* appeared twice in this file, identically. The duplicate is removed; no key changed.
+
+## Added in 2.0.1
+
+| Key | Text |
+|---|---|
+| settings.customer.payLink | Betaallink (optioneel) |
+| settings.customer.payLink.help | Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert. |
+| settings.customer.payLink.added | Toegevoegd op {datum} |
+| settings.customer.payLink.only | Deze klant heeft wel een betaallink. |
+| share.payLink | Betalen via {studio} |
+| share.payLink.note | Deze link is door {studio} gemaakt en kan een ander bedrag bevatten dan hierboven staat. |
+| share.payLink.newTab | (opent in een nieuw tabblad) |
+
+**Changed in 2.0.1:** nothing. **Removed in 2.0.1:** nothing.
+

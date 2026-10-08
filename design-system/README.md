@@ -1,4 +1,4 @@
-Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 2.0 (see `changelog.md`).
+Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 2.0.1 (see `changelog.md`).
 
 ## Principles
 
@@ -146,3 +146,6 @@ A round driven by the real app (83 prints, 10 klanten): the share page (studio h
 
 ## Versie 2.0 (2026-10-08)
 The first breaking round. The print detail is reorganised around what belongs to a print and what an order bills (one media row with the viewer and a strip that now holds the timelapse, one file list at print level, orders that show only what they charge for); the filament colour stops being a thumbnail's ground and becomes a 4px bar on the object, so `--mix` leaves the contract; a print says which files it lacks; one rule covers every "this looks clickable" gap; a popover inside a sticky table raises its cell; Instellingen and Tags lay out in columns up to a 1080px measure; the API renderer bleeds through the page padding; and an uploaded logo has a contract it can be checked against. No token added, renamed or removed. Details: `changelog.md`.
+
+## Versie 2.0.1 (2026-10-08)
+Three answers corrected against measurements from the running app: the media strip wraps into a bounded grid above eight pictures (29 models is the real maximum, not a hypothetical), the Tags grid is used only from six tags because the library has two, and the per-klant pasted Betaallink is accepted as a secondary control that never quotes an amount. The missing-files figures are corrected to 22/8/8%. No token and no screen structure changed. Details: `changelog.md`.

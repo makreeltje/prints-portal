@@ -17,3 +17,12 @@ The answer is not to stretch it further and not to leave it: **a page of short r
 The same rule gives Instellingen its two columns; see ScreenSettings.
 
 **To measure (owner):** how many tags the real library has. At 7 tags a three-column grid is two and a half rows, which is fine; at 2 tags it is one row with a gap, which is also fine. If the normal number is under 4 I would rather cap the card at 560px and leave the width empty on purpose — tell me the count and I will choose.
+
+**2.0.1.** (2026-10-08) **Two tags (GAP-101, corrected on your measurement; you were right to push back).** The real library has **2** tags. Three columns for two rows is the exact failure `do-dont.md` warns about two sections earlier — I wrote the rule and then broke it in the same round.
+
+**The grid is conditional, and the app decides it by count:** `pp-taggrid` is applied **from six tags**; with five or fewer the rows are one column in a card capped at 520px (`pp-w-520`) and the width beside it is left empty on purpose. Six is the threshold because the grid is at most three columns at the 1080px measure, so six fills two full rows; four or five would leave a half-empty second row, which looks like a mistake rather than a choice.
+
+Nothing in `bundle.css` changed for this — `pp-taggrid` was already right for the case it is for. What changed is when it is used, and the preview now draws both: two tags in a 520px card, and eight tags in the grid.
+
+This does not touch Instellingen: that page always has seven sections, so `pp-settings` always has enough to fill its columns.
+

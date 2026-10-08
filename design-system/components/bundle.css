@@ -862,6 +862,10 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-modelbtn .pp-thumb{position:relative}
 .pp-modelbtn.video .pp-thumb{background:var(--surface-2);color:var(--muted)}
 .pp-modelbtn .dur{display:block;font-variant-numeric:tabular-nums}
+/* 2.0.1, GAP-094 reconsidered: above 8 pictures the same strip wraps into a bounded grid
+   and scrolls down instead of sideways. Same buttons, same one control. */
+.pp-models.wrap{flex-wrap:wrap;overflow-x:hidden;overflow-y:auto;max-height:304px}
+.pp-models.wrap.is-overflow{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - var(--space-5)),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - var(--space-5)),transparent)}
 
 /* GAP-095 + GAP-097 print detail: the media row carries the print's pictures, the panel beside it its facts. */
 .pp-pdtop{display:grid;grid-template-columns:minmax(0,560px) minmax(260px,1fr);gap:var(--space-5);align-items:start}

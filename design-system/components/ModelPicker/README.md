@@ -27,3 +27,17 @@ ModelPicker is the media strip under Viewer3D: it chooses which of a print's pic
 **Dutch copy (new).** Modellen en timelapse | Timelapse | Timelapse: {bestandsnaam} | Timelapse {bestandsnaam}, {duur} | Timelapse van {naam}
 
 **To measure (owner):** still the 1.9 question, now for a different reason — the largest and median number of models per print, and how many prints hold both models and a timelapse. The strip has no count limit any more, so the number only tells me whether the fade and the scroll are enough or the strip should wrap to two rows above some count. And: **does the renderer produce one PNG per model file, or one per print?** The spec covers both, but I would like to know which branch is the normal one.
+
+**2.0.1.** (2026-10-08) **A strip of 29 is not a strip of 8 (GAP-094, reconsidered on your measurement).** You measured median 3, max **29**, and **22% of prints over six models**, with **one PNG per model file**. Two of those three numbers change my answer.
+
+- **The Select stays rejected** and that part is settled: with a render per model file the buttons are real pictures, so a list of file names is strictly less information. Nothing about 29 makes a Select better.
+- **But one scrolling line does not survive 29.** 29 buttons at 76px plus gaps is about 2,400px against a 560px frame: four screens of sideways scrolling with no sense of position. That is the failure the gap describes, moved to a new place.
+- **So the strip wraps instead of scrolling sideways, above 8 pictures** (models plus the timelapse): `pp-models wrap` — `flex-wrap: wrap`, `overflow-y: auto`, `max-height: 304px` (three rows of buttons plus the gaps), and `is-overflow` then fades the **bottom** edge rather than the right. Same buttons, same group, same one control; only the shape changes, and vertical scrolling is the gesture people already have in the page. 29 models at 560px is 6 columns × 5 rows, three rows visible.
+- **Threshold 8**, because the one-line strip shows about 6.5 buttons at 560px: at 8 you are already scrolling past more than one strip-width. Median 3 means most prints never see the wrapped form; 22% do.
+- When it wraps and scrolls it is a focusable labelled region (`tabindex="0"`, `aria-label`), per the 1.8 rule — the preview shows it that way. The caption keeps saying "Model {n} van {totaal}", which is how you know where you are in 29.
+- **A render per model file is now the normal branch**, not the exception. The glyph-and-name fallback stays specified for a file the renderer could not read.
+
+**Changed classes.** `.pp-models.wrap` (new), `.pp-models.wrap.is-overflow` (bottom fade instead of right).
+
+**Nothing more to measure here.** Your three numbers answered it.
+

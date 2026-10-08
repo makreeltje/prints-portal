@@ -41,3 +41,14 @@ This is the same rule as the Tags grid: *a page of short rows or short fields la
 No validator can measure point 1 for an arbitrary file, so the app does not refuse on contrast; the pair of previews lets the operator see it in one glance, which is the point of the gap.
 
 **Dutch copy (new).** Zonder IBAN staat er geen betaalinstructie op de deelpagina. | Deze SVG bevat tekst. Zet de tekst om in contouren (outlines) of upload een PNG. | Deze SVG verwijst naar een bestand buiten het logo. Upload een zelfstandig bestand. | PNG of SVG, maximaal 1 MB. Vervangt de naam op het scherm en op documenten. Tekst in een SVG moet omgezet zijn in contouren. | Het logo wordt in beide thema's ongewijzigd getoond. | Gebruik middentonen: elke kleur in het logo moet op wit én op donkergrijs te zien zijn. | Op licht | Op donker
+
+**2.0.1.** (2026-10-08) **Betaallink per klant (GAP-103, re-decided).** The **Klanten** section gets a second control per klant, beside the "Niet factureren" toggle: one optional field **"Betaallink (optioneel)"** (a URL; `pp-field` inside the klant's `pp-setrow`, full width under the toggle on a phone). It is per klant because a pasted payment link carries one klant's amount.
+
+- Help under the field: **"Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert."**
+- Once set, the field shows **"Toegevoegd op {datum}"** in `muted` `text-xs`, so a link pasted months ago is visibly old without the app having to guess at expiry.
+- A klant flagged **Niet factureren** has no Betaallink field (nothing is owed), and the field is hidden for the role Editor and below with the rest of the section.
+- The **missing-IBAN warning of 2.0** still shows under the IBAN field in Bedrijfsgegevens, with one addition: a klant that has a Betaallink but the studio has no IBAN gets the line **"Deze klant heeft wel een betaallink."** under its field, so the warning is not read as "this klant cannot pay".
+- Where it is shown to the customer, and why it is a secondary control that never quotes an amount: ScreenSharePage.
+
+**Dutch copy (new).** Betaallink (optioneel) | Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert. | Toegevoegd op {datum} | Deze klant heeft wel een betaallink.
+
