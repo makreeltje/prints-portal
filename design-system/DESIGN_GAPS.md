@@ -1207,3 +1207,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
+## GAP-105 [open] Nothing says what a logo has to satisfy to work in both themes
+- **Type:** missing spec
+- **Found while:** drawing a logo for this installation (2026-10-08)
+- **Where needed:** LogoField on ScreenSettings; the brand slot in AppShell; DocInvoice, DocReminder, DocOverview and ScreenSharePage
+- **What is missing or wrong:** the system specifies the slot a logo sits in but never what the file must satisfy. One uploaded file is shown on `surface` in **both** themes with no adaptation — no filter, no second upload, no light/dark pair — and the same file is drawn on white paper in every document. Nothing says so. Settings offers "PNG of SVG. Vervangt de naam op het scherm en op documenten." and stops there.
+- **Why it matters:** the obvious choices fail, and they fail silently. A black wordmark vanishes on the dark sidebar; a white one vanishes on the invoice. Even the system's own `primary` cannot do it: `#3659c9` scores 6.12:1 on white but **2.79:1** on `#1a1b26`, and `#7aa2f7` scores 6.79:1 on the dark ground but **2.52:1** on white. A studio with a perfectly good logo gets an invisible one in one theme and has nothing to tell them why.
+- **Proposal:** state the contract beside the field and in the component spec: a single file readable on both `surface` grounds (3:1 against each, as for a non-text graphic), no tagline or second line, and a wide aspect. The sidebar caps the logo at `--space-7`, so a second line of type lands near 4px — measured while drawing this one, which is why its tagline was dropped. A mid tone satisfies both grounds; `#5878d6` gives 4.14:1 on white and 4.13:1 on `#1a1b26`. Whether the system would rather solve it structurally — a light/dark pair, or a neutral plate behind the mark — is the design system's call, and is the better answer if the slot is going to stay in both themes.
+- **Blocked:** nothing. This installation's logo was drawn to the measured constraint, so it works; the next one has only luck to go on.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+

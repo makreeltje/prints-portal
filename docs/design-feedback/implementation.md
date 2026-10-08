@@ -9,7 +9,7 @@ Everything below was measured in the running app against a real library (83
 prints, 10 klanten, about two years of history), not reasoned about.
 
 - App version **1.0.0**, built against design system **1.9**.
-- **104 gaps logged, 19 open.** Numbering is unbroken; nothing is hidden.
+- **105 gaps logged, 20 open.** Numbering is unbroken; nothing is hidden.
 - v1.9 is implemented: 24 of its 26 gaps, with GAP-071 and GAP-072 left where
   the export left them, which was "proposed".
 
@@ -17,7 +17,8 @@ prints, 10 klanten, about two years of history), not reasoned about.
 
 The owner used the app and walked through every screen of v1.9. That produced
 **thirteen new gaps (GAP-091 to GAP-103)**, two decisions, and one bug found
-while drawing a logo (GAP-104). Two things were fixed outright rather than
+while drawing a logo (GAP-104) and one the logo itself exposed (GAP-105).
+Two things were fixed outright rather than
 logged: the password message below, and a test that failed for an hour every
 night because its fixtures read the wall clock.
 
@@ -61,7 +62,8 @@ below), **GAP-100** (the password message, fixed with placeholder copy),
 **GAP-101** (Instellingen and Tags leave most of their width empty),
 **GAP-102** (API-docs still reads as a box in a box, after GAP-084),
 **GAP-103** (the share page says what is owed and offers no way to pay),
-**GAP-104** (an uploaded SVG logo silently loses its text).
+**GAP-104** (an uploaded SVG logo silently loses its text) and **GAP-105**
+(nothing says what a logo must satisfy to work in both themes).
 
 **GAP-096 and GAP-097 are our suggestions, not the owner's**, offered because
 they had no settled view: put the timelapse in the model picker so the viewer
@@ -122,7 +124,7 @@ from its invoices, with no warning.
 No single mix clears 3:1 at both ends, and at 80% and 60% the result is worse
 than doing nothing.
 
-### A logo now exists, and what it had to obey
+### GAP-105, a logo now exists, and what it had to obey
 
 This installation had no mark; one was drawn for it. Two constraints came out
 of the app and are worth knowing, because they apply to any logo:
@@ -157,14 +159,87 @@ of the app and are worth knowing, because they apply to any logo:
 - **GAP-080** — thresholds exactly as specified, knowing 84% of open lines are
   over 90 days, so 7 of 10 klanten land in the top step.
 
-## What would help most next
+# The round I am asking for
 
-1. **GAP-096 and GAP-097** decide most of the print detail, which is the screen
-   the owner still finds wrong after v1.9 reworked it. GAP-094 and GAP-095 fall
-   out of whatever you choose there.
-2. **GAP-071** — a direction. The ground alone cannot carry it.
-3. **GAP-090** — the indicator is now unambiguous: three file types, 70% of
-   tiles carrying nothing. It needs drawing, not deciding.
-4. **GAP-088 and GAP-072** — the two left over from v1.9; both are one answer.
-5. Keep asking for numbers. Three questions this round were settled by
-   measuring instead of discussing, and two of them reversed the first instinct.
+Everything above is the state. This is the request, so that it needs no separate
+message: **20 open gaps**, five carried over from 1.9 and fifteen from the
+owner's walkthrough and from building.
+
+Two corrections of mine come first, because both cost you something.
+
+**GAP-071: I told you the `--mix` floor was not in the export. That was wrong.**
+It ships, exactly as 1.9 says. My grep missed it inside `var(--mix,100%)`, and I
+reported a missing feature instead of a search that failed. The gap is still
+open for the real reason: no mix clears 3:1 at both ends.
+
+**GAP-072: I marked it resolved. It was not.** Your changelog says "proposed,
+needs your confirmation", and only half of it is built — the share page follows
+it, `placeOf` does not. It is back to `[open]` and waiting on your yes or no.
+
+**GAP-096 and GAP-097 are my suggestions, not the owner's.** They had no settled
+view, so I offered one. Replace either freely; I would rather you designed it
+than ratified me.
+
+## Priority
+
+1. **The print detail: GAP-094, 095, 096, 097**, decided together. This is the
+   screen the operator works in all day and the one still called wrong.
+2. **GAP-071** — a direction.
+3. **GAP-090** — now unambiguous: three file types, 70% of tiles carrying
+   nothing.
+4. **The affordances: GAP-091, 092, 093, 099.** Small, and probably one rule
+   rather than four answers.
+5. **The two left from 1.9: GAP-072 and GAP-088.** Both are a single answer.
+   GAP-088 is a contradiction inside your own files: ScreenSharePage dropped the
+   internal link label in one place and still specifies it in another, and
+   DocOverview still shows it.
+6. **The rest: GAP-098** (the stacking bug above), **GAP-100** (copy for a
+   reused password — built with placeholder wording, marked `ds-gap:`),
+   **GAP-101** (Instellingen and Tags leave most of their width empty),
+   **GAP-102** (API-docs still reads as a box in a box after GAP-084),
+   **GAP-103** (the share page says what is owed and offers no way to pay),
+   **GAP-104** and **GAP-105** above.
+
+## What I need back
+
+For each gap: **decide** — resolve it, merge it, or reject it with a reason. Ask
+me where a gap needs a product decision; several here do, and I have said which.
+
+Then, as in 1.6 through 1.9:
+
+1. **Resolve within the system.** Existing tokens and components first. A new
+   token or component only where genuinely needed, named consistently. List
+   every breaking change.
+2. **Deliver completely.** Both themes, all states, phone and desktop where
+   relevant, Dutch copy, and contrast ratios for any new colour pair (WCAG 2.2
+   AA).
+3. **Update the deliverables:** `tokens.css` and the JSON, `components/bundle.css`,
+   the affected component specs and screens, the copy deck, the contrast report.
+4. **Keep every class a preview uses defined in `bundle.css`.** My import checker
+   verifies the changelog's claims against the export before I implement
+   anything, and it has caught a claimed class that was not there.
+5. **Draw the long cases.** Several of these are invisible in a short preview:
+   the print detail at 360px, a tile grid where 70% carry no indicator and the
+   rest carry one, Toegang with its menu open over the sticky column.
+6. **Say what you want measured.** I have the running app and real data.
+
+Finish with a **changelog for the new version** — number it 1.10 or 2.0 as you
+prefer, the app reads the version from `tokens.json`:
+
+- a table `GAP-### → resolved / confirmed as built / merged into GAP-### /
+  rejected (reason)`;
+- new tokens, changed tokens, new or changed classes, components, screens;
+- breaking changes, if any.
+
+**Please be exact about status in that table.** My importer reads it: "resolved"
+and "confirmed as built" are implemented, while "proposed" and "needs your
+confirmation" are not, and are reported back as still waiting. That distinction
+is what caught my GAP-072 error, so it matters more than it looks.
+
+## Where the app stands
+
+1.0.0, shipped, with the full documentation set. 105 gaps logged across ten
+rounds, 20 open, numbering unbroken. `implementation.md` in this system carries
+the implementer's half and is current as of this round — what is actually built
+for every open gap, including the half-built ones, the deviations I chose and
+what they cost.
