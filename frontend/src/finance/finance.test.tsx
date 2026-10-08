@@ -421,6 +421,7 @@ describe('BulkActionBar', () => {
       orderCount: 1,
       cost: 2,
     },
+    lacks: [],
     version: 'v1',
   });
 

@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { PaymentBadge } from '../finance/money';
 import { formatDuration, formatGrams, formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
-import { RecordBadge, TagChip, Thumbnail } from './bits';
+import { LacksChip, RecordBadge, TagChip, Thumbnail } from './bits';
 import { subLine } from './orders';
 import type { PrintSummary } from './types';
 
@@ -46,8 +46,10 @@ export function PrintCard({
           <span className="sub">{subLine(print)}</span>
         </div>
         <Meta print={print} />
-        {print.tags.length > 0 && (
+        {(print.tags.length > 0 || print.lacks.length > 0) && (
           <div className="pp-tags">
+            {/* First in the row, before the tags (GAP-090). */}
+            <LacksChip lacks={print.lacks} />
             {print.tags.map((tag) => (
               <TagChip key={tag.id} tag={tag} />
             ))}

@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { formatDuration, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { PaymentBadge } from '../finance/money';
-import { ColourDot, RecordBadge, TagChip, Thumbnail } from './bits';
+import { LacksChip, ColourDot, RecordBadge, TagChip, Thumbnail } from './bits';
 import { subLine } from './orders';
 import { PriceBlock } from './PrintCard';
 import type { PrintSummary } from './types';
@@ -147,6 +147,8 @@ export function PrintTable({
                       </button>
                     )}
                   </span>
+                  {/* Under the badge, not beside it (GAP-090). */}
+                  <LacksChip lacks={print.lacks} />
                 </td>
                 <td>
                   <span className="pp-tags">

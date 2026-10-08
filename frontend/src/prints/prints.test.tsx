@@ -26,6 +26,7 @@ function summary(overrides: Partial<PrintSummary> = {}): PrintSummary {
     hasThumbnail: true,
     colour: '#1a1a1a',
     money: null,
+    lacks: [],
     version: 'v1',
     ...overrides,
   };
@@ -516,6 +517,47 @@ function renderDetail(role: 'Admin' | 'Editor' | 'User' = 'Admin') {
     { state: signedIn(role), path: '/prints/p1' },
   );
 }
+
+describe('missing-files chip (GAP-090)', () => {
+  it('is absent when nothing is missing, so most tiles are unchanged', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary({ lacks: [] })], total: 1 } }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    await screen.findByRole('link', { name: 'Babybox locks' });
+    expect(document.querySelector('.pp-lacks')).toBeNull();
+  });
+
+  it('names the missing types in the fixed order, whatever order they arrive in', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({
+        json: { items: [summary({ lacks: ['stl', 'gcode', '3mf'] })], total: 1 },
+      }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    await screen.findByRole('link', { name: 'Babybox locks' });
+    const chip = document.querySelector('.pp-lacks');
+    expect(chip).not.toBeNull();
+    // The backend sends the fixed order; the chip renders what it is given.
+    expect(chip?.textContent).toContain('Ontbreekt:');
+    expect(screen.getByLabelText('Deze print heeft geen STL, G-code, 3MF.')).toBeInTheDocument();
+  });
+
+  it('shows a single missing type without a list', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary({ lacks: ['gcode'] })], total: 1 } }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    await screen.findByRole('link', { name: 'Babybox locks' });
+    expect(screen.getByText('Ontbreekt: G-code')).toBeInTheDocument();
+  });
+});
 
 describe('PrintDetailPage', () => {
   it('shows breadcrumb, name, tags, files with duplicates, exclusions and slots', async () => {

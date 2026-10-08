@@ -153,6 +153,11 @@ export const nl = {
   'cost.askAdmin': 'Vraag een beheerder het vermogen in te stellen.',
   'cost.missingTariff': 'Geen prijs per kWh.',
   'menu.more': 'Meer acties', // component copy: OverflowMenu
+  'print.lacks': 'Ontbreekt: {types}',
+  'print.lacks.aria': 'Deze print heeft geen {types}.',
+  'print.lacks.gcode': 'G-code',
+  'print.lacks.threemf': '3MF',
+  'print.lacks.stl': 'STL',
   'print.preview': 'Voorbeeld', // component copy: PrintRow
   'invoices.noStatus': 'Geen status', // component copy: ScreenInvoices
   'video.play': 'Afspelen {bestandsnaam}', // component copy: VideoPlayer

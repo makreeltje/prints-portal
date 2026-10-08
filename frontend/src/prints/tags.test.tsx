@@ -33,6 +33,7 @@ function detail(): PrintDetail {
     hasThumbnail: false,
     colour: null,
     money: null,
+    lacks: [],
     version: 'v1',
     printerModel: null,
     archivedAt: null,

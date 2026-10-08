@@ -113,6 +113,9 @@ export interface TagWithCount extends Tag {
   printCount: number;
 }
 
+/** The file types a card reports as missing, in the order it shows them. */
+export type MissingFileType = 'gcode' | '3mf' | 'stl';
+
 export interface PrintSummary {
   id: string;
   name: string;
@@ -129,6 +132,8 @@ export interface PrintSummary {
   hasThumbnail: boolean;
   colour: string | null;
   money: PrintMoney | null;
+  /** Which of G-code, 3MF and STL this print has none of, in that order. */
+  lacks: MissingFileType[];
   version: string;
 }
 

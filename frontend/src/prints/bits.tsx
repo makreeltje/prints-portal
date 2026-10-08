@@ -3,7 +3,30 @@ import type { CSSProperties, ReactNode } from 'react';
 import { t } from '../i18n/nl';
 import { thumbnailUrl } from './api';
 import { isPaletteKey } from './tag-palette';
-import type { PrintSummary, Tag } from './types';
+import type { MissingFileType, PrintSummary, Tag } from './types';
+
+const LACKS_LABEL = {
+  gcode: 'print.lacks.gcode',
+  '3mf': 'print.lacks.threemf',
+  stl: 'print.lacks.stl',
+} as const satisfies Record<MissingFileType, string>;
+
+/**
+ * Which files a print has none of (GAP-090). One chip rather than three icons:
+ * at this size the words are shorter than a legend would be, and they need no
+ * learning. Absent, not empty, when nothing is missing — which is about 70% of
+ * prints, so the grid is unchanged for most of them.
+ */
+export function LacksChip({ lacks }: { lacks: readonly MissingFileType[] }) {
+  if (lacks.length === 0) return null;
+  const types = lacks.map((type) => t(LACKS_LABEL[type])).join(', ');
+  return (
+    <span className="pp-lacks" role="img" aria-label={t('print.lacks.aria', { types })}>
+      <TriangleAlert className="pp-ico" aria-hidden="true" />
+      {t('print.lacks', { types })}
+    </span>
+  );
+}
 
 /** StatusBadge (record and asset statuses used so far). Always an icon and a word. */
 export function StatusBadge({
