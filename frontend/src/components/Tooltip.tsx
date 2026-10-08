@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useLayoutEffect, useEffect, useRef, useState, type ReactNode } from 'react';
 
 /**
  * Tooltip: the design system's `pp-tip` bubble, shown on hover and dismissed
@@ -16,6 +16,20 @@ import { useEffect, useState, type ReactNode } from 'react';
  */
 export function Tooltip({ label, children }: { label: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [alignEnd, setAlignEnd] = useState(false);
+  const bubble = useRef<HTMLSpanElement>(null);
+
+  // A bubble anchored to the trigger's left edge runs off screen on anything
+  // near the right edge of the window, which is every card in the last column.
+  // Measured once it is up, then flipped to hang from its right edge instead.
+  useLayoutEffect(() => {
+    if (!open) {
+      setAlignEnd(false);
+      return;
+    }
+    const box = bubble.current?.getBoundingClientRect();
+    if (box !== undefined && box.right > window.innerWidth) setAlignEnd(true);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -41,7 +55,12 @@ export function Tooltip({ label, children }: { label: string; children: ReactNod
       {children}
       {open && (
         // ds-gap: GAP-110
-        <span className="pp-tip app-tip" role="tooltip" aria-hidden="true">
+        <span
+          ref={bubble}
+          className={alignEnd ? 'pp-tip app-tip app-tip-end' : 'pp-tip app-tip'}
+          role="tooltip"
+          aria-hidden="true"
+        >
           {label}
         </span>
       )}

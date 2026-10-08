@@ -1274,3 +1274,19 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08). `app-tip` places the bubble from tokens only, and it appears at once. Marked `ds-gap: GAP-110`.
 - **Design system version:** 2.1
 
+## GAP-111 [open] The file row's name column collapses to 75px and its badge overflows onto the controls
+- **Type:** suspected design bug
+- **Found while:** the owner's third walkthrough, with screenshots of three different prints (2026-10-08)
+- **Where needed:** AssetListItem, `.pp-asset`
+- **What is missing or wrong:** the rule is
+
+      .pp-asset{grid-template-columns:auto minmax(0,1fr)}
+      @container (min-width:760px){.pp-asset{grid-template-columns:auto minmax(0,1fr) auto}}
+
+  The controls column is `auto`, so it takes its max-content width and never yields; the name column is `minmax(0,1fr)`, so it may shrink to nothing. Measured in the running app on a print whose row carries the "Mogelijk dubbel" badge: the controls need **651px**, and just above the 760px breakpoint the name column is left with **75px**. The badge's own min-content width is **128px**, so it overflows its column and is drawn on top of "Aantal keer geprint". Swept across widths, the row is correct at 760, 820, 920, 960, 1000, 1400 and 2000px, and broken at **900px and 1700px** — the widths where three columns are allowed but do not fit.
+- **Why it matters:** it is the operator's main screen, the collision lands on the control that the warning text is telling them to use ("Gebruik liever Aantal keer geprint"), and the file name itself stacks one or two characters per line. It is not a narrow-window case: 1700px is a normal desktop.
+- **Proposal:** the three-column layout should start where three columns actually fit, not at 760px — the controls alone need 651px, plus the icon and gaps, so about 1000px of container before a name has a usable column. Alternatively let the controls column shrink and wrap (`minmax(0,auto)`; `.acts` is already a wrapping `pp-row`), so the controls reflow instead of squeezing the name. A minimum on the name column would stop the overlap but push the row wider than its container, which the system forbids.
+- **Blocked:** nothing is being built on it; the rows render, and at most widths they are correct.
+- **Temporary placeholder approved:** no — awaiting the owner's go-ahead. The one-line form would be `grid-template-columns: auto minmax(0,1fr) minmax(0,auto)` as an app override, which invents no value.
+- **Design system version:** 2.1
+

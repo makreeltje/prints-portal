@@ -358,6 +358,11 @@
   given one for as long as the clip is off, or its corners would square.
   ds-gap: GAP-110
 */
+.app-tip-end {
+  left: auto;
+  right: 0;
+}
+
 .pp-card:has(.app-tip) {
   overflow: visible;
 }
