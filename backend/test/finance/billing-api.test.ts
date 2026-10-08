@@ -592,6 +592,22 @@ describe.each(TEST_DATABASES)('invoices and Openstaand on $name', ({ url }) => {
     expect((await upload(Buffer.from('<svg'), 'image/svg+xml')).json()).toEqual({
       error: 'invalid_image',
     });
+    // An SVG this container cannot draw in full is refused with its reason,
+    // rather than rasterised into a logo missing its text (GAP-104).
+    const withText = Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="50"><text x="0" y="20">meels</text></svg>',
+    );
+    const refusedText = await upload(withText, 'image/svg+xml');
+    expect(refusedText.statusCode).toBe(422);
+    expect(refusedText.json()).toEqual({ error: 'svg_text' });
+    const external = Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg"><image href="https://example.test/a.png"/></svg>',
+    );
+    expect((await upload(external, 'image/svg+xml')).json()).toEqual({ error: 'svg_external' });
+    // A refused upload leaves the stored logo as it was.
+    expect((await t.as(admin, { url: '/api/settings/logo' })).rawPayload.readUInt32BE(16)).toBe(
+      800,
+    );
     expect((await upload(Buffer.from('not a png at all'), 'image/png')).json()).toEqual({
       error: 'invalid_image',
     });

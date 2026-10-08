@@ -24,6 +24,7 @@ import {
   refreshSpoolman,
   saveSettings,
   setNoBilling,
+  setPayLink,
   type Settings,
 } from './api';
 
@@ -338,6 +339,19 @@ function CustomersSection() {
     queryFn: () => fetchCustomers(true, false),
   });
   const [saving, setSaving] = useState<string | null>(null);
+  const saveLink = async (folder: string, value: string) => {
+    const link = value.trim();
+    setSaving(folder);
+    try {
+      await setPayLink(folder, link === '' ? null : link);
+    } catch {
+      toast.error(t('error.saveFailed'));
+    } finally {
+      setSaving(null);
+      await queryClient.invalidateQueries({ queryKey: keys.all });
+    }
+  };
+
   const toggle = async (folder: string, noBilling: boolean) => {
     setSaving(folder);
     try {
@@ -374,6 +388,26 @@ function CustomersSection() {
                 />
                 {t('customers.notBilled')}
               </label>
+              {/*
+                An optional payment link, shown on this klant's share page
+                beside the bank details (GAP-103). Never for a klant that is
+                not billed: they see no amounts at all.
+              */}
+              {!customer.noBilling && (
+                <label className="pp-field pp-w-320">
+                  <span className="pp-label">{t('customers.payLink')}</span>
+                  <input
+                    type="url"
+                    className="pp-input"
+                    inputMode="url"
+                    placeholder="https://"
+                    defaultValue={customer.payLink ?? ''}
+                    disabled={saving === customer.folder}
+                    onBlur={(event) => void saveLink(customer.folder, event.target.value)}
+                  />
+                  <span className="pp-help">{t('customers.payLinkHelp')}</span>
+                </label>
+              )}
             </li>
           ))}
         </ul>

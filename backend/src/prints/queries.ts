@@ -348,9 +348,10 @@ export async function listCustomers(
     .execute();
   const flags = await db
     .selectFrom('customers')
-    .select(['customer_folder', 'no_billing'])
+    .select(['customer_folder', 'no_billing', 'pay_link'])
     .execute();
   const noBilling = new Set(flags.filter((f) => f.no_billing === 1).map((f) => f.customer_folder));
+  const payLinks = new Map(flags.map((f) => [f.customer_folder, f.pay_link]));
   const open = new Map<string, number>();
   if (options.withMoney === true && rows.length > 0) {
     // Openstaand: what is still to pay on prints that are not deleted.
@@ -380,6 +381,7 @@ export async function listCustomers(
         printCount: Number(row.count),
         deleted: Number(row.alive) === 0,
         noBilling: flagged,
+        payLink: payLinks.get(row.customer_folder) ?? null,
         openAmount:
           options.withMoney === true && !flagged
             ? (open.get(row.customer_folder) ?? 0) / 100

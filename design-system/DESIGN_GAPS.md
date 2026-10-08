@@ -1193,7 +1193,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-103 [open] The share page tells a klant what they owe but gives no way to pay
+## GAP-103 [resolved in v2.0.1] The share page tells a klant what they owe but gives no way to pay
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenSharePage payment block

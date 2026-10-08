@@ -158,6 +158,14 @@ export interface CustomerTable {
   customer_folder: string;
   /** "Niet factureren": cost is tracked, but no sale price, payment or invoice. */
   no_billing: number;
+  /**
+   * An optional payment link the studio pastes, shown on the share page beside
+   * the bank details (GAP-103). It carries its own amount, which Openstaand
+   * cannot keep in step with, so it is never the primary action.
+   */
+  pay_link: string | null;
+  /** When the link was last set, so an old link is visibly old. */
+  pay_link_added_at: string | null;
   updated_at: string;
 }
 

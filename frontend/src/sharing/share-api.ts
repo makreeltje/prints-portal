@@ -55,6 +55,8 @@ export interface SharePayment {
   reference: string;
   email: string | null;
   phone: string | null;
+  /** The klant's optional payment link (GAP-103). */
+  payLink: string | null;
 }
 
 export type ShareView =

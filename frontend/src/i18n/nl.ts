@@ -396,6 +396,9 @@ export const nl = {
   'settings.spoolman': 'Spoolman',
   'settings.connected': 'Verbonden',
   'settings.spoolmanMeta': '{url} · {count} spoelen · laatste sync {time}', // component copy: ScreenSettings preview
+  'customers.payLink': 'Betaallink (optioneel)',
+  'customers.payLinkHelp':
+    'Een link met een vast bedrag, bijvoorbeeld een betaalverzoek. Het bedrag erin verandert niet mee met wat openstaat.',
   'customers.notBilled': 'Niet factureren',
   'customers.notBilledHelp':
     'Voor een klant die niet wordt gefactureerd (bijvoorbeeld je eigen prints) zie je alleen de kosten.',
@@ -610,6 +613,9 @@ export const nl = {
   'share.pay.copy.amount': 'Kopieer bedrag',
   'share.pay.copy.ref': 'Kopieer kenmerk',
   'share.pay.copied': '{veld} gekopieerd',
+  'share.pay.link': 'Betalen via {studio}',
+  'share.pay.link.note':
+    'Deze link is door {studio} gemaakt en kan een ander bedrag bevatten dan hierboven staat.',
   'share.pay.hint': 'Vermeld bij je betaling het kenmerk.',
   'shareLinks.label.help': 'Alleen voor jezelf, de klant ziet dit niet.',
   'share.hint': 'Deel via WhatsApp of mail',

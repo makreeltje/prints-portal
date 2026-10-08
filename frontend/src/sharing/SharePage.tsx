@@ -254,7 +254,7 @@ function PaymentCard({ pay }: { pay: SharePayment }) {
   return (
     <section className="pp-card pp-sharepay" aria-labelledby="pp-pay-title">
       <h2 id="pp-pay-title">{t('share.pay.title')}</h2>
-      {rows.map((row) => (
+      {(pay.iban === '' ? [] : rows).map((row) => (
         <div className="pp-sharepay-row" key={row.key}>
           <div>
             <small>{row.label}</small>
@@ -276,6 +276,28 @@ function PaymentCard({ pay }: { pay: SharePayment }) {
           </button>
         </div>
       ))}
+      {pay.payLink !== null && (
+        /*
+          Second, never first (GAP-103): the bank details above are always
+          right, while this link carries whatever amount it was made with, and
+          Openstaand moves away from that with every payment. So it is a
+          secondary button and the note says the amount may differ.
+        */
+        <>
+          <a
+            className="pp-btn pp-btn-secondary pp-share-cta pp-fill"
+            href={pay.payLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-describedby="pp-pay-link-note"
+          >
+            {t('share.pay.link', { studio: pay.name })}
+          </a>
+          <p id="pp-pay-link-note" className="pp-muted pp-text-sm pp-m0">
+            {t('share.pay.link.note', { studio: pay.name })}
+          </p>
+        </>
+      )}
       <p className="pp-muted pp-text-sm pp-m0">
         {t('share.pay.hint')}{' '}
         {pay.email !== null ? (

@@ -196,6 +196,8 @@ export interface Customer {
   noBilling: boolean;
   /** Openstaand, euros; null for Users and niet-factureren klanten. */
   openAmount: number | null;
+  /** The klant's optional payment link (GAP-103); null for anyone but an Admin. */
+  payLink: string | null;
 }
 
 export const PRINT_SORTS = ['newest', 'oldest', 'priceDesc', 'priceAsc', 'customer'] as const;
