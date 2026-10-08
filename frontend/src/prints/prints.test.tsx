@@ -568,7 +568,9 @@ describe('missing-files chip (GAP-090)', () => {
     expect(chip.getAttribute('title')).toBeNull();
     await userEvent.hover(chip);
     const tip = await screen.findByRole('tooltip', { hidden: true });
-    expect(tip).toHaveTextContent('Deze print heeft geen G-code-bestand.');
+    // ds-gap: GAP-113 — a phrase in the bubble, the sentence as the name.
+    expect(tip).toHaveTextContent('Geen G-code');
+    expect(chip.getAttribute('aria-label')).toBe('Deze print heeft geen G-code-bestand.');
     await userEvent.keyboard('{Escape}');
     await waitFor(() => {
       expect(screen.queryByRole('tooltip', { hidden: true })).toBeNull();

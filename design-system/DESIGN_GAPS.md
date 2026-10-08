@@ -1290,3 +1290,25 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no — awaiting the owner's go-ahead. The one-line form would be `grid-template-columns: auto minmax(0,1fr) minmax(0,auto)` as an app override, which invents no value.
 - **Design system version:** 2.1
 
+## GAP-112 [open] A popover near the bottom of the window opens downwards and falls off the screen
+- **Type:** missing state
+- **Found while:** the owner asked whether the filament dropdown was also broken (2026-10-08)
+- **Where needed:** Popover and SpoolPicker; the rule `.pp-anchor>.pp-pop{top:calc(100% + var(--space-2))}`
+- **What is missing or wrong:** a popover is always placed **below** its trigger and never flips. Measured on a print detail at 1400x900: the spool picker's panel is 320x302 and opens at y=831, so **233px of it is below the fold**. It holds 30 spools and a search field; what the owner sees is the search field and almost nothing else. Nothing clips it — it is simply drawn past the bottom of the window.
+- **Why it matters:** the file list is long, so most spool pickers on a print detail sit in the lower half of the page, which is exactly where the rule fails. The same rule carries every menu and the tag editor.
+- **Proposal:** say what a popover does when it does not fit: flip above the trigger when the space below is smaller than the panel, and cap the panel's height to the space that is left so its own list scrolls rather than the page. The same question applies to the horizontal edge — a tooltip was running 116px off the right of the window for the same reason, which is GAP-110's sibling.
+- **Blocked:** nothing; the picker works if you scroll first.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.1
+
+## GAP-113 [open] The missing-files tooltip reads as a full sentence where a phrase would do
+- **Type:** improvement idea
+- **Found while:** the owner's reaction to the tooltip built in 2.1 (2026-10-08)
+- **Where needed:** the `pp-lacks` tooltip on PrintCard and PrintRow
+- **What is missing or wrong:** the accessible name 2.1 specifies is a full Dutch sentence — "Deze print heeft geen G-code-bestand, geen 3MF-bestand en geen STL-bestand." — and the tooltip shows it verbatim. At three missing types that is 76 characters in a 240px bubble, three lines, to say what three icons already say. The owner: *"de tekst van de tooltip mag ook een stuk simpeler, bijvoorbeeld 'Geen 3MF, STL en Gcode'."*
+- **Why it matters:** the tooltip exists to teach three glyphs. A phrase does that in one line; a sentence makes the reader find the three words inside it.
+- **Proposal:** a short form for the bubble — "Geen G-code, 3MF en STL", keeping the fixed order the system chose by consequence — while the **accessible name** keeps the full sentence, which is read out of context by a screen reader and needs to stand alone. If you would rather both were short, say so and they become one string.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** yes (2026-10-08). The bubble shows the short phrase, marked `ds-gap: GAP-113`; the accessible name is unchanged.
+- **Design system version:** 2.1
+
