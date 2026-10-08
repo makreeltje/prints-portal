@@ -76,6 +76,7 @@ export const nl = {
   'access.empty.title': 'Nog geen gebruikers om toegang te geven',
   'access.empty.body': 'Alleen Admins en Editors bestaan nu; zij zien altijd elke klant.',
   'access.empty.link': 'Naar Gebruikers',
+  'access.colMenu': 'Kolomacties voor {klant}',
   'access.allAccessRoles': 'Admin en Editor hebben altijd toegang.',
   'access.cell': '{user}: {customer}', // component copy: AccessMatrix (checkbox label)
 

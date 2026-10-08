@@ -283,9 +283,15 @@ describe('AccessPage', () => {
       'PATCH /api/access': () => ({ status: 204 }),
     });
     renderWithAuth(<AccessPage />);
-    await userEvent.click(
-      await waitFor(() => desktopTable().getByRole('button', { name: 'Denise' })),
+    // The column menu is named per klant since 2.0, so two menus on one screen
+    // are told apart (GAP-098).
+    const menu = await waitFor(() =>
+      desktopTable().getByRole('button', { name: 'Kolomacties voor Denise' }),
     );
+    await userEvent.click(menu);
+    // The cell carries has-pop while the menu is open, or the sticky first
+    // column paints over the panel.
+    expect(menu.closest('th')).toHaveClass('has-pop');
     const select = screen.getByRole('button', { name: 'Alles selecteren' });
     expect(select).toHaveFocus();
     await userEvent.click(select);
