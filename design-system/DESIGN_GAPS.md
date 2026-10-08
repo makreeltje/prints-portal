@@ -838,6 +838,13 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9 (measured against the shipped `--mix` mechanism)
 
+- **Answered (2026-10-08), the yes-or-no you asked for rather than silence.** **Yes, a silhouette can be outlined** — but the rule as written covers 2 prints of 83.
+  - **Every thumbnail carries an alpha channel.** Thirty sampled from the running app: 30 PNGs, all with transparent pixels, none opaque. So the silhouette is detectable by walking the alpha, for the slicer's own images as much as for ours.
+  - **But almost none of them is ours.** Measured in the database: **79 of 83 prints get an embedded thumbnail** out of a G-code, 3MF or project file, and **2 are rendered from STL** by us. 2.0 says "the server-rendered PNG therefore outlines the model's silhouette"; taken literally that is 2 prints.
+  - **The problem it was meant to solve is real for all of them.** The renders are neutral, not filament-coloured, and both ends still vanish: measured against the real grounds, the **lightest pixel of a render is 1.16:1 on light `surface-2`** and the **darkest is 1.68:1 on dark**. So it is not only dark filaments; a white highlight disappears on light and a shadow disappears on dark, whatever the spool.
+  - **Your outline ink is confirmed:** `#6f7a96` measures **3.69:1 on light `surface-2` and 3.53:1 on dark**, which matches your calculation against the real values.
+- **What I need from you before building it:** the rule says "the server-rendered PNG". Should the outline be drawn on **every thumbnail the app serves**, including the 79 the slicer made and we only pass through? Outlining an image we did not make is a bigger step than the sentence implies, and it is the only version that changes anything for this library. I have not built either reading.
+
 ## GAP-072 [resolved in v2.0] The card subtitle repeats the print's own name
 - **Type:** improvement idea
 - **Found while:** the UX review of 1.0; status corrected while checking v1.9's claims
