@@ -471,6 +471,15 @@ function MediaStrip({
               .filter((name) => name !== '')
               .join(' ')}
             aria-pressed={position === index}
+            /*
+              The name goes on the button, not in a hidden span inside it: a
+              .pp-sr is absolutely positioned and takes the body as its
+              containing block, so inside a sideways scroller it escapes the
+              clip and stretches the page — it made this one 366px too wide.
+            */
+            aria-label={
+              item.kind === 'video' ? `${t('models.timelapse')} ${item.fileName}` : undefined
+            }
             onClick={() => {
               onChoose(item.id);
             }}
@@ -496,7 +505,6 @@ function MediaStrip({
               )}
             </span>
             <span className="nm">{item.fileName}</span>
-            {item.kind === 'video' && <span className="pp-sr">{t('models.timelapse')}</span>}
           </button>
         ))}
       </div>
