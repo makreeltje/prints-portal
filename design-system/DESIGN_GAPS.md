@@ -1312,3 +1312,16 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08). The bubble shows the short phrase, marked `ds-gap: GAP-113`; the accessible name is unchanged.
 - **Design system version:** 2.1
 
+## GAP-114 [open] 2.2's floating panels are still trapped by the card they live in
+- **Type:** suspected design bug
+- **Found while:** the owner's fourth walkthrough, with both symptoms photographed (2026-10-08)
+- **Where needed:** Tooltip (`.pp-tip.at`), Popover (`.pp-anchor > .pp-pop`), and `.pp-card`
+- **What is missing or wrong:** two separate faults with one cause — a panel is still at the mercy of its ancestors.
+  1. **`.pp-tip.at` does not reset `bottom`.** The anchored rule `.pp-anchor > .pp-tip` sets `bottom: calc(100% + var(--space-1))`, and `.at` sets `position: fixed` with `top`. Both rules are two classes, so `.at` wins only the properties it names; `bottom` survives. A fixed box with **both** edges set is sized to fit between them, and the bubble collapses to its own padding: measured **8px tall where its text needs 24px**, which is the dark sliver the owner photographed. It is the same shape as the mistake I made in my own placeholder, where leaving the system's `top` in place squeezed a 302px panel to 18px.
+  2. **A popover is clipped by its card.** `.pp-pop` is `position: absolute` and `.pp-card` is `overflow: hidden`, so the spool picker is cut off at the card's edge — measured on a print detail: a 302px panel inside `section.pp-card:hidden`, with the cost table painting over what is left. 2.2 gave the tooltip a window-placed form for exactly this reason ("required whenever an ancestor clips or scrolls") but gave the popover none, so the picker has nowhere to go. The owner's question is the right one: *"waarom kan die dropdown niet gewoon bovenop"* — flipping, capping and sheeting all assume the panel is visible in the first place.
+- **Why it matters:** the two most-used floating things in the app are both unusable in their most common position. It is not a corner case: every spool picker on a print detail is inside a card, and every missing-file tooltip is inside a print card.
+- **Proposal:** (1) `.pp-tip.at` resets the edges it does not use (`bottom: auto`, and `right: auto` for `.end`), so the window-placed form is self-contained wherever it is written. Also say whether an `.at` bubble may sit inside a `.pp-anchor` at all. (2) Give the popover the window-placed form the tooltip has — `.pp-pop.at` with the trigger's rect — or say that a card must not clip an open panel, which is the cheaper rule but puts the obligation on every card in the system.
+- **Blocked:** nothing; both are built as placeholders below.
+- **Temporary placeholder approved:** yes (2026-10-08, the owner has now reported both twice). The tooltip's wrapper is **not** a `.pp-anchor`, so the stray `bottom` never applies; it lifts itself above the stretched card link, which the anchor had been doing. The card stops clipping while a panel is open. Both marked `ds-gap: GAP-114`.
+- **Design system version:** 2.2
+

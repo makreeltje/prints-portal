@@ -57,7 +57,14 @@ export function Tooltip({ label, children }: { label: string; children: ReactNod
   return (
     <span
       ref={anchor}
-      className="pp-anchor"
+      /*
+        Deliberately NOT .pp-anchor. A `.pp-tip.at` is window-placed, and the
+        anchored rule `.pp-anchor > .pp-tip` sets `bottom`, which `.at` does not
+        reset: both edges end up set at once and the bubble collapses to its own
+        padding — 8px where its text needs 24.
+        ds-gap: GAP-114
+      */
+      className="app-tipwrap"
       onPointerEnter={() => {
         setOpen(true);
       }}
