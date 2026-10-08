@@ -148,7 +148,7 @@ export function PrintTable({
                     )}
                   </span>
                   {/* Under the badge, not beside it (GAP-090). */}
-                  <LacksChip lacks={print.lacks} />
+                  <LacksChip lacks={print.lacks} compact />
                 </td>
                 <td>
                   <span className="pp-tags">

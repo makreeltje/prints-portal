@@ -543,7 +543,9 @@ describe('missing-files chip (GAP-090)', () => {
     const chip = document.querySelector('.pp-lacks');
     expect(chip).not.toBeNull();
     // The backend sends the fixed order; the chip renders what it is given.
-    expect(chip?.textContent).toContain('Ontbreekt:');
+    // ds-gap: GAP-106 — the card shows icons; the sentence is the accessible name.
+    expect(chip?.textContent).not.toContain('Ontbreekt:');
+    expect(chip?.querySelectorAll('svg').length).toBe(4); // warning triangle + three types
     expect(screen.getByLabelText('Deze print heeft geen STL, G-code, 3MF.')).toBeInTheDocument();
   });
 
@@ -555,7 +557,10 @@ describe('missing-files chip (GAP-090)', () => {
     });
     renderDashboard();
     await screen.findByRole('link', { name: 'Babybox locks' });
-    expect(screen.getByText('Ontbreekt: G-code')).toBeInTheDocument();
+    // ds-gap: GAP-106 — one missing type is the triangle plus one icon.
+    const one = document.querySelector('.pp-lacks');
+    expect(one?.querySelectorAll('svg').length).toBe(2);
+    expect(screen.getByLabelText('Deze print heeft geen G-code.')).toBeInTheDocument();
   });
 });
 

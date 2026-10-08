@@ -1,4 +1,15 @@
-import { Archive, Box, Copy, FolderOpen, SearchX, TriangleAlert, Trash2, X } from 'lucide-react';
+import {
+  Archive,
+  Box,
+  Copy,
+  FileCode,
+  FolderOpen,
+  Package,
+  SearchX,
+  TriangleAlert,
+  Trash2,
+  X,
+} from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
 import { t } from '../i18n/nl';
 import { thumbnailUrl } from './api';
@@ -11,19 +22,45 @@ const LACKS_LABEL = {
   stl: 'print.lacks.stl',
 } as const satisfies Record<MissingFileType, string>;
 
+// ds-gap: GAP-106 — the icons the design system already assigns to these file
+// types, reused here rather than invented. 2.0 specified words; the owner asked
+// twice for icons and approved this until the design system rules on the form.
+const LACKS_ICON = {
+  gcode: FileCode,
+  '3mf': Package,
+  stl: Box,
+} as const satisfies Record<MissingFileType, typeof Box>;
+
 /**
  * Which files a print has none of (GAP-090). One chip rather than three icons:
  * at this size the words are shorter than a legend would be, and they need no
  * learning. Absent, not empty, when nothing is missing — which is about 70% of
  * prints, so the grid is unchanged for most of them.
  */
-export function LacksChip({ lacks }: { lacks: readonly MissingFileType[] }) {
+export function LacksChip({
+  lacks,
+  compact = false,
+}: {
+  lacks: readonly MissingFileType[];
+  /** Icons instead of the type names, where a card has no room for 27 characters. */
+  compact?: boolean;
+}) {
   if (lacks.length === 0) return null;
   const types = lacks.map((type) => t(LACKS_LABEL[type])).join(', ');
+  const name = t('print.lacks.aria', { types });
   return (
-    <span className="pp-lacks" role="img" aria-label={t('print.lacks.aria', { types })}>
+    <span className="pp-lacks" role="img" aria-label={name} title={name}>
+      {/* The triangle is what says "missing"; the type icons say which. */}
       <TriangleAlert className="pp-ico" aria-hidden="true" />
-      {t('print.lacks', { types })}
+      {compact ? (
+        // ds-gap: GAP-106
+        lacks.map((type) => {
+          const Icon = LACKS_ICON[type];
+          return <Icon key={type} className="pp-ico" aria-hidden="true" />;
+        })
+      ) : (
+        <>{t('print.lacks', { types })}</>
+      )}
     </span>
   );
 }

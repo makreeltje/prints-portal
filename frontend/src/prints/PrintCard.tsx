@@ -49,7 +49,7 @@ export function PrintCard({
         {(print.tags.length > 0 || print.lacks.length > 0) && (
           <div className="pp-tags">
             {/* First in the row, before the tags (GAP-090). */}
-            <LacksChip lacks={print.lacks} />
+            <LacksChip lacks={print.lacks} compact />
             {print.tags.map((tag) => (
               <TagChip key={tag.id} tag={tag} />
             ))}
