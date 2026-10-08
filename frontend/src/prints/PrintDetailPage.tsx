@@ -1,11 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, ChevronDown, Info, Trash2, TriangleAlert } from 'lucide-react';
+import { Box, FileVideo, Info, Trash2, TriangleAlert } from 'lucide-react';
 import {
   Fragment,
   lazy,
   Suspense,
   useEffect,
   useId,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -42,7 +43,15 @@ import { NabestellingDialog } from '../finance/NabestellingDialog';
 import { OrderSection } from '../finance/OrderSection';
 import { PaymentPanel } from '../finance/PaymentPanel';
 import { SpoolPicker } from '../finance/SpoolPicker';
-import { deletePrint, fetchPrint, keys, modelUrl, restorePrint, setPrintTags } from './api';
+import {
+  deletePrint,
+  downloadUrl,
+  fetchPrint,
+  keys,
+  modelUrl,
+  restorePrint,
+  setPrintTags,
+} from './api';
 import { LacksChip, RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList, type AssetControls } from './AssetList';
 import { OverflowMenu } from '../components/OverflowMenu';
@@ -388,85 +397,187 @@ function ThisPrint({
 }
 
 /**
- * ModelPicker (1.9, GAP-086): a print usually holds several models, and the
- * viewer used to show one of them silently. Up to six as a strip, more as a
- * Select, in file order.
+ * The media strip: every model and every timelapse of a print, in one row
+ * (GAP-094, GAP-096).
+ *
+ * It scrolls sideways at any count and never becomes a Select — the owner's
+ * choice over 2.0.1's wrap, measured against their library: median 4 pictures,
+ * 64 of 83 prints at eight or fewer, the largest 34 (`ds-gap: GAP-116`).
+ *
+ * The buttons carry a type glyph and the file name rather than a render,
+ * because the thumbnail service makes one image per print, not one per model.
+ * No duration is shown either: the indexer does not read one.
  */
-function ModelPicker({
-  models,
+function MediaStrip({
+  items,
   index,
   colour,
   onChoose,
 }: {
-  models: { id: string; fileName: string }[];
+  items: Picture[];
   index: number;
   colour: string | null;
   onChoose: (id: string) => void;
 }) {
-  const current = models[index];
-  const caption = t('models.caption', {
-    n: index + 1,
-    totaal: models.length,
-    bestandsnaam: current?.fileName ?? '',
-  });
+  const strip = useRef<HTMLDivElement>(null);
+  const [overflows, setOverflows] = useState(false);
+  const current = items[index];
+
+  // The fading edge is only honest when the row really continues.
+  useEffect(() => {
+    const element = strip.current;
+    if (element === null) return;
+    const measure = () => {
+      setOverflows(element.scrollWidth > element.clientWidth + 1);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+    };
+  }, [items.length]);
+
+  const caption =
+    current?.kind === 'video'
+      ? t('models.captionVideo', { bestandsnaam: current.fileName })
+      : t('models.caption', {
+          n: index + 1,
+          totaal: items.length,
+          bestandsnaam: current?.fileName ?? '',
+        });
+
   return (
     <div className="pp-col pp-gap-1">
       <span className="pp-muted pp-text-sm">{caption}</span>
-      {models.length > 6 ? (
-        <div className="pp-iwrap pp-w-520">
-          <select
-            className="pp-input pp-select"
-            aria-label={t('models.select')}
-            value={current?.id ?? ''}
-            onChange={(event) => {
-              onChoose(event.target.value);
+      <div
+        ref={strip}
+        // ds-gap: GAP-116
+        className={overflows ? 'pp-models is-overflow' : 'pp-models'}
+        role="group"
+        aria-label={
+          items.some((item) => item.kind === 'video') ? t('models.groupBoth') : t('models.group')
+        }
+      >
+        {items.map((item, position) => (
+          <button
+            key={item.id}
+            type="button"
+            className={[
+              'pp-modelbtn',
+              item.kind === 'video' ? 'video' : '',
+              position === index ? 'is-selected' : '',
+            ]
+              .filter((name) => name !== '')
+              .join(' ')}
+            aria-pressed={position === index}
+            onClick={() => {
+              onChoose(item.id);
             }}
           >
-            {models.map((model, position) => (
-              <option key={model.id} value={model.id}>
-                {`${model.fileName} (${String(position + 1)} van ${String(models.length)})`}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pp-ico r" aria-hidden="true" />
-        </div>
-      ) : (
-        <div className="pp-models" role="group" aria-label={t('models.group')}>
-          {models.map((model, position) => (
-            <button
-              key={model.id}
-              type="button"
-              className={position === index ? 'pp-modelbtn is-selected' : 'pp-modelbtn'}
-              aria-pressed={position === index}
-              onClick={() => {
-                onChoose(model.id);
-              }}
+            <span
+              className={item.kind === 'video' || colour === null ? 'pp-thumb' : 'pp-thumb tinted'}
+              style={
+                item.kind === 'video' || colour === null
+                  ? undefined
+                  : ({ '--c1': colour } as CSSProperties)
+              }
             >
-              <span
-                className={colour === null ? 'pp-thumb' : 'pp-thumb tinted'}
-                style={colour === null ? undefined : ({ '--c1': colour } as CSSProperties)}
-              >
+              {item.kind === 'video' ? (
+                <FileVideo className="pp-ico" aria-hidden="true" />
+              ) : (
                 <Box className="pp-ico" aria-hidden="true" />
-              </span>
-              <span className="nm">{model.fileName}</span>
-            </button>
-          ))}
-        </div>
-      )}
+              )}
+            </span>
+            <span className="nm">{item.fileName}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 
-/** Viewer3D when there is a model; otherwise "Geen 3D-model beschikbaar" and the thumbnail. */
+/** One thing the strip can show: a model to turn, or a timelapse to play. */
+interface Picture {
+  id: string;
+  fileName: string;
+  kind: 'model' | 'video';
+}
+
+const UNPLAYABLE = /\.(mkv|avi|wmv|flv)$/i;
+
+/**
+ * The media row's left half: the viewer, or the inline player when a timelapse
+ * is chosen (GAP-096), with the strip under it.
+ */
 function ModelView({ detail }: { detail: PrintDetail }) {
-  // The choice is not stored (ModelPicker 1.9); the first model opens.
+  // The choice is not stored (ModelPicker 1.9); the first picture opens.
   const [chosen, setChosen] = useState<string | null>(null);
-  const models = detail.models;
+  const [failed, setFailed] = useState(false);
+  const videos: Picture[] = (detail.assets ?? [])
+    .filter((asset) => asset.type === 'video')
+    .map((asset) => ({ id: asset.id, fileName: asset.fileName, kind: 'video' }));
+  const items: Picture[] = [
+    ...detail.models.map((model) => ({ ...model, kind: 'model' as const })),
+    ...videos,
+  ];
   const index = Math.max(
     0,
-    models.findIndex((model) => model.id === chosen),
+    items.findIndex((item) => item.id === chosen),
   );
-  const current = models[index];
+  const current = items[index];
+  const strip = items.length > 1 && (
+    <MediaStrip
+      items={items}
+      index={index}
+      colour={detail.colour}
+      onChoose={(id) => {
+        setFailed(false);
+        setChosen(id);
+      }}
+    />
+  );
+
+  if (current?.kind === 'video') {
+    const unsupported = UNPLAYABLE.test(current.fileName);
+    return (
+      <div className="pp-col pp-gap-2">
+        <div className="pp-video">
+          {unsupported ? (
+            <div className="pp-alert info">
+              <TriangleAlert className="pp-ico" aria-hidden="true" />
+              <div>
+                <b>{t('video.unsupported.title')}</b>
+                <div>{t('video.unsupported.body')}</div>
+              </div>
+            </div>
+          ) : failed ? (
+            <div className="pp-alert unpaid" role="alert">
+              <TriangleAlert className="pp-ico" aria-hidden="true" />
+              <div>
+                <b>{t('video.error.title')}</b>
+                <div>{t('video.error.body')}</div>
+              </div>
+            </div>
+          ) : (
+            /* #t=1 asks the browser for the frame at one second; no poster is
+               extracted anywhere (GAP-089). */
+            <video
+              key={current.id}
+              controls
+              preload="metadata"
+              src={`${downloadUrl(current.id)}#t=1`}
+              aria-label={t('models.viewerVideo', { naam: current.fileName })}
+              onError={() => {
+                setFailed(true);
+              }}
+            />
+          )}
+        </div>
+        {strip}
+      </div>
+    );
+  }
 
   if (detail.hasModel) {
     return (
@@ -487,9 +598,7 @@ function ModelView({ detail }: { detail: PrintDetail }) {
             colour={detail.colour}
           />
         </Suspense>
-        {models.length > 1 && current !== undefined && (
-          <ModelPicker models={models} index={index} colour={detail.colour} onChoose={setChosen} />
-        )}
+        {strip}
       </div>
     );
   }
@@ -504,6 +613,7 @@ function ModelView({ detail }: { detail: PrintDetail }) {
           <Thumbnail print={detail} />
         </div>
       )}
+      {strip}
     </div>
   );
 }

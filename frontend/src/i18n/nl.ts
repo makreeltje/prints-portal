@@ -168,6 +168,10 @@ export const nl = {
   'video.unsupported.title': 'Dit formaat speelt niet in de browser.',
   'video.unsupported.body': 'Download het bestand om het af te spelen.',
   'models.group': 'Modellen', // component copy: ModelPicker
+  'models.groupBoth': 'Modellen en timelapse',
+  'models.timelapse': 'Timelapse',
+  'models.captionVideo': 'Timelapse: {bestandsnaam}',
+  'models.viewerVideo': 'Timelapse van {naam}',
   'models.caption': 'Model {n} van {totaal}: {bestandsnaam}',
   'models.loading': 'Model laden…',
   'models.select': 'Model',
