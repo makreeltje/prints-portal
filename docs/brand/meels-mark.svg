@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- The mark alone, square, for a favicon or app icon. -->
+  <rect width="512" height="512" rx="116" fill="#5878d6"/>
+  <path d="M 150 376 L 150 136 L 256 272 L 362 136 L 362 376"
+        fill="none" stroke="#ffffff" stroke-width="64"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

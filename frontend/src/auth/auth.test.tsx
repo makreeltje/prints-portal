@@ -208,6 +208,19 @@ describe('NewPasswordPage', () => {
     expect(changePassword).toHaveBeenCalledWith('my-own-long-password');
   });
 
+  it('says the password is unchanged instead of "Er ging iets mis"', async () => {
+    // The backend names why it refused; the page used to show the generic error.
+    const changePassword = vi.fn(() => Promise.reject(new ApiError(400, 'password_unchanged')));
+    renderWithAuth(<NewPasswordPage />, { state: signedInTemporary(), auth: { changePassword } });
+    await userEvent.type(screen.getByLabelText('Nieuw wachtwoord'), 'the-same-password-12');
+    await userEvent.type(screen.getByLabelText('Herhaal wachtwoord'), 'the-same-password-12');
+    await userEvent.click(screen.getByRole('button', { name: 'Opslaan' }));
+    expect(await screen.findByLabelText('Nieuw wachtwoord')).toHaveAccessibleDescription(
+      'Kies een ander wachtwoord dan het tijdelijke.',
+    );
+    expect(screen.queryByText('Er ging iets mis')).not.toBeInTheDocument();
+  });
+
   it('can sign out instead', async () => {
     const { auth } = renderWithAuth(<NewPasswordPage />, { state: signedInTemporary() });
     await userEvent.click(screen.getByRole('button', { name: 'Uitloggen' }));
