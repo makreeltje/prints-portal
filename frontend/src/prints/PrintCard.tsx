@@ -38,39 +38,58 @@ export function PrintCard({
       <Thumbnail print={print} />
       <div className="pp-info">
         <div>
-          <h3>
+          <h3 className="pp-row pp-gap-2">
             <Link className="app-card-link" to={`/prints/${print.id}`}>
               {print.name}
             </Link>
+            {/*
+              ds-gap: GAP-109 — beside the name rather than in the tag row.
+              2.1 puts the icons first in the tag row, which gives a print with
+              no tags a whole extra line for two glyphs; print names are short
+              and the line beside them is empty.
+            */}
+            <LacksChip lacks={print.lacks} />
           </h3>
           <span className="sub">{subLine(print)}</span>
         </div>
         <Meta print={print} />
-        {(print.tags.length > 0 || print.lacks.length > 0) && (
+        {print.tags.length > 0 && (
           <div className="pp-tags">
-            {/* First in the row, before the tags (GAP-090). */}
-            <LacksChip lacks={print.lacks} compact />
             {print.tags.map((tag) => (
               <TagChip key={tag.id} tag={tag} />
             ))}
           </div>
         )}
         {(print.status !== 'indexed' || print.money !== null) && (
+          /*
+            Two slots, each holding the thing it is about (GAP-108). Money on
+            the left — including "Geen prijs", which is the price. Payment
+            status on the right, or nothing: a print with no price has no
+            payment status, and space-between then leaves the money at the left
+            edge instead of pushing two chips to opposite sides.
+          */
           <div className="pp-foot">
-            <PriceBlock print={print} />
-            {print.status === 'indexed' ? (
-              print.money !== null && <PaymentBadge status={print.money.status} />
+            {print.money?.status === 'noPrice' ? (
+              <PaymentBadge status="noPrice" />
             ) : (
-              <RecordBadge print={print} />
+              <PriceBlock print={print} />
             )}
-            {restore !== undefined && (
-              <button
-                type="button"
-                className="pp-btn pp-btn-secondary pp-btn-sm app-above-link"
-                onClick={restore}
-              >
-                {t('common.restore')}
-              </button>
+            {print.status !== 'indexed' ? (
+              <span className="pp-row pp-gap-2">
+                <RecordBadge print={print} />
+                {restore !== undefined && (
+                  <button
+                    type="button"
+                    className="pp-btn pp-btn-secondary pp-btn-sm app-above-link"
+                    onClick={restore}
+                  >
+                    {t('common.restore')}
+                  </button>
+                )}
+              </span>
+            ) : (
+              print.money !== null &&
+              print.money.status !== 'noPrice' && <PaymentBadge status={print.money.status} />
             )}
           </div>
         )}

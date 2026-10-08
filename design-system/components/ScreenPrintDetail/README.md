@@ -37,3 +37,6 @@ Print detail (`/prints/:id`) shows one print: identity and status, the 3D model,
 **Dutch copy (new).** Deze print | Bestanden | In deze bestelling | Telt in {bestelling} | Modellen en timelapse | Timelapse | Timelapse: {bestandsnaam} | Ontbreekt: {types}
 
 **To measure (owner):** the y-position of the price field at 1360×900 and 390×844 after this change (the 1.9 request, still open, and this round moves the field again), and whether the right-hand card at 1360px is taller or shorter than the viewer beside it — if it is much shorter the row has dead space again and I would move the newest order's Betaling into it.
+
+**2.1.** (2026-10-08) **This page is where the legend is written (GAP-106).** The card and the row show the missing-file **icons**; the print detail shows the **worded chip** `pp-lacks has-text` ("Ontbreekt: G-code, 3MF, STL") in the header badge row, and the "Deze print" card keeps the full sentence under its facts. So a slashed `file-code` on a tile is learnable in one place, which was my strongest objection to icons and is now answered rather than argued. Nothing else on the screen changes.
+

@@ -22,14 +22,17 @@ const LACKS_LABEL = {
   stl: 'print.lacks.stl',
 } as const satisfies Record<MissingFileType, string>;
 
-// ds-gap: GAP-106 — the icons the design system already assigns to these file
-// types, reused here rather than invented. 2.0 specified words; the owner asked
-// twice for icons and approved this until the design system rules on the form.
 const LACKS_ICON = {
   gcode: FileCode,
   '3mf': Package,
   stl: Box,
 } as const satisfies Record<MissingFileType, typeof Box>;
+
+/** "a", "a en b", "a, b en c" — the Dutch list the accessible name is built from. */
+function joinDutch(parts: readonly string[]): string {
+  if (parts.length <= 1) return parts.join('');
+  return `${parts.slice(0, -1).join(', ')} en ${parts[parts.length - 1]}`;
+}
 
 /**
  * Which files a print has none of (GAP-090). One chip rather than three icons:
@@ -39,28 +42,38 @@ const LACKS_ICON = {
  */
 export function LacksChip({
   lacks,
-  compact = false,
+  withText = false,
 }: {
   lacks: readonly MissingFileType[];
-  /** Icons instead of the type names, where a card has no room for 27 characters. */
-  compact?: boolean;
+  /** The worded chip, for the print detail where there is room for it. */
+  withText?: boolean;
 }) {
   if (lacks.length === 0) return null;
-  const types = lacks.map((type) => t(LACKS_LABEL[type])).join(', ');
-  const name = t('print.lacks.aria', { types });
+  const types = lacks.map((type) => t(LACKS_LABEL[type]));
+  const name = t('print.lacks.aria', {
+    types: joinDutch(lacks.map((type) => t('print.lacks.item', { type: t(LACKS_LABEL[type]) }))),
+  });
+  if (withText) {
+    return (
+      <span className="pp-lacks has-text" role="img" aria-label={name} title={name}>
+        <TriangleAlert className="pp-ico" aria-hidden="true" />
+        {t('print.lacks', { types: types.join(', ') })}
+      </span>
+    );
+  }
   return (
     <span className="pp-lacks" role="img" aria-label={name} title={name}>
-      {/* The triangle is what says "missing"; the type icons say which. */}
-      <TriangleAlert className="pp-ico" aria-hidden="true" />
-      {compact ? (
-        // ds-gap: GAP-106
-        lacks.map((type) => {
-          const Icon = LACKS_ICON[type];
-          return <Icon key={type} className="pp-ico" aria-hidden="true" />;
-        })
-      ) : (
-        <>{t('print.lacks', { types })}</>
-      )}
+      {lacks.map((type) => {
+        const Icon = LACKS_ICON[type];
+        // The slash is the "no" convention, drawn in the same SVG; the thicker
+        // line underneath knocks a gap out of the glyph so it reads at 16px.
+        return (
+          <Icon key={type} className="pp-ico" aria-hidden="true">
+            <line className="sl-bg" x1="3" y1="21" x2="21" y2="3" />
+            <line className="sl" x1="3" y1="21" x2="21" y2="3" />
+          </Icon>
+        );
+      })}
     </span>
   );
 }

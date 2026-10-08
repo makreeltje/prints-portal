@@ -838,9 +838,14 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-print .pp-thumb.tinted::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;box-sizing:border-box;background:var(--c1);border-top:1px solid var(--border-strong);pointer-events:none}
 .pp-table .pp-thumb.sm.tinted::after,.pp-modelbtn .pp-thumb.tinted::after{content:none}
 
-/* GAP-090 which files a print lacks. Absent when nothing is missing (70% of tiles). */
-.pp-lacks{display:inline-flex;align-items:center;gap:var(--space-1);padding:2px var(--space-2);border-radius:var(--radius-sm);font:500 var(--text-xs)/var(--leading-xs) var(--font-sans);color:var(--warning);background:linear-gradient(var(--warning-tint),var(--warning-tint)),var(--surface);white-space:nowrap}
+/* GAP-090 / GAP-106 which files a print lacks. Absent when nothing is missing (58% of tiles).
+   Default: icons only, no pill, on a card or row where width is short. `.has-text` is the
+   worded chip, for the print detail where there is room and the legend is learned. */
+.pp-lacks{display:inline-flex;align-items:center;gap:var(--space-1);color:var(--warning);white-space:nowrap}
 .pp-lacks .pp-ico{color:var(--warning)}
+.pp-lacks .sl{stroke:var(--warning)}
+.pp-lacks .sl-bg{stroke:var(--surface);stroke-width:3}
+.pp-lacks.has-text{padding:2px var(--space-2);border-radius:var(--radius-sm);font:500 var(--text-xs)/var(--leading-xs) var(--font-sans);background:linear-gradient(var(--warning-tint),var(--warning-tint)),var(--surface)}
 
 /* GAP-091 + GAP-093 + GAP-099 one target per tile or row.
    The tile and the row open the print; the checkbox selects; a cell that opens nothing is not styled like a target. */
@@ -850,8 +855,13 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-table tbody tr:has(.pp-rowlink:focus-visible){outline:2px solid var(--focus-ring);outline-offset:-2px}
 .pp-rowlink:focus-visible{outline:none}
 .pp-table td .pp-btn,.pp-table td .pp-check,.pp-table td .pp-anchor,.pp-table td .pp-opt{position:relative;z-index:1}
-.pp-print .pp-sel{box-shadow:inset 0 0 0 1px var(--border-strong);padding:0}
-.pp-print .pp-sel .pp-opt{min-height:var(--pp-tap);min-width:var(--pp-tap);justify-content:center}
+/* GAP-107 (2.1): the target is --pp-tap, the ink is 24px. A pointer target may be larger
+   than what it paints (WCAG 2.2 2.5.8 is about the target); 2.0 grew both and the chip
+   became the loudest thing on a tile, 24 times a page. */
+.pp-print .pp-sel{background:none;border-radius:0;box-shadow:none;padding:0;width:var(--pp-tap);height:var(--pp-tap);display:grid;place-items:center}
+.pp-print .pp-sel .pp-opt{min-height:var(--pp-tap);min-width:var(--pp-tap);width:var(--pp-tap);height:var(--pp-tap);justify-content:center;align-items:center}
+.pp-print .pp-sel .pp-check{box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--border-strong)}
+.pp-print .pp-sel .pp-check:focus-visible{outline-offset:4px}
 
 /* GAP-098 a popover inside a sticky table: the cell that holds it is raised, not the popover. */
 .pp-matrix th.has-pop,.pp-matrix td.has-pop{z-index:var(--z-popover)}

@@ -1,4 +1,4 @@
-Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 2.0.1 (see `changelog.md`).
+Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 2.1 (see `changelog.md`).
 
 ## Principles
 
@@ -71,6 +71,7 @@ Use Lucide line icons (`lucide-react`), 1.75px stroke, in sizes 16 (inline with 
 | Gearchiveerd | `archive` |
 | Verwijderd | `trash-2` |
 | Missing data | `triangle-alert` |
+| A missing file of that type | the type's own icon plus a diagonal slash (`<line>` corner to corner, with a 3px `surface` knockout under it), 16px in `warning` |
 
 Show the studio name in `heading-lg` type in the app shell, on the share page and on the invoice, with an optional uploaded logo image that replaces it when set in Instellingen.
 
@@ -149,3 +150,6 @@ The first breaking round. The print detail is reorganised around what belongs to
 
 ## Versie 2.0.1 (2026-10-08)
 Three answers corrected against measurements from the running app: the media strip wraps into a bounded grid above eight pictures (29 models is the real maximum, not a hypothetical), the Tags grid is used only from six tags because the library has two, and the per-klant pasted Betaallink is accepted as a secondary control that never quotes an amount. The missing-files figures are corrected to 22/8/8%. No token and no screen structure changed. Details: `changelog.md`.
+
+## Versie 2.1 (2026-10-08)
+The owner saw the missing-files chip built and asked, for the second time, for icons: the card and the list now show the type's own icon with a diagonal slash, and the worded chip moves to the print detail, where the legend is written. The tile selection box goes back to 24px of ink inside a 36/44px target — the target may be larger than what it paints. And a two-slot row gets one rule: each slot holds the thing it is about, so a card without a price no longer sets two identical chips against opposite edges. No token changed. Details: `changelog.md`.

@@ -196,7 +196,7 @@ export function PrintDetailPage() {
           {detail.money !== null && <PaymentBadge status={detail.money.status} />}
           <RecordBadge print={detail} />
           {/* The same chip the card carries, in the header badge row (GAP-090). */}
-          <LacksChip lacks={detail.lacks} />
+          <LacksChip lacks={detail.lacks} withText />
           {detail.tags.map((tag) => (
             <TagChip
               key={tag.id}

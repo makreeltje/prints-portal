@@ -1218,7 +1218,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-106 [open] The owner asked for icons and 2.0 gave words
+## GAP-106 [resolved in v2.1] The owner asked for icons and 2.0 gave words
 - **Type:** conflict
 - **Found while:** the owner's first look at the GAP-090 chip in the running app (2026-10-08)
 - **Where needed:** PrintCard, PrintRow, ScreenPrintDetail — the `pp-lacks` chip
@@ -1229,7 +1229,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08, the owner did not want to wait). The card and the row show the **triangle-alert** plus the icons the system itself assigns to these types (`file-code`, `package`, `box`) — reused, not invented. The print detail keeps the words, where there is room. The sentence survives as the chip's accessible name and its `title`, so nothing is carried by colour or shape alone. Marked `ds-gap: GAP-106`. Measured after the change: the chip went from 206px to **92px** at its widest and 52px at its narrowest, and axe reports 0 violations in both themes. The gap stays open: the design system still decides the final form.
 - **Design system version:** 2.0.1
 
-## GAP-107 [open] The selection box on a tile reads as oversized
+## GAP-107 [resolved in v2.1] The selection box on a tile reads as oversized
 - **Type:** improvement idea
 - **Found while:** the same first look (2026-10-08)
 - **Where needed:** PrintCard, `.pp-print .pp-sel`
@@ -1240,7 +1240,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.0.1
 
-## GAP-108 [open] The missing-files chip and "Geen prijs" sit on opposite edges
+## GAP-108 [resolved in v2.1] The missing-files chip and "Geen prijs" sit on opposite edges
 - **Type:** unclear spec
 - **Found while:** the same first look (2026-10-08)
 - **Where needed:** PrintCard — the tag row and `pp-foot`
@@ -1251,3 +1251,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.0.1
 
+
+## GAP-109 [open] The missing-file icons give a tagless print a whole extra line
+- **Type:** improvement idea
+- **Found while:** the owner's second look, right after 2.1 was specified (2026-10-08)
+- **Where needed:** PrintCard — the icon group's place on the tile
+- **What is missing or wrong:** 2.0 and 2.1 both put the icons first in the **tag row**. On a print with no tags that row exists only to hold them, so two 16px glyphs cost a full line of card height. The owner: *"Kunnen de icoontjes niet rechts van de naam, want de naam is niet lang, nu wordt er iedere keer een nieuwe regel gemaakt als er iets mist."* Print names in this library are short and the line beside them is empty, so the room is already there.
+- **Why it matters:** the whole point of GAP-090's form was that an indicator should cost nothing on the 58% of tiles that carry none — but on a tagless tile that does carry one, it costs a line, which is the most expensive thing on a 261px card.
+- **Proposal:** put the icon group at the end of the `h3`, after the print name, with the name allowed to truncate before the icons do. The tag row then appears only when there are tags. If the design system would rather keep the tag row, the alternative is to let the icons share the meta line, which also already exists.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** yes (2026-10-08, the owner did not want to wait). The icons sit at the end of the `h3` beside the name, marked `ds-gap: GAP-109`. Built from the 2.1 icon group unchanged — only its parent differs — so adopting the official answer is moving one element.
+- **Design system version:** 2.1

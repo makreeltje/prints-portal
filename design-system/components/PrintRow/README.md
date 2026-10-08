@@ -21,3 +21,6 @@ PrintRow is one print in the list view: the same data as PrintCard, compact, in 
 **Thumbnail (GAP-071).** The 40px square is the neutral `surface-2` ground with the outlined render; **no filament bar** at this size (the Materiaal cell already carries the SpoolSwatch). The class `tinted` stays on the element and now only says "this print has a known filament colour".
 
 **Dutch copy (new).** Ontbreekt: {types}
+
+**2.1.** (2026-10-08) **Missing files are icons here too (GAP-106).** The Status cell carries `span.pp-lacks` with the 16px slashed type icons, under the status badge (beside it at 1440px and wider), absent when nothing is missing. No pill, no word: the row has less width than a card, and the worded form lives on the print detail. The group is `role="img"` with the full Dutch sentence as its `aria-label` and `title`. Rules, contrast and the slash construction: PrintCard.
+

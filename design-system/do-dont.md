@@ -123,3 +123,16 @@
 - Don't reserve space for an indicator most items do not have.
 - Don't let "Er ging iets mis." stand in for a known error code; that fallback is for unknown codes only (GAP-100).
 
+## Added in 2.1
+
+**Do**
+- Size the **target**, then size the **ink** separately. WCAG 2.2 2.5.8 asks for 24px of target, not 24px of paint; a control drawn on top of a picture needs a hairline, not a plate. The tile checkbox is 24px of ink centred in a `--pp-tap` target (GAP-107).
+- Give a row of two slots **one thing per slot, and the thing the slot is about**: money on the left (the price, or why there is none), payment status on the right (or nothing). Wrap a slot's two parts in one element rather than adding a third child (GAP-108).
+- Put short where space is short and worded where there is room, and make sure the worded place exists: the missing-file icons on a card, the same thing in words on the print detail. An icon set is only learnable if the legend is written somewhere (GAP-106).
+- Compose "not / missing" from an icon the system already names plus a slash, with a knockout line under it so it survives 16px. Never draw a new glyph for it.
+
+**Don't**
+- Don't put two chips of the same shape in a `space-between` row as separate children: they land against opposite edges and read as a mistake. 30% of this library's cards had that.
+- Don't let a control that is drawn on every item be the loudest thing on it.
+- Don't keep arguing a rejection the owner has now asked for twice, once after seeing it built. Write down why it was rejected, then design the thing properly — the reasons become the requirements the new form has to meet.
+

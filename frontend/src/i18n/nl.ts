@@ -154,7 +154,8 @@ export const nl = {
   'cost.missingTariff': 'Geen prijs per kWh.',
   'menu.more': 'Meer acties', // component copy: OverflowMenu
   'print.lacks': 'Ontbreekt: {types}',
-  'print.lacks.aria': 'Deze print heeft geen {types}.',
+  'print.lacks.aria': 'Deze print heeft {types}.',
+  'print.lacks.item': 'geen {type}-bestand',
   'print.lacks.gcode': 'G-code',
   'print.lacks.threemf': '3MF',
   'print.lacks.stl': 'STL',

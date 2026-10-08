@@ -593,3 +593,17 @@ Removed in 1.9: the toast text for a lost connection (the bar keeps "Verbinding 
 
 **Changed in 2.0.1:** nothing. **Removed in 2.0.1:** nothing.
 
+## Added in 2.1
+
+| Key | Text |
+|---|---|
+| print.lacks.item | geen {type}-bestand |
+
+**Changed in 2.1.**
+
+| Key | Was | Is |
+|---|---|---|
+| print.lacks.aria | Deze print heeft geen {types}. | Deze print heeft {lijst}. — `lijst` is the `print.lacks.item` values joined in Dutch: "geen G-code-bestand", "geen G-code-bestand en geen 3MF-bestand", "geen G-code-bestand, geen 3MF-bestand en geen STL-bestand" |
+
+**Still in use, with a narrower place:** `print.lacks` ("Ontbreekt: {types}") is now the **print detail** form only (`pp-lacks has-text`); the card and the row carry icons, whose text is `print.lacks.aria`. `print.lacks.gcode`, `.threemf` and `.stl` are the `{type}` values for both. **Removed in 2.1:** nothing.
+

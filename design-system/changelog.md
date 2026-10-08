@@ -1,3 +1,68 @@
+# Changelog 2.1
+
+Decides GAP-106 to GAP-108, from the owner seeing 2.0 built. **GAP-106 overrules my own 2.0 decision**; the other two are faults in 2.0 that only showed at real size. No token changed, no name removed, nothing breaking. Version 2.0.1 follows below.
+
+| Gap | About | Result |
+|---|---|---|
+| GAP-106 | Icons rather than words for the missing files | **resolved**: the type's own icon (`file-code`, `package`, `box`) at 16px in `warning` with a diagonal slash and a knockout, no pill, on the card and the row; the worded chip (`pp-lacks has-text`) moves to the print detail. My 2.0 rejection of the icon form is **withdrawn** |
+| GAP-107 | The selection box is suddenly very large | **resolved**: `.pp-sel` is the target only (`--pp-tap`); the ink is the 20px checkbox in a 24px `surface` ring with a `border-strong` hairline. About a third less paint, same target |
+| GAP-108 | Two warning chips against opposite edges | **resolved**: `.pp-foot` has two slots and **each slot holds the thing it is about** — money left (the price, or "Geen prijs"), payment status right (or nothing), missing data in the tag row. No CSS change; a markup rule |
+
+## GAP-106: being overruled, and what I did with it
+
+You put it fairly, so I will too. My reasons were sound and I am not pretending otherwise: three slashed glyphs are three inventions, an icon set is a legend to learn, and it still needs a text alternative. None of that stops being true. What changed is that it is **not my call** — the owner has asked twice, the second time after seeing the chip at real size, and your measurement (27 characters, the widest element in a 261px card's tag row) says the chip was paying for its clarity with the whole width of the tile.
+
+So the three reasons became the three requirements the icon form had to meet, and it meets them:
+
+1. **Nothing invented.** The three icons are already in the iconography table. "Missing" is a diagonal slash in the same SVG — the ordinary "no" convention — with a 3px `var(--surface)` knockout line under the `warning` line so it survives 16px.
+2. **The legend is written down.** Icons where width is short (card, row); the **worded chip on the print detail**, plus the full sentence in "Deze print". That was one of your three directions, and the only one that teaches rather than hoping.
+3. **The text alternative exists.** `role="img"` with `aria-label` and `title`: "Deze print heeft geen G-code-bestand.", joined in Dutch for several.
+
+No pill, because 1–3 icons in a tint is a blob — and it costs nothing: `warning` clears 3:1 on every ground these icons land on, worst case **4.99** on a selected card against a 3:1 requirement. Eight new rows in `contrast.md` prove it rather than assert it.
+
+And your process note: you carried my reasoning into the build without putting the owner's stated preference back to me hard enough. I would rather be argued with than agreed with — if a decision of mine contradicts something the owner has said in their own words, **quote them at me and make me answer it**. That is cheaper than a rebuild, and this round is the proof.
+
+## GAP-107: the rule I half-applied
+
+2.0 was right that the checkbox did not read as its own control and wrong about how to fix it: I put the target size and the painted size on the same element, so a 20px checkbox became a 36×36 plate, on every tile, selected or not. **A pointer target may be bigger than its ink** — 2.5.8 asks for the target. Now the label fills a `--pp-tap` square (36px, 44px on phones) with no ground of its own, and the ink is the checkbox plus `0 0 0 2px var(--surface), 0 0 0 3px var(--border-strong)`: a 24px chip with a hairline. Focus offset moves to 4px so the ring and the hairline do not sit on top of each other.
+
+## GAP-108: where a price-less card puts its badge
+
+Not the new chip's fault — it made a two-year-old ragged edge visible. `.pp-foot` is a `space-between` row, and it had been given three kinds of thing to hold.
+
+**One rule: each slot holds the thing it is about.**
+
+- **Left — the money.** The price, with "Nog € x open" under it; "Kosten € x,xx" for a not-billed klant; or, when there is no customer price, the `warning` badge **"Geen prijs"** — it *is* the price, so it goes in the price's place.
+- **Right — the payment status**, or nothing. A print with no price has no payment status, the slot is empty, and `space-between` leaves the one remaining item at the left edge. The 141px gap disappears with no class and no modifier.
+- **Neither slot is for missing data.** "Geen spoel" and the missing-file icons live in the **tag row**, with the other things that describe the print rather than its money.
+- A slot that needs two elements wraps them in one `<span>`, as the partial-payment case already did. Two bare children of `.pp-foot` is what produced the ragged edge.
+
+On the 30% of this library without a price, the bottom of the card is now one left-aligned badge under a left-aligned tag row.
+
+## Your verifications, noted
+
+- **GAP-098 fixed, and the mechanism confirmed:** the panel still overlaps the sticky column by the same 46px and now paints over it, six probe points across the band belong to the panel, both items read in full. That is exactly the stacking-context diagnosis, verified rather than argued — nothing to change.
+- **GAP-099 needed no app change**, `bundle.css` alone was enough. Good: that is what a design-system fix should look like.
+- **GAP-090's data rebuilt by a different code path and matching** (18 / 7 / 7, distribution 58/20/3/2). I have taken 58% as the share of tiles that carry nothing, which is what the icon form is sized for. The data stays as it is; only its form changed.
+
+## New and changed
+
+- **Tokens:** none added, renamed, removed or changed in value. `version` is `"2.1"`.
+- **Changed classes** `.pp-lacks` (icon group: no pill, no text, `warning`, with `.sl` and `.sl-bg` for the slash and its knockout), `.pp-print .pp-sel` (target only), `.pp-print .pp-sel .pp-opt` (fills the target), `.pp-print .pp-sel .pp-check` (the 24px ring and hairline, focus offset 4px).
+- **New classes** `.pp-lacks.has-text` (the 2.0 worded chip, now the print-detail form), and the parts `.sl` / `.sl-bg`.
+- **Removed:** nothing. `.pp-lacks` keeps its name and its 2.0 look under `.has-text`, so nothing you built is thrown away — the card and row markup swaps the word for icons, and the print detail adds one class.
+- **Components changed:** PrintCard (README and preview), PrintRow (README and preview), ScreenPrintDetail (README and preview).
+- **Contrast report:** 8 new rows, **171 pairs**, 0 fail among the pairs the system uses (the same two deliberate logo-ink failures as 2.0). The slash knockout is documented as a knockout, not a pair.
+- **Copy deck:** one new key `print.lacks.item`; `print.lacks.aria` changed to the joined sentence; `print.lacks` narrowed to the print detail. Nothing removed.
+- **do-dont.md:** a 2.1 section — target before ink, one thing per slot, short where space is short with the legend written somewhere, and don't keep arguing a rejection the owner has asked for twice.
+- **README:** the iconography table now names the "missing file" convention, so the next person does not reinvent the slash.
+
+## Nothing to measure
+
+All three were measured before they reached me. The two 2.0 items still with you are unchanged: whether the renderer can outline the model (GAP-071) and whether `position: relative` on `tbody tr` holds in a browser (GAP-093).
+
+---
+
 # Changelog 2.0.1
 
 Three of 2.0's answers, re-decided against measurements from the running app, plus one corrected set of figures. **No token, no screen structure and no breaking change**; 2.0's table stands except for the three rows below. Version 2.0 follows below.
