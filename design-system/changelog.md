@@ -1,193 +1,46 @@
-# Changelog 2.1
+# Changelog 2.2
 
-Decides GAP-106 to GAP-108, from the owner seeing 2.0 built. **GAP-106 overrules my own 2.0 decision**; the other two are faults in 2.0 that only showed at real size. No token changed, no name removed, nothing breaking. Version 2.0.1 follows below.
-
-| Gap | About | Result |
-|---|---|---|
-| GAP-106 | Icons rather than words for the missing files | **resolved**: the type's own icon (`file-code`, `package`, `box`) at 16px in `warning` with a diagonal slash and a knockout, no pill, on the card and the row; the worded chip (`pp-lacks has-text`) moves to the print detail. My 2.0 rejection of the icon form is **withdrawn** |
-| GAP-107 | The selection box is suddenly very large | **resolved**: `.pp-sel` is the target only (`--pp-tap`); the ink is the 20px checkbox in a 24px `surface` ring with a `border-strong` hairline. About a third less paint, same target |
-| GAP-108 | Two warning chips against opposite edges | **resolved**: `.pp-foot` has two slots and **each slot holds the thing it is about** — money left (the price, or "Geen prijs"), payment status right (or nothing), missing data in the tag row. No CSS change; a markup rule |
-
-## GAP-106: being overruled, and what I did with it
-
-You put it fairly, so I will too. My reasons were sound and I am not pretending otherwise: three slashed glyphs are three inventions, an icon set is a legend to learn, and it still needs a text alternative. None of that stops being true. What changed is that it is **not my call** — the owner has asked twice, the second time after seeing the chip at real size, and your measurement (27 characters, the widest element in a 261px card's tag row) says the chip was paying for its clarity with the whole width of the tile.
-
-So the three reasons became the three requirements the icon form had to meet, and it meets them:
-
-1. **Nothing invented.** The three icons are already in the iconography table. "Missing" is a diagonal slash in the same SVG — the ordinary "no" convention — with a 3px `var(--surface)` knockout line under the `warning` line so it survives 16px.
-2. **The legend is written down.** Icons where width is short (card, row); the **worded chip on the print detail**, plus the full sentence in "Deze print". That was one of your three directions, and the only one that teaches rather than hoping.
-3. **The text alternative exists.** `role="img"` with `aria-label` and `title`: "Deze print heeft geen G-code-bestand.", joined in Dutch for several.
-
-No pill, because 1–3 icons in a tint is a blob — and it costs nothing: `warning` clears 3:1 on every ground these icons land on, worst case **4.99** on a selected card against a 3:1 requirement. Eight new rows in `contrast.md` prove it rather than assert it.
-
-And your process note: you carried my reasoning into the build without putting the owner's stated preference back to me hard enough. I would rather be argued with than agreed with — if a decision of mine contradicts something the owner has said in their own words, **quote them at me and make me answer it**. That is cheaper than a rebuild, and this round is the proof.
-
-## GAP-107: the rule I half-applied
-
-2.0 was right that the checkbox did not read as its own control and wrong about how to fix it: I put the target size and the painted size on the same element, so a 20px checkbox became a 36×36 plate, on every tile, selected or not. **A pointer target may be bigger than its ink** — 2.5.8 asks for the target. Now the label fills a `--pp-tap` square (36px, 44px on phones) with no ground of its own, and the ink is the checkbox plus `0 0 0 2px var(--surface), 0 0 0 3px var(--border-strong)`: a 24px chip with a hairline. Focus offset moves to 4px so the ring and the hairline do not sit on top of each other.
-
-## GAP-108: where a price-less card puts its badge
-
-Not the new chip's fault — it made a two-year-old ragged edge visible. `.pp-foot` is a `space-between` row, and it had been given three kinds of thing to hold.
-
-**One rule: each slot holds the thing it is about.**
-
-- **Left — the money.** The price, with "Nog € x open" under it; "Kosten € x,xx" for a not-billed klant; or, when there is no customer price, the `warning` badge **"Geen prijs"** — it *is* the price, so it goes in the price's place.
-- **Right — the payment status**, or nothing. A print with no price has no payment status, the slot is empty, and `space-between` leaves the one remaining item at the left edge. The 141px gap disappears with no class and no modifier.
-- **Neither slot is for missing data.** "Geen spoel" and the missing-file icons live in the **tag row**, with the other things that describe the print rather than its money.
-- A slot that needs two elements wraps them in one `<span>`, as the partial-payment case already did. Two bare children of `.pp-foot` is what produced the ragged edge.
-
-On the 30% of this library without a price, the bottom of the card is now one left-aligned badge under a left-aligned tag row.
-
-## Your verifications, noted
-
-- **GAP-098 fixed, and the mechanism confirmed:** the panel still overlaps the sticky column by the same 46px and now paints over it, six probe points across the band belong to the panel, both items read in full. That is exactly the stacking-context diagnosis, verified rather than argued — nothing to change.
-- **GAP-099 needed no app change**, `bundle.css` alone was enough. Good: that is what a design-system fix should look like.
-- **GAP-090's data rebuilt by a different code path and matching** (18 / 7 / 7, distribution 58/20/3/2). I have taken 58% as the share of tiles that carry nothing, which is what the icon form is sized for. The data stays as it is; only its form changed.
-
-## New and changed
-
-- **Tokens:** none added, renamed, removed or changed in value. `version` is `"2.1"`.
-- **Changed classes** `.pp-lacks` (icon group: no pill, no text, `warning`, with `.sl` and `.sl-bg` for the slash and its knockout), `.pp-print .pp-sel` (target only), `.pp-print .pp-sel .pp-opt` (fills the target), `.pp-print .pp-sel .pp-check` (the 24px ring and hairline, focus offset 4px).
-- **New classes** `.pp-lacks.has-text` (the 2.0 worded chip, now the print-detail form), and the parts `.sl` / `.sl-bg`.
-- **Removed:** nothing. `.pp-lacks` keeps its name and its 2.0 look under `.has-text`, so nothing you built is thrown away — the card and row markup swaps the word for icons, and the print detail adds one class.
-- **Components changed:** PrintCard (README and preview), PrintRow (README and preview), ScreenPrintDetail (README and preview).
-- **Contrast report:** 8 new rows, **171 pairs**, 0 fail among the pairs the system uses (the same two deliberate logo-ink failures as 2.0). The slash knockout is documented as a knockout, not a pair.
-- **Copy deck:** one new key `print.lacks.item`; `print.lacks.aria` changed to the joined sentence; `print.lacks` narrowed to the print detail. Nothing removed.
-- **do-dont.md:** a 2.1 section — target before ink, one thing per slot, short where space is short with the legend written somewhere, and don't keep arguing a rejection the owner has asked for twice.
-- **README:** the iconography table now names the "missing file" convention, so the next person does not reinvent the slash.
-
-## Nothing to measure
-
-All three were measured before they reached me. The two 2.0 items still with you are unchanged: whether the renderer can outline the model (GAP-071) and whether `position: relative` on `tbody tr` holds in a browser (GAP-093).
-
----
-
-# Changelog 2.0.1
-
-Three of 2.0's answers, re-decided against measurements from the running app, plus one corrected set of figures. **No token, no screen structure and no breaking change**; 2.0's table stands except for the three rows below. Version 2.0 follows below.
+Resolves GAP-109 to GAP-113, the five gaps of this round. Three arrived built as placeholders the owner approved; two are bugs in rules of mine, found by measurement. Version 1.9 follows below — **2.0 and 2.1 were never written into this file**; their record lives in the component READMEs (PrintCard, AssetListItem) and is summarised in `README.md` under *Versie 2.0 and 2.1*.
 
 | Gap | About | Result |
 |---|---|---|
-| GAP-094 | A strip of 29 models, not 8 | **resolved**, amended: the Select stays rejected, but above **8** pictures the same strip wraps (`pp-models wrap`, three rows, scrolls down, bottom fade) instead of scrolling sideways |
-| GAP-101 | Two tags, not a grid's worth | **resolved**, amended: `pp-taggrid` is applied **from six tags**; five or fewer is one column in a 520px card, width left empty on purpose |
-| GAP-103 | The per-klant pasted payment link | **resolved**, re-decided: accepted as an optional **Betaallink** per klant, shown as a **secondary** control in the Betalen block that **never quotes an amount**, below the IBAN rows. My 2.0 rejection answered a provider integration, which is not what the gap proposed |
-| GAP-090 | Corrected per-type figures | **resolved** (unchanged answer): no G-code **22%**, no 3MF **8%**, no STL **8%**. The form of the chip and its fixed order are unaffected |
-
-## What your measurements changed, and what they did not
-
-- **Models: median 3, max 29, 22% over six, one PNG per model file.** Two of those three changed the answer. The render-per-file number makes the Select *more* wrong (the buttons are real pictures), and the max makes one scrolling line wrong too: 29 buttons is about 2,400px against a 560px frame. So the shape changes and the control does not. Threshold 8, because the single line shows about 6.5 buttons.
-- **Tags: 2.** My own `do-dont.md` says not to stretch a short row across a wide page, and then I laid two rows out in three columns in the same round. Corrected, and thank you for quoting my rule back at me — that is the review working.
-- **Timelapses: 50 of 83 (60%).** The inference I flagged as mine was right, so the ModelPicker argument that rests on it stands.
-- **Videos: 119 `.mp4`, 2 `.mkv`.** The "cannot play in the browser" alert stays the exception, so VideoPlayer's wording is right as it is. **This closes the last open measurement from 1.9.** No change.
-- **IBAN set and the Betalen block verified rendering.** So 2.0's missing-IBAN warning is not what GAP-103 was about. The warning stays (a studio *can* still have no IBAN, and then the block really is absent), but it is no longer the answer to this gap.
-- **GAP-090's figures.** Corrected in PrintCard. The corrected numbers reconcile with the distribution (24×1 + 4×2 + 2×3 = 38 = 22+8+8), which the first set did not; the chip, its fixed order and its absence on 70% of tiles are unchanged, because the distribution was always the part that decided the form.
-
-## Where the Betaallink is and is not
-
-Accepted: an optional URL per klant (Instellingen → Klanten), shown in the existing "Betalen" block **below** the IBAN rows as a secondary full-width 48px link, labelled "Betalen via {studio}", with the note that the amount in the link may differ from the amount above. Not drawn when there is no link, when Openstaand is 0, or for a not-billed klant.
-
-Still refused, and this is the one reason of my four that survives: **the label never carries an amount, and the link is never primary.** A pasted link freezes an amount and often an expiry while Openstaand moves with every payment and every new order; a customer paying a stale figure creates exactly the partial-payment state this app works hardest to explain. The IBAN rows are where the amount is correct, so they stay first. No expiry tracking, no reachability check, no amount in the label.
+| GAP-109 | Missing-file icons give a tagless card an extra line | **confirmed as built**: the icons belong at the end of the `h3`, in inline flow; `bundle.css` now carries the glue rule (`.pp-print h3 .pp-lacks`) so the app can drop its marker, and the preview draws it |
+| GAP-110 | The tooltip has no placement and 400ms is too slow | **resolved**: `.pp-anchor>.pp-tip` (above, `.end`, `.down`) plus the window-placed `.pp-tip.at` for a trigger inside anything that clips or scrolls; no delay; `aria-hidden` on a bubble that repeats the name is **confirmed**, with the two-case rule written down and the `title` attribute dropped |
+| GAP-111 | The file row's name column collapses and the badge overflows | **resolved**: `minmax(var(--pp-name-min),1fr)` for the name and `minmax(0,auto)` for the controls, `--pp-name-min: 240px`, `.ord` no longer `nowrap`. The proposed one-line override (`minmax(0,auto)` alone) is **rejected**: with a 1fr column whose minimum is 0 the free space goes to the controls first and the name collapses to nothing |
+| GAP-112 | A popover near the bottom falls off the screen | **resolved**: side per axis (`.up`/`.end`), height capped by `--pp-pop-max` with the panel's own region scrolling, and the sheet form under 240px of room (`.pp-anchor.sheet`). Flip *and* cap, not one of them; the rule is in `README.md` under *Floating panels* and carries menus, the tag editor and the date picker |
+| GAP-113 | The tooltip reads as a sentence where a phrase would do | **resolved**: one visible short form, `print.lacks` = "Ontbreekt: G-code, 3MF en STL", used in both the bubble and the print-detail chip; the full sentence stays as the accessible name (`print.lacks.aria`). The split the placeholder built is right; the wording is unified so there is not a third form of the same fact |
 
 ## New and changed
 
-- **Tokens:** none added, renamed, removed or changed in value. `version` in `tokens.json` is `"2.0.1"` — and this patch number is the reason the field had to become a string in 2.0.
-- **New classes** `.pp-models.wrap` and `.pp-models.wrap.is-overflow` (the fade moves from the right edge to the bottom).
-- **Changed:** nothing else in `bundle.css`. `pp-taggrid` is unchanged — what changed is *when the app applies it*.
-- **Components changed:** ModelPicker (README and preview), ScreenTags (README and preview), ScreenSharePage, ScreenSettings, PrintCard (corrected figures).
-- **Previews:** ModelPicker gains the 29-model wrapped case as a focusable labelled region; ScreenTags now draws both the two-tag card at 520px and an eight-tag grid, and its earlier four-row grids are unwrapped because four is under the threshold.
-- **Copy deck:** "Added in 2.0.1" (7 keys). Nothing changed or removed.
-- **Contrast report:** no new pairs. The Betaallink is a secondary button on `surface` inside `pp-sharepay`, which is already measured.
+- **Tokens:** none added, renamed or removed. `tokens.json` `version` is **2.2**. The two new lengths are `bundle.css` variables, next to `--pp-tap` and `--pp-control-h`, not tokens: `--pp-name-min` (240px, the file row's name-column floor). New allowed **inline data properties**, which the app sets from a measurement and never from a chosen value: `--pp-pop-max`, `--pp-tip-x`, `--pp-tip-y`.
+- **New classes** `.pp-anchor.sheet` (the sheet form at any width), `.pp-tip.at` (with `.at.end`, `.at.down`), `.pp-anchor.down>.pp-tip`, `.pp-w-900` (preview helper).
+- **Changed classes** `.pp-anchor>.pp-pop` (flex column, `max-height: var(--pp-pop-max, …)`, `overflow-y: auto`, `overscroll-behavior: contain`; its children do not shrink), `.pp-anchor>.pp-picker` and `.pp-anchor>.pp-tagpop` (the panel does not scroll, the inner region does — which keeps its 240px as a preferred height and shrinks below it only when the panel is capped, so a panel with room is unchanged), `.pp-anchor>.pp-tip` and `.pp-anchor.end>.pp-tip` (placement, `z-tooltip`, never hoverable), `.pp-asset` (the 760px container form: name floor, yielding controls), `.pp-asset .acts` (`min-width: 0`), `.pp-asset .ord` (wraps), `.pp-print h3 .pp-lacks` (new rule).
+- **Copy** `print.lacks` (changed: "Ontbreekt: {types}", joined with ", " and " en ", now the bubble *and* the chip), `print.lacks.aria`, `print.lacks.item`, `print.lacks.type.gcode`, `print.lacks.type.3mf`, `print.lacks.type.stl`. All six are in `copy-deck.md` under *Added in 2.2*; the first three were named in 2.0/2.1 and had never reached the deck. No key removed.
+- **Components changed:** Popover, Tooltip, SpoolPicker, TagEditor, OverflowMenu, AssetListItem, PrintCard.
+- **Previews changed:** Popover (flipped, capped with 30 spools, sheet), Tooltip (above, `.end`, `.down`, and a real description with `aria-describedby`), PrintCard (the icons behind the name on a tagless card, a 33-character name, the tag row keeping "Geen spoel", the short form in bubble and chip — and the stale `--mix` demo of 1.9 removed, two versions after `--mix` left the contract), AssetListItem (the duplicate row in a 900px and a 768px container).
+- **Pages changed:** `README.md` (new section *Floating panels*, plus the missing 2.0/2.1 record), `copy-deck.md`, `do-dont.md`, `contrast.md` (two rows reworded: the `bg` on `text-strong` pair is the tooltip bubble as well as the rail tip — it was only labelled for the rail).
+- **Contrast report:** no new colour pair. Nothing changes colour this round: the bubble is the existing `.pp-tip` (`bg` on `text-strong`, 15.84 light / 16.08 dark) and the icons keep the 2.1 figures (`warning` on `surface` 6.11/10.84, on `primary-tint-soft` 5.46/9.53, on `primary-tint` 4.99/8.52, against a 3:1 requirement).
+- **Breaking changes:** none. No token or class is renamed or removed. Two things the app must now do that it did not before: set `--pp-pop-max` and the side modifiers on every anchored panel, and set `--pp-tip-x`/`--pp-tip-y` on a tooltip that uses `.at`. A panel that sets neither still cannot be drawn off-screen in the horizontal axis, but it can be below the fold — the backstop cap is the window height, not the room below the trigger.
 
-## About `tokens.css`
+## What I rejected, and why
 
-Noted, and worth writing down because it will come back: **`tokens.css` is generated by the Artifact page and is never a file in the export**, so an export alone cannot give it to you — your sync was right to be surprised and right to keep its restored copy. No token changed in 2.0 or 2.0.1, so your independent check of all 45 colour tokens against `tokens.json` is the better verification anyway. If I ever do change a token I will say so in the changelog's **Tokens** line explicitly, and you should regenerate from `tokens.json` or pull the generated file from the page rather than trust the export to carry it.
-
-## Still open from 2.0
-
-Nothing new. The two uncertainties I flagged are yours to answer while you build: whether the renderer can outline the model (GAP-071 — tell me if it cannot, rather than shipping the gap half closed), and whether `position: relative` on `tbody tr` holds in a real browser (GAP-093 — the delegation fallback is in PrintRow). Of the seven measurements I asked for, five are answered, one is yours to take while building (GAP-095's y-positions) and one is a verification after the fix (GAP-098's panel edge).
-
----
-
-# Changelog 2.0
-
-Decides the 20 gaps open after 1.9 (GAP-071, GAP-072, GAP-088 to GAP-105). **Version 2.0, not 1.10**, because `--mix` leaves the contract and `.pp-thumb.tinted`, `.pp-plate.tinted` and the poster frame paint something else; every other round renamed nothing. Version 1.9 follows below.
-
-**`version` in `tokens.json` is now the string `"2.0"`, not a number.** A JSON number cannot carry this: `2.0` parses back as `2` and `1.10` as `1.1`, which is *lower* than 1.9. Your importer takes `VERSION` from this field, so it has to be a string from here on.
-
-| Gap | About | Result |
-|---|---|---|
-| GAP-071 | Dark filament tint swallows the model | **resolved**: no ground tint at all. The colour moves to the object (4px bar, swatch, the model in the render); the render carries a baked `#6f7a96` outline; `--mix` and `color-mix()` are gone |
-| GAP-072 | Card subtitle repeats the print name | **resolved**: yes, the 1.9 proposal as it stands, now official for card, row, breadcrumb and share line |
-| GAP-088 | Internal link label still in two specs | **resolved**: dropped from DocOverview (no sub-line) and from ScreenSharePage's Anatomy, which contradicted its own 1.9 section |
-| GAP-089 | No video decoder in the container | **resolved**: the spec stops asking for a poster frame anywhere; a video is a neutral ground, a `file-video` icon, a play badge and a duration |
-| GAP-090 | Show which files a print lacks | **resolved**: one `pp-lacks` chip, "Ontbreekt: G-code, 3MF, STL" in that fixed order, absent when nothing is missing. Bare icons rejected, video and "incomplete 3MF" stay out by your measurement |
-| GAP-091 | The tile looks selectable but only its checkbox selects | **resolved**: one rule for all four affordance gaps — one target per tile or row, controls above it, text that leads nowhere is not styled like a target. In README under *Targets* |
-| GAP-092 | Klant chip sets name and count in the same weight | **resolved**: `span.nm` at 600 in the chip's ink, `span.n` and `span.amt` at 400 with a `·` separator; no new colour pair |
-| GAP-093 | Grid opens on the whole card, list only on the title | **merged into GAP-091**: the name cell gets `pp-rowlink`, stretched over the row |
-| GAP-094 | Model picker shows file names, and a Select above six | **resolved**: the Select above six is **rejected** (two controls for one job); the strip is the control at any count and fades when it overflows. The button is the per-model render when one exists, else the type glyph and the name — never the print's own thumbnail |
-| GAP-095 | Empty space beside the capped viewer, the page reads wrong | **resolved**: `pp-pdtop`, a two-column media row — viewer and strip left, the card "Deze print" (facts plus the print's spool) right |
-| GAP-096 | Timelapse buried in the file list | **resolved in a changed form**: taken into the media strip as you proposed, but as a neutral button with a play glyph and a duration, never a poster, and it swaps the viewer for the inline player |
-| GAP-097 | Every file listed inside every order | **resolved in a changed form**: the inventory moves to print level (`pp-pdfiles`), the costing stays in the order ("In deze bestelling"), because a locked order must keep its own counts and slot spools |
-| GAP-098 | Column menu in Toegang is painted over | **resolved**: the cell that holds an open popover carries `has-pop` (z-index `z-popover`); a popover's own z-index cannot win against a sticky sibling cell |
-| GAP-099 | A user's name in Toegang looks interactive | **merged into GAP-091**: the matrix's first cell becomes `text` with `cursor: default` |
-| GAP-100 | Reused password shown as "Er ging iets mis" | **resolved**: official copy `auth.pw.unchanged`, a changed help line that prevents it, and the rule that every error code an endpoint can return has its own key |
-| GAP-101 | Instellingen and Tags leave most of their width empty | **resolved**: `pp-settings` and `pp-taggrid` — columns of at least 300–320px up to a 1080px measure, never a third column of form fields and never a stretched short row |
-| GAP-102 | API-docs still a box in a box | **resolved**: `pp-bleed` and `--pp-pad` — a renderer that brings its own frame fills the content area through the page padding; only the heading keeps it |
-| GAP-103 | The share page offers no way to pay | **resolved**: the "Betalen" block from 1.9 is the answer and can no longer be silently absent (a warning in Bedrijfsgegevens and in the create dialog when no IBAN is set). An online payment button is **rejected with a reason**: it needs a payment provider and cannot carry the amount |
-| GAP-104 | An uploaded SVG logo silently loses its text | **resolved**: the file contract is checked at upload — no `<text>`, `<tspan>` or `textPath`, nothing external, with the Dutch refusals |
-| GAP-105 | Nothing says what a logo must satisfy | **resolved**: six points in README (3:1 on both `surface` values, no text in SVG, self-contained, legible at 32px with no tagline, readable in black and white), plus a preview on both grounds at once |
-
-## The two corrections you made
-
-- **GAP-071, the `--mix` floor does ship.** Noted, and it changes nothing about the answer: the measurements are of the shipped rule, and they are what killed it. Thank you for the retraction — it is the reason this gap got a direction instead of a fourth number.
-- **GAP-072 was never resolved, only proposed.** Correct, and it was my fault for making a proposal that read like a decision. It is resolved now, unchanged, so the half you built is right and `placeOf` is the only thing left to do.
-
-## What I decided against your suggestion
-
-- **GAP-096** — accepted, with the poster taken out of it (there is no decoder, so there is no frame) and with the group label spelled out.
-- **GAP-097** — accepted in a narrower form. Moving *everything* to print level would have made the per-order counts and slot spools print-level values, which breaks the locked order of 1.6. The line is: the inventory is the print's, the costing is the order's.
-- **GAP-094, the Select above six models** — rejected. The gap is "the strip says too little"; a Select says less.
-- **GAP-090, icons rather than a chip** — the owner asked for small icons; it is a chip with one icon and the type names instead. Three slashed glyphs would be three inventions and a legend to learn, and at `text-xs` the words are shorter than the legend.
-- **GAP-103, an online payment button** — rejected, with the reason in ScreenSharePage. It is a product decision; if you want it, log it and I will design the slot.
-
-## New and changed
-
-- **Tokens:** none added, renamed or removed. `border-strong`'s usage note now also names the baked outline value. **Removed from the contract:** the inline data property **`--mix`**. Remaining allowed data properties: `--c1`, `--c2`, `--tag`, `--tag-ink`, `--v`, `--w`.
-- **New classes** `.pp-lacks`, `.pp-rowlink`, `.pp-pdtop`, `.pp-pdfiles`, `.pp-pdnew`, `.pp-settings`, `.pp-taggrid`, `.pp-bleed`, `.pp-logo-pair`, `.pp-w-1080`, and the modifiers `.has-pop` (matrix cell), `.span-2` (settings section), `.video` (`pp-modelbtn`), `.on-light` and `.on-dark` (`pp-logo-box`), plus the parts `.nm` (chip), `.dur` (model button), `.ord` (asset row), `.is-overflow` on `.pp-models`.
-- **Changed classes** `.pp-thumb.tinted` (neutral ground; `::after` is now the filament bar on a card thumbnail and is suppressed at `sm` and in the model strip), `.pp-plate.tinted` (neutral ground), `.pp-thumb.poster` (never a frame), `.pp-main` and `.pp-phone-main` (padding through `--pp-pad`, same computed value), `.pp-matrix th:first-child`/`td:first-child` (`text`, `cursor: default`), `.pp-matrix th.has-pop`/`td.has-pop`, `.pp-chip` (ink `text`) with `.nm`/`.n`/`.amt`, `.pp-table tbody tr` (`position: relative`), `.pp-print .pp-sel` (hairline, full tap area), `.pp-order .pp-detail` at 900px and below (Betaling first, hairline moved).
-- **Components changed:** ScreenPrintDetail, ModelPicker, PrintCard, PrintRow, OrderSection, AssetListItem, SpoolSwatch, VideoPlayer, CustomerChips, AccessMatrix, ScreenAccess, ScreenSettings, ScreenTags, ScreenApiDocs, ScreenSharePage, ScreenLogin, DocOverview.
-- **Previews redrawn:** ScreenPrintDetail (1280px with one order, 980px with two, 360px with and without a model), ModelPicker (strip with a timelapse, the timelapse chosen, twelve models overflowing, phone, loading, video-only print), PrintCard (the filament bar on black, dark purple, yellow, white and no spool; two of seven cards carry a missing-files chip, matching the 24%/2% distribution), PrintRow, ScreenAccess (1360px with the leftmost column menu open over the sticky column), ScreenSettings (two columns, the logo on both grounds, the IBAN warning, the SVG refusal), ScreenTags (three columns), ScreenApiDocs (bleeding renderer), CustomerChips, VideoPlayer.
-- **Contrast report:** 20 new rows, **163 pairs**, 0 fail among the pairs the system uses. Two rows are recorded as **failing on purpose** (`primary` as a logo ink on the opposite theme's ground, 2.52 and 2.79) to document a forbidden pair, and one pair is retired: "rendered model on its filament ground" cannot be measured and no longer exists.
-- **Copy deck:** "Added in 2.0" (27 keys), two changed keys (`auth.passwordHelp`, `settings.logoHelp`), nothing removed. The duplicated *Added in 1.7* section is deleted; no key changed. The duplicated *Versie 1.7* paragraph in README is deleted too.
-- **do-dont.md:** a new 2.0 section with the rules behind this round (Targets, colour that belongs to the data, width, absence).
-
-## Breaking changes
-
-1. **`--mix` is out of the contract.** The app can stop computing a luminance; the property is ignored if it stays. Every thumbnail and plate loses its coloured ground — visible on every card and row.
-2. **The poster frame is out of the spec** (GAP-089). `pp-thumb.poster` and the inline player never hold an extracted frame; the `<video>` carries no `poster` attribute.
-3. **The print detail's structure changes.** "Spoel voor de hele print" moves into the card "Deze print" in the media row; the card "Nog niet in een bestelling" is gone (its rows are rows of the print's file list with the badge); an order's "Bestanden" section becomes "In deze bestelling" and holds only the items that order bills; STL, 3MF-without-plates, video, PDF and link rows are no longer inside Bestelling 1. At 900px and below an order's sections are ordered Betaling, Totaalkosten, In deze bestelling.
-4. **The order of `pp-main`'s children on a phone** is set by flex `order` on `pp-pdfiles` and `pp-pdnew`; an app that reorders the DOM itself will fight it.
-5. **Not breaking, but worth knowing:** `.pp-table tbody tr` is now `position: relative` so a row link can stretch. If relying on that is unwelcome, delegate a row click to the name link instead; same behaviour, same single target.
+- **`minmax(0,auto)` for the controls column alone** (GAP-111's one-line override). It makes the measured case worse: grid gives free space to the `auto`-max track before an `fr` track whose minimum is 0, so the name column goes to zero instead of 75px. The floor on the name column is the part that does the work.
+- **The bare-icon legend without words anywhere** stays rejected from 2.0, and 2.1's answer to it stays: icons on the card and the row, words on the print detail. GAP-113 does not reopen it; it only shortens the words.
+- **Making the missing-file icon group focusable** so its tooltip is keyboard-reachable. It is a graphic with a text alternative, not a control, and a tab stop on every card that is missing a file — inside a stretched card link — costs more than it gives. Its words are on the print detail, which is the path that teaches them anyway.
+- **A hover delay of any size.** 400ms was in the spec because tooltips elsewhere repeat a visible label; this one is the only explanation of a glyph. A tooltip that costs nothing to show costs nothing to show by accident.
 
 ## What I need you to measure
 
-1. **GAP-071 / the render.** The measured contrast between the rendered model (with the new 1px `#6f7a96` outline) and the thumbnail ground in **both themes**, for a black spool, a white spool and a dark purple one. The outline is 3.69 light / 3.53 dark against `surface-2` by calculation; I want it from the app. If a *white* model on light `surface-2` is under 3:1 without the outline reaching it, the outline is drawn too thin, not the rule wrong.
-2. **GAP-094 / GAP-096.** Does the renderer produce **one PNG per model file or one per print**? And the 1.9 question: the largest and median number of models per print, and how many prints hold both models and a timelapse. The spec covers both branches; the numbers only tell me whether the strip needs a second row above some count.
-3. **GAP-095.** The y-position of the price field at 1360×900 and 390×844 after this round, and whether the right-hand card of the media row at 1360px is much shorter than the viewer beside it. If it is, the row has dead space again and I would move the newest order's Betaling into it.
-4. **GAP-098.** After the fix, the left edge of the open panel and the right edge of the sticky column at 1360px. I expect the full 140px and "Alles selecteren". If any is still cut off, the scroll box *is* clipping it and the answer is a portal, not a z-index.
-5. **GAP-101.** How many tags the real library has. Under four and I would rather cap the Tags card at 560px and leave the width empty on purpose.
-6. **GAP-103.** Is an IBAN filled in in Bedrijfsgegevens, and does the "Betalen" block appear on a link with an open amount? If the IBAN is set and the block is missing, this is an app bug, not a design gap.
-7. **GAP-089.** Still unanswered from 1.9: how many of the videos are `.mkv`. If it is most of them, the "cannot play in the browser" alert is the normal state and the button should say so.
-8. **GAP-090.** Not needed — your distribution was enough, and it decided the form of the answer. Thank you for measuring the thing that was actually in doubt.
+None of the five decisions waits on a number; these verify them, and if one comes back wrong I change the value rather than you inventing one.
 
-## Proposals, for you to log as gaps if the owner wants them
+- **GAP-111, the floor.** The min-content width of the widest thing that can sit in the name column with `nowrap`: every badge it can carry ("Mogelijk dubbel" 128px measured, "Niet in een bestelling", "Bestand ontbreekt", "Op factuur {nummer}") at your real data. If any exceeds **240px**, tell me the number and I raise `--pp-name-min`; do not raise it yourself.
+- **GAP-111, the sweep.** The **container** width of `.pp-assetlist` at window widths 900, 1400, 1700 and 2000. Your sweep is over window widths and the rule is a container query; broken at 900 and 1700 but correct at 1400 and 2000 cannot be monotone in the container, so I would like to know what the container actually does at 1700.
+- **GAP-112, the floor of 240px.** How often, and where, the sheet form is reached: the natural height of the tallest anchored panel in the app (the tag editor with every tag, the column menu in Toegang, the spool picker with 30 spools) and the smallest viewport height you see in practice. If nothing ever reaches the floor it is a backstop; if the tag editor reaches it on a laptop, I want to know.
+- **GAP-109 / 2.1's figures.** How many of the 83 cards carry missing-file icons. 2.1 says 58% of tiles carry nothing, which makes about 35 cards; your GAP-109 measurement says 10 cards carry icons, all 10 without tags. Both cannot be right, and the second is the one the owner sees. I have not changed anything on the strength of either.
 
-- **A payment link on the share page.** An optional "Betaallink" in Bedrijfsgegevens whose URL becomes a primary button "Betalen" at the top of the Betalen block, with the amount still shown as text because a generic link cannot carry it. Product decision; not designed until asked.
-- **A per-model render.** If the renderer only makes one PNG per print, one per model would make the media strip say what GAP-094 asked for. Cost is in the indexer, not here.
-- **`api.endpoints` as the renderer region's name**, still optional from 1.8.
+## Long cases drawn
 
----
+The duplicate file row in a 900px container (the width where the name column was 75px) and in a 768px one; the spool picker with 30 spools flipped above its trigger and again capped at 210px with the list scrolling and the search field in place; the same picker as a sheet; a tagless card with one icon, a three-icon card, a 33-character name with icons behind it, and a card whose tag row still carries "Geen spoel"; the tooltip above, right-hanging and below.
 
 # Changelog 1.9
 

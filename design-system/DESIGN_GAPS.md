@@ -1252,7 +1252,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Design system version:** 2.0.1
 
 
-## GAP-109 [open] The missing-file icons give a tagless print a whole extra line
+## GAP-109 [resolved in v2.2] The missing-file icons give a tagless print a whole extra line
 - **Type:** improvement idea
 - **Found while:** the owner's second look, right after 2.1 was specified (2026-10-08)
 - **Where needed:** PrintCard — the icon group's place on the tile
@@ -1263,7 +1263,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08, the owner did not want to wait). The icons sit at the end of the `h3` beside the name, marked `ds-gap: GAP-109`. Built from the 2.1 icon group unchanged — only its parent differs — so adopting the official answer is moving one element.
 - **Design system version:** 2.1
 
-## GAP-110 [open] A tooltip has no placement, and 400ms is too slow for an icon you do not know yet
+## GAP-110 [resolved in v2.2] A tooltip has no placement, and 400ms is too slow for an icon you do not know yet
 - **Type:** unclear spec
 - **Found while:** adding a tooltip to the missing-file icons at the owner's request (2026-10-08)
 - **Where needed:** Tooltip; the `pp-lacks` icon group on PrintCard and PrintRow
@@ -1274,7 +1274,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08). `app-tip` places the bubble from tokens only, and it appears at once. Marked `ds-gap: GAP-110`.
 - **Design system version:** 2.1
 
-## GAP-111 [open] The file row's name column collapses to 75px and its badge overflows onto the controls
+## GAP-111 [resolved in v2.2] The file row's name column collapses to 75px and its badge overflows onto the controls
 - **Type:** suspected design bug
 - **Found while:** the owner's third walkthrough, with screenshots of three different prints (2026-10-08)
 - **Where needed:** AssetListItem, `.pp-asset`
@@ -1290,7 +1290,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08, the owner sees it daily). `grid-template-columns: auto minmax(min-content,1fr) minmax(0,auto)` as an app override, marked `ds-gap: GAP-111`, inventing no value and needing no breakpoint — below the system's own breakpoint the controls span columns 2 to -1, so the third track collapses to zero and the narrow layout is untouched. **Letting the controls shrink was not enough on its own:** nothing forces them to while the free space still covers them, so the name track needs the `min-content` floor as well. Re-swept: no collision at any of 760, 820, 900, 920, 960, 1000, 1400, 1700 or 2000px, and the row height at the two broken widths fell from 247px to 139px.
 - **Design system version:** 2.1
 
-## GAP-112 [open] A popover near the bottom of the window opens downwards and falls off the screen
+## GAP-112 [resolved in v2.2] A popover near the bottom of the window opens downwards and falls off the screen
 - **Type:** missing state
 - **Found while:** the owner asked whether the filament dropdown was also broken (2026-10-08)
 - **Where needed:** Popover and SpoolPicker; the rule `.pp-anchor>.pp-pop{top:calc(100% + var(--space-2))}`
@@ -1301,7 +1301,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08, the owner sees it daily). A `useFlipAbove` hook measures the panel once it is up and flips it above the trigger only when the room below is smaller than the panel **and** the room above is larger, so a panel near the top does not flip into the same problem upwards; `app-pop-fit` caps the height so the panel's own list scrolls. Marked `ds-gap: GAP-112`. The flip rule had to be scoped to `.pp-anchor >` to outweigh `.pp-anchor > .pp-pop`, which sets `top`: left in place, top and bottom were both set and the panel squeezed itself to 18px of its 302. Verified on all five pickers of one print detail: worst off-screen 0px, three flipped, none collapsed, axe 0.
 - **Design system version:** 2.1
 
-## GAP-113 [open] The missing-files tooltip reads as a full sentence where a phrase would do
+## GAP-113 [resolved in v2.2] The missing-files tooltip reads as a full sentence where a phrase would do
 - **Type:** improvement idea
 - **Found while:** the owner's reaction to the tooltip built in 2.1 (2026-10-08)
 - **Where needed:** the `pp-lacks` tooltip on PrintCard and PrintRow

@@ -48,7 +48,6 @@ import { AssetList, type AssetControls } from './AssetList';
 import { OverflowMenu } from '../components/OverflowMenu';
 import { TagEditor } from './TagEditor';
 import { placeOf } from './filter';
-import { Meta } from './PrintCard';
 import { assetsForOrder, isSettled, newestFirst, orderLabels, unassignedAssets } from './orders';
 import type { Order, PrintDetail } from './types';
 

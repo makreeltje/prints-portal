@@ -4,12 +4,6 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 
 **Read the Ground column.** Every pair is measured over one ground (`bg`, `surface`, `surface-2`, or a fill). A pair is only approved over the ground in its row. Translucent tokens (`primary-tint-soft`, `primary-tint`, `primary-tint-strong`, `paid-tint`, `unpaid-tint`, `warning-tint`, `info-tint`) are composited over their ground, so the same token gives a different ratio on every ground: they are approved only over the grounds listed in the table *Translucent tokens over every ground* below. Using one over any other ground needs a new measurement here first.
 
-**Two pairs in this report are baked into an image, not drawn with tokens.** A server-rendered thumbnail outlines the model with `#6f7a96` (the light `border-strong` value) because a PNG cannot read a custom property; one ink has to work on both themes' grounds, and this one does (3.53:1 or more). An uploaded logo is user data shown in both themes with no adaptation, so **every ink in it must reach 3:1 against both `#ffffff` and `#1a1b26`**; the app cannot measure an arbitrary file, so Instellingen shows the logo on both grounds at once instead (GAP-105). The last two rows below are there to be failed: they show why the system's own `primary` cannot be a logo colour.
-
-**The slash on a missing-file icon is a knockout, not a pair.** The 3px `var(--surface)` line under the `warning` line only cuts a gap in the glyph so the slash reads at 16px; it is never the thing being seen, so it has no ratio of its own. On a hovered or selected card the ground is a tint over `surface`, so the knockout is a hair lighter than the ground — invisible at 1px, and the pairs that matter (the icons above) are measured over those exact composites.
-
-**One pair that cannot exist any more.** Until 1.9 a thumbnail's ground was the filament colour, and the pair "rendered model against its ground" had no fixed value at all, because one side was user data. 2.0 removes it: the ground is `surface-2` in both themes and the separation is the baked outline above. An arbitrary user colour and any fixed ground have no guaranteed contrast in either direction, so a tint floor could not have worked at any value — which is what the `--mix` measurements showed.
-
 | Theme | Use | Pair | Ground | Ratio | Needed | Result |
 |---|---|---|---|---|---|---|
 | dark | text | `text` on `bg` | `bg` | 11.71 | 4.5 | pass |
@@ -107,7 +101,7 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | dark | duplicate hint line | `warning` on `surface` | `surface` | 10.84 | 4.5 | pass |
 | dark | document and info text | `info` on `bg` | `bg` | 11.02 | 4.5 | pass |
 | dark | "Verloopt niet" in ShareLinkRow, link label on the not-billed share page | `muted` on `surface` | `surface` | 6.84 | 4.5 | pass |
-| dark | icon-rail tooltip text (pp-tip) | `bg` on `text-strong` | `text-strong` | 16.08 | 4.5 | pass |
+| dark | tooltip text (pp-tip), rail and bubble | `bg` on `text-strong` | `text-strong` | 16.08 | 4.5 | pass |
 | dark | drawer links and auth card text | `text` on `surface` | `surface` | 10.59 | 4.5 | pass |
 | dark | muted row text on hover (deleted and archived rows) | `muted` on `primary-tint-soft` | `primary-tint-soft` | 6.01 | 4.5 | pass |
 | dark | selected customer chip (aria-pressed) | `info` on `info-tint` | `info-tint` | 7.34 | 4.5 | pass |
@@ -127,7 +121,7 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | light | duplicate hint line | `warning` on `surface` | `surface` | 6.11 | 4.5 | pass |
 | light | document and info text | `info` on `bg` | `bg` | 5.98 | 4.5 | pass |
 | light | "Verloopt niet" in ShareLinkRow, link label on the not-billed share page | `muted` on `surface` | `surface` | 6.03 | 4.5 | pass |
-| light | icon-rail tooltip text (pp-tip) | `bg` on `text-strong` | `text-strong` | 15.84 | 4.5 | pass |
+| light | tooltip text (pp-tip), rail and bubble | `bg` on `text-strong` | `text-strong` | 15.84 | 4.5 | pass |
 | light | drawer links and auth card text | `text` on `surface` | `surface` | 12.67 | 4.5 | pass |
 | light | muted row text on hover (deleted and archived rows) | `muted` on `primary-tint-soft` | `primary-tint-soft` | 5.39 | 4.5 | pass |
 | light | selected customer chip (aria-pressed) | `info` on `info-tint` | `info-tint` | 5.23 | 4.5 | pass |
@@ -155,34 +149,6 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | light (PDF) | document text | `paper ink` on `paper` | `paper` | 17.14 | 4.5 | pass |
 | light (PDF) | document text | `paper ink-2 (footer)` on `paper` | `paper` | 12.67 | 4.5 | pass |
 | light (PDF) | document text | `paper muted (labels)` on `paper` | `paper` | 6.03 | 4.5 | pass |
-| dark | thumbnail: model outline baked into the PNG, on the thumbnail ground (non-text 3:1, 2.0) | `#6f7a96` on `surface-2` | `surface-2` | 3.53 | 3.0 | pass |
-| light | thumbnail: model outline baked into the PNG, on the thumbnail ground (non-text 3:1, 2.0) | `#6f7a96` on `surface-2` | `surface-2` | 3.69 | 3.0 | pass |
-| dark | same outline where a thumbnail sits straight on a card (non-text 3:1, 2.0) | `#6f7a96` on `surface` | `surface` | 3.99 | 3.0 | pass |
-| light | same outline where a thumbnail sits straight on a card (non-text 3:1, 2.0) | `#6f7a96` on `surface` | `surface` | 4.29 | 3.0 | pass |
-| dark | filament bar under a card thumbnail: its hairline against the thumbnail ground (non-text 3:1, 2.0) | `border-strong` on `surface-2` | `surface-2` | 3.32 | 3.0 | pass |
-| light | filament bar under a card thumbnail: its hairline against the thumbnail ground (non-text 3:1, 2.0) | `border-strong` on `surface-2` | `surface-2` | 3.69 | 3.0 | pass |
-| dark | selection chip hairline on a card thumbnail (non-text 3:1, 2.0) | `border-strong` on `surface` | `surface` | 3.75 | 3.0 | pass |
-| light | selection chip hairline on a card thumbnail (non-text 3:1, 2.0) | `border-strong` on `surface` | `surface` | 4.29 | 3.0 | pass |
-| dark | missing-files chip `pp-lacks` on its own opaque base (2.0) | `warning` on `warning-tint` over `surface` | `warning-tint` over `surface` | 7.89 | 4.5 | pass |
-| dark | missing-file icons `pp-lacks`, no pill, on a card (non-text 3:1, 2.1) | `warning` on `surface` | `surface` | 10.84 | 3.0 | pass |
-| light | missing-file icons `pp-lacks`, no pill, on a card (non-text 3:1, 2.1) | `warning` on `surface` | `surface` | 6.11 | 3.0 | pass |
-| dark | the same icons in a table header or on a `surface-2` row (non-text 3:1, 2.1) | `warning` on `surface-2` | `surface-2` | 9.60 | 3.0 | pass |
-| light | the same icons in a table header or on a `surface-2` row (non-text 3:1, 2.1) | `warning` on `surface-2` | `surface-2` | 5.26 | 3.0 | pass |
-| dark | the same icons on a hovered card or row (non-text 3:1, 2.1) | `warning` on `primary-tint-soft` over `surface` | `primary-tint-soft` over `surface` | 9.53 | 3.0 | pass |
-| light | the same icons on a hovered card or row (non-text 3:1, 2.1) | `warning` on `primary-tint-soft` over `surface` | `primary-tint-soft` over `surface` | 5.46 | 3.0 | pass |
-| dark | the same icons on a selected card or row — the worst case (non-text 3:1, 2.1) | `warning` on `primary-tint` over `surface` | `primary-tint` over `surface` | 8.52 | 3.0 | pass |
-| light | the same icons on a selected card or row — the worst case (non-text 3:1, 2.1) | `warning` on `primary-tint` over `surface` | `primary-tint` over `surface` | 4.99 | 3.0 | pass |
-| light | missing-files chip `pp-lacks` on its own opaque base (2.0) | `warning` on `warning-tint` over `surface` | `warning-tint` over `surface` | 4.98 | 4.5 | pass |
-| dark | klant chip: the name (2.0) | `text-strong` on `surface-2` | `surface-2` | 12.88 | 4.5 | pass |
-| light | klant chip: the name (2.0) | `text-strong` on `surface-2` | `surface-2` | 14.74 | 4.5 | pass |
-| dark | klant chip: count and amount (2.0) | `text` on `surface-2` | `surface-2` | 9.38 | 4.5 | pass |
-| light | klant chip: count and amount (2.0) | `text` on `surface-2` | `surface-2` | 10.89 | 4.5 | pass |
-| dark | Toegang: the user name, which opens nothing (2.0) | `text` on `surface-2` | `surface-2` | 9.38 | 4.5 | pass |
-| light | Toegang: the user name, which opens nothing (2.0) | `text` on `surface-2` | `surface-2` | 10.89 | 4.5 | pass |
-| both | an uploaded logo, example ink, on the light theme's `surface` (non-text 3:1, 2.0) | `#5878d6` on `#ffffff` | `surface` (light) | 4.14 | 3.0 | pass |
-| both | an uploaded logo, example ink, on the dark theme's `surface` (non-text 3:1, 2.0) | `#5878d6` on `#1a1b26` | `surface` (dark) | 4.13 | 3.0 | pass |
-| both | why `primary` may not be a logo ink: it fails on the other theme's ground | `primary` (light `#3659c9`) on `#1a1b26` | `surface` (dark) | 2.79 | 3.0 | **fail, not allowed** |
-| both | why `primary` may not be a logo ink: it fails on the other theme's ground | `primary` (dark `#7aa2f7`) on `#ffffff` | `surface` (light) | 2.52 | 3.0 | **fail, not allowed** |
 
 ## Translucent tokens over every ground
 

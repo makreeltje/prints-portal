@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useFlipAbove } from '../components/useFlipAbove';
 import { ChevronDown, RotateCw, Search, TriangleAlert } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import { useAnchoredPanel } from '../components/anchoredPanel';
 import { formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import type { Spool } from '../prints/types';
@@ -30,6 +30,8 @@ export function SpoolPicker({
   describedBy?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const close = () => {
@@ -46,8 +48,10 @@ export function SpoolPicker({
       trigger.current?.focus();
     }
   };
+  // Where the panel goes, and how tall it may be (design system 2.2).
+  useAnchoredPanel(anchorRef, panelRef, trigger, open);
   return (
-    <span className="pp-anchor">
+    <span ref={anchorRef} className="pp-anchor">
       <button
         ref={trigger}
         type="button"
@@ -72,6 +76,7 @@ export function SpoolPicker({
       </button>
       {open && (
         <SpoolPopover
+          panelRef={panelRef}
           selected={value?.id ?? null}
           trigger={trigger}
           onPick={(id) => void pick(id)}
@@ -93,20 +98,23 @@ export function SpoolPopover({
   onPick,
   onClose,
   inline = false,
+  panelRef,
 }: {
   selected: number | null;
   trigger?: RefObject<HTMLButtonElement | null>;
   onPick: (spoolId: number | null) => void;
   onClose?: () => void;
   inline?: boolean;
+  /** The parent measures this panel to place it (design system 2.2). */
+  panelRef?: RefObject<HTMLDivElement | null>;
 }) {
   const id = useId();
   const queryClient = useQueryClient();
   const spools = useQuery({ queryKey: financeKeys.spools, queryFn: fetchSpools, retry: false });
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
-  const panel = useRef<HTMLDivElement>(null);
-  useFlipAbove(panel, !inline);
+  const ownPanel = useRef<HTMLDivElement>(null);
+  const panel = panelRef ?? ownPanel;
   const input = useRef<HTMLInputElement>(null);
   const latestClose = useRef(onClose);
   useEffect(() => {
@@ -127,7 +135,7 @@ export function SpoolPopover({
     return () => {
       document.removeEventListener('pointerdown', onPointer);
     };
-  }, [trigger, inline]);
+  }, [trigger, inline, panel]);
 
   const needle = query.trim().toLocaleLowerCase('nl-NL');
   const matches = (spools.data?.spools ?? []).filter((spool) => {
@@ -167,11 +175,7 @@ export function SpoolPopover({
 
   const unreachable = spools.isError;
   return (
-    <div
-      ref={panel}
-      // ds-gap: GAP-112 — useFlipAbove adds app-pop-above when it must.
-      className={inline ? 'pp-pop pp-picker pp-fill' : 'pp-pop pp-picker app-pop-fit'}
-    >
+    <div ref={panel} className={inline ? 'pp-pop pp-picker pp-fill' : 'pp-pop pp-picker'}>
       <div className="pp-iwrap" role="search">
         <Search className="pp-ico" aria-hidden="true" />
         <input

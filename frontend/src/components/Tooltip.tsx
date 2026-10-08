@@ -1,40 +1,46 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 /**
- * Tooltip: the design system's `pp-tip` bubble, shown on hover and dismissed
- * with Esc.
+ * Tooltip: the design system's bubble, in its window-placed form.
  *
- * Two deviations from the spec, both logged as GAP-110 and approved by the
- * owner: it appears immediately rather than after 400ms, and the system styles
- * `pp-tip` without saying where it goes inside an anchor, so `app-tip` places
- * it (tokens only).
+ * `.pp-tip.at` is required wherever an ancestor clips or scrolls, and this one
+ * lives inside `.pp-print`, which is `overflow: hidden`. The app passes the
+ * trigger's measured rect as `--pp-tip-x`/`--pp-tip-y` and picks the side per
+ * axis; every length stays in `bundle.css` (design system 2.2, Floating panels).
  *
- * The bubble is `aria-hidden` on purpose. Its text repeats the trigger's own
- * accessible name, so exposing it as a description would make a screen reader
- * say the same sentence twice. It is a visual affordance for people who can see
- * the icons but do not know them yet; everyone else already has the sentence.
+ * The bubble is `aria-hidden` because its text *is* the trigger's accessible
+ * name rather than an addition to it, so there is deliberately no
+ * `aria-describedby`: a screen reader should read the sentence once. The
+ * trigger stays non-focusable on purpose — it is a graphic inside a stretched
+ * card link, and its words live on the print detail.
  */
 export function Tooltip({ label, children }: { label: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const anchor = useRef<HTMLSpanElement>(null);
   const bubble = useRef<HTMLSpanElement>(null);
 
-  /*
-    The same problem as GAP-112, but sideways: a bubble hung from its trigger's
-    left edge runs off the window on every card in the last column. This is a
-    horizontal measurement, so it is not useFlipAbove — that one weighs the room
-    above against the room below. The class goes on the element directly, since
-    feeding a measurement back as state renders the bubble twice to land on the
-    same pixels.
-    ds-gap: GAP-110
-  */
   useLayoutEffect(() => {
+    if (!open) return;
+    const trigger = anchor.current?.getBoundingClientRect();
+    const box = bubble.current?.getBoundingClientRect();
+    if (trigger === undefined || box === undefined) return;
+    // Each axis on its own, as Popover does: hang from the right edge when a
+    // left-aligned bubble would pass the window, and drop below when there is
+    // no room above.
+    const end = trigger.left + box.width > window.innerWidth;
+    const down = trigger.top < box.height;
     const element = bubble.current;
-    if (!open || element === null) return;
-    const box = element.getBoundingClientRect();
-    element.classList.toggle('app-tip-end', box.right > window.innerWidth);
-    return () => {
-      element.classList.remove('app-tip-end');
-    };
+    if (element === null) return;
+    element.classList.toggle('end', end);
+    element.classList.toggle('down', down);
+    element.style.setProperty(
+      '--pp-tip-x',
+      `${String(Math.round(end ? trigger.right : trigger.left))}px`,
+    );
+    element.style.setProperty(
+      '--pp-tip-y',
+      `${String(Math.round(down ? trigger.bottom : trigger.top))}px`,
+    );
   }, [open]);
 
   useEffect(() => {
@@ -50,6 +56,7 @@ export function Tooltip({ label, children }: { label: string; children: ReactNod
 
   return (
     <span
+      ref={anchor}
       className="pp-anchor"
       onPointerEnter={() => {
         setOpen(true);
@@ -60,8 +67,7 @@ export function Tooltip({ label, children }: { label: string; children: ReactNod
     >
       {children}
       {open && (
-        // ds-gap: GAP-110
-        <span ref={bubble} className="pp-tip app-tip" role="tooltip" aria-hidden="true">
+        <span ref={bubble} className="pp-tip at" role="tooltip" aria-hidden="true">
           {label}
         </span>
       )}

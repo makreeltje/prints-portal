@@ -156,8 +156,6 @@ export const nl = {
   'print.lacks': 'Ontbreekt: {types}',
   'print.lacks.aria': 'Deze print heeft {types}.',
   'print.lacks.item': 'geen {type}-bestand',
-  // ds-gap: GAP-113 — the tooltip says it in a phrase; the accessible name keeps the sentence.
-  'print.lacks.short': 'Geen {types}',
   'print.lacks.gcode': 'G-code',
   'print.lacks.threemf': '3MF',
   'print.lacks.stl': 'STL',

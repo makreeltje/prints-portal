@@ -11,3 +11,5 @@ SpoolPicker chooses a spool from Spoolman by material, colour, vendor or price p
 **Dutch copy.** Kies een spoel | Zoek op materiaal, kleur of leverancier | Geen spoelen gevonden | €/kg | Geen spoel
 
 **Inline values (1.4).** The trigger uses `pp-minw-200 pp-start`; spool colours stay data (`--c1`, `--c2`).
+
+**Where the panel goes (2.2, GAP-112).** This is the component the bug was measured on: 320x302 with 30 spools, opened at y=831 in a 900px window, 233px of it below the fold. The placement rule is Popover's, in full, and it is not optional — side, `--pp-pop-max`, sheet under 240px of room. The listbox is the scroll region: it keeps 240px as the height it prefers and shrinks below it when the panel is capped, so the search field stays visible and the page never scrolls to reveal the list; that is what the owner was missing when all they could see was the search field.

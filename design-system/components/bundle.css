@@ -928,3 +928,61 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-logo-pair{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center}
 .pp-logo-box.on-light{background:#ffffff;border-style:solid;border-color:var(--border-strong);color:#586282}
 .pp-logo-box.on-dark{background:#1a1b26;border-style:solid;border-color:var(--border-strong);color:#98a2cf}
+
+/* ------------------------------------------------------------------ 2.2 */
+
+/* GAP-112 a floating panel always fits in the window.
+   Until 2.1 `.pp-anchor>.pp-pop` only ever opened downwards, so a spool picker
+   (320x302) on a trigger at y=831 in a 900px window hung 233px below the fold.
+   Three parts, in this order: the app picks the side (.up / .end), the app passes
+   the room that side has in --pp-pop-max and the panel never grows past it, and
+   its own region scrolls instead of the page. Under 240px of room on both sides
+   the panel takes the sheet form at any width (.pp-anchor.sheet).
+   The side modifiers themselves are unchanged; what is new is that they are
+   mandatory and that the height is capped. See README "Floating panels". */
+.pp-anchor>.pp-pop{display:flex;flex-direction:column;max-height:var(--pp-pop-max,calc(100vh - var(--space-7)));overflow-y:auto;overscroll-behavior:contain}
+.pp-anchor>.pp-pop>*{flex:0 0 auto}
+.pp-anchor>.pp-picker,.pp-anchor>.pp-tagpop{overflow-y:hidden}
+.pp-anchor>.pp-picker ul,.pp-anchor>.pp-tagpop .list{flex:1 1 auto;min-height:0}
+.pp-anchor.sheet>.pp-pop{position:fixed;top:auto;left:0;right:0;bottom:0;width:auto;max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:var(--z-overlay)}
+.pp-anchor.sheet>.pp-pop,.pp-anchor.sheet>.pp-picker,.pp-anchor.sheet>.pp-tagpop{max-height:min(70vh,calc(100vh - var(--space-7)))}
+@media (max-width:480px){.pp-anchor>.pp-pop{max-height:min(70vh,calc(100vh - var(--space-7)))}}
+.pp-device.phone .pp-anchor>.pp-pop{max-height:min(70%,calc(100% - var(--space-7)))}
+
+/* GAP-110 the tooltip has a place. `.pp-tip` had no positioning rule at all, so every
+   consumer invented one. Default: above the trigger, left edges aligned, --z-tooltip.
+   `.end` hangs it from its right edge, `.down` puts it below (no room above).
+   `.at` is the required form whenever an ancestor clips or scrolls (`.pp-print` is
+   overflow:hidden, a table lives in `.pp-scroll`): the bubble is placed in the window
+   from the trigger's rect, which also keeps it clear of the sticky-cell paint of GAP-098.
+   The app passes two numbers (--pp-tip-x/--pp-tip-y = the trigger's left/top, or right/bottom
+   with .end/.down); every length stays here. Never interactive, so never hoverable. */
+.pp-anchor>.pp-tip{position:absolute;left:0;bottom:calc(100% + var(--space-1));z-index:var(--z-tooltip)}
+.pp-anchor.end>.pp-tip{left:auto;right:0}
+.pp-anchor.down>.pp-tip{bottom:auto;top:calc(100% + var(--space-1))}
+.pp-tip.at{position:fixed;left:var(--pp-tip-x,0);top:var(--pp-tip-y,0);z-index:var(--z-tooltip);transform:translate(0,calc(-100% - var(--space-1)))}
+.pp-tip.at.end{transform:translate(-100%,calc(-100% - var(--space-1)))}
+.pp-tip.at.down{transform:translate(0,var(--space-1))}
+.pp-tip.at.end.down{transform:translate(-100%,var(--space-1))}
+.pp-anchor>.pp-tip,.pp-tip.at{pointer-events:none}
+
+/* GAP-111 the file row's name column keeps a floor and the controls column yields.
+   The third track was `auto`, which takes max-content and never gives it back: the
+   controls measure 651px, so just above the 760px container breakpoint the name column
+   was left 75px and the nowrap "Mogelijk dubbel" badge (128px min-content) was drawn
+   over "Aantal keer geprint". minmax(0,auto) on the controls alone is NOT the fix: with
+   a 1fr name column whose minimum is 0, the free space goes to the controls first and the
+   name collapses to nothing. The name column needs the floor; then the controls wrap. */
+:root{--pp-name-min:240px}
+@container (min-width:760px){.pp-asset{grid-template-columns:auto minmax(var(--pp-name-min),1fr) minmax(0,auto)}}
+.pp-asset .acts{min-width:0}
+.pp-asset .ord{white-space:normal}
+
+/* GAP-109 the missing-file icons ride behind the name inside the h3's own line box, so a
+   print with no tags gets no extra line. The group is 16px tall and vertical-align:middle
+   keeps it inside a 22px line box: it adds no height. A flex row around name and icons was
+   tried first and put the icons on a line of their own at some name lengths; an atomic
+   inline box follows the last word instead. */
+.pp-print h3 .pp-lacks{margin-left:var(--space-1);vertical-align:middle}
+
+.pp-w-900{width:900px}

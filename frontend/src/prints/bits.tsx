@@ -55,19 +55,19 @@ export function LacksChip({
   const name = t('print.lacks.aria', {
     types: joinDutch(lacks.map((type) => t('print.lacks.item', { type: t(LACKS_LABEL[type]) }))),
   });
-  // ds-gap: GAP-113 — the bubble teaches three glyphs, so it says it in a
-  // phrase; the accessible name keeps the sentence, which is read out of context.
-  const hint = t('print.lacks.short', { types: joinDutch(types) });
+  // 2.2: one visible short form everywhere; the accessible name keeps the
+  // sentence, which a screen reader reads out of context.
+  const visible = t('print.lacks', { types: joinDutch(types) });
   if (withText) {
     return (
       <span className="pp-lacks has-text" role="img" aria-label={name}>
         <TriangleAlert className="pp-ico" aria-hidden="true" />
-        {t('print.lacks', { types: types.join(', ') })}
+        {visible}
       </span>
     );
   }
   return (
-    <Tooltip label={hint}>
+    <Tooltip label={visible}>
       <span className="pp-lacks" role="img" aria-label={name}>
         {lacks.map((type) => {
           const Icon = LACKS_ICON[type];

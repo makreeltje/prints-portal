@@ -451,6 +451,19 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | api.loadErrorBody | De documentatie kon niet worden opgehaald. Probeer het opnieuw. |
 | firstrun.tree.label | Voorbeeld van de mappenstructuur |
 
+## Added in 1.7
+
+| Key | Text |
+|---|---|
+| access.empty.title | Nog geen gebruikers om toegang te geven |
+| access.empty.body | Alleen Admins en Editors bestaan nu; zij zien altijd elke klant. |
+| access.empty.link | Naar Gebruikers |
+| api.title | API-docs |
+| api.noLoginField | Er is geen inlogveld: de documentatie gebruikt je sessie. |
+| api.search | Zoeken |
+| api.testRequest | Test request |
+| api.loadErrorBody | De documentatie kon niet worden opgehaald. Probeer het opnieuw. |
+| firstrun.tree.label | Voorbeeld van de mappenstructuur |
 
 ## Added in 1.9
 
@@ -536,74 +549,21 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 
 Removed in 1.9: the toast text for a lost connection (the bar keeps "Verbinding verbroken — opnieuw verbinden…"). Changed: the print subtitle "{klant} / {project}" becomes "{klant}" when the project equals the print name; the share-page line subtitle becomes "{datum}" in the same case.
 
-## Added in 2.0
+## Added in 2.2
+
+The three `print.lacks*` keys were named by 2.0 and 2.1 and never entered this deck; they are recorded here with the 2.2 wording, which is a change to `print.lacks` (it was the print-detail chip only and joined with commas).
 
 | Key | Text |
 |---|---|
 | print.lacks | Ontbreekt: {types} |
-| print.lacks.aria | Deze print heeft geen {types}. |
-| print.lacks.gcode | G-code |
-| print.lacks.threemf | 3MF |
-| print.lacks.stl | STL |
-| print.this | Deze print |
-| print.files | Bestanden |
-| print.files.count | {n, plural, one {# bestand} other {# bestanden}} |
-| order.filesInOrder | In deze bestelling |
-| order.itemCount | {n, plural, one {# item} other {# items}} |
-| asset.countsIn | Telt in {bestelling} |
-| models.groupBoth | Modellen en timelapse |
-| models.timelapse | Timelapse |
-| models.captionVideo | Timelapse: {bestandsnaam} |
-| models.videoAria | Timelapse {bestandsnaam}, {duur} |
-| models.viewerVideo | Timelapse van {naam} |
-| access.colMenu | Kolomacties voor {klant} |
-| auth.pw.unchanged | Dit is je huidige wachtwoord. Kies een ander wachtwoord. |
-| settings.company.noIban | Zonder IBAN staat er geen betaalinstructie op de deelpagina. |
-| shareLinks.noIban | Deze klant ziet geen betaalinstructie: er is nog geen IBAN ingevuld bij Bedrijfsgegevens. |
-| shareLinks.noIban.link | Naar Bedrijfsgegevens |
-| settings.logo.svgText | Deze SVG bevat tekst. Zet de tekst om in contouren (outlines) of upload een PNG. |
-| settings.logo.svgExternal | Deze SVG verwijst naar een bestand buiten het logo. Upload een zelfstandig bestand. |
-| settings.logo.themes | Het logo wordt in beide thema's ongewijzigd getoond. |
-| settings.logo.contrast | Gebruik middentonen: elke kleur in het logo moet op wit én op donkergrijs te zien zijn. |
-| settings.logo.onLight | Op licht |
-| settings.logo.onDark | Op donker |
-
-**Changed in 2.0.**
-
-| Key | Was | Is |
-|---|---|---|
-| auth.passwordHelp | Minstens 12 tekens. | Minstens 12 tekens en anders dan je tijdelijke wachtwoord. |
-| settings.logoHelp | PNG of SVG. Vervangt de naam op het scherm en op documenten. | PNG of SVG, maximaal 1 MB. Vervangt de naam op het scherm en op documenten. Tekst in een SVG moet omgezet zijn in contouren. |
-
-**Removed in 2.0:** nothing. `order.unassigned` ("Nog niet in een bestelling") is no longer a card title; it stays as the badge on a file row in the print's Bestanden card.
-
-**Also fixed in 2.0:** the section *Added in 1.7* appeared twice in this file, identically. The duplicate is removed; no key changed.
-
-## Added in 2.0.1
-
-| Key | Text |
-|---|---|
-| settings.customer.payLink | Betaallink (optioneel) |
-| settings.customer.payLink.help | Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert. |
-| settings.customer.payLink.added | Toegevoegd op {datum} |
-| settings.customer.payLink.only | Deze klant heeft wel een betaallink. |
-| share.payLink | Betalen via {studio} |
-| share.payLink.note | Deze link is door {studio} gemaakt en kan een ander bedrag bevatten dan hierboven staat. |
-| share.payLink.newTab | (opent in een nieuw tabblad) |
-
-**Changed in 2.0.1:** nothing. **Removed in 2.0.1:** nothing.
-
-## Added in 2.1
-
-| Key | Text |
-|---|---|
+| print.lacks.aria | Deze print heeft {items}. |
 | print.lacks.item | geen {type}-bestand |
+| print.lacks.type.gcode | G-code |
+| print.lacks.type.3mf | 3MF |
+| print.lacks.type.stl | STL |
 
-**Changed in 2.1.**
+Joining, both for `{types}` and for `{items}`: ", " between items and " en " before the last, in the fixed order G-code, 3MF, STL. So `print.lacks` reads "Ontbreekt: G-code", "Ontbreekt: G-code en 3MF", "Ontbreekt: G-code, 3MF en STL", and `print.lacks.aria` reads "Deze print heeft geen G-code-bestand, geen 3MF-bestand en geen STL-bestand."
 
-| Key | Was | Is |
-|---|---|---|
-| print.lacks.aria | Deze print heeft geen {types}. | Deze print heeft {lijst}. — `lijst` is the `print.lacks.item` values joined in Dutch: "geen G-code-bestand", "geen G-code-bestand en geen 3MF-bestand", "geen G-code-bestand, geen 3MF-bestand en geen STL-bestand" |
+`print.lacks` is the only visible form and is used in **two** places with the same words: the tooltip bubble on a print card or row, and the worded chip on the print detail (`pp-lacks has-text`). `print.lacks.aria` is the accessible name of the icon group and the sentence in the "Deze print" card; it is never shown in the bubble, which is `aria-hidden` (Tooltip, *Name or description*).
 
-**Still in use, with a narrower place:** `print.lacks` ("Ontbreekt: {types}") is now the **print detail** form only (`pp-lacks has-text`); the card and the row carry icons, whose text is `print.lacks.aria`. `print.lacks.gcode`, `.threemf` and `.stl` are the `{type}` values for both. **Removed in 2.1:** nothing.
-
+Changed in 2.2: nothing else. No key was removed.

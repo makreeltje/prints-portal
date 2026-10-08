@@ -1,11 +1,11 @@
-Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 2.1 (see `changelog.md`).
+Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 1.9 (see `changelog.md`).
 
 ## Principles
 
 1. **Status first.** Show Betaald/Open, Gearchiveerd and missing-data badges before anything else on a card or row.
 2. **Numbers are content.** Set every figure with tabular numerals (`font-variant-numeric: tabular-nums`), right-align money, always show units.
 3. **Dense but breathable.** Compact tables on a 4px grid, generous gaps between sections (`space-6` to `space-8`).
-4. **The filament colour is the only decoration, and it belongs to the object.** Keep chrome neutral (`bg`, `surface`, `surface-2`, `border`); let the spool swatch, the 4px filament bar under a card thumbnail and the model in the 3D preview carry colour. A user-chosen colour is never a ground behind content (2.0, GAP-071).
+4. **The filament colour is the only decoration.** Keep chrome neutral (`bg`, `surface`, `surface-2`, `border`); let spool swatches, tinted thumbnails and the 3D preview carry colour.
 5. **Customer-facing is friendlier.** On the share page and invoice use `text-md`, larger `space-*` steps and `radius-xl`; never show internal cost.
 6. **Accessible by default.** Meet WCAG 2.2 AA (see `contrast.md`), never use colour alone for status, keep touch targets at 44px or more on phones.
 
@@ -18,7 +18,6 @@ Design system for **3D Prints Portal**, a self-hosted web app that indexes print
 - Status colours: `paid` (Betaald, check icon), `unpaid` (Open and Afgeschreven, clock or ban icon, also destructive actions), `warning` (missing spool, price or cost, triangle icon), `info` (notices, "voorgesteld"). Badge ground is the matching `*-tint`; badge text is the status colour. Pair `paid` and `unpaid` with an icon and a word every time; they differ in lightness, not only hue.
 - Focus: draw `2px solid var(--focus-ring)` with a 2px offset on every interactive element. Dialogs and sheets sit on `overlay`. Skeletons use `skeleton`.
 - Tags and spools carry user-chosen colours. Choose tag text between `#141a33` and `#ffffff` by relative luminance (pick the one with the higher contrast). Never recolour a spool swatch to fit the theme.
-- **A user-chosen colour marks an object, never a ground.** A thumbnail, a plate and a model-strip button sit on `surface-2` in both themes; the filament colour is the model in the render, the 4px bar under a card thumbnail and the swatch. The render separates itself from its ground with a 1px `#6f7a96` outline baked into the PNG (3.53:1 or more on both `surface-2` grounds). There is no blend factor and no `--mix`: an arbitrary colour and a fixed ground have no guaranteed contrast in either direction.
 - Charts: use `viz-1` to `viz-5` in order for categories; they avoid the paid/unpaid/warning hues, so do not put `viz-4` beside `unpaid` in one chart. Use `viz-seq-1` to `viz-seq-5` for magnitude; label the two lowest steps in text.
 
 ## Typography
@@ -38,6 +37,18 @@ Design system for **3D Prints Portal**, a self-hosted web app that indexes print
 ## Responsive
 
 Breakpoints: up to 480px phone, 481–900px tablet, 901px and up desktop, 1440px and up wide. On phones tables become stacked cards, the bulk bar sticks to the bottom, dialogs become full-height sheets and the 3D viewer sits above the fold at a fixed aspect ratio. The app shell switches with media queries (see AppShell): sidebar above 900px, a 56px icon rail from 481 to 900px, top bar, bottom bar and drawer at 480px and below; the app never sets a `.phone` class. Never scroll the page horizontally; scroll wide tables inside their own container with a visible edge shadow.
+
+## Floating panels (2.2)
+
+Everything that floats beside a trigger — Popover, SpoolPicker, TagEditor, OverflowMenu, DatePicker, Tooltip — obeys one rule: **it is never drawn outside the window, and it never makes the page scroll to reveal it.** Measured in the app: a spool picker (320x302) on a file row low in a long print detail opened at y=831 in a 900px window, so 233px of it was below the fold, and a tooltip on a card in the last column ran 116px past the right edge. Both were the same hole in this page — no rule at all — not two bugs.
+
+1. **The app chooses the side, per axis, before the first paint**, from the trigger's rect and the panel's own height: down by default, `.up` when the room below is less than the panel's height and the room above is more; left-aligned by default, `.end` when a left-aligned panel would pass the right edge less `space-4`. A panel that reopens after a scroll is measured again.
+2. **The app passes the room it has**, less `space-4`: `--pp-pop-max` for a popover, `--pp-tip-x`/`--pp-tip-y` for a tooltip's rect. These are inline data properties, like `--c1`: the app passes numbers it measured, never lengths it chose. Every length — offset, radius, maximum width, the sheet's height — stays in `bundle.css`.
+3. **The panel caps itself and scrolls its own region.** A list inside a capped panel gives up its fixed 240px maximum and takes what is left, so the search field above it stays in view.
+4. **Under 240px of room on the better side, the panel becomes a bottom sheet** at any width (`.pp-anchor.sheet`), the form phones already get. 240px is the height of the list caps: below it a panel cannot show its list, and a sliver of scroller is worse than moving.
+5. **A tooltip whose trigger sits inside anything that clips or scrolls** (`.pp-print` is `overflow:hidden`, a table lives in `.pp-scroll`) uses the window-placed form `.pp-tip.at`. Stacking tokens do not help there: a sticky cell paints over `z-popover` inside a scroll box (GAP-098), and `overflow:hidden` cuts off whatever `z-index` says.
+
+A tooltip appears **at once** on hover and on focus — no delay. Details and the name-or-description rule: Tooltip's README.
 
 ## Components
 
@@ -71,26 +82,8 @@ Use Lucide line icons (`lucide-react`), 1.75px stroke, in sizes 16 (inline with 
 | Gearchiveerd | `archive` |
 | Verwijderd | `trash-2` |
 | Missing data | `triangle-alert` |
-| A missing file of that type | the type's own icon plus a diagonal slash (`<line>` corner to corner, with a 3px `surface` knockout under it), 16px in `warning` |
 
-Show the studio name in `heading-lg` type in the app shell, on the share page and on the invoice, with an optional uploaded logo image that replaces it when set in Instellingen.
-
-**What an uploaded logo must satisfy** (2.0, GAP-104 and GAP-105). One file is shown in both themes with no adaptation, in an `<img>` and in a PDF, and the container that rasterises it ships no fonts.
-
-1. **Both grounds, one file:** every ink reaches 3:1 against both `#ffffff` and `#1a1b26` (the two `surface` values; a logo is a non-text graphic, WCAG 2.2 1.4.11). Mid-tones only. `#5878d6` measures 4.14 and 4.13 and is a good example; the system's own `primary` cannot do it (2.52 / 2.79 on the opposite ground) and must never be used as a logo ink.
-2. **No text in an SVG:** `<text>`, `<tspan>` and `textPath` are refused at upload — there are no fonts, so they render as nothing at all. Outline lettering to paths, or upload a PNG.
-3. **Self-contained:** no external reference, no `@import`, no `currentColor`, no CSS-dependent fill.
-4. **Legible at 32px** (`--space-7` in the sidebar and drawer, `--space-6` in the phone top bar) and **no tagline or second line**; a ratio between about 1:1 and 4:1.
-5. **Readable without colour:** documents print in black and white.
-6. Instellingen shows the stored file on both grounds at once (`pp-logo-pair`), because no validator can measure point 1 for an arbitrary file.
-
-## Targets
-
-One rule, from 2.0 (GAP-091, with GAP-093 and GAP-099 merged into it):
-
-- A tile or row that leads somewhere has **exactly one** target, and it covers the whole tile or row: one real link stretched with a `::after` (`pp-rowlink` in a table, `pp-cust-name` on a klant tile, the card link on a print tile). The grid and the list behave the same.
-- Every other control sits above that link (`position: relative; z-index: 1`) with its own hit area and its own name. Selection is the checkbox's job only; a tile shows `is-selected` after it is ticked, never before, and a click never does both jobs.
-- **Text that leads nowhere is never styled like a target.** In a table, `text-strong` at weight 500 in the identifying cell means "this opens something"; a cell that opens nothing is `text` with `cursor: default` and no hover.
+No logo has been supplied. Show the studio name in `heading-lg` type in the app shell, on the share page and on the invoice, with an optional uploaded logo image that replaces it when set in Instellingen.
 
 ## Content fundamentals
 
@@ -125,7 +118,7 @@ Customers Joey, Denise, Wouter (and Rick, niet factureren); project "Babybox loc
 - A print (project folder) has one or more orders. Order 1 always exists; a Nabestelling is added by Admin or Editor. An order owns its items (each file or plate with its own "Aantal keer geprint"), Verkoopprijs, payments, write-off and, from M7, its invoice line. Files that are in no order wait until a Nabestelling is made. A print shows the summed price and the least settled status.
 - A payment is at most the open remainder of its order; Admins can undo the most recent payment, and undone payments stay in the history.
 - Instellingen (Admin) has the sections Algemeen, Prijzen (Standaardmarge, Stroomtarief, Materiaalprijzen), Printers, Bedrijfsgegevens, Klanten and Spoolman.
-- Stacking: popovers use `.pp-anchor` and `z-popover` (30); sticky bars 10, tooltips 40, drawers, sheets and dialogs 50. Apps never choose a z-index. **Inside a table with sticky cells a popover's own z-index is not enough** — a z-index is only compared inside its own stacking context, so the cell that holds the open popover carries `has-pop` while it is open (2.0, GAP-098).
+- Stacking: popovers use `.pp-anchor` and `z-popover` (30); sticky bars 10, tooltips 40, drawers, sheets and dialogs 50. Apps never choose a z-index.
 - Fixed-size helpers (`pp-w-*`, `pp-minh-*`, `pp-gap-*`, `pp-text-*`, `pp-fw-*`) replace inline values; the previews no longer need `style` attributes except for data properties.
 
 
@@ -139,17 +132,17 @@ Share page and PDF without prices, aligned share-link columns, calendar button, 
 ## Versie 1.7 (2026-10-07)
 Scalar is the API-docs renderer (`.pp-scalar` mapping), the contrast report names the ground of every pair, wrapping lock help, scrolling folder diagram, empty Toegang. Details: `changelog.md`.
 
+## Versie 1.7 (2026-10-07)
+Scalar is the API-docs renderer (`.pp-scalar` mapping), the contrast report names the ground of every pair, wrapping lock help, scrolling folder diagram, empty Toegang. Details: `changelog.md`.
+
 ## Versie 1.8 (2026-10-07)
 Badges sit on an opaque `surface` base, the contrast report covers translucent tokens inside tinted rows, and a rule for third-party renderers (focusable scroll regions). Details: `changelog.md`.
 
 ## Versie 1.9 (2026-10-07)
 A round driven by the real app (83 prints, 10 klanten): the share page (studio header, payment block, thumbnails), a print detail that fits the screen (capped viewer, one order card with sections, "⋯" menu), a finite dashboard and Openstaand (klant strip as one row, collapsed groups with age steps), sort and status filter, and three new components: ModelPicker, VideoPlayer and OverflowMenu. No token added, renamed or removed. Details: `changelog.md`.
 
-## Versie 2.0 (2026-10-08)
-The first breaking round. The print detail is reorganised around what belongs to a print and what an order bills (one media row with the viewer and a strip that now holds the timelapse, one file list at print level, orders that show only what they charge for); the filament colour stops being a thumbnail's ground and becomes a 4px bar on the object, so `--mix` leaves the contract; a print says which files it lacks; one rule covers every "this looks clickable" gap; a popover inside a sticky table raises its cell; Instellingen and Tags lay out in columns up to a 1080px measure; the API renderer bleeds through the page padding; and an uploaded logo has a contract it can be checked against. No token added, renamed or removed. Details: `changelog.md`.
+## Versie 2.0 and 2.1 (2026-10-08)
+*Recorded here in 2.2: both rounds updated the component files and `bundle.css` but not this page, `changelog.md` or `copy-deck.md`. What follows is the summary those component files carry; read them for the reasoning.* **2.0:** the filament colour stops being the thumbnail's ground and becomes a 4px bar along its bottom edge, the render carries a baked `#6f7a96` outline and `--mix` leaves the contract (GAP-071); missing files become one worded chip (GAP-090); one target per tile (GAP-091, with 093 and 099); the file list moves to print level and an order lists only what it bills (GAP-097); the card subtitle rule becomes official (GAP-072). **2.1:** the missing-file chip becomes three slashed type icons on the card and the row, worded only on the print detail (GAP-106, overruling 2.0 at the owner's second asking); the selection box is 24px of ink in a 36/44px target (GAP-107); each slot of `.pp-foot` holds the thing it is about (GAP-108).
 
-## Versie 2.0.1 (2026-10-08)
-Three answers corrected against measurements from the running app: the media strip wraps into a bounded grid above eight pictures (29 models is the real maximum, not a hypothetical), the Tags grid is used only from six tags because the library has two, and the per-klant pasted Betaallink is accepted as a secondary control that never quotes an amount. The missing-files figures are corrected to 22/8/8%. No token and no screen structure changed. Details: `changelog.md`.
-
-## Versie 2.1 (2026-10-08)
-The owner saw the missing-files chip built and asked, for the second time, for icons: the card and the list now show the type's own icon with a diagonal slash, and the worded chip moves to the print detail, where the legend is written. The tile selection box goes back to 24px of ink inside a 36/44px target — the target may be larger than what it paints. And a two-slot row gets one rule: each slot holds the thing it is about, so a card without a price no longer sets two identical chips against opposite edges. No token changed. Details: `changelog.md`.
+## Versie 2.2 (2026-10-08)
+Where floating things go: popovers choose their side, cap their height and fall back to a sheet, and the tooltip finally has a placement and no delay (GAP-112, GAP-110, section *Floating panels*). The file row's name column keeps a 240px floor so a badge is never drawn over the controls (GAP-111). The missing-file icons ride behind the print name instead of making a tag row of their own (GAP-109) and say "Ontbreekt: G-code, 3MF en STL" in one line, with the full sentence kept as the accessible name (GAP-113). No token added, renamed or removed. Details: `changelog.md`.

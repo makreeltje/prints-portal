@@ -42,12 +42,7 @@ export function PrintCard({
             <Link className="app-card-link" to={`/prints/${print.id}`}>
               {print.name}
             </Link>{' '}
-            {/*
-              ds-gap: GAP-109 — beside the name rather than in the tag row.
-              2.1 puts the icons first in the tag row, which gives a print with
-              no tags a whole extra line for two glyphs; print names are short
-              and the line beside them is empty.
-            */}
+            {/* Behind the name, where the line was already empty (GAP-109). */}
             <LacksChip lacks={print.lacks} />
           </h3>
           <span className="sub">{subLine(print)}</span>
