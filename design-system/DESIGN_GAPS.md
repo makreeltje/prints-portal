@@ -838,7 +838,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9 (measured against the shipped `--mix` mechanism)
 
-## GAP-072 [open] The card subtitle repeats the print's own name
+## GAP-072 [resolved in v2.0] The card subtitle repeats the print's own name
 - **Type:** improvement idea
 - **Found while:** the UX review of 1.0; status corrected while checking v1.9's claims
 - **Where needed:** PrintCard and PrintTable (`placeOf` in `frontend/src/prints/filter.ts`); ScreenSharePage line subtitle
@@ -1038,7 +1038,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-090 [open] A print's missing files are not visible until you open it
+## GAP-090 [resolved in v2.1] A print's missing files are not visible until you open it
 - **Type:** missing state
 - **Found while:** the owner's use of 1.0 after v1.9 (their request, 2026-10-07)
 - **Where needed:** PrintCard and PrintRow on ScreenDashboard
@@ -1130,7 +1130,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-098 [open] A column menu in Toegang is painted over by the sticky first column
+## GAP-098 [resolved in v2.0] A column menu in Toegang is painted over by the sticky first column
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** AccessMatrix on ScreenAccess
@@ -1141,7 +1141,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-099 [open] A user's name in Toegang looks interactive but is not the control
+## GAP-099 [resolved in v2.0] A user's name in Toegang looks interactive but is not the control
 - **Type:** unclear spec
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** AccessMatrix on ScreenAccess
@@ -1152,7 +1152,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-100 [open] Reusing the same password gives "Er ging iets mis"
+## GAP-100 [resolved in v2.0] Reusing the same password gives "Er ging iets mis"
 - **Type:** missing state
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenLogin / the forced password change; `frontend/src/auth/NewPasswordPage.tsx`
