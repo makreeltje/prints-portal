@@ -1026,13 +1026,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-089 [open] A video-only print cannot show a poster frame as its thumbnail
+## GAP-089 [resolved in v2.0] A video-only print cannot show a poster frame as its thumbnail
 - **Type:** missing component
 - **Found while:** implementing v1.9, GAP-085
 - **Where needed:** VideoPlayer and Thumbnail; `backend/src/thumbnails/service.ts`
 - **What is missing or wrong:** VideoPlayer 1.9 says the thumbnail of a print with no image and no model is the poster frame of its first video, with a play badge. The player is built, but the thumbnail is rendered by the backend, which has no video decoder: it renders PNG, reads 3MF previews and rasterises STL, and its only media library is `@resvg/resvg-js` (SVG).
 - **Owner's decision (2026-10-07): no video decoder in the container image.** So option (a) of the earlier proposal is off the table, and the poster rule should come out of VideoPlayer. Only 2 prints of 83 are video-only, so little is lost.
 - **What the owner asked for instead:** not a prettier thumbnail but a *warning* — see GAP-090, which asks for missing files to be visible on the dashboard tile.
+- **Closed (2026-10-08):** verified in the app rather than assumed. The backend has no poster or video-decoding path in its thumbnail service, 2.0 took the poster rule out of VideoPlayer, and the warning the owner asked for instead is built and measured (GAP-090). Nothing is left to do.
 - **Proposal:** drop the poster-thumbnail rule from VideoPlayer and say what a video-only print shows instead (today it is the "Geen voorbeeld" placeholder, which is honest). Keep the play badge only if a poster ever exists.
 - **Blocked:** nothing in the app. Waiting on VideoPlayer dropping the rule so the spec matches what is built.
 - **Temporary placeholder approved:** no
@@ -1323,5 +1324,16 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** (1) `.pp-tip.at` resets the edges it does not use (`bottom: auto`, and `right: auto` for `.end`), so the window-placed form is self-contained wherever it is written. Also say whether an `.at` bubble may sit inside a `.pp-anchor` at all. (2) Give the popover the window-placed form the tooltip has — `.pp-pop.at` with the trigger's rect — or say that a card must not clip an open panel, which is the cheaper rule but puts the obligation on every card in the system.
 - **Blocked:** nothing; both are built as placeholders below.
 - **Temporary placeholder approved:** yes (2026-10-08, the owner has now reported both twice). The tooltip's wrapper is **not** a `.pp-anchor`, so the stray `bottom` never applies; it lifts itself above the stretched card link, which the anchor had been doing. The card stops clipping while a panel is open. Both marked `ds-gap: GAP-114`.
+- **Design system version:** 2.2
+
+## GAP-115 [open] A file says "Kies een spoel" while it is already being costed with the print's spool
+- **Type:** missing state
+- **Found while:** the owner's fourth walkthrough (2026-10-08): *"in de prints detail heb je een spool keuze boven aan de pagina en vervolgens in de bestelling, is totaal losgekoppeld"*
+- **Where needed:** SpoolPicker, AssetListItem, CostBreakdown, ScreenPrintDetail
+- **What is missing or wrong:** there are two spool controls on a print detail — "Spoel voor de hele print" in the "Deze print" card, and one per file or slot inside an order — and nothing on screen says how they relate. They are **not** independent: the print's spool is the fallback used to cost every slot that has none. Measured on one print, setting it through the real control and clearing it again: with no print spool the total was **€ 7,05**; after choosing one the total became **€ 5,13**; after clearing it, € 7,05 again. The file's own trigger said **"Kies een spoel" the whole time**, including while that spool was being used to cost it. The only feedback that anything happened is a total that silently moves.
+- **Why it matters:** the control states the opposite of the truth. A file that *is* being costed with a spool offers "Kies een spoel", which reads as "nothing is set here", so the operator either sets it again per file or distrusts the total. It also makes the whole-print control look decorative, which is how it was reported. No print in this library of 83 has a whole-print spool set — plausibly because it has never looked like it does anything.
+- **Proposal:** the design system owns how an inherited value appears in a control that can override it. Some directions, all replaceable: the file trigger shows the inherited spool in `muted` with a word that marks it as inherited ("Van de print: 3DJAKE Orange") and only turns normal weight once that file has its own; or the trigger keeps "Kies een spoel" and the row carries the inherited name in its meta line, beside "Telt in Bestelling 1"; or CostBreakdown's Bron column names it, since that is where the number it changed already lives. Whichever it is, "no value here" should stop being shown for a value that exists.
+- **Blocked:** nothing is built on it; the costing is correct, only its account of itself is not.
+- **Temporary placeholder approved:** no
 - **Design system version:** 2.2
 
