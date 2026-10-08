@@ -26,6 +26,7 @@ function summary(overrides: Partial<PrintSummary> = {}): PrintSummary {
     hasThumbnail: true,
     colour: '#1a1a1a',
     money: null,
+    lacks: [],
     version: 'v1',
     ...overrides,
   };
@@ -55,7 +56,7 @@ describe('DashboardPage', () => {
     renderDashboard();
     const card = (await screen.findByRole('link', { name: 'Babybox locks' })).closest('article');
     if (card === null) throw new Error('no card');
-    expect(within(card).getByText('Joey / Babybox locks')).toBeInTheDocument();
+    expect(within(card).getByText('Joey')).toBeInTheDocument();
     expect(within(card).getByText('1 u 20 min')).toBeInTheDocument();
     expect(within(card).getByText('87 g')).toBeInTheDocument();
     expect(within(card).getByText('cadeau')).toBeInTheDocument();
@@ -517,6 +518,106 @@ function renderDetail(role: 'Admin' | 'Editor' | 'User' = 'Admin') {
   );
 }
 
+describe('one target per row (GAP-091, GAP-093)', () => {
+  it('stretches the name link over the whole row and keeps the checkbox above it', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary()], total: 1 } }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    // Two switches exist, one per width; either one does.
+    await screen.findAllByRole('button', { name: 'Lijst' });
+    await userEvent.click(screen.getAllByRole('button', { name: 'Lijst' })[0] as HTMLElement);
+    // Both layouts live in the DOM at once, so scope to the table.
+    const link = await waitFor(() => {
+      const found = document.querySelector('.pp-table .pp-rowlink');
+      if (found === null) throw new Error('no row link yet');
+      return found;
+    });
+    // The grid and the list behave the same: one real link, stretched.
+    expect(link).toHaveTextContent('Babybox locks');
+    const row = link.closest('tr');
+    expect(row).not.toBeNull();
+    // Every other control sits above that link rather than under it.
+    const checkbox = within(row as HTMLElement).getByRole('checkbox');
+    expect(checkbox).toHaveClass('app-above-link');
+  });
+});
+
+describe('missing-files chip (GAP-090)', () => {
+  it('is absent when nothing is missing, so most tiles are unchanged', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary({ lacks: [] })], total: 1 } }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    await screen.findByRole('link', { name: 'Babybox locks' });
+    expect(document.querySelector('.pp-lacks')).toBeNull();
+  });
+
+  it('names the missing types in the fixed order, whatever order they arrive in', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({
+        json: { items: [summary({ lacks: ['stl', 'gcode', '3mf'] })], total: 1 },
+      }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    await screen.findByRole('link', { name: 'Babybox locks' });
+    const chip = document.querySelector('.pp-lacks');
+    expect(chip).not.toBeNull();
+    // The backend sends the fixed order; the chip renders what it is given.
+    // The card shows one slashed icon per missing type; the sentence is the name.
+    expect(chip?.textContent).not.toContain('Ontbreekt:');
+    expect(chip?.querySelectorAll('svg').length).toBe(3);
+    expect(
+      screen.getByLabelText(
+        'Deze print heeft geen STL-bestand, geen G-code-bestand en geen 3MF-bestand.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('shows a tooltip on hover and hides it on Escape', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary({ lacks: ['gcode'] })], total: 1 } }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    await screen.findByRole('link', { name: 'Babybox locks' });
+    const chip = document.querySelector('.pp-lacks');
+    if (chip === null) throw new Error('no chip');
+    expect(screen.queryByRole('tooltip', { hidden: true })).toBeNull();
+    // Not the native title: the bubble is ours, and it appears at once.
+    expect(chip.getAttribute('title')).toBeNull();
+    await userEvent.hover(chip);
+    const tip = await screen.findByRole('tooltip', { hidden: true });
+    // 2.2: one visible short form; the sentence is the accessible name.
+    expect(tip).toHaveTextContent('Ontbreekt: G-code');
+    expect(chip.getAttribute('aria-label')).toBe('Deze print heeft geen G-code-bestand.');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(screen.queryByRole('tooltip', { hidden: true })).toBeNull();
+    });
+  });
+
+  it('shows a single missing type without a list', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary({ lacks: ['gcode'] })], total: 1 } }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    await screen.findByRole('link', { name: 'Babybox locks' });
+    const one = document.querySelector('.pp-lacks');
+    expect(one?.querySelectorAll('svg').length).toBe(1);
+    expect(screen.getByLabelText('Deze print heeft geen G-code-bestand.')).toBeInTheDocument();
+  });
+});
+
 describe('PrintDetailPage', () => {
   it('shows breadcrumb, name, tags, files with duplicates, exclusions and slots', async () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ json: detail() }) });
@@ -524,7 +625,9 @@ describe('PrintDetailPage', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Babybox locks' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Joey / Babybox locks')).toBeInTheDocument();
+    // "Joey" is both the breadcrumb and the Klant row of "Deze print" (GAP-095).
+    expect(document.querySelector('.pp-crumb')).toHaveTextContent('Joey');
+    expect(screen.getByRole('region', { name: 'Deze print' })).toHaveTextContent('Joey');
     const files = screen.getByRole('region', { name: 'Bestanden' });
     expect(within(files).getByText('2 bestanden')).toBeInTheDocument();
     expect(within(files).getByText('× 2')).toBeInTheDocument();
@@ -553,7 +656,9 @@ describe('PrintDetailPage', () => {
     });
     renderDetail('Editor');
     expect(await screen.findByText('Op factuur 2026-007.')).toBeInTheDocument();
-    const files = screen.getByRole('region', { name: 'Bestanden' });
+    // The locked controls live in the order's own list now, not in the print's
+    // inventory: an order shows only what it bills (GAP-097).
+    const files = screen.getByRole('region', { name: 'In deze bestelling' });
     const help = 'Staat op een definitieve factuur en kan niet meer worden gewijzigd.';
     expect(within(files).getByText(help)).toBeInTheDocument();
     expect(within(files).queryByRole('textbox', { name: 'Aantal keer geprint' })).toBeNull();

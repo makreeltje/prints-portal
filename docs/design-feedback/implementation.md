@@ -1,245 +1,100 @@
 # Implementation status
 
 This section is written by the **app**, not by the design system. It is the
-implementer's half of the conversation: what is built, what the measurements
-say, what is still open, and where we got something wrong. The design system
-owns `tokens.json`, `components/` and `bundle.css`; nothing here changes them.
+implementer's half: what is built, what the measurements say, what is still
+open, and where either of us got something wrong. The design system owns
+`tokens.json`, `components/` and `bundle.css`; nothing here changes them.
 
 Everything below was measured in the running app against a real library (83
-prints, 10 klanten, about two years of history), not reasoned about.
+prints, 10 klanten, 29 spools, about two years of history).
 
-- App version **1.0.0**, built against design system **1.9**.
-- **105 gaps logged, 20 open.** Numbering is unbroken; nothing is hidden.
-- v1.9 is implemented: 24 of its 26 gaps, with GAP-071 and GAP-072 left where
-  the export left them, which was "proposed".
+- App version **1.0.0**, built against design system **2.2**.
+- **113 gaps logged, 13 open.** Numbering is unbroken.
+- 2.0, 2.0.1, 2.1 and 2.2 are imported and verified; the export checker confirms
+  every class and copy key each changelog claims.
 
-## What has happened since the last update
+## What has happened since the last refresh
 
-The owner used the app and walked through every screen of v1.9. That produced
-**thirteen new gaps (GAP-091 to GAP-103)**, two decisions, and one bug found
-while drawing a logo (GAP-104) and one the logo itself exposed (GAP-105).
-Two things were fixed outright rather than
-logged: the password message below, and a test that failed for an hour every
-night because its fixtures read the wall clock.
+That refresh was the 1.9-era file, and you were right to say so — it described
+20 open gaps and knew nothing of GAP-106 to GAP-113. Four rounds have landed
+since: **2.0** (the breaking one), **2.0.1**, **2.1** and **2.2**.
 
-## Open gaps, grouped
+The owner has walked through the result three times, and each walkthrough
+produced real bugs — two of them in rules rather than in my implementation.
 
-### Still waiting from v1.9
+## Built and verified since the last refresh
 
-- **GAP-071** — the dark tint. The `--mix` floor ships and cannot reach 3:1;
-  the full table is below. Needs a direction, not a number.
-- **GAP-072** — the card subtitle. Marked *proposed* by v1.9, so the share page
-  follows it and the card does not. Needs a yes or no.
-- **GAP-088** — two specs still show the internal link label: DocOverview, and
-  ScreenSharePage contradicting itself inside one file.
+- **GAP-072, GAP-090, GAP-098, GAP-099, GAP-100** — the subtitle rule, the
+  missing-files data and chip, the column menu that was painted over, the
+  non-interactive first cell, the password message.
+- **GAP-095, GAP-097** — the print detail reorganised: a two-column media row
+  (560px of viewer beside a 512px "Deze print" card at 1360px), the inventory at
+  print level with "Telt in Bestelling 1" per file, and an order showing only
+  what it bills. On a phone the price field sits at y=1147 and the inventory at
+  y=2162, so the long list can no longer push the price off the screen.
+- **GAP-106 to GAP-113** — the icon form, the quieter checkbox, the footer's two
+  slots, the icons behind the name, the tooltip, the file row's name floor and
+  the floating-panel rules. Every placeholder these replaced is gone: **no
+  `ds-gap` marker is left in the frontend.**
 
-### Decided by the owner, now waiting on the spec
+Measured after the 2.2 swap: at windows 900 and 1700 the name column sits
+exactly on its 240px floor, the controls take 486px instead of insisting on 651,
+and nothing collides at 900, 1400, 1700 or 2000. A picker low on a 760px window
+is given 348px for a 302px panel and stays on screen. Ten tooltips, worst
+overflow 0px. axe reports 0 violations throughout.
 
-- **GAP-089** — **no video decoder** in the container image. The poster-frame
-  thumbnail should come out of VideoPlayer rather than be built. Two prints of
-  83 are video-only.
-- **GAP-090** — instead of a poster, the owner wants to see at a glance which
-  files a print **lacks**, as small icons on the tile. Two of its questions are
-  already settled by measurement, below.
+## Still open, and what is actually built for each
 
-### From the walkthrough
+**Waiting on nobody but me** — answered, unbuilt:
 
-Reading, selecting and hit areas: **GAP-091** (the tile looks selectable but
-only its checkbox selects), **GAP-092** (a klant chip sets name and count in
-the same weight), **GAP-093** (in the list only the title opens a print, in the
-grid the whole card does), **GAP-099** (a user's name in Toegang looks
-interactive and is not).
+- **GAP-091, GAP-093** — the targets rule. GAP-099's half needed no app change;
+  `pp-rowlink` and checkbox-only selection are not built yet.
+- **GAP-092** — the klant chip's weights.
+- **GAP-094, GAP-096** — the model strip with real pictures, and the timelapse
+  in it. The print detail still shows the 1.9 Select.
+- **GAP-101, GAP-102, GAP-103, GAP-105** — the settings and tags widths, the
+  bleeding API renderer, the Betaallink, the logo pair.
+- **GAP-088, GAP-104** — both backend: the internal link label in DocOverview,
+  and refusing an SVG whose text cannot be drawn.
 
-The print detail, which the owner still finds wrong: **GAP-094** (the model
-picker shows file names where thumbnails would say more, and a Select above
-six), **GAP-095** (a lot of empty space now the viewer is capped, so the order
-of the page reads wrong), **GAP-096** (a timelapse is buried in the file list
-while the model gets a viewer), **GAP-097** (every file is listed inside every
-order, repeating the print's contents).
+**Waiting on an answer I owe you:**
 
-Elsewhere: **GAP-098** (a column menu in Toegang is painted over, measured
-below), **GAP-100** (the password message, fixed with placeholder copy),
-**GAP-101** (Instellingen and Tags leave most of their width empty),
-**GAP-102** (API-docs still reads as a box in a box, after GAP-084),
-**GAP-103** (the share page says what is owed and offers no way to pay),
-**GAP-104** (an uploaded SVG logo silently loses its text) and **GAP-105**
-(nothing says what a logo must satisfy to work in both themes).
+- **GAP-071** — the CSS half works with no app change at all, because the app
+  already set `--c1` and 2.0 turned that into the bar. The **render outline** is
+  the open half, and it is the "cannot" you asked to hear rather than discover:
+  I have not yet established whether the thumbnail renderer can outline the
+  model's silhouette. You will get a yes or a no, not silence.
+- **GAP-089** — settled by the owner (no decoder) and your spec stopped asking
+  for a poster. Nothing is left but confirming the app agrees.
 
-**GAP-096 and GAP-097 are our suggestions, not the owner's**, offered because
-they had no settled view: put the timelapse in the model picker so the viewer
-area carries every picture of the print, and move the file list up to print
-level so an order holds only what it bills. Both are proposals to accept or
-replace.
+## Corrections, mine first
 
-## Measurements
+- **I sent you four container widths that I had not measured.** 780 / 572 /
+  1326 / 1620 were derived and reported as measurements, and you wrote them into
+  AssetListItem. The real figures are 796/794, 1132/628, 1432/794 and 1732/961,
+  print-level and order-level. The explanation I offered with them was wrong
+  too. You corrected the entry and recorded the retraction rather than
+  overwriting it, which is the right way round.
+- **The 58 that was not a percentage.** 2.1 read my count as a percent: 58 of 83
+  prints carry nothing, which is 70%, not 58%. 2.0 had it right. 25 of 83 carry
+  icons.
+- **My GAP-090 per-type figures were wrong** — 16/5/4% were the "only this type"
+  counts under the wrong heading; the truth is 22/8/8% — and you caught it by
+  noticing they did not reconcile.
+- **I marked gaps resolved that I had only implemented, and left built ones
+  open.** The log now says `[resolved in vX.Y]` only where the app really
+  carries it.
 
-### GAP-090, which files are missing (83 prints)
+## What I would like next
 
-The owner's worry was that icons would make the tile busy. Flagging what is
-**missing** is quiet; flagging what is **present** is not:
-
-| icons on a tile | missing | present |
-| --- | --- | --- |
-| 0 | 70% | — |
-| 1 | 24% | 4% |
-| 2 | 4% | 8% |
-| 3 | 2% | 51% |
-| 4 | — | 37% |
-
-Per type: no G-code **16%**, no STL **5%**, no 3MF **4%**. Every combination
-that occurs: G-code alone 16%, STL alone 5%, 3MF alone 4%, G-code+3MF 2%,
-G-code+3MF+STL 2%, G-code+STL 1%.
-
-Two parts of the original idea were dropped **because** of measurement.
-**Video** is out: it would have marked **40%** of tiles, and a timelapse is not
-expected of every print. **"Incomplete 3MF"** is out: a proxy for unsliced
-matched **92%**, since a downloaded project file is normally unsliced and the
-G-code beside it carries the slice.
-
-### GAP-098, the clipped menu in Toegang
-
-At 1360px the leftmost column menu spans x=364 to x=504 while the sticky user
-column ends at x=410, so **46px of the panel is covered** and the items read
-"s selecteren". The scroll box does not clip it — the sticky cell paints over
-it, although `z-popover` (30) sits well above `z-raised` (1).
-
-### GAP-104, text in an uploaded SVG
-
-The container ships **no fonts** (`/usr/share/fonts` absent, `fc-list` returns
-0) and the rasteriser is given no font configuration. An SVG holding one
-rectangle and one word rendered **1600 opaque pixels for the shape and 0 for
-the text**. A studio uploading a normal logo would find its own name missing
-from its invoices, with no warning.
-
-### GAP-071, the dark tint (unchanged, repeated because it is still open)
-
-| `--mix` | ground | darkest | lightest |
-| --- | --- | --- | --- |
-| 100% (default) | `rgb(0,0,0)` | 1.21 | 1.57 |
-| 80% | `rgb(22,24,30)` | **1.02** | 1.33 |
-| 60% | `rgb(44,49,60)` | 1.34 | **1.03** |
-| 40% (the proposed floor) | `rgb(67,73,90)` | 1.94 | 1.49 |
-| 25% | `rgb(83,92,112)` | 2.60 | 2.00 |
-
-No single mix clears 3:1 at both ends, and at 80% and 60% the result is worse
-than doing nothing.
-
-### GAP-105, a logo now exists, and what it had to obey
-
-This installation had no mark; one was drawn for it. Two constraints came out
-of the app and are worth knowing, because they apply to any logo:
-
-- The logo is shown in **both themes with no adaptation**, so one file must
-  survive white and `#1a1b26`. `#5878d6` gives **4.14:1 and 4.13:1**. The
-  system's own `primary` cannot do it: 6.12/2.79 in light, 2.52/6.79 in dark.
-- The sidebar caps it at `--space-7`, **32px**, where a second line of type
-  lands at about 4px. A tagline was drawn and removed after seeing it there.
-
-## Fixed since the last update
-
-- **GAP-100** — replacing a temporary password with the same one was refused
-  correctly by the backend (`password_unchanged`) and shown as "Er ging iets
-  mis", because the page mapped only `password_too_short`. The field now says
-  to choose a different password, with placeholder copy marked
-  `ds-gap: GAP-100` until the deck has wording.
-- A sharing test failed for about an hour every night: its fixtures added an
-  hour to `Date.now()`, so near midnight "morgen" became "vandaag". The suite
-  no longer reads the wall clock.
-
-## Deviations we chose, and why
-
-- **GAP-066** — sorting and filtering by money reads the whole filtered set
-  server-side rather than replicating payment logic in SQL across SQLite,
-  PostgreSQL and MariaDB. It meets the requirement ("Geen prijs" answers *9 van
-  9*) but scales with library size.
-- **GAP-083** — the spec asks for `useBlocker`, which needs a data router; this
-  app uses a plain `BrowserRouter`. In-app links are caught in the capture
-  phase and the browser's own prompt covers closing the tab. **The back button
-  is not caught.**
-- **GAP-080** — thresholds exactly as specified, knowing 84% of open lines are
-  over 90 days, so 7 of 10 klanten land in the top step.
-
-# The round I am asking for
-
-Everything above is the state. This is the request, so that it needs no separate
-message: **20 open gaps**, five carried over from 1.9 and fifteen from the
-owner's walkthrough and from building.
-
-Two corrections of mine come first, because both cost you something.
-
-**GAP-071: I told you the `--mix` floor was not in the export. That was wrong.**
-It ships, exactly as 1.9 says. My grep missed it inside `var(--mix,100%)`, and I
-reported a missing feature instead of a search that failed. The gap is still
-open for the real reason: no mix clears 3:1 at both ends.
-
-**GAP-072: I marked it resolved. It was not.** Your changelog says "proposed,
-needs your confirmation", and only half of it is built — the share page follows
-it, `placeOf` does not. It is back to `[open]` and waiting on your yes or no.
-
-**GAP-096 and GAP-097 are my suggestions, not the owner's.** They had no settled
-view, so I offered one. Replace either freely; I would rather you designed it
-than ratified me.
-
-## Priority
-
-1. **The print detail: GAP-094, 095, 096, 097**, decided together. This is the
-   screen the operator works in all day and the one still called wrong.
-2. **GAP-071** — a direction.
-3. **GAP-090** — now unambiguous: three file types, 70% of tiles carrying
-   nothing.
-4. **The affordances: GAP-091, 092, 093, 099.** Small, and probably one rule
-   rather than four answers.
-5. **The two left from 1.9: GAP-072 and GAP-088.** Both are a single answer.
-   GAP-088 is a contradiction inside your own files: ScreenSharePage dropped the
-   internal link label in one place and still specifies it in another, and
-   DocOverview still shows it.
-6. **The rest: GAP-098** (the stacking bug above), **GAP-100** (copy for a
-   reused password — built with placeholder wording, marked `ds-gap:`),
-   **GAP-101** (Instellingen and Tags leave most of their width empty),
-   **GAP-102** (API-docs still reads as a box in a box after GAP-084),
-   **GAP-103** (the share page says what is owed and offers no way to pay),
-   **GAP-104** and **GAP-105** above.
-
-## What I need back
-
-For each gap: **decide** — resolve it, merge it, or reject it with a reason. Ask
-me where a gap needs a product decision; several here do, and I have said which.
-
-Then, as in 1.6 through 1.9:
-
-1. **Resolve within the system.** Existing tokens and components first. A new
-   token or component only where genuinely needed, named consistently. List
-   every breaking change.
-2. **Deliver completely.** Both themes, all states, phone and desktop where
-   relevant, Dutch copy, and contrast ratios for any new colour pair (WCAG 2.2
-   AA).
-3. **Update the deliverables:** `tokens.css` and the JSON, `components/bundle.css`,
-   the affected component specs and screens, the copy deck, the contrast report.
-4. **Keep every class a preview uses defined in `bundle.css`.** My import checker
-   verifies the changelog's claims against the export before I implement
-   anything, and it has caught a claimed class that was not there.
-5. **Draw the long cases.** Several of these are invisible in a short preview:
-   the print detail at 360px, a tile grid where 70% carry no indicator and the
-   rest carry one, Toegang with its menu open over the sticky column.
-6. **Say what you want measured.** I have the running app and real data.
-
-Finish with a **changelog for the new version** — number it 1.10 or 2.0 as you
-prefer, the app reads the version from `tokens.json`:
-
-- a table `GAP-### → resolved / confirmed as built / merged into GAP-### /
-  rejected (reason)`;
-- new tokens, changed tokens, new or changed classes, components, screens;
-- breaking changes, if any.
-
-**Please be exact about status in that table.** My importer reads it: "resolved"
-and "confirmed as built" are implemented, while "proposed" and "needs your
-confirmation" are not, and are reported back as still waiting. That distinction
-is what caught my GAP-072 error, so it matters more than it looks.
-
-## Where the app stands
-
-1.0.0, shipped, with the full documentation set. 105 gaps logged across ten
-rounds, 20 open, numbering unbroken. `implementation.md` in this system carries
-the implementer's half and is current as of this round — what is actually built
-for every open gap, including the half-built ones, the deviations I chose and
-what they cost.
+1. **GAP-094 and GAP-096** are the last of the print-detail block, and I am
+   building them now; nothing is blocked.
+2. The **sheet floor** of the floating-panel rule is specified but unexercised
+   here: the smallest viewport I can produce is 760px tall, and the floor first
+   bites near 560px. Untested, rather than tested and passed.
+3. The owner still owns **GAP-113's wording**: "Ontbreekt: G-code, 3MF en STL"
+   is built, where they asked for "Geen …".
+4. Keep asking for numbers. Every round this session a measurement has changed
+   an answer — the missing-file distribution, the `--mix` table, the 46px
+   overlap, the 75px name column — and more than once it reversed the first
+   instinct.

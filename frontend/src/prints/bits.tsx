@@ -1,9 +1,89 @@
-import { Archive, Box, Copy, FolderOpen, SearchX, TriangleAlert, Trash2, X } from 'lucide-react';
+import {
+  Archive,
+  Box,
+  Copy,
+  FileCode,
+  FolderOpen,
+  Package,
+  SearchX,
+  TriangleAlert,
+  Trash2,
+  X,
+} from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
+import { Tooltip } from '../components/Tooltip';
 import { t } from '../i18n/nl';
 import { thumbnailUrl } from './api';
 import { isPaletteKey } from './tag-palette';
-import type { PrintSummary, Tag } from './types';
+import type { MissingFileType, PrintSummary, Tag } from './types';
+
+const LACKS_LABEL = {
+  gcode: 'print.lacks.gcode',
+  '3mf': 'print.lacks.threemf',
+  stl: 'print.lacks.stl',
+} as const satisfies Record<MissingFileType, string>;
+
+const LACKS_ICON = {
+  gcode: FileCode,
+  '3mf': Package,
+  stl: Box,
+} as const satisfies Record<MissingFileType, typeof Box>;
+
+/** "a", "a en b", "a, b en c" — the Dutch list the accessible name is built from. */
+function joinDutch(parts: readonly string[]): string {
+  if (parts.length <= 1) return parts.join('');
+  const last = parts.at(-1) ?? '';
+  return `${parts.slice(0, -1).join(', ')} en ${last}`;
+}
+
+/**
+ * Which files a print has none of (GAP-090). One chip rather than three icons:
+ * at this size the words are shorter than a legend would be, and they need no
+ * learning. Absent, not empty, when nothing is missing — which is about 70% of
+ * prints, so the grid is unchanged for most of them.
+ */
+export function LacksChip({
+  lacks,
+  withText = false,
+}: {
+  lacks: readonly MissingFileType[];
+  /** The worded chip, for the print detail where there is room for it. */
+  withText?: boolean;
+}) {
+  if (lacks.length === 0) return null;
+  const types = lacks.map((type) => t(LACKS_LABEL[type]));
+  const name = t('print.lacks.aria', {
+    types: joinDutch(lacks.map((type) => t('print.lacks.item', { type: t(LACKS_LABEL[type]) }))),
+  });
+  // 2.2: one visible short form everywhere; the accessible name keeps the
+  // sentence, which a screen reader reads out of context.
+  const visible = t('print.lacks', { types: joinDutch(types) });
+  if (withText) {
+    return (
+      <span className="pp-lacks has-text" role="img" aria-label={name}>
+        <TriangleAlert className="pp-ico" aria-hidden="true" />
+        {visible}
+      </span>
+    );
+  }
+  return (
+    <Tooltip label={visible}>
+      <span className="pp-lacks" role="img" aria-label={name}>
+        {lacks.map((type) => {
+          const Icon = LACKS_ICON[type];
+          // The slash is the "no" convention, drawn in the same SVG; the thicker
+          // line underneath knocks a gap out of the glyph so it reads at 16px.
+          return (
+            <Icon key={type} className="pp-ico" aria-hidden="true">
+              <line className="sl-bg" x1="3" y1="21" x2="21" y2="3" />
+              <line className="sl" x1="3" y1="21" x2="21" y2="3" />
+            </Icon>
+          );
+        })}
+      </span>
+    </Tooltip>
+  );
+}
 
 /** StatusBadge (record and asset statuses used so far). Always an icon and a word. */
 export function StatusBadge({

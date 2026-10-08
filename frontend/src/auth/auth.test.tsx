@@ -183,7 +183,7 @@ describe('NewPasswordPage', () => {
     expect(document.querySelector('aside')).toBeNull();
     expect(screen.getByLabelText('Nieuw wachtwoord')).toHaveFocus();
     expect(screen.getByLabelText('Nieuw wachtwoord')).toHaveAccessibleDescription(
-      'Minstens 12 tekens.',
+      'Minstens 12 tekens en anders dan je tijdelijke wachtwoord.',
     );
   });
 
@@ -216,7 +216,7 @@ describe('NewPasswordPage', () => {
     await userEvent.type(screen.getByLabelText('Herhaal wachtwoord'), 'the-same-password-12');
     await userEvent.click(screen.getByRole('button', { name: 'Opslaan' }));
     expect(await screen.findByLabelText('Nieuw wachtwoord')).toHaveAccessibleDescription(
-      'Kies een ander wachtwoord dan het tijdelijke.',
+      'Dit is je huidige wachtwoord. Kies een ander wachtwoord.',
     );
     expect(screen.queryByText('Er ging iets mis')).not.toBeInTheDocument();
   });

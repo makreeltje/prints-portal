@@ -23,7 +23,10 @@
 #   5. No literal font-family, box-shadow or transition timing values; use tokens.
 #   6. No inline style objects in JSX/TSX (style={{ … }}), except a single-line
 #      object that only sets the per-instance colour variables the components
-#      expect for user-chosen colours: --tag, --tag-ink, --c1, --c2 (GAP-002).
+#      expect for user-chosen colours: --tag, --tag-ink, --c1, --c2 (GAP-002),
+#      and the three measurements 2.2 added for floating panels: --pp-pop-max,
+#      --pp-tip-x, --pp-tip-y (GAP-110, GAP-112). The app passes numbers it
+#      measured in the browser, never lengths it chose.
 #
 # Escape hatch: a line may carry `ds-gap: GAP-123` (in a comment) if GAP-123 is an
 # entry marked [open] in the gap log. That makes every exception visible and traceable.
@@ -36,7 +39,7 @@ SRC_DIR="${DS_SRC_DIR:-frontend/src}"
 COMPONENT_CSS="${DS_COMPONENT_CSS:-design-system/components/bundle.css}"
 # Variables components read for user-chosen (data-driven) colours; the only
 # custom properties app code may set, and only through an inline style object.
-INSTANCE_VARS=" --tag --tag-ink --c1 --c2 "
+INSTANCE_VARS=" --tag --tag-ink --c1 --c2 --pp-pop-max --pp-tip-x --pp-tip-y "
 
 hook_mode=false
 files=()
@@ -189,10 +192,10 @@ for file in "${files[@]}"; do
               rest="${rest#*"${BASH_REMATCH[0]}"}"
             done
             if [[ $keys -eq 0 || -n "$bad" ]]; then
-              add "$file" "$n" "inline style object; only --tag, --tag-ink, --c1, --c2 may be set inline (found:${bad:- none})"
+              add "$file" "$n" "inline style object; only${INSTANCE_VARS}may be set inline (found:${bad:- none})"
             fi
           else
-            add "$file" "$n" "inline style object must fit on one line and only set --tag, --tag-ink, --c1, --c2"
+            add "$file" "$n" "inline style object must fit on one line and only set${INSTANCE_VARS}"
           fi
         fi ;;
     esac

@@ -7,6 +7,7 @@ import { ErrorState, LoadingRows } from '../pages/ErrorState';
 import { PaymentBadge } from '../finance/money';
 import { formatDate, formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
+import { squashName } from '../prints/filter';
 import { calendarDays } from './days';
 import {
   fetchShareView,
@@ -253,7 +254,7 @@ function PaymentCard({ pay }: { pay: SharePayment }) {
   return (
     <section className="pp-card pp-sharepay" aria-labelledby="pp-pay-title">
       <h2 id="pp-pay-title">{t('share.pay.title')}</h2>
-      {rows.map((row) => (
+      {(pay.iban === '' ? [] : rows).map((row) => (
         <div className="pp-sharepay-row" key={row.key}>
           <div>
             <small>{row.label}</small>
@@ -275,6 +276,28 @@ function PaymentCard({ pay }: { pay: SharePayment }) {
           </button>
         </div>
       ))}
+      {pay.payLink !== null && (
+        /*
+          Second, never first (GAP-103): the bank details above are always
+          right, while this link carries whatever amount it was made with, and
+          Openstaand moves away from that with every payment. So it is a
+          secondary button and the note says the amount may differ.
+        */
+        <>
+          <a
+            className="pp-btn pp-btn-secondary pp-share-cta pp-fill"
+            href={pay.payLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-describedby="pp-pay-link-note"
+          >
+            {t('share.pay.link', { studio: pay.name })}
+          </a>
+          <p id="pp-pay-link-note" className="pp-muted pp-text-sm pp-m0">
+            {t('share.pay.link.note', { studio: pay.name })}
+          </p>
+        </>
+      )}
       <p className="pp-muted pp-text-sm pp-m0">
         {t('share.pay.hint')}{' '}
         {pay.email !== null ? (
@@ -296,13 +319,11 @@ function PaymentCard({ pay }: { pay: SharePayment }) {
 
 /**
  * The second line: project and date, or the date alone when the project only
- * repeats the print's name. v1.9 marks this proposed rather than settled, so
- * it is built here as proposed and the gap stays open.
- * ds-gap: GAP-072
+ * repeats the print's name (GAP-072, official in 2.0). The share page has no
+ * klant to name, so the date takes that place.
  */
 function lineSubtitle(line: { description: string; project: string | null; date: string }): string {
-  const squash = (value: string) => value.toLocaleLowerCase('nl').replace(/\s+/g, '');
-  if (line.project === null || squash(line.project) === squash(line.description))
+  if (line.project === null || squashName(line.project) === squashName(line.description))
     return day(line.date);
   return `${line.project} · ${day(line.date)}`;
 }

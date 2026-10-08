@@ -548,3 +548,22 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | connection.back | Weer verbonden. |
 
 Removed in 1.9: the toast text for a lost connection (the bar keeps "Verbinding verbroken — opnieuw verbinden…"). Changed: the print subtitle "{klant} / {project}" becomes "{klant}" when the project equals the print name; the share-page line subtitle becomes "{datum}" in the same case.
+
+## Added in 2.2
+
+The three `print.lacks*` keys were named by 2.0 and 2.1 and never entered this deck; they are recorded here with the 2.2 wording, which is a change to `print.lacks` (it was the print-detail chip only and joined with commas).
+
+| Key | Text |
+|---|---|
+| print.lacks | Ontbreekt: {types} |
+| print.lacks.aria | Deze print heeft {items}. |
+| print.lacks.item | geen {type}-bestand |
+| print.lacks.type.gcode | G-code |
+| print.lacks.type.3mf | 3MF |
+| print.lacks.type.stl | STL |
+
+Joining, both for `{types}` and for `{items}`: ", " between items and " en " before the last, in the fixed order G-code, 3MF, STL. So `print.lacks` reads "Ontbreekt: G-code", "Ontbreekt: G-code en 3MF", "Ontbreekt: G-code, 3MF en STL", and `print.lacks.aria` reads "Deze print heeft geen G-code-bestand, geen 3MF-bestand en geen STL-bestand."
+
+`print.lacks` is the only visible form and is used in **two** places with the same words: the tooltip bubble on a print card or row, and the worded chip on the print detail (`pp-lacks has-text`). `print.lacks.aria` is the accessible name of the icon group and the sentence in the "Deze print" card; it is never shown in the bubble, which is `aria-hidden` (Tooltip, *Name or description*).
+
+Changed in 2.2: nothing else. No key was removed.

@@ -101,7 +101,7 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | dark | duplicate hint line | `warning` on `surface` | `surface` | 10.84 | 4.5 | pass |
 | dark | document and info text | `info` on `bg` | `bg` | 11.02 | 4.5 | pass |
 | dark | "Verloopt niet" in ShareLinkRow, link label on the not-billed share page | `muted` on `surface` | `surface` | 6.84 | 4.5 | pass |
-| dark | icon-rail tooltip text (pp-tip) | `bg` on `text-strong` | `text-strong` | 16.08 | 4.5 | pass |
+| dark | tooltip text (pp-tip), rail and bubble | `bg` on `text-strong` | `text-strong` | 16.08 | 4.5 | pass |
 | dark | drawer links and auth card text | `text` on `surface` | `surface` | 10.59 | 4.5 | pass |
 | dark | muted row text on hover (deleted and archived rows) | `muted` on `primary-tint-soft` | `primary-tint-soft` | 6.01 | 4.5 | pass |
 | dark | selected customer chip (aria-pressed) | `info` on `info-tint` | `info-tint` | 7.34 | 4.5 | pass |
@@ -121,7 +121,7 @@ WCAG 2 contrast ratios, computed from the token values. Text needs 4.5:1; contro
 | light | duplicate hint line | `warning` on `surface` | `surface` | 6.11 | 4.5 | pass |
 | light | document and info text | `info` on `bg` | `bg` | 5.98 | 4.5 | pass |
 | light | "Verloopt niet" in ShareLinkRow, link label on the not-billed share page | `muted` on `surface` | `surface` | 6.03 | 4.5 | pass |
-| light | icon-rail tooltip text (pp-tip) | `bg` on `text-strong` | `text-strong` | 15.84 | 4.5 | pass |
+| light | tooltip text (pp-tip), rail and bubble | `bg` on `text-strong` | `text-strong` | 15.84 | 4.5 | pass |
 | light | drawer links and auth card text | `text` on `surface` | `surface` | 12.67 | 4.5 | pass |
 | light | muted row text on hover (deleted and archived rows) | `muted` on `primary-tint-soft` | `primary-tint-soft` | 5.39 | 4.5 | pass |
 | light | selected customer chip (aria-pressed) | `info` on `info-tint` | `info-tint` | 5.23 | 4.5 | pass |

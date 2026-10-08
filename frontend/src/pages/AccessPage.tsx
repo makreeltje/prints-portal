@@ -37,6 +37,13 @@ export function AccessPage() {
   const [busy, setBusy] = useState<ReadonlySet<string>>(new Set());
   const [saved, setSaved] = useState<ReadonlySet<string>>(new Set());
   const [attempt, setAttempt] = useState(0);
+  /**
+   * Which menu is open ("col:{klant}" or "row:{id}"). The cell has to carry
+   * `has-pop` while it is,
+   * because a popover's own z-index is only compared inside its own stacking
+   * context and loses to a sticky sibling cell (GAP-098).
+   */
+  const [menuOpenFor, setMenuOpenFor] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -175,10 +182,19 @@ export function AccessPage() {
               <tr>
                 <th scope="col">{t('users.user')}</th>
                 {customers.map((customer) => (
-                  <th key={customer} scope="col">
+                  <th
+                    key={customer}
+                    scope="col"
+                    className={menuOpenFor === `col:${customer}` ? 'has-pop' : undefined}
+                  >
                     <BulkMenu
                       label={customer}
+                      name={t('access.colMenu', { klant: customer })}
                       disabled={grantees.length === 0}
+                      open={menuOpenFor === `col:${customer}`}
+                      onOpenChange={(next) => {
+                        setMenuOpenFor(next ? `col:${customer}` : null);
+                      }}
                       onAll={() => {
                         setColumn(customer, true);
                       }}
@@ -193,10 +209,17 @@ export function AccessPage() {
             <tbody>
               {grantees.map((user, row) => (
                 <tr key={user.id}>
-                  <th scope="row">
+                  <th
+                    scope="row"
+                    className={menuOpenFor === `row:${user.id}` ? 'has-pop' : undefined}
+                  >
                     <BulkMenu
                       label={user.displayName}
                       disabled={customers.length === 0}
+                      open={menuOpenFor === `row:${user.id}`}
+                      onOpenChange={(next) => {
+                        setMenuOpenFor(next ? `row:${user.id}` : null);
+                      }}
                       onAll={() => {
                         setRow(user, true);
                       }}
@@ -358,16 +381,32 @@ function moveBetweenCells(event: KeyboardEvent<HTMLTableElement>) {
 /** Header menu with "Alles selecteren" and "Niets selecteren" (Popover). */
 function BulkMenu({
   label,
+  name,
   disabled,
+  open,
+  onOpenChange,
   onAll,
   onNone,
 }: {
   label: string;
+  /** Accessible name when the visible label alone does not tell two menus apart. */
+  name?: string;
   disabled: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onAll: () => void;
   onNone: () => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const setOpen = onOpenChange;
+  /**
+   * The parent passes a fresh callback each render, so the pointer effect reads
+   * it through a ref: listing it as a dependency would re-run the effect on
+   * every render and move focus back to the first item while the menu is open.
+   */
+  const latestOpenChange = useRef(onOpenChange);
+  useEffect(() => {
+    latestOpenChange.current = onOpenChange;
+  });
   const wrapper = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const firstItem = useRef<HTMLButtonElement>(null);
@@ -376,7 +415,7 @@ function BulkMenu({
     if (!open) return;
     firstItem.current?.focus();
     const onPointer = (event: PointerEvent) => {
-      if (!wrapper.current?.contains(event.target as Node)) setOpen(false);
+      if (!wrapper.current?.contains(event.target as Node)) latestOpenChange.current(false);
     };
     document.addEventListener('pointerdown', onPointer);
     return () => {
@@ -434,9 +473,10 @@ function BulkMenu({
         className="pp-btn pp-btn-ghost pp-btn-sm"
         aria-haspopup="true"
         aria-expanded={open}
+        aria-label={name}
         disabled={disabled}
         onClick={() => {
-          setOpen((value) => !value);
+          setOpen(!open);
         }}
       >
         {label}

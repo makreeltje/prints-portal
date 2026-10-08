@@ -38,6 +38,18 @@ Design system for **3D Prints Portal**, a self-hosted web app that indexes print
 
 Breakpoints: up to 480px phone, 481–900px tablet, 901px and up desktop, 1440px and up wide. On phones tables become stacked cards, the bulk bar sticks to the bottom, dialogs become full-height sheets and the 3D viewer sits above the fold at a fixed aspect ratio. The app shell switches with media queries (see AppShell): sidebar above 900px, a 56px icon rail from 481 to 900px, top bar, bottom bar and drawer at 480px and below; the app never sets a `.phone` class. Never scroll the page horizontally; scroll wide tables inside their own container with a visible edge shadow.
 
+## Floating panels (2.2)
+
+Everything that floats beside a trigger — Popover, SpoolPicker, TagEditor, OverflowMenu, DatePicker, Tooltip — obeys one rule: **it is never drawn outside the window, and it never makes the page scroll to reveal it.** Measured in the app: a spool picker (320x302) on a file row low in a long print detail opened at y=831 in a 900px window, so 233px of it was below the fold, and a tooltip on a card in the last column ran 116px past the right edge. Both were the same hole in this page — no rule at all — not two bugs.
+
+1. **The app chooses the side, per axis, before the first paint**, from the trigger's rect and the panel's own height: down by default, `.up` when the room below is less than the panel's height and the room above is more; left-aligned by default, `.end` when a left-aligned panel would pass the right edge less `space-4`. A panel that reopens after a scroll is measured again.
+2. **The app passes the room it has**, less `space-4`: `--pp-pop-max` for a popover, `--pp-tip-x`/`--pp-tip-y` for a tooltip's rect. These are inline data properties, like `--c1`: the app passes numbers it measured, never lengths it chose. Every length — offset, radius, maximum width, the sheet's height — stays in `bundle.css`.
+3. **The panel caps itself and scrolls its own region.** A list inside a capped panel gives up its fixed 240px maximum and takes what is left, so the search field above it stays in view.
+4. **Under 240px of room on the better side, the panel becomes a bottom sheet** at any width (`.pp-anchor.sheet`), the form phones already get. 240px is the height of the list caps: below it a panel cannot show its list, and a sliver of scroller is worse than moving.
+5. **A tooltip whose trigger sits inside anything that clips or scrolls** (`.pp-print` is `overflow:hidden`, a table lives in `.pp-scroll`) uses the window-placed form `.pp-tip.at`. Stacking tokens do not help there: a sticky cell paints over `z-popover` inside a scroll box (GAP-098), and `overflow:hidden` cuts off whatever `z-index` says.
+
+A tooltip appears **at once** on hover and on focus — no delay. Details and the name-or-description rule: Tooltip's README.
+
 ## Components
 
 Components are plain HTML plus `components/bundle.css` (classes prefixed `pp-`); there is no JavaScript bundle. Load `tokens.css`, then `bundle.css`, and write the markup shown in each component's `preview.html`. Re-implement them in React one to one by keeping the class names and the ARIA roles from each component's README. Wrap a page in `.pp-stage` only for previews; the app supplies its own page background. Controls are 36px high on desktop and 44px at 480px and below (`--pp-control-h`).
@@ -128,3 +140,9 @@ Badges sit on an opaque `surface` base, the contrast report covers translucent t
 
 ## Versie 1.9 (2026-10-07)
 A round driven by the real app (83 prints, 10 klanten): the share page (studio header, payment block, thumbnails), a print detail that fits the screen (capped viewer, one order card with sections, "⋯" menu), a finite dashboard and Openstaand (klant strip as one row, collapsed groups with age steps), sort and status filter, and three new components: ModelPicker, VideoPlayer and OverflowMenu. No token added, renamed or removed. Details: `changelog.md`.
+
+## Versie 2.0 and 2.1 (2026-10-08)
+*Recorded here in 2.2: both rounds updated the component files and `bundle.css` but not this page, `changelog.md` or `copy-deck.md`. What follows is the summary those component files carry; read them for the reasoning.* **2.0:** the filament colour stops being the thumbnail's ground and becomes a 4px bar along its bottom edge, the render carries a baked `#6f7a96` outline and `--mix` leaves the contract (GAP-071); missing files become one worded chip (GAP-090); one target per tile (GAP-091, with 093 and 099); the file list moves to print level and an order lists only what it bills (GAP-097); the card subtitle rule becomes official (GAP-072). **2.1:** the missing-file chip becomes three slashed type icons on the card and the row, worded only on the print detail (GAP-106, overruling 2.0 at the owner's second asking); the selection box is 24px of ink in a 36/44px target (GAP-107); each slot of `.pp-foot` holds the thing it is about (GAP-108).
+
+## Versie 2.2 (2026-10-08)
+Where floating things go: popovers choose their side, cap their height and fall back to a sheet, and the tooltip finally has a placement and no delay (GAP-112, GAP-110, section *Floating panels*). The file row's name column keeps a 240px floor so a badge is never drawn over the controls (GAP-111). The missing-file icons ride behind the print name instead of making a tag row of their own (GAP-109) and say "Ontbreekt: G-code, 3MF en STL" in one line, with the full sentence kept as the accessible name (GAP-113). No token added, renamed or removed. Details: `changelog.md`.

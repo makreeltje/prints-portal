@@ -838,7 +838,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9 (measured against the shipped `--mix` mechanism)
 
-## GAP-072 [open] The card subtitle repeats the print's own name
+- **Answered (2026-10-08), the yes-or-no you asked for rather than silence.** **Yes, a silhouette can be outlined** — but the rule as written covers 2 prints of 83.
+  - **Every thumbnail carries an alpha channel.** Thirty sampled from the running app: 30 PNGs, all with transparent pixels, none opaque. So the silhouette is detectable by walking the alpha, for the slicer's own images as much as for ours.
+  - **But almost none of them is ours.** Measured in the database: **79 of 83 prints get an embedded thumbnail** out of a G-code, 3MF or project file, and **2 are rendered from STL** by us. 2.0 says "the server-rendered PNG therefore outlines the model's silhouette"; taken literally that is 2 prints.
+  - **The problem it was meant to solve is real for all of them.** The renders are neutral, not filament-coloured, and both ends still vanish: measured against the real grounds, the **lightest pixel of a render is 1.16:1 on light `surface-2`** and the **darkest is 1.68:1 on dark**. So it is not only dark filaments; a white highlight disappears on light and a shadow disappears on dark, whatever the spool.
+  - **Your outline ink is confirmed:** `#6f7a96` measures **3.69:1 on light `surface-2` and 3.53:1 on dark**, which matches your calculation against the real values.
+- **What I need from you before building it:** the rule says "the server-rendered PNG". Should the outline be drawn on **every thumbnail the app serves**, including the 79 the slicer made and we only pass through? Outlining an image we did not make is a bigger step than the sentence implies, and it is the only version that changes anything for this library. I have not built either reading.
+
+## GAP-072 [resolved in v2.0] The card subtitle repeats the print's own name
 - **Type:** improvement idea
 - **Found while:** the UX review of 1.0; status corrected while checking v1.9's claims
 - **Where needed:** PrintCard and PrintTable (`placeOf` in `frontend/src/prints/filter.ts`); ScreenSharePage line subtitle
@@ -1015,7 +1022,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-088 [open] Two specs still show the internal link label to the customer
+## GAP-088 [resolved in v2.0] Two specs still show the internal link label to the customer
 - **Type:** conflict
 - **Found while:** implementing v1.9, GAP-077
 - **Where needed:** DocOverview and ScreenSharePage; `backend/src/finance/pdf.ts`, `backend/src/sharing/overview.ts`
@@ -1026,26 +1033,27 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-089 [open] A video-only print cannot show a poster frame as its thumbnail
+## GAP-089 [resolved in v2.0] A video-only print cannot show a poster frame as its thumbnail
 - **Type:** missing component
 - **Found while:** implementing v1.9, GAP-085
 - **Where needed:** VideoPlayer and Thumbnail; `backend/src/thumbnails/service.ts`
 - **What is missing or wrong:** VideoPlayer 1.9 says the thumbnail of a print with no image and no model is the poster frame of its first video, with a play badge. The player is built, but the thumbnail is rendered by the backend, which has no video decoder: it renders PNG, reads 3MF previews and rasterises STL, and its only media library is `@resvg/resvg-js` (SVG).
 - **Owner's decision (2026-10-07): no video decoder in the container image.** So option (a) of the earlier proposal is off the table, and the poster rule should come out of VideoPlayer. Only 2 prints of 83 are video-only, so little is lost.
 - **What the owner asked for instead:** not a prettier thumbnail but a *warning* — see GAP-090, which asks for missing files to be visible on the dashboard tile.
+- **Closed (2026-10-08):** verified in the app rather than assumed. The backend has no poster or video-decoding path in its thumbnail service, 2.0 took the poster rule out of VideoPlayer, and the warning the owner asked for instead is built and measured (GAP-090). Nothing is left to do.
 - **Proposal:** drop the poster-thumbnail rule from VideoPlayer and say what a video-only print shows instead (today it is the "Geen voorbeeld" placeholder, which is honest). Keep the play badge only if a poster ever exists.
 - **Blocked:** nothing in the app. Waiting on VideoPlayer dropping the rule so the spec matches what is built.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-090 [open] A print's missing files are not visible until you open it
+## GAP-090 [resolved in v2.1] A print's missing files are not visible until you open it
 - **Type:** missing state
 - **Found while:** the owner's use of 1.0 after v1.9 (their request, 2026-10-07)
 - **Where needed:** PrintCard and PrintRow on ScreenDashboard
 - **What is missing or wrong:** a print can be short of the files that matter — no G-code, no 3MF, no STL — and nothing says so until it is opened. The owner wants to see at a glance which files a print lacks, and suggests small icons on the tile rather than the big "Geen prijs"-style labels, with the worry that the tile becomes busy. It is about a file being **absent**, not about judging the quality of one that is there.
 - **Why it matters:** the library is the source of truth and the folders are maintained by hand, so a print missing its model or its G-code is a real gap in the archive, not a cosmetic one. Today it is invisible from the dashboard.
 - **Measured on the real library (83 prints), to settle how busy a tile becomes:** with the three types in scope, **70% of tiles would carry no icon at all, 24% exactly one, 4% two and 2% three**. Showing what is *present* instead would be the busy version — 88% of tiles would carry three or four icons — so the owner's instinct to mark only what is missing is right, and the proposal below follows it.
-- **Per type:** no G-code **16%**, no STL **5%**, no 3MF **4%**; and every combination that actually occurs: G-code alone 16%, STL alone 5%, 3MF alone 4%, G-code+3MF 2%, G-code+3MF+STL 2%, G-code+STL 1%. The two prints missing all three are the two whose only asset is a video.
+- **Per type:** no G-code **22%** (18 of 83), no 3MF **8%** (7), no STL **8%** (7). *(Corrected 2026-10-08: these were first published as 16/5/4%, which were the "only this type is missing" figures below, mislabelled as the per-type totals. The design system caught that they did not add up. The distribution and the combinations were right; only this line was wrong.)* Every combination that actually occurs: G-code alone 16%, STL alone 5%, 3MF alone 4%, G-code+3MF 2%, G-code+3MF+STL 2%, G-code+STL 1%. The two prints missing all three are the two whose only asset is a video.
 - **Owner's decision (2026-10-07): video is not in the indicator.** A timelapse is not uploaded for every print, so its absence is not a gap in the archive. Measuring it is what made the question worth asking: it would have marked **40%** of tiles, against 4-16% for the three that remain. Leaving it out is what takes the indicator from "half the tiles" to "70% carry nothing".
 - **Dropped by the owner (2026-10-07):** an "incomplete 3MF" flag was part of the original idea and is no longer wanted. Measuring it was what settled it: a proxy for "unsliced" matched **92%** of prints, because a project file downloaded from MakerWorld is normally unsliced and the G-code beside it carries the slice, so there was nothing useful to flag.
 - **Proposal:** a small row of icons on the card, under or beside the existing badges, drawn only for what is **missing**, using the file icons the system already names (`file-code` for G-code, `package` for 3MF, `box` for STL) in `muted` or `warning`, each with an accessible name ("Geen G-code"). No icon when nothing is missing, which is 70% of prints, so a complete print stays exactly as clean as it is today. The same information in the list view's existing columns. Needs the Dutch copy, the phone layout, and a decision on whether this is `muted` (a note) or `warning` (a problem).
@@ -1053,7 +1061,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-091 [open] Selecting a print needs its checkbox, but the tile looks selectable
+## GAP-091 [resolved in v2.0] Selecting a print needs its checkbox, but the tile looks selectable
 - **Type:** unclear spec
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** PrintCard on ScreenDashboard
@@ -1064,7 +1072,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-092 [open] A klant chip sets the name and the count in the same weight
+## GAP-092 [resolved in v2.0] A klant chip sets the name and the count in the same weight
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** CustomerChips on ScreenDashboard
@@ -1075,7 +1083,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-093 [open] In the list view only the title opens a print; in the grid the whole card does
+## GAP-093 [resolved in v2.0] In the list view only the title opens a print; in the grid the whole card does
 - **Type:** unclear spec
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** PrintRow on ScreenDashboard
@@ -1097,7 +1105,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-095 [open] The print detail has a lot of empty space now that the viewer is capped
+## GAP-095 [resolved in v2.0] The print detail has a lot of empty space now that the viewer is capped
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenPrintDetail
@@ -1119,7 +1127,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-097 [open] Every file is listed inside every order, which repeats the print's contents
+## GAP-097 [resolved in v2.0] Every file is listed inside every order, which repeats the print's contents
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** OrderSection and AssetListItem on ScreenPrintDetail
@@ -1130,7 +1138,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-098 [open] A column menu in Toegang is painted over by the sticky first column
+## GAP-098 [resolved in v2.0] A column menu in Toegang is painted over by the sticky first column
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** AccessMatrix on ScreenAccess
@@ -1141,7 +1149,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-099 [open] A user's name in Toegang looks interactive but is not the control
+## GAP-099 [resolved in v2.0] A user's name in Toegang looks interactive but is not the control
 - **Type:** unclear spec
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** AccessMatrix on ScreenAccess
@@ -1152,7 +1160,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-100 [open] Reusing the same password gives "Er ging iets mis"
+## GAP-100 [resolved in v2.0] Reusing the same password gives "Er ging iets mis"
 - **Type:** missing state
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenLogin / the forced password change; `frontend/src/auth/NewPasswordPage.tsx`
@@ -1163,7 +1171,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-101 [open] Instellingen and Tags leave most of their width empty
+## GAP-101 [resolved in v2.0.1] Instellingen and Tags leave most of their width empty
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenSettings and ScreenTags
@@ -1174,7 +1182,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-102 [open] API-docs still reads as a box inside a box
+## GAP-102 [resolved in v2.0] API-docs still reads as a box inside a box
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenApiDocs
@@ -1185,7 +1193,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-103 [open] The share page tells a klant what they owe but gives no way to pay
+## GAP-103 [resolved in v2.0.1] The share page tells a klant what they owe but gives no way to pay
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenSharePage payment block
@@ -1196,7 +1204,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-104 [open] An uploaded SVG logo silently loses all of its text
+## GAP-104 [resolved in v2.0] An uploaded SVG logo silently loses all of its text
 - **Type:** suspected design bug
 - **Found while:** drawing a logo for this installation (2026-10-08)
 - **Where needed:** LogoField on ScreenSettings; `backend/src/finance/billing-routes.ts` (the SVG is rasterised with `@resvg/resvg-js`)
@@ -1207,7 +1215,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-105 [open] Nothing says what a logo has to satisfy to work in both themes
+## GAP-105 [resolved in v2.0] Nothing says what a logo has to satisfy to work in both themes
 - **Type:** missing spec
 - **Found while:** drawing a logo for this installation (2026-10-08)
 - **Where needed:** LogoField on ScreenSettings; the brand slot in AppShell; DocInvoice, DocReminder, DocOverview and ScreenSharePage
@@ -1217,4 +1225,146 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing. This installation's logo was drawn to the measured constraint, so it works; the next one has only luck to go on.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
+
+## GAP-106 [resolved in v2.1] The owner asked for icons and 2.0 gave words
+- **Type:** conflict
+- **Found while:** the owner's first look at the GAP-090 chip in the running app (2026-10-08)
+- **Where needed:** PrintCard, PrintRow, ScreenPrintDetail — the `pp-lacks` chip
+- **What is missing or wrong:** the owner asked twice for **small icons on the tile**. 2.0 rejected that half of GAP-090 and specified one word chip instead ("Ontbreekt: G-code, 3MF, STL"). Built as specified, the owner's reaction on seeing it was immediate: *"ik dacht dat je met simpele icoontjes ging werken, niet met texten voor de missende bestanden."* At the long end the chip is 27 characters on a 261px card, and it is the widest thing in the tag row.
+- **Why it matters:** the design system's reasons were good ones — three slashed glyphs are three inventions, a legend to learn, and still need a text alternative — but the person who has to read this grid every day has now said twice what they want. This is their product, and the preference is not a misunderstanding of the trade-off; they saw the result and still prefer icons.
+- **Proposal:** the design system decides the form, not us. Options worth weighing: the three type icons the system already names (`file-code`, `package`, `box`) at 16px with a slash or at reduced opacity, with a `title` and an off-screen sentence carrying the text alternative; or the chip shortened to the icon plus the types without the word "Ontbreekt:"; or icons on the card and the full chip on the detail page, where there is room.
+- **Blocked:** nothing. The word chip is built and works; it is the form that is in question.
+- **Temporary placeholder approved:** yes (2026-10-08, the owner did not want to wait). The card and the row show the **triangle-alert** plus the icons the system itself assigns to these types (`file-code`, `package`, `box`) — reused, not invented. The print detail keeps the words, where there is room. The sentence survives as the chip's accessible name and its `title`, so nothing is carried by colour or shape alone. Marked `ds-gap: GAP-106`. Measured after the change: the chip went from 206px to **92px** at its widest and 52px at its narrowest, and axe reports 0 violations in both themes. The gap stays open: the design system still decides the final form.
+- **Design system version:** 2.0.1
+
+## GAP-107 [resolved in v2.1] The selection box on a tile reads as oversized
+- **Type:** improvement idea
+- **Found while:** the same first look (2026-10-08)
+- **Where needed:** PrintCard, `.pp-print .pp-sel`
+- **What is missing or wrong:** 2.0 gave the selection chip the full tap area and a hairline, so it measures **36×36px around a 20px checkbox** where it was about 24×24 before. The owner: *"De selectiebox is ineens heel erg groot op de tiles."* On a 261px card it is the first thing the eye meets, on every tile, whether or not anything is selected.
+- **Why it matters:** the intent was right — the checkbox was not visibly its own control, which is half of GAP-091 — but the cure is now louder than the thing it sits on, and it is drawn 24 times on a dashboard page.
+- **Proposal:** keep the 36px *hit* area and shrink what is *drawn*: a 24px visible chip centred in a 36px target (the hit area may exceed the painted box), or drop the hairline on the thumbnail and keep it only on hover and focus. A pointer target can be larger than its paint; WCAG 2.2 2.5.8 asks for the target, not the ink.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.0.1
+
+## GAP-108 [resolved in v2.1] The missing-files chip and "Geen prijs" sit on opposite edges
+- **Type:** unclear spec
+- **Found while:** the same first look (2026-10-08)
+- **Where needed:** PrintCard — the tag row and `pp-foot`
+- **What is missing or wrong:** measured on a 261px card: the `pp-lacks` chip starts at the card's left padding, and the "Geen prijs" badge in the footer is right-aligned 141px further along. Two warning chips of the same shape, one left, one right, on consecutive lines. The owner calls the result misaligned. "Geen prijs" has sat on the right since it existed; the new chip simply makes the ragged edge visible.
+- **Why it matters:** it is the only place in the system where two chips of the same kind and colour line up against opposite edges, and on a card with no price (about 30% of this library) it is the whole bottom half of the tile.
+- **Proposal:** say where a price-less card puts its badge. Either "Geen prijs" joins the tag row beside the missing-files chip, since neither is a price, or the footer keeps it left when the price block is empty rather than pushing it to an edge with nothing opposite it.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.0.1
+
+
+## GAP-109 [resolved in v2.2] The missing-file icons give a tagless print a whole extra line
+- **Type:** improvement idea
+- **Found while:** the owner's second look, right after 2.1 was specified (2026-10-08)
+- **Where needed:** PrintCard — the icon group's place on the tile
+- **What is missing or wrong:** 2.0 and 2.1 both put the icons first in the **tag row**. On a print with no tags that row exists only to hold them, so two 16px glyphs cost a full line of card height. The owner: *"Kunnen de icoontjes niet rechts van de naam, want de naam is niet lang, nu wordt er iedere keer een nieuwe regel gemaakt als er iets mist."* Print names in this library are short and the line beside them is empty, so the room is already there.
+- **Why it matters:** the whole point of GAP-090's form was that an indicator should cost nothing on the 58% of tiles that carry none — but on a tagless tile that does carry one, it costs a line, which is the most expensive thing on a 261px card.
+- **Proposal:** put the icon group at the end of the `h3`, after the print name, with the name allowed to truncate before the icons do. The tag row then appears only when there are tags. If the design system would rather keep the tag row, the alternative is to let the icons share the meta line, which also already exists.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** yes (2026-10-08, the owner did not want to wait). The icons sit at the end of the `h3` beside the name, marked `ds-gap: GAP-109`. Built from the 2.1 icon group unchanged — only its parent differs — so adopting the official answer is moving one element.
+- **Design system version:** 2.1
+
+## GAP-110 [resolved in v2.2] A tooltip has no placement, and 400ms is too slow for an icon you do not know yet
+- **Type:** unclear spec
+- **Found while:** adding a tooltip to the missing-file icons at the owner's request (2026-10-08)
+- **Where needed:** Tooltip; the `pp-lacks` icon group on PrintCard and PrintRow
+- **What is missing or wrong:** two things. **Placement:** the system styles `.pp-tip` (ground, radius, shadow, 240px cap) but never says where it sits. `.pp-anchor > .pp-pop` has a rule; `.pp-tip` has none, and the Tooltip preview places the bubble statically beside its trigger, which is a preview layout rather than a position. **Timing:** the spec says the bubble appears "after 400ms on hover and immediately on keyboard focus". The owner asked for it to appear immediately: *"Gebruik geen native oplossing, maar een custom oplossing, dan verschijnt de tooltip direct."* A 400ms delay is right for a tooltip that repeats a label you can already read; it is wrong for an icon whose meaning is the only thing the tooltip carries, which is exactly the GAP-106 icons.
+- **Why it matters:** without a placement rule every app invents one, and they will differ. Without a timing distinction, the icon set from GAP-106 is learnable only by waiting almost half a second per glyph.
+- **Proposal:** add a placement rule to the system (`.pp-anchor > .pp-tip` above the trigger, `z-tooltip`, `pointer-events: none`), and say that a tooltip which **is** the only explanation of a glyph appears at once, while one that repeats visible text keeps its 400ms. A third question for you: the bubble's text here repeats the trigger's own accessible name exactly, so this build marks it `aria-hidden` to stop a screen reader saying the sentence twice. Please confirm, because the spec's `aria-describedby` wording assumes the tooltip adds something the name does not.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** yes (2026-10-08). `app-tip` places the bubble from tokens only, and it appears at once. Marked `ds-gap: GAP-110`.
+- **Design system version:** 2.1
+
+## GAP-111 [resolved in v2.2] The file row's name column collapses to 75px and its badge overflows onto the controls
+- **Type:** suspected design bug
+- **Found while:** the owner's third walkthrough, with screenshots of three different prints (2026-10-08)
+- **Where needed:** AssetListItem, `.pp-asset`
+- **What is missing or wrong:** the rule is
+
+      .pp-asset{grid-template-columns:auto minmax(0,1fr)}
+      @container (min-width:760px){.pp-asset{grid-template-columns:auto minmax(0,1fr) auto}}
+
+  The controls column is `auto`, so it takes its max-content width and never yields; the name column is `minmax(0,1fr)`, so it may shrink to nothing. Measured in the running app on a print whose row carries the "Mogelijk dubbel" badge: the controls need **651px**, and just above the 760px breakpoint the name column is left with **75px**. The badge's own min-content width is **128px**, so it overflows its column and is drawn on top of "Aantal keer geprint". Swept across widths, the row is correct at 760, 820, 920, 960, 1000, 1400 and 2000px, and broken at **900px and 1700px** — the widths where three columns are allowed but do not fit.
+- **Why it matters:** it is the operator's main screen, the collision lands on the control that the warning text is telling them to use ("Gebruik liever Aantal keer geprint"), and the file name itself stacks one or two characters per line. It is not a narrow-window case: 1700px is a normal desktop.
+- **Proposal:** the three-column layout should start where three columns actually fit, not at 760px — the controls alone need 651px, plus the icon and gaps, so about 1000px of container before a name has a usable column. Alternatively let the controls column shrink and wrap (`minmax(0,auto)`; `.acts` is already a wrapping `pp-row`), so the controls reflow instead of squeezing the name. A minimum on the name column would stop the overlap but push the row wider than its container, which the system forbids.
+- **Blocked:** nothing is being built on it; the rows render, and at most widths they are correct.
+- **Temporary placeholder approved:** yes (2026-10-08, the owner sees it daily). `grid-template-columns: auto minmax(min-content,1fr) minmax(0,auto)` as an app override, marked `ds-gap: GAP-111`, inventing no value and needing no breakpoint — below the system's own breakpoint the controls span columns 2 to -1, so the third track collapses to zero and the narrow layout is untouched. **Letting the controls shrink was not enough on its own:** nothing forces them to while the free space still covers them, so the name track needs the `min-content` floor as well. Re-swept: no collision at any of 760, 820, 900, 920, 960, 1000, 1400, 1700 or 2000px, and the row height at the two broken widths fell from 247px to 139px.
+- **Design system version:** 2.1
+
+## GAP-112 [resolved in v2.2] A popover near the bottom of the window opens downwards and falls off the screen
+- **Type:** missing state
+- **Found while:** the owner asked whether the filament dropdown was also broken (2026-10-08)
+- **Where needed:** Popover and SpoolPicker; the rule `.pp-anchor>.pp-pop{top:calc(100% + var(--space-2))}`
+- **What is missing or wrong:** a popover is always placed **below** its trigger and never flips. Measured on a print detail at 1400x900: the spool picker's panel is 320x302 and opens at y=831, so **233px of it is below the fold**. It holds 30 spools and a search field; what the owner sees is the search field and almost nothing else. Nothing clips it — it is simply drawn past the bottom of the window.
+- **Why it matters:** the file list is long, so most spool pickers on a print detail sit in the lower half of the page, which is exactly where the rule fails. The same rule carries every menu and the tag editor.
+- **Proposal:** say what a popover does when it does not fit: flip above the trigger when the space below is smaller than the panel, and cap the panel's height to the space that is left so its own list scrolls rather than the page. The same question applies to the horizontal edge — a tooltip was running 116px off the right of the window for the same reason, which is GAP-110's sibling.
+- **Blocked:** nothing; the picker works if you scroll first.
+- **Temporary placeholder approved:** yes (2026-10-08, the owner sees it daily). A `useFlipAbove` hook measures the panel once it is up and flips it above the trigger only when the room below is smaller than the panel **and** the room above is larger, so a panel near the top does not flip into the same problem upwards; `app-pop-fit` caps the height so the panel's own list scrolls. Marked `ds-gap: GAP-112`. The flip rule had to be scoped to `.pp-anchor >` to outweigh `.pp-anchor > .pp-pop`, which sets `top`: left in place, top and bottom were both set and the panel squeezed itself to 18px of its 302. Verified on all five pickers of one print detail: worst off-screen 0px, three flipped, none collapsed, axe 0.
+- **Design system version:** 2.1
+
+## GAP-113 [resolved in v2.2] The missing-files tooltip reads as a full sentence where a phrase would do
+- **Type:** improvement idea
+- **Found while:** the owner's reaction to the tooltip built in 2.1 (2026-10-08)
+- **Where needed:** the `pp-lacks` tooltip on PrintCard and PrintRow
+- **What is missing or wrong:** the accessible name 2.1 specifies is a full Dutch sentence — "Deze print heeft geen G-code-bestand, geen 3MF-bestand en geen STL-bestand." — and the tooltip shows it verbatim. At three missing types that is 76 characters in a 240px bubble, three lines, to say what three icons already say. The owner: *"de tekst van de tooltip mag ook een stuk simpeler, bijvoorbeeld 'Geen 3MF, STL en Gcode'."*
+- **Why it matters:** the tooltip exists to teach three glyphs. A phrase does that in one line; a sentence makes the reader find the three words inside it.
+- **Proposal:** a short form for the bubble — "Geen G-code, 3MF en STL", keeping the fixed order the system chose by consequence — while the **accessible name** keeps the full sentence, which is read out of context by a screen reader and needs to stand alone. If you would rather both were short, say so and they become one string.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** yes (2026-10-08). The bubble shows the short phrase, marked `ds-gap: GAP-113`; the accessible name is unchanged.
+- **Design system version:** 2.1
+
+## GAP-114 [open] 2.2's floating panels are still trapped by the card they live in
+- **Type:** suspected design bug
+- **Found while:** the owner's fourth walkthrough, with both symptoms photographed (2026-10-08)
+- **Where needed:** Tooltip (`.pp-tip.at`), Popover (`.pp-anchor > .pp-pop`), and `.pp-card`
+- **What is missing or wrong:** two separate faults with one cause — a panel is still at the mercy of its ancestors.
+  1. **`.pp-tip.at` does not reset `bottom`.** The anchored rule `.pp-anchor > .pp-tip` sets `bottom: calc(100% + var(--space-1))`, and `.at` sets `position: fixed` with `top`. Both rules are two classes, so `.at` wins only the properties it names; `bottom` survives. A fixed box with **both** edges set is sized to fit between them, and the bubble collapses to its own padding: measured **8px tall where its text needs 24px**, which is the dark sliver the owner photographed. It is the same shape as the mistake I made in my own placeholder, where leaving the system's `top` in place squeezed a 302px panel to 18px.
+  2. **A popover is clipped by its card.** `.pp-pop` is `position: absolute` and `.pp-card` is `overflow: hidden`, so the spool picker is cut off at the card's edge — measured on a print detail: a 302px panel inside `section.pp-card:hidden`, with the cost table painting over what is left. 2.2 gave the tooltip a window-placed form for exactly this reason ("required whenever an ancestor clips or scrolls") but gave the popover none, so the picker has nowhere to go. The owner's question is the right one: *"waarom kan die dropdown niet gewoon bovenop"* — flipping, capping and sheeting all assume the panel is visible in the first place.
+- **Why it matters:** the two most-used floating things in the app are both unusable in their most common position. It is not a corner case: every spool picker on a print detail is inside a card, and every missing-file tooltip is inside a print card.
+- **Proposal:** (1) `.pp-tip.at` resets the edges it does not use (`bottom: auto`, and `right: auto` for `.end`), so the window-placed form is self-contained wherever it is written. Also say whether an `.at` bubble may sit inside a `.pp-anchor` at all. (2) Give the popover the window-placed form the tooltip has — `.pp-pop.at` with the trigger's rect — or say that a card must not clip an open panel, which is the cheaper rule but puts the obligation on every card in the system.
+- **Blocked:** nothing; both are built as placeholders below.
+- **Temporary placeholder approved:** yes (2026-10-08, the owner has now reported both twice). The tooltip's wrapper is **not** a `.pp-anchor`, so the stray `bottom` never applies; it lifts itself above the stretched card link, which the anchor had been doing. The card stops clipping while a panel is open. Both marked `ds-gap: GAP-114`.
+- **Design system version:** 2.2
+
+## GAP-115 [open] A file says "Kies een spoel" while it is already being costed with the print's spool
+- **Type:** missing state
+- **Found while:** the owner's fourth walkthrough (2026-10-08): *"in de prints detail heb je een spool keuze boven aan de pagina en vervolgens in de bestelling, is totaal losgekoppeld"*
+- **Where needed:** SpoolPicker, AssetListItem, CostBreakdown, ScreenPrintDetail
+- **What is missing or wrong:** there are two spool controls on a print detail — "Spoel voor de hele print" in the "Deze print" card, and one per file or slot inside an order — and nothing on screen says how they relate. They are **not** independent: the print's spool is the fallback used to cost every slot that has none. Measured on one print, setting it through the real control and clearing it again: with no print spool the total was **€ 7,05**; after choosing one the total became **€ 5,13**; after clearing it, € 7,05 again. The file's own trigger said **"Kies een spoel" the whole time**, including while that spool was being used to cost it. The only feedback that anything happened is a total that silently moves.
+- **Why it matters:** the control states the opposite of the truth. A file that *is* being costed with a spool offers "Kies een spoel", which reads as "nothing is set here", so the operator either sets it again per file or distrusts the total. It also makes the whole-print control look decorative, which is how it was reported. No print in this library of 83 has a whole-print spool set — plausibly because it has never looked like it does anything.
+- **Proposal:** the design system owns how an inherited value appears in a control that can override it. Some directions, all replaceable: the file trigger shows the inherited spool in `muted` with a word that marks it as inherited ("Van de print: 3DJAKE Orange") and only turns normal weight once that file has its own; or the trigger keeps "Kies een spoel" and the row carries the inherited name in its meta line, beside "Telt in Bestelling 1"; or CostBreakdown's Bron column names it, since that is where the number it changed already lives. Whichever it is, "no value here" should stop being shown for a value that exists.
+- **Blocked:** nothing is built on it; the costing is correct, only its account of itself is not.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.2
+
+## GAP-116 [open] The owner wants the model strip to scroll sideways at any count, and there are no per-model renders
+- **Type:** conflict
+- **Found while:** the owner read ModelPicker in the component gallery (2026-10-08)
+- **Where needed:** ModelPicker, ScreenPrintDetail
+- **What is missing or wrong:** two things, and the second is a correction of mine.
+  1. **The overflow direction.** 2.0.1 decided that above eight pictures the strip wraps into a bounded grid that scrolls down, on my measurement that 29 models is about 2,400px of sideways scrolling. The owner wants it to keep scrolling **sideways** with the small previews visible: *"ik zou liever zijwaarts willen scrollen met gewoon de kleine previews zichtbaar."* Measured for this library, models plus timelapses per print: median **4**, 64 of 83 prints are at eight or fewer, 14 are 9–15, 5 are above 15, the largest is **34**. So the question only touches 19 prints of 83, and the base `.pp-models` already scrolls sideways with a fading edge — the deviation is only that `wrap` is never applied.
+  2. **There are no per-model renders, and I told you there were.** GAP-094's button is specified as "the per-model render when one exists, else the type glyph and the name", and in the 2.0.1 round I answered your measurement question with "one PNG per model file, not per print". That was wrong, and you used it to strengthen the rejection of the Select. The thumbnail service renders **one image per print record** (`thumbnails.get(recordId)`), chosen from a candidate asset; there is no per-asset thumbnail route. So every button in the strip shows the type glyph and the file name, whatever the count, and the information argument for a strip over a list is weaker than we both thought.
+- **Why it matters:** the strip is the operator's way through a print that holds up to 34 pictures, and it is currently a Select above six — the 1.9 form both sides reject. Whatever is decided, the Select goes.
+- **Proposal:** decide the overflow direction knowing the real distribution (19 prints of 83 ever reach it) and knowing the buttons are glyphs, not pictures. If per-model renders are wanted, that is indexer work and belongs in its own gap rather than being assumed by this one.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** yes (2026-10-08). The strip is used at every count and never wraps, marked `ds-gap: GAP-116`.
+- **Design system version:** 2.2
+
+## GAP-117 [open] The file list stands between the operator and the price on every print
+- **Type:** improvement idea
+- **Found while:** the owner asked whether files could be less prominent on the print detail (2026-10-08)
+- **Where needed:** ScreenPrintDetail, the order of `pp-pdfiles` and `pp-orders`
+- **What is missing or wrong:** 2.0 puts the print's file list **third**, between the media row and the orders, on desktop; on a phone it is placed last for exactly the reason that applies here too. Measured on an ordinary print: the page is 1892px, the list is **585px — 31% of it** — it starts at y=652 and the orders do not start until y=1257. So on every print the operator scrolls past the whole inventory to reach the price and the payment, which is the thing they open the page to do. Files per print: median **5**, 17 prints hold more than ten, the largest holds **48**.
+- **Why it matters:** it is the daily path. The phone layout already concedes the point; the desktop layout does not.
+- **Proposal:** put `pp-pdfiles` after `pp-orders` on desktop as well, which is what the phone order already says, and give the list its own maximum height with its own scroll so a 48-file print cannot set the page's length. The owner also asked whether the list should be collapsible or folded into "Deze print"; I would argue against both — a disclosure costs a click on the thing the page is for, and "Deze print" is deliberately facts without controls.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** yes (2026-10-08, the owner chose the reorder). The list moves after the orders, marked `ds-gap: GAP-117`.
+- **Design system version:** 2.2
 

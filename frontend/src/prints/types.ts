@@ -113,6 +113,9 @@ export interface TagWithCount extends Tag {
   printCount: number;
 }
 
+/** The file types a card reports as missing, in the order it shows them. */
+export type MissingFileType = 'gcode' | '3mf' | 'stl';
+
 export interface PrintSummary {
   id: string;
   name: string;
@@ -129,6 +132,8 @@ export interface PrintSummary {
   hasThumbnail: boolean;
   colour: string | null;
   money: PrintMoney | null;
+  /** Which of G-code, 3MF and STL this print has none of, in that order. */
+  lacks: MissingFileType[];
   version: string;
 }
 
@@ -191,6 +196,10 @@ export interface Customer {
   noBilling: boolean;
   /** Openstaand, euros; null for Users and niet-factureren klanten. */
   openAmount: number | null;
+  /** The klant's optional payment link (GAP-103); null for anyone but an Admin. */
+  payLink: string | null;
+  /** When that link was set, so one pasted months ago is visibly old. */
+  payLinkAddedAt: string | null;
 }
 
 export const PRINT_SORTS = ['newest', 'oldest', 'priceDesc', 'priceAsc', 'customer'] as const;

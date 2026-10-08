@@ -11,6 +11,7 @@ import type {
   AssetDto,
   CustomerSummary,
   LineDto,
+  MissingFileType,
   PrintDetail,
   PrintSummary,
   TagDto,
@@ -159,6 +160,27 @@ function hasThumbnailExpression(eb: ExpressionBuilder<Database, 'print_records'>
     .as('has_thumbnail');
 }
 
+/**
+ * Whether the print has a file of each type the card can report missing
+ * (GAP-090). Three separate EXISTS checks rather than a group-by, to match
+ * hasThumbnailExpression and stay the same on all three databases.
+ */
+function hasTypeExpressions(eb: ExpressionBuilder<Database, 'print_records'>) {
+  const present = (type: 'gcode' | '3mf' | 'stl') =>
+    eb.exists(
+      eb
+        .selectFrom('print_assets')
+        .select('print_assets.id')
+        .whereRef('print_assets.print_record_id', '=', 'print_records.id')
+        .where('print_assets.type', '=', type),
+    );
+  return [
+    present('gcode').as('has_gcode'),
+    present('3mf').as('has_3mf'),
+    present('stl').as('has_stl'),
+  ];
+}
+
 export async function listPrints(
   db: AppDatabase,
   scope: CustomerScope,
@@ -175,12 +197,20 @@ export async function listPrints(
     sort === 'customer'
       ? base
           .selectAll('print_records')
-          .select((eb) => [hasThumbnailExpression(eb), colourExpression(eb)])
+          .select((eb) => [
+            hasThumbnailExpression(eb),
+            colourExpression(eb),
+            ...hasTypeExpressions(eb),
+          ])
           .orderBy('print_records.customer_folder')
           .orderBy(dated, 'desc')
       : base
           .selectAll('print_records')
-          .select((eb) => [hasThumbnailExpression(eb), colourExpression(eb)])
+          .select((eb) => [
+            hasThumbnailExpression(eb),
+            colourExpression(eb),
+            ...hasTypeExpressions(eb),
+          ])
           .orderBy(dated, sort === 'oldest' ? 'asc' : 'desc')
   ).orderBy('print_records.id');
 
@@ -318,9 +348,12 @@ export async function listCustomers(
     .execute();
   const flags = await db
     .selectFrom('customers')
-    .select(['customer_folder', 'no_billing'])
+    .select(['customer_folder', 'no_billing', 'pay_link', 'pay_link_added_at'])
     .execute();
   const noBilling = new Set(flags.filter((f) => f.no_billing === 1).map((f) => f.customer_folder));
+  const payLinks = new Map(
+    flags.map((f) => [f.customer_folder, { link: f.pay_link, addedAt: f.pay_link_added_at }]),
+  );
   const open = new Map<string, number>();
   if (options.withMoney === true && rows.length > 0) {
     // Openstaand: what is still to pay on prints that are not deleted.
@@ -350,6 +383,8 @@ export async function listCustomers(
         printCount: Number(row.count),
         deleted: Number(row.alive) === 0,
         noBilling: flagged,
+        payLink: payLinks.get(row.customer_folder)?.link ?? null,
+        payLinkAddedAt: payLinks.get(row.customer_folder)?.addedAt ?? null,
         openAmount:
           options.withMoney === true && !flagged
             ? (open.get(row.customer_folder) ?? 0) / 100
@@ -371,7 +406,7 @@ export async function getPrintDetail(
   const row = await db
     .selectFrom('print_records')
     .selectAll('print_records')
-    .select((eb) => [hasThumbnailExpression(eb), colourExpression(eb)])
+    .select((eb) => [hasThumbnailExpression(eb), colourExpression(eb), ...hasTypeExpressions(eb)])
     .where('print_records.id', '=', id)
     .executeTakeFirst();
   if (row === undefined) return null;
@@ -572,6 +607,9 @@ function toSummary(
     status: RecordRow['status'];
     deleted_at: string | null;
     updated_at: string;
+    has_gcode?: unknown;
+    has_3mf?: unknown;
+    has_stl?: unknown;
   },
   tags: TagDto[],
   hasThumbnail: boolean,
@@ -594,6 +632,12 @@ function toSummary(
     hasThumbnail,
     colour,
     money,
+    // Fixed order, by consequence rather than frequency (GAP-090).
+    lacks: [
+      toBool(row.has_gcode) ? null : ('gcode' as const),
+      toBool(row.has_3mf) ? null : ('3mf' as const),
+      toBool(row.has_stl) ? null : ('stl' as const),
+    ].filter((type): type is MissingFileType => type !== null),
     version: row.updated_at,
   };
 }

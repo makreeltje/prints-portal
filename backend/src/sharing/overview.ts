@@ -53,6 +53,12 @@ export interface SharePayment {
   reference: string;
   email: string | null;
   phone: string | null;
+  /**
+   * The klant's own payment link, if the studio pasted one (GAP-103). It is a
+   * secondary way to pay: the bank details above are always correct, while this
+   * link carries whatever amount it was made with.
+   */
+  payLink: string | null;
 }
 
 export type ShareView =
@@ -158,9 +164,15 @@ export async function shareView(
   const paidCents = priced.reduce((sum, item) => sum + item.money.paidCents, 0);
   const openCents = totalCents - paidCents;
   const iban = settings.company.iban.trim();
-  // Only with something open and an IBAN to pay it into (GAP-078).
+  const payLink = await db
+    .selectFrom('customers')
+    .select('pay_link')
+    .where('customer_folder', '=', link.customer_folder)
+    .executeTakeFirst();
+  // Something open, and either bank details or a link to pay it with (GAP-078,
+  // GAP-103): a klant with a link but no IBAN still gets the block.
   const pay: SharePayment | null =
-    openCents > 0 && iban !== ''
+    openCents > 0 && (iban !== '' || (payLink?.pay_link ?? null) !== null)
       ? {
           iban,
           name: settings.company.name.trim(),
@@ -168,6 +180,7 @@ export async function shareView(
           reference: link.customer_folder,
           email: blankToNull(settings.company.email),
           phone: blankToNull(settings.company.phone),
+          payLink: payLink?.pay_link ?? null,
         }
       : null;
   return {

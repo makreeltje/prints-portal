@@ -12,6 +12,13 @@
 # Everything in design-system/ is replaced except the three files the repo owns
 # (IMPORTING.md says so): DESIGN_GAPS.md, FEEDBACK_PROMPT.md and IMPORTING.md.
 # VERSION is taken from the export's own tokens.json, so it cannot drift.
+#
+# tokens.css is kept too, for a different reason: the design system's page
+# GENERATES it from tokens.json and never publishes it as a file, so it is not
+# in an export at all. Replacing the folder without keeping it deleted it and
+# took the token checker down with it. When tokens change, the new tokens.css
+# has to come from the design system's page; this script only stops it being
+# lost, and the import verifies it still matches tokens.json.
 set -euo pipefail
 
 SRC="${1:-}"
@@ -27,7 +34,7 @@ fi
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEST="$ROOT/design-system"
-KEEP=(DESIGN_GAPS.md FEEDBACK_PROMPT.md IMPORTING.md)
+KEEP=(DESIGN_GAPS.md FEEDBACK_PROMPT.md IMPORTING.md tokens.css)
 
 version="$(node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync('$SRC/tokens.json','utf8')).version))")"
 if [[ -z "$version" || "$version" == "undefined" ]]; then

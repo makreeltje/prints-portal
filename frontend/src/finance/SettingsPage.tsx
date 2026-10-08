@@ -8,6 +8,7 @@ import { joinSections, useDirtySections } from './useDirtySections';
 /** What a section calls to say whether it holds unsaved edits. */
 type DirtyReport = (key: string, title: string, isDirty: boolean) => void;
 import { api } from '../api/client';
+import { formatDate } from '../i18n/format';
 import { FieldError, GenericError } from '../components/FieldError';
 import { useToast } from '../components/toast-context';
 import { t, type MessageKey } from '../i18n/nl';
@@ -24,6 +25,7 @@ import {
   refreshSpoolman,
   saveSettings,
   setNoBilling,
+  setPayLink,
   type Settings,
 } from './api';
 
@@ -95,7 +97,8 @@ export function SettingsPage() {
           setLeaveTo(null);
         }}
       />
-      <div className="pp-col pp-gap-4">
+      {/* Columns of at least 320px up to a 1080px measure (GAP-101). */}
+      <div className="pp-settings">
         <GeneralSection />
         {settings.isPending ? (
           <LoadingRows rows={3} />
@@ -257,6 +260,17 @@ function CompanySection({
       {key === 'email' && emailInvalid && (
         <FieldError id={`${id}-email-err`}>{t('error.invalidEmail')}</FieldError>
       )}
+      {/*
+        A help line, not an error: an IBAN is optional for a studio that is
+        never paid by transfer. But without one the share page has no payment
+        instruction at all, and nothing else would say so (GAP-103).
+      */}
+      {key === 'iban' && values.iban.trim() === '' && (
+        <span className="pp-help pp-row pp-gap-2 pp-items-start">
+          <TriangleAlert className="pp-ico pp-warnico" aria-hidden="true" />
+          <span>{t('settings.company.noIban')}</span>
+        </span>
+      )}
     </div>
   );
   const save = async () => {
@@ -337,6 +351,19 @@ function CustomersSection() {
     queryFn: () => fetchCustomers(true, false),
   });
   const [saving, setSaving] = useState<string | null>(null);
+  const saveLink = async (folder: string, value: string) => {
+    const link = value.trim();
+    setSaving(folder);
+    try {
+      await setPayLink(folder, link === '' ? null : link);
+    } catch {
+      toast.error(t('error.saveFailed'));
+    } finally {
+      setSaving(null);
+      await queryClient.invalidateQueries({ queryKey: keys.all });
+    }
+  };
+
   const toggle = async (folder: string, noBilling: boolean) => {
     setSaving(folder);
     try {
@@ -373,6 +400,38 @@ function CustomersSection() {
                 />
                 {t('customers.notBilled')}
               </label>
+              {/*
+                An optional payment link, shown on this klant's share page
+                beside the bank details (GAP-103). Never for a klant that is
+                not billed: they see no amounts at all.
+              */}
+              {!customer.noBilling && (
+                <label className="pp-field pp-w-320">
+                  <span className="pp-label">{t('customers.payLink')}</span>
+                  <input
+                    type="url"
+                    className="pp-input"
+                    inputMode="url"
+                    placeholder="https://"
+                    defaultValue={customer.payLink ?? ''}
+                    disabled={saving === customer.folder}
+                    onBlur={(event) => void saveLink(customer.folder, event.target.value)}
+                  />
+                  <span className="pp-help">{t('customers.payLinkHelp')}</span>
+                  {/* An old link is then visibly old, without the app guessing
+                      at an expiry it cannot read (GAP-103). */}
+                  {/* A truthy check, not `!== null`: a role that may not see
+                      the link gets no field at all, and an older payload has
+                      neither. */}
+                  {customer.payLink != null && customer.payLinkAddedAt != null && (
+                    <span className="pp-muted pp-text-xs">
+                      {t('customers.payLinkAdded', {
+                        datum: formatDate(customer.payLinkAddedAt),
+                      })}
+                    </span>
+                  )}
+                </label>
+              )}
             </li>
           ))}
         </ul>

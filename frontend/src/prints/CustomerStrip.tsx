@@ -322,7 +322,9 @@ function CustomerChips({
                 onSelect(customer.folder);
               }}
             >
-              {customer.folder}
+              {/* The name leads; the count and the amount follow at 400 with
+                  the separator the chip draws itself (GAP-092). */}
+              <span className="nm">{customer.folder}</span>
               <span className="n">{customer.printCount}</span>
               {customer.openAmount !== null && customer.openAmount > 0 && (
                 <span className="amt">{formatMoney(customer.openAmount)}</span>

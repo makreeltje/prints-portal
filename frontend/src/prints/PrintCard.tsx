@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { PaymentBadge } from '../finance/money';
 import { formatDuration, formatGrams, formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
-import { RecordBadge, TagChip, Thumbnail } from './bits';
+import { LacksChip, RecordBadge, TagChip, Thumbnail } from './bits';
 import { subLine } from './orders';
 import type { PrintSummary } from './types';
 
@@ -41,7 +41,9 @@ export function PrintCard({
           <h3>
             <Link className="app-card-link" to={`/prints/${print.id}`}>
               {print.name}
-            </Link>
+            </Link>{' '}
+            {/* Behind the name, where the line was already empty (GAP-109). */}
+            <LacksChip lacks={print.lacks} />
           </h3>
           <span className="sub">{subLine(print)}</span>
         </div>
@@ -54,21 +56,35 @@ export function PrintCard({
           </div>
         )}
         {(print.status !== 'indexed' || print.money !== null) && (
+          /*
+            Two slots, each holding the thing it is about (GAP-108). Money on
+            the left — including "Geen prijs", which is the price. Payment
+            status on the right, or nothing: a print with no price has no
+            payment status, and space-between then leaves the money at the left
+            edge instead of pushing two chips to opposite sides.
+          */
           <div className="pp-foot">
-            <PriceBlock print={print} />
-            {print.status === 'indexed' ? (
-              print.money !== null && <PaymentBadge status={print.money.status} />
+            {print.money?.status === 'noPrice' ? (
+              <PaymentBadge status="noPrice" />
             ) : (
-              <RecordBadge print={print} />
+              <PriceBlock print={print} />
             )}
-            {restore !== undefined && (
-              <button
-                type="button"
-                className="pp-btn pp-btn-secondary pp-btn-sm app-above-link"
-                onClick={restore}
-              >
-                {t('common.restore')}
-              </button>
+            {print.status !== 'indexed' ? (
+              <span className="pp-row pp-gap-2">
+                <RecordBadge print={print} />
+                {restore !== undefined && (
+                  <button
+                    type="button"
+                    className="pp-btn pp-btn-secondary pp-btn-sm app-above-link"
+                    onClick={restore}
+                  >
+                    {t('common.restore')}
+                  </button>
+                )}
+              </span>
+            ) : (
+              print.money !== null &&
+              print.money.status !== 'noPrice' && <PaymentBadge status={print.money.status} />
             )}
           </div>
         )}

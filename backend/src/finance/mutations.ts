@@ -437,6 +437,41 @@ export async function setNoBilling(
 }
 
 /**
+ * The klant's optional payment link (GAP-103).
+ *
+ * Stored as the studio typed it, with the date it was set: the link carries its
+ * own amount, which Openstaand moves away from with every payment, so the share
+ * page says it may differ and an old link is at least visibly old. An empty
+ * value clears both.
+ */
+export async function setPayLink(
+  db: Kysely<Database>,
+  folder: string,
+  link: string | null,
+  now: string,
+): Promise<void> {
+  const value = link === null || link.trim() === '' ? null : link.trim();
+  const fields = { pay_link: value, pay_link_added_at: value === null ? null : now };
+  const exists = await db
+    .selectFrom('customers')
+    .select('customer_folder')
+    .where('customer_folder', '=', folder)
+    .executeTakeFirst();
+  if (exists === undefined) {
+    await db
+      .insertInto('customers')
+      .values({ customer_folder: folder, no_billing: 0, updated_at: now, ...fields })
+      .execute();
+    return;
+  }
+  await db
+    .updateTable('customers')
+    .set({ ...fields, updated_at: now })
+    .where('customer_folder', '=', folder)
+    .execute();
+}
+
+/**
  * "Nabestelling verwijderen" (Admin, Editor): only a later order without
  * payment or write-off that is not on an invoice; Bestelling 1 never. Its
  * files go back to "Niet in een bestelling". Undone payments go with it.

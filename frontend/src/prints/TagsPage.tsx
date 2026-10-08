@@ -110,7 +110,11 @@ export function TagsPage() {
           {createButton}
         </div>
       ) : (
-        <div className="pp-card pp-flush">
+        /* A grid only once it fills one (GAP-101): with five or fewer the
+           card is capped and the width is left empty on purpose. */
+        <div
+          className={all.length >= 6 ? 'pp-card pp-flush pp-taggrid' : 'pp-card pp-flush pp-w-520'}
+        >
           {editing?.kind === 'new' && editor(null)}
           {all.map((tag) =>
             editing?.kind === 'existing' && editing.tag.id === tag.id ? (

@@ -1,13 +1,22 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Ban, ChevronDown, CircleCheck, Clock, Link as LinkIcon, Plus } from 'lucide-react';
+import {
+  Ban,
+  ChevronDown,
+  CircleCheck,
+  Clock,
+  Link as LinkIcon,
+  Plus,
+  TriangleAlert,
+} from 'lucide-react';
 import { useId, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Dialog } from '../components/Dialog';
 import { FieldError, GenericError } from '../components/FieldError';
 import { formatDate } from '../i18n/format';
 import { t, type MessageKey } from '../i18n/nl';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
+import { fetchSettings, financeKeys } from '../finance/api';
 import { fetchCustomers, keys } from '../prints/api';
 import { calendarDays } from './days';
 import {
@@ -253,6 +262,8 @@ function CreateDialog({
     queryFn: () => fetchCustomers(true, false),
   });
   const choices = (customers.data?.customers ?? []).filter((customer) => !customer.deleted);
+  const settings = useQuery({ queryKey: financeKeys.settings, queryFn: fetchSettings });
+  const noIban = settings.isSuccess && settings.data.company.iban.trim() === '';
   const [customer, setCustomer] = useState<string | null>(null);
   const [label, setLabel] = useState('');
   const [expiry, setExpiry] = useState('30');
@@ -378,6 +389,26 @@ function CreateDialog({
             </span>
           )}
         </div>
+        {/*
+          Without an IBAN the share page carries no payment instruction at all,
+          which is worth saying while the link is being made rather than after
+          the klant has it (GAP-103). A klant with its own link still has a way
+          to pay, so the warning says so.
+        */}
+        {noIban && customer !== null && (
+          <span className="pp-help pp-row pp-gap-2 pp-items-start" role="status">
+            <TriangleAlert className="pp-ico pp-warnico" aria-hidden="true" />
+            <span>
+              {t('shareLinks.noIban')}{' '}
+              {choices.find((c) => c.folder === customer)?.payLink != null && (
+                <>{t('shareLinks.hasPayLink')} </>
+              )}
+              <Link className="pp-link" to="/instellingen">
+                {t('shareLinks.noIban.link')}
+              </Link>
+            </span>
+          </span>
+        )}
         <div className="pp-field">
           <label htmlFor={`${id}-expiry`}>{t('share.expires')}</label>
           <div className="pp-iwrap">

@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { formatDuration, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { PaymentBadge } from '../finance/money';
-import { ColourDot, RecordBadge, TagChip, Thumbnail } from './bits';
+import { LacksChip, ColourDot, RecordBadge, TagChip, Thumbnail } from './bits';
 import { subLine } from './orders';
 import { PriceBlock } from './PrintCard';
 import type { PrintSummary } from './types';
@@ -95,7 +95,7 @@ export function PrintTable({
                   <td>
                     <input
                       type="checkbox"
-                      className="pp-check"
+                      className="pp-check app-above-link"
                       aria-label={t('print.select', { name: print.name })}
                       checked={selection.selected.has(print.id)}
                       onChange={(event) => {
@@ -108,7 +108,12 @@ export function PrintTable({
                   <Thumbnail print={print} small />
                 </td>
                 <td className="name">
-                  <Link className="app-row-link" to={`/prints/${print.id}`}>
+                  {/*
+                    One target for the whole row, the same rule the grid
+                    follows: the link stretches over the row with a ::after and
+                    every other control sits above it (GAP-091, GAP-093).
+                  */}
+                  <Link className="pp-rowlink" to={`/prints/${print.id}`}>
                     {print.name}
                   </Link>
                   <div className="pp-muted">{subLine(print)}</div>
@@ -138,7 +143,7 @@ export function PrintTable({
                     {print.status === 'deleted' && restore !== undefined && (
                       <button
                         type="button"
-                        className="pp-btn pp-btn-secondary pp-btn-sm"
+                        className="pp-btn pp-btn-secondary pp-btn-sm app-above-link"
                         onClick={() => {
                           restore(print);
                         }}
@@ -147,6 +152,8 @@ export function PrintTable({
                       </button>
                     )}
                   </span>
+                  {/* Under the badge, not beside it (GAP-090). */}
+                  <LacksChip lacks={print.lacks} />
                 </td>
                 <td>
                   <span className="pp-tags">

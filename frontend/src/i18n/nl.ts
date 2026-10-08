@@ -48,7 +48,7 @@ export const nl = {
     'Je gebruikt een tijdelijk wachtwoord. Kies een eigen wachtwoord om verder te gaan.',
   'auth.newPassword': 'Nieuw wachtwoord',
   'auth.repeatPassword': 'Herhaal wachtwoord',
-  'auth.passwordHelp': 'Minstens 12 tekens.',
+  'auth.passwordHelp': 'Minstens 12 tekens en anders dan je tijdelijke wachtwoord.',
   'auth.logout': 'Uitloggen',
   'auth.redirecting': 'Doorsturen naar Authentik…',
 
@@ -76,6 +76,7 @@ export const nl = {
   'access.empty.title': 'Nog geen gebruikers om toegang te geven',
   'access.empty.body': 'Alleen Admins en Editors bestaan nu; zij zien altijd elke klant.',
   'access.empty.link': 'Naar Gebruikers',
+  'access.colMenu': 'Kolomacties voor {klant}',
   'access.allAccessRoles': 'Admin en Editor hebben altijd toegang.',
   'access.cell': '{user}: {customer}', // component copy: AccessMatrix (checkbox label)
 
@@ -89,8 +90,7 @@ export const nl = {
   'error.passwordMismatch': 'De wachtwoorden zijn niet gelijk.',
   'error.userExists': 'Deze gebruiker bestaat al.',
   'error.required': 'Dit veld is verplicht.',
-  // ds-gap: GAP-100 — the design system has no copy for a reused password yet.
-  'error.passwordUnchanged': 'Kies een ander wachtwoord dan het tijdelijke.', // ds-gap: GAP-100
+  'auth.pw.unchanged': 'Dit is je huidige wachtwoord. Kies een ander wachtwoord.',
   'error.tooManyAttempts': 'Te veel pogingen, probeer het over een minuut opnieuw',
   'toast.saved': 'Opgeslagen',
 
@@ -153,6 +153,12 @@ export const nl = {
   'cost.askAdmin': 'Vraag een beheerder het vermogen in te stellen.',
   'cost.missingTariff': 'Geen prijs per kWh.',
   'menu.more': 'Meer acties', // component copy: OverflowMenu
+  'print.lacks': 'Ontbreekt: {types}',
+  'print.lacks.aria': 'Deze print heeft {types}.',
+  'print.lacks.item': 'geen {type}-bestand',
+  'print.lacks.gcode': 'G-code',
+  'print.lacks.threemf': '3MF',
+  'print.lacks.stl': 'STL',
   'print.preview': 'Voorbeeld', // component copy: PrintRow
   'invoices.noStatus': 'Geen status', // component copy: ScreenInvoices
   'video.play': 'Afspelen {bestandsnaam}', // component copy: VideoPlayer
@@ -162,6 +168,10 @@ export const nl = {
   'video.unsupported.title': 'Dit formaat speelt niet in de browser.',
   'video.unsupported.body': 'Download het bestand om het af te spelen.',
   'models.group': 'Modellen', // component copy: ModelPicker
+  'models.groupBoth': 'Modellen en timelapse',
+  'models.timelapse': 'Timelapse',
+  'models.captionVideo': 'Timelapse: {bestandsnaam}',
+  'models.viewerVideo': 'Timelapse van {naam}',
   'models.caption': 'Model {n} van {totaal}: {bestandsnaam}',
   'models.loading': 'Model laden…',
   'models.select': 'Model',
@@ -298,6 +308,12 @@ export const nl = {
   'print.files': 'Bestanden', // component copy: ScreenPrintDetail
   'print.fileCount': '{count, plural, one {# bestand} other {# bestanden}}', // component copy: ScreenPrintDetail, OrderSection previews
   'print.noWeightOrTime': 'geen gewicht of tijd', // component copy: ScreenPrintDetail preview
+  'print.this': 'Deze print',
+  'print.project': 'Project',
+  'print.date': 'Datum',
+  'print.orders': 'Bestellingen',
+  'order.filesInOrder': 'In deze bestelling',
+  'asset.countsIn': 'Telt in {bestelling}',
   'print.userView': 'Je ziet alleen prijs en status.', // component copy: ScreenPrintDetail
 
   'asset.timesPrinted': 'Aantal keer geprint',
@@ -309,6 +325,8 @@ export const nl = {
   'asset.plates': '{count} platen',
   'asset.slot': 'Slot {n}',
   'asset.slicerHint': 'slicer',
+  // ds-gap: GAP-115 — placeholder wording until the design system rules.
+  'asset.fromPrint': 'van de print: {naam}',
   'asset.excluded': 'Telt niet mee in kosten',
   'asset.excludedReason.duplicate': 'Telt niet mee: dubbel met G-code',
   'asset.excludedReason.folder': 'Telt niet mee: map {folder}',
@@ -378,6 +396,15 @@ export const nl = {
   'settings.spoolman': 'Spoolman',
   'settings.connected': 'Verbonden',
   'settings.spoolmanMeta': '{url} · {count} spoelen · laatste sync {time}', // component copy: ScreenSettings preview
+  'settings.company.noIban': 'Zonder IBAN staat er geen betaalinstructie op de deelpagina.',
+  'shareLinks.noIban':
+    'Deze klant ziet geen betaalinstructie: er is nog geen IBAN ingevuld bij Bedrijfsgegevens.',
+  'shareLinks.noIban.link': 'Naar Bedrijfsgegevens',
+  'shareLinks.hasPayLink': 'Deze klant heeft wel een betaallink.',
+  'customers.payLink': 'Betaallink (optioneel)',
+  'customers.payLinkHelp':
+    'Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert.',
+  'customers.payLinkAdded': 'Toegevoegd op {datum}',
   'customers.notBilled': 'Niet factureren',
   'customers.notBilledHelp':
     'Voor een klant die niet wordt gefactureerd (bijvoorbeeld je eigen prints) zie je alleen de kosten.',
@@ -390,7 +417,15 @@ export const nl = {
   'settings.theme.light': 'Licht', // component copy: ScreenSettings
   'settings.theme.dark': 'Donker', // component copy: ScreenSettings
   'settings.logoUpload': 'Logo uploaden',
-  'settings.logoHelp': 'PNG of SVG. Vervangt de naam op het scherm en op documenten.',
+  'settings.logo.svgText':
+    'Deze SVG bevat tekst. Zet de tekst om in contouren (outlines) of upload een PNG.',
+  'settings.logo.svgExternal':
+    'Deze SVG verwijst naar een bestand buiten het logo. Upload een zelfstandig bestand.',
+  'settings.logo.onLight': 'Op licht',
+  'settings.logo.onDark': 'Op donker',
+  'settings.logo.themes': "Het logo wordt in beide thema's ongewijzigd getoond.",
+  'settings.logoHelp':
+    'PNG of SVG, maximaal 1 MB. Vervangt de naam op het scherm en op documenten. Tekst in een SVG moet omgezet zijn in contouren.',
   'settings.reindexProgress': 'Indexeren… {done} van {total} bestanden',
   'settings.logoOptional': 'Logo (optioneel)', // component copy: ScreenSettings preview
   'settings.addAlias': 'Alias toevoegen', // component copy: ScreenSettings preview (aria-label)
@@ -584,6 +619,9 @@ export const nl = {
   'share.pay.copy.amount': 'Kopieer bedrag',
   'share.pay.copy.ref': 'Kopieer kenmerk',
   'share.pay.copied': '{veld} gekopieerd',
+  'share.pay.link': 'Betalen via {studio}',
+  'share.pay.link.note':
+    'Deze link is door {studio} gemaakt en kan een ander bedrag bevatten dan hierboven staat.',
   'share.pay.hint': 'Vermeld bij je betaling het kenmerk.',
   'shareLinks.label.help': 'Alleen voor jezelf, de klant ziet dit niet.',
   'share.hint': 'Deel via WhatsApp of mail',

@@ -34,7 +34,7 @@ export function NewPasswordPage() {
       if (error instanceof ApiError && error.code === 'password_too_short') {
         setErrors({ password: 'error.passwordTooShort' });
       } else if (error instanceof ApiError && error.code === 'password_unchanged') {
-        setErrors({ password: 'error.passwordUnchanged' }); // ds-gap: GAP-100
+        setErrors({ password: 'auth.pw.unchanged' });
       } else {
         setFailed(true);
       }

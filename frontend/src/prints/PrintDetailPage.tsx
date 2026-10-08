@@ -1,12 +1,22 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, ChevronDown, Info, Trash2, TriangleAlert } from 'lucide-react';
-import { lazy, Suspense, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { Box, FileVideo, Info, Play, Trash2, TriangleAlert } from 'lucide-react';
+import {
+  Fragment,
+  lazy,
+  Suspense,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ApiError } from '../api/client';
 import { useCurrentUser } from '../auth/context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useToast } from '../components/toast-context';
-import { formatDate } from '../i18n/format';
+import { formatDate, formatDuration, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { LoadingRows } from '../pages/ErrorState';
 import { ForbiddenState, GlobalErrorState } from '../pages/StatePages';
@@ -33,14 +43,21 @@ import { NabestellingDialog } from '../finance/NabestellingDialog';
 import { OrderSection } from '../finance/OrderSection';
 import { PaymentPanel } from '../finance/PaymentPanel';
 import { SpoolPicker } from '../finance/SpoolPicker';
-import { deletePrint, fetchPrint, keys, modelUrl, restorePrint, setPrintTags } from './api';
-import { RecordBadge, TagChip, Thumbnail } from './bits';
+import {
+  deletePrint,
+  downloadUrl,
+  fetchPrint,
+  keys,
+  modelUrl,
+  restorePrint,
+  setPrintTags,
+} from './api';
+import { LacksChip, RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList, type AssetControls } from './AssetList';
 import { OverflowMenu } from '../components/OverflowMenu';
 import { TagEditor } from './TagEditor';
 import { placeOf } from './filter';
-import { Meta } from './PrintCard';
-import { assetsForOrder, isSettled, newestFirst, unassignedAssets } from './orders';
+import { assetsForOrder, isSettled, newestFirst, orderLabels, unassignedAssets } from './orders';
 import type { Order, PrintDetail } from './types';
 
 const Viewer3D = lazy(() => import('./Viewer3D'));
@@ -107,6 +124,8 @@ export function PrintDetailPage() {
       ? {
           locked: invoice !== null,
           ...(invoice === null ? {} : { invoiceNumber: invoice.number }),
+          // So a row can say that it is being costed with the print's spool.
+          printSpool: detail.spool,
           setTimesPrinted: (line, times) =>
             quiet(() => setTimesPrinted(detail.id, line.id, times, orderId ?? undefined)),
           setExcluded: (line, excluded) =>
@@ -195,6 +214,8 @@ export function PrintDetailPage() {
         <div className="pp-tags">
           {detail.money !== null && <PaymentBadge status={detail.money.status} />}
           <RecordBadge print={detail} />
+          {/* The same chip the card carries, in the header badge row (GAP-090). */}
+          <LacksChip lacks={detail.lacks} withText />
           {detail.tags.map((tag) => (
             <TagChip
               key={tag.id}
@@ -204,7 +225,6 @@ export function PrintDetailPage() {
           ))}
           {canManage && <TagEditor printId={detail.id} current={detail.tags} />}
         </div>
-        <Meta print={detail} />
       </div>
 
       {detail.status === 'archived' && (
@@ -293,86 +313,287 @@ export function PrintDetailPage() {
   );
 }
 
+const LACKS_KEY = { gcode: 'gcode', '3mf': 'threemf', stl: 'stl' } as const;
+
 /**
- * ModelPicker (1.9, GAP-086): a print usually holds several models, and the
- * viewer used to show one of them silently. Up to six as a strip, more as a
- * Select, in file order.
+ * "Deze print" (GAP-095): the facts that belong to the print rather than to an
+ * order, in the space the capped viewer leaves beside it. Nothing here repeats
+ * PaymentPanel — no price, no payment, no status — because those belong to an
+ * order, and that duplication is what made the 1.9 page read wrong.
  */
-function ModelPicker({
-  models,
+function ThisPrint({
+  detail,
+  spoolmanOn,
+  quiet,
+  toast,
+  canManage,
+}: {
+  detail: PrintDetail;
+  spoolmanOn: boolean;
+  quiet: (action: () => Promise<unknown>) => Promise<void>;
+  toast: ReturnType<typeof useToast>;
+  canManage: boolean;
+}) {
+  const titleId = useId();
+  const facts: [string, ReactNode][] = [[t('filters.customer'), detail.customerFolder]];
+  if (detail.projectFolder !== null && detail.projectFolder !== '') {
+    facts.push([t('print.project'), detail.projectFolder]);
+  }
+  if (detail.printDate !== null) facts.push([t('print.date'), formatDate(detail.printDate)]);
+  if (canManage) {
+    if (detail.material !== null) facts.push([t('print.material'), detail.material]);
+    if (detail.printSeconds !== null) {
+      facts.push([t('print.time'), formatDuration(detail.printSeconds)]);
+    }
+    if (detail.grams !== null) facts.push([t('print.weight'), formatGrams(detail.grams)]);
+    if (detail.orders.length > 0) {
+      facts.push([t('print.orders'), String(detail.orders.length)]);
+    }
+  }
+  return (
+    <section className="pp-card pp-sec pp-gap-3" aria-labelledby={titleId}>
+      <b id={titleId} className="pp-strong">
+        {t('print.this')}
+      </b>
+      <dl className="pp-kv tight">
+        {facts.map(([label, value]) => (
+          <Fragment key={label}>
+            <dt className="pp-muted">{label}</dt>
+            <dd>{value}</dd>
+          </Fragment>
+        ))}
+      </dl>
+      {canManage && spoolmanOn && (
+        <div className="pp-col pp-gap-1">
+          <SpoolPicker
+            value={detail.spool}
+            label={t('spool.forPrint')}
+            onChange={(spoolId) =>
+              quiet(async () => {
+                const result = await setPrintSpool(detail.id, spoolId);
+                // A locked order keeps its spools; say so instead of failing silently.
+                if (result.skipped > 0) {
+                  toast.success(
+                    t('spool.wholePrintSkipped', { n: result.changed, m: result.skipped }),
+                  );
+                }
+              })
+            }
+          />
+          <span className="pp-help">{t('spool.forPrintHelp')}</span>
+        </div>
+      )}
+      {detail.lacks.length > 0 && (
+        <span className="pp-help">
+          {t('print.lacks.aria', {
+            types: detail.lacks
+              .map((type) => t('print.lacks.item', { type: t(`print.lacks.${LACKS_KEY[type]}`) }))
+              .join(', '),
+          })}
+        </span>
+      )}
+    </section>
+  );
+}
+
+/**
+ * The media strip: every model and every timelapse of a print, in one row
+ * (GAP-094, GAP-096).
+ *
+ * It scrolls sideways at any count and never becomes a Select — the owner's
+ * choice over 2.0.1's wrap, measured against their library: median 4 pictures,
+ * 64 of 83 prints at eight or fewer, the largest 34 (`ds-gap: GAP-116`).
+ *
+ * The buttons carry a type glyph and the file name rather than a render,
+ * because the thumbnail service makes one image per print, not one per model.
+ * No duration is shown either: the indexer does not read one.
+ */
+function MediaStrip({
+  items,
   index,
   colour,
   onChoose,
 }: {
-  models: { id: string; fileName: string }[];
+  items: Picture[];
   index: number;
   colour: string | null;
   onChoose: (id: string) => void;
 }) {
-  const current = models[index];
-  const caption = t('models.caption', {
-    n: index + 1,
-    totaal: models.length,
-    bestandsnaam: current?.fileName ?? '',
-  });
+  const strip = useRef<HTMLDivElement>(null);
+  const [overflows, setOverflows] = useState(false);
+  const current = items[index];
+
+  // The fading edge is only honest when the row really continues.
+  useEffect(() => {
+    const element = strip.current;
+    if (element === null) return;
+    const measure = () => {
+      setOverflows(element.scrollWidth > element.clientWidth + 1);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+    };
+  }, [items.length]);
+
+  const caption =
+    current?.kind === 'video'
+      ? t('models.captionVideo', { bestandsnaam: current.fileName })
+      : t('models.caption', {
+          n: index + 1,
+          totaal: items.length,
+          bestandsnaam: current?.fileName ?? '',
+        });
+
   return (
     <div className="pp-col pp-gap-1">
       <span className="pp-muted pp-text-sm">{caption}</span>
-      {models.length > 6 ? (
-        <div className="pp-iwrap pp-w-520">
-          <select
-            className="pp-input pp-select"
-            aria-label={t('models.select')}
-            value={current?.id ?? ''}
-            onChange={(event) => {
-              onChoose(event.target.value);
+      <div
+        ref={strip}
+        // ds-gap: GAP-116
+        className={overflows ? 'pp-models is-overflow' : 'pp-models'}
+        role="group"
+        aria-label={
+          items.some((item) => item.kind === 'video') ? t('models.groupBoth') : t('models.group')
+        }
+      >
+        {items.map((item, position) => (
+          <button
+            key={item.id}
+            type="button"
+            className={[
+              'pp-modelbtn',
+              item.kind === 'video' ? 'video' : '',
+              position === index ? 'is-selected' : '',
+            ]
+              .filter((name) => name !== '')
+              .join(' ')}
+            aria-pressed={position === index}
+            /*
+              The name goes on the button, not in a hidden span inside it: a
+              .pp-sr is absolutely positioned and takes the body as its
+              containing block, so inside a sideways scroller it escapes the
+              clip and stretches the page — it made this one 366px too wide.
+            */
+            aria-label={
+              item.kind === 'video' ? `${t('models.timelapse')} ${item.fileName}` : undefined
+            }
+            onClick={() => {
+              onChoose(item.id);
             }}
           >
-            {models.map((model, position) => (
-              <option key={model.id} value={model.id}>
-                {`${model.fileName} (${String(position + 1)} van ${String(models.length)})`}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pp-ico r" aria-hidden="true" />
-        </div>
-      ) : (
-        <div className="pp-models" role="group" aria-label={t('models.group')}>
-          {models.map((model, position) => (
-            <button
-              key={model.id}
-              type="button"
-              className={position === index ? 'pp-modelbtn is-selected' : 'pp-modelbtn'}
-              aria-pressed={position === index}
-              onClick={() => {
-                onChoose(model.id);
-              }}
+            <span
+              className={item.kind === 'video' || colour === null ? 'pp-thumb' : 'pp-thumb tinted'}
+              style={
+                item.kind === 'video' || colour === null
+                  ? undefined
+                  : ({ '--c1': colour } as CSSProperties)
+              }
             >
-              <span
-                className={colour === null ? 'pp-thumb' : 'pp-thumb tinted'}
-                style={colour === null ? undefined : ({ '--c1': colour } as CSSProperties)}
-              >
+              {item.kind === 'video' ? (
+                <>
+                  <FileVideo className="pp-ico" aria-hidden="true" />
+                  {/* The badge is what reads as "video" at this size. */}
+                  <span className="pp-play" aria-hidden="true">
+                    <Play className="pp-ico" />
+                  </span>
+                </>
+              ) : (
                 <Box className="pp-ico" aria-hidden="true" />
-              </span>
-              <span className="nm">{model.fileName}</span>
-            </button>
-          ))}
-        </div>
-      )}
+              )}
+            </span>
+            <span className="nm">{item.fileName}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 
-/** Viewer3D when there is a model; otherwise "Geen 3D-model beschikbaar" and the thumbnail. */
+/** One thing the strip can show: a model to turn, or a timelapse to play. */
+interface Picture {
+  id: string;
+  fileName: string;
+  kind: 'model' | 'video';
+}
+
+const UNPLAYABLE = /\.(mkv|avi|wmv|flv)$/i;
+
+/**
+ * The media row's left half: the viewer, or the inline player when a timelapse
+ * is chosen (GAP-096), with the strip under it.
+ */
 function ModelView({ detail }: { detail: PrintDetail }) {
-  // The choice is not stored (ModelPicker 1.9); the first model opens.
+  // The choice is not stored (ModelPicker 1.9); the first picture opens.
   const [chosen, setChosen] = useState<string | null>(null);
-  const models = detail.models;
+  const [failed, setFailed] = useState(false);
+  const videos: Picture[] = (detail.assets ?? [])
+    .filter((asset) => asset.type === 'video')
+    .map((asset) => ({ id: asset.id, fileName: asset.fileName, kind: 'video' }));
+  const items: Picture[] = [
+    ...detail.models.map((model) => ({ ...model, kind: 'model' as const })),
+    ...videos,
+  ];
   const index = Math.max(
     0,
-    models.findIndex((model) => model.id === chosen),
+    items.findIndex((item) => item.id === chosen),
   );
-  const current = models[index];
+  const current = items[index];
+  const strip = items.length > 1 && (
+    <MediaStrip
+      items={items}
+      index={index}
+      colour={detail.colour}
+      onChoose={(id) => {
+        setFailed(false);
+        setChosen(id);
+      }}
+    />
+  );
+
+  if (current?.kind === 'video') {
+    const unsupported = UNPLAYABLE.test(current.fileName);
+    return (
+      <div className="pp-col pp-gap-2">
+        <div className="pp-video">
+          {unsupported ? (
+            <div className="pp-alert info">
+              <TriangleAlert className="pp-ico" aria-hidden="true" />
+              <div>
+                <b>{t('video.unsupported.title')}</b>
+                <div>{t('video.unsupported.body')}</div>
+              </div>
+            </div>
+          ) : failed ? (
+            <div className="pp-alert unpaid" role="alert">
+              <TriangleAlert className="pp-ico" aria-hidden="true" />
+              <div>
+                <b>{t('video.error.title')}</b>
+                <div>{t('video.error.body')}</div>
+              </div>
+            </div>
+          ) : (
+            /* No #t fragment: the file plays from its start. preload="metadata"
+               lets the browser show a first frame where it can, and no poster is
+               extracted anywhere (GAP-089). */
+            <video
+              key={current.id}
+              controls
+              preload="metadata"
+              src={downloadUrl(current.id)}
+              aria-label={t('models.viewerVideo', { naam: current.fileName })}
+              onError={() => {
+                setFailed(true);
+              }}
+            />
+          )}
+        </div>
+        {strip}
+      </div>
+    );
+  }
 
   if (detail.hasModel) {
     return (
@@ -393,9 +614,7 @@ function ModelView({ detail }: { detail: PrintDetail }) {
             colour={detail.colour}
           />
         </Suspense>
-        {models.length > 1 && current !== undefined && (
-          <ModelPicker models={models} index={index} colour={detail.colour} onChoose={setChosen} />
-        )}
+        {strip}
       </div>
     );
   }
@@ -410,6 +629,7 @@ function ModelView({ detail }: { detail: PrintDetail }) {
           <Thumbnail print={detail} />
         </div>
       )}
+      {strip}
     </div>
   );
 }
@@ -456,42 +676,20 @@ function ManagedOrders({
   );
   return (
     <>
-      <ModelView detail={detail} />
-      {spoolmanOn && (
-        // Spoel voor de hele print: full width under the viewer (ScreenPrintDetail 1.5).
-        <section className="pp-card pp-sec pp-gap-2" aria-labelledby="spool-title">
-          <b id="spool-title" className="pp-strong">
-            {t('spool.forPrint')}
-          </b>
-          <SpoolPicker
-            value={detail.spool}
-            label={t('spool.forPrint')}
-            onChange={(spoolId) =>
-              quiet(async () => {
-                const result = await setPrintSpool(detail.id, spoolId);
-                // A locked order keeps its spools; say so instead of failing silently.
-                if (result.skipped > 0) {
-                  toast.success(
-                    t('spool.wholePrintSkipped', { n: result.changed, m: result.skipped }),
-                  );
-                }
-              })
-            }
-          />
-          <span className="pp-help">{t('spool.forPrintHelp')}</span>
-        </section>
-      )}
+      {/* The media row: the viewer takes what it needs, the facts take the rest
+          (GAP-095). The dead space of 1.9 was this card's missing half. */}
+      <div className="pp-pdtop">
+        <ModelView detail={detail} />
+        <ThisPrint detail={detail} spoolmanOn={spoolmanOn} quiet={quiet} toast={toast} canManage />
+      </div>
       {unassignedCount > 0 && (
-        <>
-          <div className="pp-alert info" role="status">
-            <Info className="pp-ico" aria-hidden="true" />
-            <div>
-              {t('orders.unassignedAlert', { count: unassignedCount })}
-              <div className="pp-mt">{createButton(true)}</div>
-            </div>
+        <div className="pp-alert info" role="status">
+          <Info className="pp-ico" aria-hidden="true" />
+          <div>
+            {t('orders.unassignedAlert', { count: unassignedCount })}
+            <div className="pp-mt">{createButton(true)}</div>
           </div>
-          <AssetList assets={unassigned} title={t('orders.unassignedGroup')} />
-        </>
+        </div>
       )}
       <div className="pp-orders">
         {orders.map((order) => {
@@ -504,7 +702,11 @@ function ManagedOrders({
               files={
                 <>
                   {files.length > 0 && (
-                    <AssetList assets={files} controls={controlsFor(order.id, order.invoice)} />
+                    <AssetList
+                      assets={files}
+                      controls={controlsFor(order.id, order.invoice)}
+                      title={t('order.filesInOrder')}
+                    />
                   )}
                   {order.cost !== undefined && (
                     <CostBreakdown
@@ -536,8 +738,20 @@ function ManagedOrders({
           );
         })}
       </div>
+      {/*
+        One inventory, at print level, each file once and saying which order
+        counts it (GAP-097). It sits after the orders, not before them: on an
+        ordinary print it is 31% of the page and the operator was scrolling
+        past all of it to reach the price. The phone layout already said so.
+        ds-gap: GAP-117
+      */}
+      {assets.length > 0 && (
+        <div className="pp-pdfiles">
+          <AssetList assets={assets} ordLabels={orderLabels(assets, orders)} />
+        </div>
+      )}
       {assets.some((asset) => asset.lines.length > 0) && (
-        <div className="pp-row">{createButton(false)}</div>
+        <div className="pp-pdnew">{createButton(false)}</div>
       )}
       {creating && (
         <NabestellingDialog

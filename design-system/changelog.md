@@ -1,3 +1,47 @@
+# Changelog 2.2
+
+Resolves GAP-109 to GAP-113, the five gaps of this round. Three arrived built as placeholders the owner approved; two are bugs in rules of mine, found by measurement. Version 1.9 follows below — **2.0 and 2.1 were never written into this file**; their record lives in the component READMEs (PrintCard, AssetListItem) and is summarised in `README.md` under *Versie 2.0 and 2.1*.
+
+| Gap | About | Result |
+|---|---|---|
+| GAP-109 | Missing-file icons give a tagless card an extra line | **confirmed as built**: the icons belong at the end of the `h3`, in inline flow; `bundle.css` now carries the glue rule (`.pp-print h3 .pp-lacks`) so the app can drop its marker, and the preview draws it |
+| GAP-110 | The tooltip has no placement and 400ms is too slow | **resolved**: `.pp-anchor>.pp-tip` (above, `.end`, `.down`) plus the window-placed `.pp-tip.at` for a trigger inside anything that clips or scrolls; no delay; `aria-hidden` on a bubble that repeats the name is **confirmed**, with the two-case rule written down and the `title` attribute dropped |
+| GAP-111 | The file row's name column collapses and the badge overflows | **resolved**: `minmax(var(--pp-name-min),1fr)` for the name and `minmax(0,auto)` for the controls, `--pp-name-min: 240px`, `.ord` no longer `nowrap`. The proposed one-line override (`minmax(0,auto)` alone) is **rejected**: with a 1fr column whose minimum is 0 the free space goes to the controls first and the name collapses to nothing |
+| GAP-112 | A popover near the bottom falls off the screen | **resolved**: side per axis (`.up`/`.end`), height capped by `--pp-pop-max` with the panel's own region scrolling, and the sheet form under 240px of room (`.pp-anchor.sheet`). Flip *and* cap, not one of them; the rule is in `README.md` under *Floating panels* and carries menus, the tag editor and the date picker |
+| GAP-113 | The tooltip reads as a sentence where a phrase would do | **resolved**: one visible short form, `print.lacks` = "Ontbreekt: G-code, 3MF en STL", used in both the bubble and the print-detail chip; the full sentence stays as the accessible name (`print.lacks.aria`). The split the placeholder built is right; the wording is unified so there is not a third form of the same fact |
+
+## New and changed
+
+- **Tokens:** none added, renamed or removed. `tokens.json` `version` is **2.2**. The two new lengths are `bundle.css` variables, next to `--pp-tap` and `--pp-control-h`, not tokens: `--pp-name-min` (240px, the file row's name-column floor). New allowed **inline data properties**, which the app sets from a measurement and never from a chosen value: `--pp-pop-max`, `--pp-tip-x`, `--pp-tip-y`.
+- **New classes** `.pp-anchor.sheet` (the sheet form at any width), `.pp-tip.at` (with `.at.end`, `.at.down`), `.pp-anchor.down>.pp-tip`, `.pp-w-900` (preview helper).
+- **Changed classes** `.pp-anchor>.pp-pop` (flex column, `max-height: var(--pp-pop-max, …)`, `overflow-y: auto`, `overscroll-behavior: contain`; its children do not shrink), `.pp-anchor>.pp-picker` and `.pp-anchor>.pp-tagpop` (the panel does not scroll, the inner region does — which keeps its 240px as a preferred height and shrinks below it only when the panel is capped, so a panel with room is unchanged), `.pp-anchor>.pp-tip` and `.pp-anchor.end>.pp-tip` (placement, `z-tooltip`, never hoverable), `.pp-asset` (the 760px container form: name floor, yielding controls), `.pp-asset .acts` (`min-width: 0`), `.pp-asset .ord` (wraps), `.pp-print h3 .pp-lacks` (new rule).
+- **Copy** `print.lacks` (changed: "Ontbreekt: {types}", joined with ", " and " en ", now the bubble *and* the chip), `print.lacks.aria`, `print.lacks.item`, `print.lacks.type.gcode`, `print.lacks.type.3mf`, `print.lacks.type.stl`. All six are in `copy-deck.md` under *Added in 2.2*; the first three were named in 2.0/2.1 and had never reached the deck. No key removed.
+- **Components changed:** Popover, Tooltip, SpoolPicker, TagEditor, OverflowMenu, AssetListItem, PrintCard.
+- **Previews changed:** Popover (flipped, capped with 30 spools, sheet), Tooltip (above, `.end`, `.down`, and a real description with `aria-describedby`), PrintCard (the icons behind the name on a tagless card, a 33-character name, the tag row keeping "Geen spoel", the short form in bubble and chip — and the stale `--mix` demo of 1.9 removed, two versions after `--mix` left the contract), AssetListItem (the duplicate row in a 900px and a 768px container).
+- **Pages changed:** `README.md` (new section *Floating panels*, plus the missing 2.0/2.1 record), `copy-deck.md`, `do-dont.md`, `contrast.md` (two rows reworded: the `bg` on `text-strong` pair is the tooltip bubble as well as the rail tip — it was only labelled for the rail).
+- **Contrast report:** no new colour pair. Nothing changes colour this round: the bubble is the existing `.pp-tip` (`bg` on `text-strong`, 15.84 light / 16.08 dark) and the icons keep the 2.1 figures (`warning` on `surface` 6.11/10.84, on `primary-tint-soft` 5.46/9.53, on `primary-tint` 4.99/8.52, against a 3:1 requirement).
+- **Breaking changes:** none. No token or class is renamed or removed. Two things the app must now do that it did not before: set `--pp-pop-max` and the side modifiers on every anchored panel, and set `--pp-tip-x`/`--pp-tip-y` on a tooltip that uses `.at`. A panel that sets neither still cannot be drawn off-screen in the horizontal axis, but it can be below the fold — the backstop cap is the window height, not the room below the trigger.
+
+## What I rejected, and why
+
+- **`minmax(0,auto)` for the controls column alone** (GAP-111's one-line override). It makes the measured case worse: grid gives free space to the `auto`-max track before an `fr` track whose minimum is 0, so the name column goes to zero instead of 75px. The floor on the name column is the part that does the work.
+- **The bare-icon legend without words anywhere** stays rejected from 2.0, and 2.1's answer to it stays: icons on the card and the row, words on the print detail. GAP-113 does not reopen it; it only shortens the words.
+- **Making the missing-file icon group focusable** so its tooltip is keyboard-reachable. It is a graphic with a text alternative, not a control, and a tab stop on every card that is missing a file — inside a stretched card link — costs more than it gives. Its words are on the print detail, which is the path that teaches them anyway.
+- **A hover delay of any size.** 400ms was in the spec because tooltips elsewhere repeat a visible label; this one is the only explanation of a glyph. A tooltip that costs nothing to show costs nothing to show by accident.
+
+## What I need you to measure
+
+None of the five decisions waits on a number; these verify them, and if one comes back wrong I change the value rather than you inventing one.
+
+- **GAP-111, the floor.** The min-content width of the widest thing that can sit in the name column with `nowrap`: every badge it can carry ("Mogelijk dubbel" 128px measured, "Niet in een bestelling", "Bestand ontbreekt", "Op factuur {nummer}") at your real data. If any exceeds **240px**, tell me the number and I raise `--pp-name-min`; do not raise it yourself.
+- **GAP-111, the sweep.** The **container** width of `.pp-assetlist` at window widths 900, 1400, 1700 and 2000. Your sweep is over window widths and the rule is a container query; broken at 900 and 1700 but correct at 1400 and 2000 cannot be monotone in the container, so I would like to know what the container actually does at 1700.
+- **GAP-112, the floor of 240px.** How often, and where, the sheet form is reached: the natural height of the tallest anchored panel in the app (the tag editor with every tag, the column menu in Toegang, the spool picker with 30 spools) and the smallest viewport height you see in practice. If nothing ever reaches the floor it is a backstop; if the tag editor reaches it on a laptop, I want to know.
+- **GAP-109 / 2.1's figures.** How many of the 83 cards carry missing-file icons. 2.1 says 58% of tiles carry nothing, which makes about 35 cards; your GAP-109 measurement says 10 cards carry icons, all 10 without tags. Both cannot be right, and the second is the one the owner sees. I have not changed anything on the strength of either.
+
+## Long cases drawn
+
+The duplicate file row in a 900px container (the width where the name column was 75px) and in a 768px one; the spool picker with 30 spools flipped above its trigger and again capped at 210px with the list scrolling and the search field in place; the same picker as a sheet; a tagless card with one icon, a three-icon card, a 33-character name with icons behind it, and a card whose tag row still carries "Geen spoel"; the tooltip above, right-hanging and below.
+
 # Changelog 1.9
 
 Resolves GAP-062 to GAP-087 (26 gaps from the walkthrough of app 1.0.0). Version 1.8 follows below.

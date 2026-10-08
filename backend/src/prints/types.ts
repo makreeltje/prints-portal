@@ -18,6 +18,9 @@ export interface TagDto {
 }
 
 /** One print in a list (dashboard card or row). */
+/** The file types a card reports as missing, in the order it shows them. */
+export type MissingFileType = 'gcode' | '3mf' | 'stl';
+
 export interface PrintSummary {
   id: string;
   name: string;
@@ -41,6 +44,11 @@ export interface PrintSummary {
   colour: string | null;
   /** Price, payment status and (Admin/Editor) cost, summed over the print's orders. */
   money: PrintMoneyDto | null;
+  /**
+   * Which of G-code, 3MF and STL the print has none of, in that fixed order
+   * (GAP-090). Empty for about 70% of prints, which then show no chip at all.
+   */
+  lacks: MissingFileType[];
   /** Changes whenever the print changes; part of thumbnail URLs for cache busting. */
   version: string;
 }

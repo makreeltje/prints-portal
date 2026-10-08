@@ -117,12 +117,15 @@ for (const [, id, , resultRaw] of rows) {
     problem(`${id} is in the changelog's table but has no entry in DESIGN_GAPS.md`);
   }
   // A gap the design system has not actually closed: it needs something back.
-  // "confirmed as built" and "(your decision)" are settled, not pending.
-  const settled = /confirmed as built|your decision/i.test(result);
-  if (
-    !settled &&
-    /\bproposed\b|needs your|awaiting|to be measured|needs confirmation/i.test(result)
-  ) {
+  // The status is the FIRST thing in the cell, so only that decides. Scanning
+  // the whole cell flagged two rows that were resolved and merely mentioned the
+  // word "proposed" while explaining what they decided against.
+  const status = result.replace(/[*_`]/g, '').trim().toLowerCase();
+  const settled = /^(resolved|confirmed as built|merged into|rejected|accepted)\b/.test(status);
+  const pending = /^(proposed|needs your|awaiting|to be measured|needs confirmation)\b/.test(
+    status,
+  );
+  if (!settled && pending) {
     waiting.push(`${id}: ${result.replace(/\s+/g, ' ').slice(0, 96)}`);
   }
 }

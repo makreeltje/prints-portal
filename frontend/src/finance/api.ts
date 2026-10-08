@@ -143,6 +143,12 @@ export const setNoBilling = (folder: string, noBilling: boolean) =>
     body: { noBilling },
   });
 
+export const setPayLink = (folder: string, payLink: string | null) =>
+  api(`/api/customers/${encodeURIComponent(folder)}/pay-link`, {
+    method: 'PUT',
+    body: { payLink },
+  });
+
 export const runBulk = (ids: readonly string[], action: BulkAction) =>
   api<{ results: BulkResult[] }>('/api/prints/bulk', {
     method: 'POST',

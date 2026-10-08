@@ -15,6 +15,7 @@ import {
   setLineOverride,
   setNoBilling,
   setOrderOverrides,
+  setPayLink,
   setPrintSpool,
   setSalePrice,
   setTimesPrinted,
@@ -754,6 +755,42 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
         .where('status', '!=', 'deleted')
         .execute();
       for (const print of prints) broadcast('print:updated', print.id, request.params.folder);
+      return reply.code(204).send();
+    },
+  );
+
+  app.put<{ Params: { folder: string }; Body: { payLink: string | null } }>(
+    '/api/customers/:folder/pay-link',
+    {
+      config: { auth: ADMIN },
+      schema: {
+        params: {
+          type: 'object',
+          required: ['folder'],
+          properties: { folder: { type: 'string', minLength: 1, maxLength: 255 } },
+        },
+        body: {
+          type: 'object',
+          required: ['payLink'],
+          additionalProperties: false,
+          properties: { payLink: { type: ['string', 'null'], maxLength: 2048 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const exists = await db
+        .selectFrom('print_records')
+        .select('id')
+        .where('customer_folder', '=', request.params.folder)
+        .executeTakeFirst();
+      if (exists === undefined) return reply.code(404).send({ error: 'not_found' });
+      const raw = request.body.payLink?.trim() ?? '';
+      // Only a link the browser will actually open, and never one that runs
+      // script: this URL is put in front of a customer.
+      if (raw !== '' && !/^https:\/\/[^\s]+$/i.test(raw)) {
+        return reply.code(422).send({ error: 'invalid_pay_link' });
+      }
+      await setPayLink(db, request.params.folder, raw === '' ? null : raw, iso());
       return reply.code(204).send();
     },
   );
