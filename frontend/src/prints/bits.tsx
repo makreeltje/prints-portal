@@ -186,7 +186,14 @@ export function Thumbnail({ print, small = false }: { print: PrintSummary; small
   const tinted = print.colour !== null;
   const content = print.hasThumbnail ? (
     <img
-      className="app-thumb-img"
+      /*
+        `.pp-art` outlines the silhouette from the picture's own alpha channel
+        (2.3, GAP-071). 2.0 had the server bake the ink in, which covered 2 of
+        this library's 83 thumbnails — the other 79 come from the slicer and we
+        do not rewrite a picture we did not make. Drawn here it is a token, so
+        it is right in both themes.
+      */
+      className="pp-art"
       src={thumbnailUrl(print)}
       alt=""
       loading="lazy"

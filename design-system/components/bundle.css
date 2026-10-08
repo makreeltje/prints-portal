@@ -874,6 +874,8 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-modelbtn .dur{display:block;font-variant-numeric:tabular-nums}
 /* 2.0.1, GAP-094 reconsidered: above 8 pictures the same strip wraps into a bounded grid
    and scrolls down instead of sideways. Same buttons, same one control. */
+/* DEPRECATED in 2.3 (GAP-116): the owner chose one sideways-scrolling line at every
+   count, so `wrap` is never applied. Kept defined, scheduled for removal in 3.0. */
 .pp-models.wrap{flex-wrap:wrap;overflow-x:hidden;overflow-y:auto;max-height:304px}
 .pp-models.wrap.is-overflow{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - var(--space-5)),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - var(--space-5)),transparent)}
 
@@ -957,14 +959,16 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
    from the trigger's rect, which also keeps it clear of the sticky-cell paint of GAP-098.
    The app passes two numbers (--pp-tip-x/--pp-tip-y = the trigger's left/top, or right/bottom
    with .end/.down); every length stays here. Never interactive, so never hoverable. */
-.pp-anchor>.pp-tip{position:absolute;left:0;bottom:calc(100% + var(--space-1));z-index:var(--z-tooltip)}
-.pp-anchor.end>.pp-tip{left:auto;right:0}
-.pp-anchor.down>.pp-tip{bottom:auto;top:calc(100% + var(--space-1))}
-.pp-tip.at{position:fixed;left:var(--pp-tip-x,0);top:var(--pp-tip-y,0);z-index:var(--z-tooltip);transform:translate(0,calc(-100% - var(--space-1)))}
+/* 2.3, GAP-114: the three anchored rules are wrapped in :where() so they weigh nothing,
+   and `.at` resets the edges it does not use. Why both: see the 2.3 section at the end. */
+:where(.pp-anchor)>.pp-tip{position:absolute;left:0;bottom:calc(100% + var(--space-1));z-index:var(--z-tooltip)}
+:where(.pp-anchor.end)>.pp-tip{left:auto;right:0}
+:where(.pp-anchor.down)>.pp-tip{bottom:auto;top:calc(100% + var(--space-1))}
+.pp-tip.at{position:fixed;left:var(--pp-tip-x,0);top:var(--pp-tip-y,0);right:auto;bottom:auto;z-index:var(--z-tooltip);transform:translate(0,calc(-100% - var(--space-1)))}
 .pp-tip.at.end{transform:translate(-100%,calc(-100% - var(--space-1)))}
 .pp-tip.at.down{transform:translate(0,var(--space-1))}
 .pp-tip.at.end.down{transform:translate(-100%,var(--space-1))}
-.pp-anchor>.pp-tip,.pp-tip.at{pointer-events:none}
+:where(.pp-anchor)>.pp-tip,.pp-tip.at{pointer-events:none}
 
 /* GAP-111 the file row's name column keeps a floor and the controls column yields.
    The third track was `auto`, which takes max-content and never gives it back: the
@@ -986,3 +990,83 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-print h3 .pp-lacks{margin-left:var(--space-1);vertical-align:middle}
 
 .pp-w-900{width:900px}
+
+/* ------------------------------------------------------------------ 2.3 */
+
+/* GAP-114, fault 1: a window-placed panel resets the edges it does not use.
+   `.pp-tip.at` set position:fixed with top/left, while `.pp-anchor>.pp-tip` had already
+   set `bottom`. Both selectors weighed two classes, so `bottom` survived into the fixed
+   box, and a fixed box with top AND bottom is sized between them: the bubble collapsed
+   to its own padding, 8px where its text needs 24 (measured in the app). It is the same
+   shape as the squeezed 302px panel of GAP-112, from the other direction.
+   Fixed twice over, because one of the two is not enough:
+   1. `.pp-tip.at` now sets `right:auto;bottom:auto` (above, with the 2.2 rules).
+   2. the anchored rules are wrapped in :where(), which contributes no specificity.
+      `.pp-anchor.end>.pp-tip` weighed three classes and beat `.pp-tip.at` outright, so
+      an `.at` bubble inside an `.end` or `.down` anchor lost its x or its y as well.
+   THE RULE: an `.at` panel is placed from the window and does not belong inside a
+   `.pp-anchor` at all -- the anchor's only job is to be the panel's offset parent, and
+   a window-placed panel has no offset parent. The CSS no longer depends on that being
+   obeyed. If a trigger needs the anchor's *other* effect (sitting above a stretched
+   card or row link), use `.pp-lift` on the trigger's wrapper; that is what the anchor
+   was quietly doing, and losing it is what made the chip unhoverable for one build. */
+.pp-lift{position:relative;z-index:var(--z-raised)}
+
+/* GAP-114, fault 2: a popover gets the window-placed form the tooltip has.
+   `.pp-pop` is absolute and the cards it opens inside clip (`.pp-flush`, `.pp-print`,
+   `.pp-group`, `.pp-ogrp` are all overflow:hidden), so the spool picker in the file list
+   was cut off at the card's edge. 2.2 gave the tooltip `.at` for exactly this and gave
+   the popover nothing. "A card must not clip an open panel" is rejected: it puts the
+   obligation on every card in the system, and `.pp-flush` clips on purpose so a table
+   keeps the card's rounded corners. The panel's placement is the panel's problem.
+   Same vocabulary as `.pp-tip.at`: the app passes the trigger's rect in --pp-pop-x /
+   --pp-pop-y (left/bottom by default; right with `.end`, top with `.up`) and the room
+   on the chosen side in --pp-pop-max, exactly as for the anchored form. Every length
+   stays here. Note for the app: an ancestor with a `transform`, `filter` or
+   `backdrop-filter` becomes the containing block of a fixed box and would re-clip the
+   panel -- do not add one above a trigger (`.pp-art`'s filter is on the picture itself,
+   which has no panel inside it). A panel that is open while the page scrolls is
+   re-measured, or closed when its trigger leaves the window; it is not left behind. */
+.pp-pop.at{position:fixed;left:var(--pp-pop-x,0);top:var(--pp-pop-y,0);right:auto;bottom:auto;z-index:var(--z-popover);max-width:min(360px,calc(100vw - var(--space-7)));display:flex;flex-direction:column;max-height:var(--pp-pop-max,calc(100vh - var(--space-7)));overflow-y:auto;overscroll-behavior:contain;transform:translate(0,var(--space-2))}
+.pp-pop.at>*{flex:0 0 auto}
+.pp-pop.at.end{transform:translate(-100%,var(--space-2))}
+.pp-pop.at.up{transform:translate(0,calc(-100% - var(--space-2)))}
+.pp-pop.at.end.up{transform:translate(-100%,calc(-100% - var(--space-2)))}
+.pp-picker.at,.pp-tagpop.at{overflow-y:hidden}
+.pp-picker.at ul,.pp-tagpop.at .list{flex:1 1 auto;min-height:0}
+/* The sheet floor and the phone form are the same as the anchored panel's. */
+.pp-pop.at.sheet,.pp-picker.at.sheet,.pp-tagpop.at.sheet{left:0;right:0;top:auto;bottom:0;width:auto;max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:var(--z-overlay);transform:none;max-height:min(70vh,calc(100vh - var(--space-7)))}
+@media (max-width:480px){.pp-pop.at{left:0;right:0;top:auto;bottom:0;width:auto;max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:var(--z-overlay);transform:none;max-height:min(70vh,calc(100vh - var(--space-7)))}}
+/* In a preview the device frame IS the window, so the window-placed forms are measured
+   against it instead of escaping to the page (`.pp-device` is position:relative). */
+.pp-device .pp-tip.at,.pp-device .pp-pop.at{position:absolute}
+
+/* GAP-071 the silhouette is outlined by the page, not baked into the picture.
+   2.0 asked the renderer to bake a 1px #6f7a96 outline into the PNG. Measured, that rule
+   covered 2 prints of 83: 79 thumbnails are embedded images out of a G-code, 3MF or
+   project file that we only pass through, and we do not rewrite a picture we did not
+   make. Every one of them is a PNG with transparency, so the silhouette's edge is in the
+   alpha channel and the page can draw around it: four 1px drop-shadows in
+   `border-strong`, which is a token, so it is right in both themes (3.69:1 on light
+   `surface-2`, 3.32:1 on dark, against the 3:1 of WCAG 1.4.11) where one baked ink is
+   one value for two grounds. Costs the server nothing, works on the 79 and the 2 alike,
+   and an opaque thumbnail degrades to an outlined rectangle, which is the other half of
+   the same problem. Put `.pp-art` on the picture itself, never on an ancestor of a
+   panel. */
+.pp-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(1px 0 0 var(--border-strong)) drop-shadow(-1px 0 0 var(--border-strong)) drop-shadow(0 1px 0 var(--border-strong)) drop-shadow(0 -1px 0 var(--border-strong))}
+.pp-share-thumb{position:relative}
+
+/* GAP-116 the media strip has one form for all its buttons, and without a picture that
+   form is name-first. Measured: the thumbnail service renders one image per PRINT, not
+   one per model file, so every square in the strip would carry the same type glyph and
+   76px of truncated name -- the state the gap complains about. The square stays
+   specified for the day a per-model render exists; until then `.pp-models.compact` puts
+   the glyph beside the name and gives the name the width. The strip scrolls sideways at
+   every count (the owner's decision over 2.0.1's wrap). */
+:root{--pp-modelbtn-max:200px}
+.pp-models.compact{align-items:center;padding-block:var(--space-1)}
+.pp-models.compact .pp-modelbtn{width:auto;max-width:var(--pp-modelbtn-max);min-width:0;flex-direction:row;align-items:center;gap:var(--space-2);min-height:var(--pp-control-h);padding:0 var(--space-3);text-align:left}
+.pp-models.compact .pp-modelbtn .pp-ico{flex:none}
+.pp-models.compact .pp-modelbtn .nm{font-family:var(--font-mono);font-size:var(--text-xs);min-width:0}
+/* `.dur` is kept for a strip that one day knows a duration; the indexer reads none and
+   reading it in the browser would fetch every video, so 2.3 shows no duration. */

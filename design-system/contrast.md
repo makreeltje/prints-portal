@@ -217,3 +217,20 @@ Rule: a translucent token is never nested inside another translucent ground exce
 Alpha values are the real ones from `tokens.css`: soft 0x14 (7.8%), tint 0x24 (14.1%), strong 0x38 dark and 0x33 light (21.9% and 20%), state tints 0x24. Until 1.6 the report used rounded alphas (.08, .14, .20); the ratios moved by hundredths and no verdict changed.
 
 Added in 1.1: neutral badge, remaining-amount line, duplicate hint, and the three text colours used on the A4 documents (white paper, printed in black and white: status is always a word). Not checked here: `border` (decorative hairline, never the sole cue), `viz-seq-1`/`viz-seq-2` (fills that need labels or an outline), and anything painted over a user-chosen tag or spool colour (tag text flips between `#141a33` and `#ffffff` by luminance at runtime).
+
+## Added in 2.3
+
+**No new colour pair.** Both changes this round use pairs already measured above; they are listed here because they are new *uses*, and this report is read by use.
+
+| Theme | Use | Pair | Ground | Ratio | Needed | Result |
+|---|---|---|---|---|---|---|
+| light | graphic boundary | `border-strong` outline of a thumbnail's silhouette (`.pp-art`) | `surface-2` | 3.69 | 3 | pass |
+| dark | graphic boundary | `border-strong` outline of a thumbnail's silhouette (`.pp-art`) | `surface-2` | 3.32 | 3 | pass |
+| light | chip border | `border-strong` dashed edge of `pp-hintchip` inside a secondary trigger | `surface` | 4.29 | 3 | pass |
+| dark | chip border | `border-strong` dashed edge of `pp-hintchip` inside a secondary trigger | `surface` | 3.75 | 3 | pass |
+
+**Why the outline exists, in ratios.** The picture itself cannot be made to pass. Measured in the running app on the server-rendered thumbnails, which are neutral grey: the **lightest pixel of a render is 1.16:1 on light `surface-2`** and the **darkest is 1.68:1 on dark `surface-2`**. A fixed ground and arbitrary picture content have no guaranteed contrast in either direction, so no ground and no tint can fix it — only a boundary drawn in a token can, and `.pp-art` draws it from the picture's own alpha channel in both themes.
+
+**What 2.0 did and 2.3 withdrew.** 2.0 baked `#6f7a96` — the *light* `border-strong` value — into the server-rendered PNG, which measured 3.69:1 on light `surface-2` and 3.53:1 on dark. Both pass, but one ink for two grounds passes by luck: nothing in the system guarantees that a value chosen for one theme clears the other, and a baked value cannot be changed without re-encoding the library. The two rows above are the token's own values, which is what this report is for.
+
+**The chip inside the trigger (GAP-115).** `pp-hintchip` keeps its own `surface-2` ground and `muted` text (4.5:1 or more on `surface-2`, in the tables above) when it moves inside a `.pp-btn-secondary` trigger; the trigger's ground is `surface`, so the chip's dashed `border-strong` edge is measured against `surface` instead of `surface-2`. Both values are above, and both pass.

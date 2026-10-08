@@ -341,6 +341,7 @@ function LineThumbnail({ token, printId }: { token: string; printId: string }) {
         <Box className="pp-ico" aria-hidden="true" />
       ) : (
         <img
+          className="pp-art"
           src={shareThumbnailUrl(token, printId)}
           alt=""
           loading="lazy"

@@ -11,3 +11,5 @@ OverflowMenu holds the actions that are rare or hard to undo, so they do not com
 **Dutch copy.** Meer acties | Verwijderen | Herstellen | Factuur maken | Klant verwijderen | Print {naam} verwijderen? | Klant {naam} verwijderen?
 
 **Contrast.** `unpaid` on `surface` and on `primary-tint-soft` (hover) are in `contrast.md` (rows "OverflowMenu").
+
+**Where the panel goes (2.2, GAP-112).** The menu is a Popover and takes Popover's placement rule in full: side chosen per axis, `--pp-pop-max` capping the height, the sheet form under 240px of room. A capped `.pp-menu` scrolls itself (it is its own panel, with no inner region), and its items keep their `--pp-tap` height while scrolling. A menu is usually short enough that only the side matters; the column menu in Toegang is the one that is not.

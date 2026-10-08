@@ -58,13 +58,12 @@ export function Tooltip({ label, children }: { label: string; children: ReactNod
     <span
       ref={anchor}
       /*
-        Deliberately NOT .pp-anchor. A `.pp-tip.at` is window-placed, and the
-        anchored rule `.pp-anchor > .pp-tip` sets `bottom`, which `.at` does not
-        reset: both edges end up set at once and the bubble collapses to its own
-        padding — 8px where its text needs 24.
-        ds-gap: GAP-114
+        `.pp-lift`, not `.pp-anchor`: a window-placed `.at` bubble may not sit
+        inside an anchor (2.3), and what this wrapper actually needs from the
+        anchor is only to sit above the stretched card link that would otherwise
+        swallow the hover.
       */
-      className="app-tipwrap"
+      className="pp-lift"
       onPointerEnter={() => {
         setOpen(true);
       }}

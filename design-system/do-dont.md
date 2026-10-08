@@ -79,60 +79,15 @@
 - **Do** floor the thumbnail tint with `--mix` for dark filaments. **Don't** tint the customer-facing share page: it uses the neutral `surface-2` ground.
 - **Do** name the missing input in a cost warning and link to the setting. **Don't** report the same condition twice in the same words.
 
-## Added in 2.0
+**Do (added in 2.3)**
+- Show the value a control would override, and name where it came from with a `pp-hintchip`; keep the empty placeholder for the case where nothing is in force.
+- Place a floating panel from the window (`.at`) whenever anything above its trigger clips or scrolls, and reset the edges that form does not use.
+- Let the last block on a page be as long as its content; cap a block only when something important follows it.
+- Draw separation around a picture with a token (`.pp-art`), in the page, where it can read the theme.
 
-**Targets — one per tile, row or cell.** This is one rule, not four answers (GAP-091, and GAP-093 and GAP-099 merged into it).
-
-**Do**
-- Give a tile or row that leads somewhere **exactly one** target, covering the whole tile or row: one real link, stretched with a `::after` over its positioned ancestor (`pp-rowlink` in a table, `pp-cust-name` on a klant tile, the card link on a print tile). The grid and the list behave the same way.
-- Put every other control (checkbox, Herstellen, "⋯", a menu) **above** that stretched link (`position: relative; z-index: 1`) and give it its own `--pp-tap` hit area and its own accessible name.
-- Let the checkbox, and only the checkbox (plus "Alles selecteren"), select. A tile shows `is-selected` after it is ticked, never before.
-- Make a control that is a control *look* like one: the selection chip on a thumbnail carries a `border-strong` hairline.
-
-**Don't**
-- Don't make one click do two jobs ("open" and "select"); two learned clicks beat one ambiguous one.
-- Don't style text that leads nowhere like a target: no `text-strong` at weight 500 in a first table cell, no hover change, no pointer cursor, no underline. In a table, `text-strong` + 500 in the identifying cell means "this opens something" — if it opens nothing, it is `text` with `cursor: default` (Toegang).
-- Don't rely on a popover's own `z-index` inside a sticky table: a z-index is only compared inside its own stacking context, so raise the **cell** with `has-pop` instead (GAP-098).
-
-**Colour that belongs to the data.**
-
-**Do**
-- Put a user-chosen colour (filament, tag) on **the object**: the model in the viewer and in the render, the 4px bar under a card thumbnail, the SpoolSwatch, the tag chip.
-- Keep every ground that a render or a photo sits on neutral (`surface-2`) in both themes, and let a baked 1px `#6f7a96` outline separate the object from it.
-
-**Don't**
-- Don't use a user-chosen colour as a **ground** behind content. An arbitrary colour and any fixed ground have no guaranteed contrast in either direction, so no blend factor, floor or luminance rule can fix it — that is what the `--mix` measurements proved (GAP-071).
-- Don't promise a picture the stack cannot make: no poster frame where there is no decoder (GAP-089). Say "there is a video here" with a neutral ground, an icon and a play badge.
-
-**Width.**
-
-**Do**
-- Lay a page of short rows or short fields out in columns of at least 300–320px, up to a measure of 1080px (`pp-settings`, `pp-taggrid`).
-- Let a third-party renderer that draws its own frame fill the content area through the page padding (`pp-bleed`); keep the heading on the padding.
-
-**Don't**
-- Don't stretch one short row or one 160px field across 1100px, and don't stretch a form to a third column: a label 1000px from its heading is worse than empty space.
-
-**Absence.**
-
-**Do**
-- Show what is **missing** rather than what is present when the common case is "nothing to say": the missing-files chip is absent on 70% of tiles and costs them no space (GAP-090).
-- Give every error code an endpoint can return its own copy key, and list the set per field in the screen's spec.
-
-**Don't**
-- Don't reserve space for an indicator most items do not have.
-- Don't let "Er ging iets mis." stand in for a known error code; that fallback is for unknown codes only (GAP-100).
-
-## Added in 2.1
-
-**Do**
-- Size the **target**, then size the **ink** separately. WCAG 2.2 2.5.8 asks for 24px of target, not 24px of paint; a control drawn on top of a picture needs a hairline, not a plate. The tile checkbox is 24px of ink centred in a `--pp-tap` target (GAP-107).
-- Give a row of two slots **one thing per slot, and the thing the slot is about**: money on the left (the price, or why there is none), payment status on the right (or nothing). Wrap a slot's two parts in one element rather than adding a third child (GAP-108).
-- Put short where space is short and worded where there is room, and make sure the worded place exists: the missing-file icons on a card, the same thing in words on the print detail. An icon set is only learnable if the legend is written somewhere (GAP-106).
-- Compose "not / missing" from an icon the system already names plus a slash, with a knockout line under it so it survives 16px. Never draw a new glyph for it.
-
-**Don't**
-- Don't put two chips of the same shape in a `space-between` row as separate children: they land against opposite edges and read as a mistake. 30% of this library's cards had that.
-- Don't let a control that is drawn on every item be the loudest thing on it.
-- Don't keep arguing a rejection the owner has now asked for twice, once after seeing it built. Write down why it was rejected, then design the thing properly — the reasons become the requirements the new form has to meet.
-
+**Don't (added in 2.3)**
+- Don't bake a colour that depends on the theme into an image, and don't rewrite a picture you did not make.
+- Don't put a window-placed panel inside a `.pp-anchor`; use `.pp-lift` when the thing you actually need is to sit above a stretched card or row link.
+- Don't put a `transform`, `filter` or `backdrop-filter` on an ancestor of a trigger: it becomes the containing block of the fixed panel and clips it again.
+- Don't give one page two orders of blocks, one for the phone and one for the desktop.
+- Don't fetch the thing a picker picks between in order to label the picker.

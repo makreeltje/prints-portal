@@ -41,3 +41,24 @@ ModelPicker is the media strip under Viewer3D: it chooses which of a print's pic
 
 **Nothing more to measure here.** Your three numbers answered it.
 
+
+**2.3.** (2026-10-08) **One line that scrolls, and buttons shaped like what they actually hold (GAP-116, resolved).**
+
+Two things arrived together: the owner overruled 2.0.1's wrap, and the implementer withdrew the measurement 2.0.1 was built on. The second is the bigger one.
+
+**The strip scrolls sideways at every count. Confirmed as the owner built it; `.pp-models.wrap` is deprecated.** Measured for this library (models plus timelapse per print): median **4**, 64 of 83 prints at eight or fewer, 14 at 9–15, 5 above 15, largest **34**. The base `.pp-models` already scrolls sideways with a fading edge, so the deviation was only that `wrap` was never applied — and the owner decides which of two tolerable shapes the product has. `.pp-models.wrap` and `.pp-models.wrap.is-overflow` stay defined in `bundle.css`, marked deprecated and scheduled for removal in **3.0**, so nothing breaks on the way out. The cost, recorded rather than argued: at 34 buttons the strip is several frame-widths of sideways scroll with the caption as the only sense of position. That is the owner's trade, and the two mitigations below are what the system can do about it without spending a click.
+
+**The correction, and what it costs: there are no per-model renders.** 2.0.1 was told "one PNG per model file" and used it to strengthen the rejection of the Select — real pictures beat a list of names. The thumbnail service renders **one image per print record**; there is no per-asset route. So every square would carry the same type glyph and 76px of name truncated to about 68px, which is precisely the state GAP-094 complained about, rebuilt in a new shape. The glyph-and-name fallback was written as the exception and is in fact the only case.
+
+- **New: `.pp-models.compact`** — the strip's form when no button has a picture. The button is horizontal: a 20px type glyph (`box` for STL, `package` for 3MF, `play` for the timelapse), then the file name in mono `text-xs` beside it, at `--pp-control-h` tall, width to content up to `--pp-modelbtn-max` (**200px**), middle-truncated as file names are everywhere else. The name gets the width, because the name is the whole of the information.
+- **The strip has one form for all of its buttons.** If any button has a real picture, every button is a 76px square (glyph inside for the ones without); otherwise all are compact. Never a mixed row of 76px squares and 36px rows — including the timelapse button, which takes whichever form the strip is in.
+- **Order in the strip is file name ascending, the timelapse last.** It was implied by "the first model by file name" and never written down; with names as the only cue, a 34-long scroll is only navigable if the order is predictable.
+- **The square form stays specified**, unchanged, for the day a per-model render exists. It is not dead text: it is what the strip becomes the moment the renderer gains an asset route.
+
+**The duration is withdrawn (GAP-096's `{duur}`).** The indexer reads no duration, and reading one in the browser means fetching every video to draw a strip — **rejected**: a picker must not download the thing it is picking between. The video button's visible label is **"Timelapse"** and its accessible name is **"Timelapse {bestandsnaam}"**. `.pp-modelbtn .dur` stays in `bundle.css` for a strip that one day knows a duration; nothing sets it now. If the indexer ever reads durations server-side, the old form returns and only the copy key changes.
+
+**The preview is rewritten**, because almost every state in it was drawn from the withdrawn measurement: the 2.0.1 preview showed squares with per-model pictures implied, a duration under every video button, and the wrapped form at 29. 2.3 draws the compact strip at **4** (the median), at **34** (the longest print, one scrolling line with `is-overflow` and the focusable region), the timelapse button in the same strip with no duration, the phone at 360px, the loading state, a video-only print, and the square form kept as a specimen for the day a per-model render exists.
+
+**Dutch copy (changed).** "Timelapse {bestandsnaam}, {duur}" becomes **"Timelapse {bestandsnaam}"**; the visible button label is "Timelapse". Everything else is unchanged.
+
+**Needs your measurement.** The **longest and median model file-name length** in the library, in characters, and how wide the longest one renders in mono `text-xs`. `--pp-modelbtn-max` is 200px because that holds about 28 mono characters, which fits the sample names; it is a value I chose, not one I measured, and if your names run to 40 characters I will raise it rather than have you do it. The form does not wait on the number — build it at 200px.

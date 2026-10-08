@@ -167,10 +167,12 @@ export const nl = {
   'video.error.body': 'Download het bestand om het in een andere speler te openen.',
   'video.unsupported.title': 'Dit formaat speelt niet in de browser.',
   'video.unsupported.body': 'Download het bestand om het af te spelen.',
+  'models.video': 'Timelapse',
+  'models.videoCaption': 'Timelapse: {bestandsnaam}',
+  'models.videoName': 'Timelapse {bestandsnaam}',
+  'models.modelName': 'Model {bestandsnaam}',
   'models.group': 'Modellen', // component copy: ModelPicker
-  'models.groupBoth': 'Modellen en timelapse',
-  'models.timelapse': 'Timelapse',
-  'models.captionVideo': 'Timelapse: {bestandsnaam}',
+  'models.groupVideo': 'Modellen en timelapse',
   'models.viewerVideo': 'Timelapse van {naam}',
   'models.caption': 'Model {n} van {totaal}: {bestandsnaam}',
   'models.loading': 'Model laden…',
@@ -325,8 +327,12 @@ export const nl = {
   'asset.plates': '{count} platen',
   'asset.slot': 'Slot {n}',
   'asset.slicerHint': 'slicer',
-  // ds-gap: GAP-115 — placeholder wording until the design system rules.
-  'asset.fromPrint': 'van de print: {naam}',
+  'asset.spoolFromPrint': 'van de print',
+  'asset.spoolFromPrint.aria':
+    'Spoel van de print: {naam}. Kies hier een eigen spoel voor dit bestand.',
+  'spool.wholePrint.applies': 'Geldt nu voor {n} slots zonder eigen spoel.',
+  'spool.wholePrint.appliesNone':
+    'Elk slot heeft een eigen spoel, dus deze keuze verandert nu niets.',
   'asset.excluded': 'Telt niet mee in kosten',
   'asset.excludedReason.duplicate': 'Telt niet mee: dubbel met G-code',
   'asset.excludedReason.folder': 'Telt niet mee: map {folder}',
