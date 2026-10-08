@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, FileVideo, Info, Trash2, TriangleAlert } from 'lucide-react';
+import { Box, FileVideo, Info, Play, Trash2, TriangleAlert } from 'lucide-react';
 import {
   Fragment,
   lazy,
@@ -484,12 +484,19 @@ function MediaStrip({
               }
             >
               {item.kind === 'video' ? (
-                <FileVideo className="pp-ico" aria-hidden="true" />
+                <>
+                  <FileVideo className="pp-ico" aria-hidden="true" />
+                  {/* The badge is what reads as "video" at this size. */}
+                  <span className="pp-play" aria-hidden="true">
+                    <Play className="pp-ico" />
+                  </span>
+                </>
               ) : (
                 <Box className="pp-ico" aria-hidden="true" />
               )}
             </span>
             <span className="nm">{item.fileName}</span>
+            {item.kind === 'video' && <span className="pp-sr">{t('models.timelapse')}</span>}
           </button>
         ))}
       </div>
@@ -560,13 +567,14 @@ function ModelView({ detail }: { detail: PrintDetail }) {
               </div>
             </div>
           ) : (
-            /* #t=1 asks the browser for the frame at one second; no poster is
+            /* No #t fragment: the file plays from its start. preload="metadata"
+               lets the browser show a first frame where it can, and no poster is
                extracted anywhere (GAP-089). */
             <video
               key={current.id}
               controls
               preload="metadata"
-              src={`${downloadUrl(current.id)}#t=1`}
+              src={downloadUrl(current.id)}
               aria-label={t('models.viewerVideo', { naam: current.fileName })}
               onError={() => {
                 setFailed(true);

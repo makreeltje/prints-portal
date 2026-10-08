@@ -60,11 +60,12 @@ export function VideoPlayer({
         </div>
       ) : (
         <div className="pp-video">
-          {/* #t=1 asks the browser for the frame at one second as the poster. */}
+          {/* No #t fragment: the file plays from its start (the owner's
+              report). preload="metadata" is what shows a first frame. */}
           <video
             controls
             preload="metadata"
-            src={`${downloadUrl(assetId)}#t=1`}
+            src={downloadUrl(assetId)}
             onError={() => {
               setFailed(true);
             }}
