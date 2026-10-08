@@ -7,6 +7,7 @@ import { ErrorState, LoadingRows } from '../pages/ErrorState';
 import { PaymentBadge } from '../finance/money';
 import { formatDate, formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
+import { squashName } from '../prints/filter';
 import { calendarDays } from './days';
 import {
   fetchShareView,
@@ -296,13 +297,11 @@ function PaymentCard({ pay }: { pay: SharePayment }) {
 
 /**
  * The second line: project and date, or the date alone when the project only
- * repeats the print's name. v1.9 marks this proposed rather than settled, so
- * it is built here as proposed and the gap stays open.
- * ds-gap: GAP-072
+ * repeats the print's name (GAP-072, official in 2.0). The share page has no
+ * klant to name, so the date takes that place.
  */
 function lineSubtitle(line: { description: string; project: string | null; date: string }): string {
-  const squash = (value: string) => value.toLocaleLowerCase('nl').replace(/\s+/g, '');
-  if (line.project === null || squash(line.project) === squash(line.description))
+  if (line.project === null || squashName(line.project) === squashName(line.description))
     return day(line.date);
   return `${line.project} · ${day(line.date)}`;
 }

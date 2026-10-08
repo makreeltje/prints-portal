@@ -13,9 +13,27 @@ export function isFiltered(filter: PrintFilter): boolean {
   );
 }
 
-/** "klant / project", or only the klant for files directly under a customer. */
-export function placeOf(print: { customerFolder: string; projectFolder: string | null }): string {
-  return print.projectFolder === null
-    ? print.customerFolder
-    : `${print.customerFolder} / ${print.projectFolder}`;
+/**
+ * Compare two names the way GAP-072 asks: case, spaces and punctuation ignored,
+ * so "Babybox locks" and "babybox-locks" are the same name.
+ */
+export const squashName = (value: string) =>
+  value.toLocaleLowerCase('nl').replace(/[^\p{L}\p{N}]+/gu, '');
+
+/**
+ * "klant / project", or the klant alone when the project only repeats the
+ * print's own name — which the heading beside it already says (GAP-072).
+ * An absent or empty project is the same case.
+ */
+export function placeOf(print: {
+  customerFolder: string;
+  projectFolder: string | null;
+  name: string;
+}): string {
+  const project = print.projectFolder;
+  // An empty or punctuation-only project says nothing, so it is the same case
+  // as no project at all.
+  if (project === null || squashName(project) === '') return print.customerFolder;
+  if (squashName(project) === squashName(print.name)) return print.customerFolder;
+  return `${print.customerFolder} / ${project}`;
 }

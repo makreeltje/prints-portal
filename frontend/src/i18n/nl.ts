@@ -48,7 +48,7 @@ export const nl = {
     'Je gebruikt een tijdelijk wachtwoord. Kies een eigen wachtwoord om verder te gaan.',
   'auth.newPassword': 'Nieuw wachtwoord',
   'auth.repeatPassword': 'Herhaal wachtwoord',
-  'auth.passwordHelp': 'Minstens 12 tekens.',
+  'auth.passwordHelp': 'Minstens 12 tekens en anders dan je tijdelijke wachtwoord.',
   'auth.logout': 'Uitloggen',
   'auth.redirecting': 'Doorsturen naar Authentik…',
 
@@ -89,8 +89,7 @@ export const nl = {
   'error.passwordMismatch': 'De wachtwoorden zijn niet gelijk.',
   'error.userExists': 'Deze gebruiker bestaat al.',
   'error.required': 'Dit veld is verplicht.',
-  // ds-gap: GAP-100 — the design system has no copy for a reused password yet.
-  'error.passwordUnchanged': 'Kies een ander wachtwoord dan het tijdelijke.', // ds-gap: GAP-100
+  'auth.pw.unchanged': 'Dit is je huidige wachtwoord. Kies een ander wachtwoord.',
   'error.tooManyAttempts': 'Te veel pogingen, probeer het over een minuut opnieuw',
   'toast.saved': 'Opgeslagen',
 

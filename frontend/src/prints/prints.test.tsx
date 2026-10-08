@@ -55,7 +55,7 @@ describe('DashboardPage', () => {
     renderDashboard();
     const card = (await screen.findByRole('link', { name: 'Babybox locks' })).closest('article');
     if (card === null) throw new Error('no card');
-    expect(within(card).getByText('Joey / Babybox locks')).toBeInTheDocument();
+    expect(within(card).getByText('Joey')).toBeInTheDocument();
     expect(within(card).getByText('1 u 20 min')).toBeInTheDocument();
     expect(within(card).getByText('87 g')).toBeInTheDocument();
     expect(within(card).getByText('cadeau')).toBeInTheDocument();
@@ -524,7 +524,7 @@ describe('PrintDetailPage', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Babybox locks' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Joey / Babybox locks')).toBeInTheDocument();
+    expect(screen.getByText('Joey')).toBeInTheDocument();
     const files = screen.getByRole('region', { name: 'Bestanden' });
     expect(within(files).getByText('2 bestanden')).toBeInTheDocument();
     expect(within(files).getByText('× 2')).toBeInTheDocument();
