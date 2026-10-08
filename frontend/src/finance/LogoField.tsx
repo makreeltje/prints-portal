@@ -21,7 +21,7 @@ export function LogoField() {
   const [version, setVersion] = useState(0);
   const [present, setPresent] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<'generic' | 'svg_text' | 'svg_external' | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -41,18 +41,22 @@ export function LogoField() {
     if (file === undefined) return;
     const supported = file.type === 'image/png' || file.type === 'image/svg+xml';
     if (!supported || file.size > MAX_BYTES) {
-      setFailed(true);
+      setFailed('generic');
       return;
     }
     setBusy(true);
-    setFailed(false);
+    setFailed(null);
     try {
       await uploadLogo(file);
       setVersion(version + 1);
       await queryClient.invalidateQueries({ queryKey: logoKey });
     } catch (error) {
       if (!(error instanceof ApiError)) throw error;
-      setFailed(true);
+      // Every code the endpoint can return has its own line (GAP-100's rule);
+      // "Er ging iets mis" is for codes we do not know.
+      setFailed(
+        error.code === 'svg_text' || error.code === 'svg_external' ? error.code : 'generic',
+      );
     } finally {
       setBusy(false);
       if (input.current !== null) input.current.value = '';
@@ -108,7 +112,15 @@ export function LogoField() {
       <span id={`${id}-help`} className="pp-help">
         {t('settings.logoHelp')}
       </span>
-      {failed && <FieldError id={`${id}-err`}>{t('error.generic')}</FieldError>}
+      {failed !== null && (
+        <FieldError id={`${id}-err`}>
+          {failed === 'svg_text'
+            ? t('settings.logo.svgText')
+            : failed === 'svg_external'
+              ? t('settings.logo.svgExternal')
+              : t('error.generic')}
+        </FieldError>
+      )}
     </div>
   );
 }

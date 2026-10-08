@@ -1015,7 +1015,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-088 [open] Two specs still show the internal link label to the customer
+## GAP-088 [resolved in v2.0] Two specs still show the internal link label to the customer
 - **Type:** conflict
 - **Found while:** implementing v1.9, GAP-077
 - **Where needed:** DocOverview and ScreenSharePage; `backend/src/finance/pdf.ts`, `backend/src/sharing/overview.ts`
@@ -1197,7 +1197,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-104 [open] An uploaded SVG logo silently loses all of its text
+## GAP-104 [resolved in v2.0] An uploaded SVG logo silently loses all of its text
 - **Type:** suspected design bug
 - **Found while:** drawing a logo for this installation (2026-10-08)
 - **Where needed:** LogoField on ScreenSettings; `backend/src/finance/billing-routes.ts` (the SVG is rasterised with `@resvg/resvg-js`)

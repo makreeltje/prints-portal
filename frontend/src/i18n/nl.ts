@@ -408,10 +408,15 @@ export const nl = {
   'settings.theme.light': 'Licht', // component copy: ScreenSettings
   'settings.theme.dark': 'Donker', // component copy: ScreenSettings
   'settings.logoUpload': 'Logo uploaden',
+  'settings.logo.svgText':
+    'Deze SVG bevat tekst. Zet de tekst om in contouren (outlines) of upload een PNG.',
+  'settings.logo.svgExternal':
+    'Deze SVG verwijst naar een bestand buiten het logo. Upload een zelfstandig bestand.',
   'settings.logo.onLight': 'Op licht',
   'settings.logo.onDark': 'Op donker',
   'settings.logo.themes': "Het logo wordt in beide thema's ongewijzigd getoond.",
-  'settings.logoHelp': 'PNG of SVG. Vervangt de naam op het scherm en op documenten.',
+  'settings.logoHelp':
+    'PNG of SVG, maximaal 1 MB. Vervangt de naam op het scherm en op documenten. Tekst in een SVG moet omgezet zijn in contouren.',
   'settings.reindexProgress': 'Indexeren… {done} van {total} bestanden',
   'settings.logoOptional': 'Logo (optioneel)', // component copy: ScreenSettings preview
   'settings.addAlias': 'Alias toevoegen', // component copy: ScreenSettings preview (aria-label)

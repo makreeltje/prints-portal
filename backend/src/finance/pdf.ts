@@ -186,7 +186,7 @@ function header(
         : document.kind === 'concept'
           ? 'Concept'
           : document.kind === 'overview'
-            ? '' // ScreenSharePage 1.9: the link label is internal (ds-gap: GAP-088)
+            ? '' // The link label is internal and stays off the klant's copy (GAP-088)
             : 'Openstaande prints';
   text(doc, root, 'H1', title, MARGIN, top, { font: BOLD, size: 28 * PX });
   const subTop = top + 34 * PX + 2 * PX;

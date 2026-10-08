@@ -1,4 +1,5 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { refuseSvg } from './svg-logo.js';
 import path from 'node:path';
 import { Resvg } from '@resvg/resvg-js';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
@@ -565,6 +566,12 @@ export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDe
       const body = request.body;
       if (!Buffer.isBuffer(body) || body.length === 0) {
         return reply.code(415).send({ error: 'unsupported_image' });
+      }
+      if (type === 'image/svg+xml') {
+        // An SVG this container cannot draw in full is refused rather than
+        // rasterised into a logo that is silently missing its text (GAP-104).
+        const refusal = refuseSvg(body);
+        if (refusal !== null) return reply.code(422).send({ error: refusal });
       }
       const png = type === 'image/svg+xml' ? rasterise(body) : body;
       if (png === null || !isPng(png)) return reply.code(400).send({ error: 'invalid_image' });
