@@ -1097,7 +1097,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-095 [open] The print detail has a lot of empty space now that the viewer is capped
+## GAP-095 [resolved in v2.0] The print detail has a lot of empty space now that the viewer is capped
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenPrintDetail
@@ -1119,7 +1119,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-097 [open] Every file is listed inside every order, which repeats the print's contents
+## GAP-097 [resolved in v2.0] Every file is listed inside every order, which repeats the print's contents
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** OrderSection and AssetListItem on ScreenPrintDetail
