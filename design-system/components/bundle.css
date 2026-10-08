@@ -152,7 +152,6 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 @keyframes pp-flash{0%{background:var(--primary-tint-strong)}100%{background:var(--surface)}}
 @media (prefers-reduced-motion:reduce){.pp-print.flash{animation:none;background:var(--primary-tint)}}
 .pp-thumb{aspect-ratio:4/3;display:grid;place-content:center;background:var(--surface-2);color:var(--muted);position:relative}
-.pp-thumb.tinted{background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,0) 55%),var(--c1);color:rgba(255,255,255,.9)}
 .pp-print .pp-sel{position:absolute;top:var(--space-2);left:var(--space-2);background:var(--surface);border-radius:var(--radius-sm);padding:2px}
 .pp-print .pp-sel .pp-opt{min-height:0}
 .pp-print .pp-info{padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
@@ -218,7 +217,7 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-matrix{border-collapse:separate;border-spacing:0;font-size:var(--text-sm);min-width:100%}
 .pp-matrix th,.pp-matrix td{padding:var(--space-1) var(--space-3);border-bottom:1px solid var(--border);text-align:center;background:var(--surface)}
 .pp-matrix thead th{position:sticky;top:0;background:var(--surface-2);color:var(--text-strong);font-weight:600;z-index:var(--z-raised)}
-.pp-matrix th:first-child,.pp-matrix td:first-child{position:sticky;left:0;text-align:left;background:var(--surface-2);color:var(--text-strong);font-weight:500;z-index:var(--z-raised);border-right:1px solid var(--border)}
+.pp-matrix th:first-child,.pp-matrix td:first-child{position:sticky;left:0;text-align:left;background:var(--surface-2);color:var(--text);font-weight:500;cursor:default;z-index:var(--z-raised);border-right:1px solid var(--border)}
 .pp-matrix thead th:first-child{z-index:calc(var(--z-raised) + 1)}
 .pp-matrix .pp-opt{justify-content:center;min-height:var(--pp-tap);min-width:var(--pp-tap)}
 /* live, stat */
@@ -256,12 +255,12 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-nav a[aria-current=page]{background:var(--primary-tint);color:var(--text-strong);font-weight:600}
 .pp-nav .grp{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted);padding:var(--space-4) var(--space-3) var(--space-1)}
 .pp-side .foot{margin-top:auto;display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-3)}
-.pp-main{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-5);min-width:0}
+.pp-main{--pp-pad:var(--space-6);padding:var(--pp-pad);display:flex;flex-direction:column;gap:var(--space-5);min-width:0}
 .pp-ph{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
 .pp-ph h1{margin:0;font:650 var(--text-2xl)/var(--leading-2xl) var(--font-sans);color:var(--text-strong);margin-right:auto}
 .pp-phone-top{display:flex;align-items:center;justify-content:space-between;padding:var(--space-2) var(--space-4);background:var(--surface);border-bottom:1px solid var(--border);min-height:56px}
 .pp-phone-top b{font:700 var(--text-lg)/var(--leading-md) var(--font-sans);color:var(--text-strong)}
-.pp-phone-main{padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-4);flex:1;min-width:0}
+.pp-phone-main{--pp-pad:var(--space-4);padding:var(--pp-pad);display:flex;flex-direction:column;gap:var(--space-4);flex:1;min-width:0}
 .pp-phone-main h1{margin:0;font:650 var(--text-xl)/var(--leading-xl) var(--font-sans);color:var(--text-strong)}
 .pp-bottomnav{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--surface);border-top:1px solid var(--border)}
 .pp-bottomnav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;color:var(--muted);font-size:11px;line-height:14px;text-decoration:none}
@@ -329,7 +328,7 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-side{display:none}
 .pp-app>.pp-phone-top{display:flex;position:sticky;top:0;z-index:var(--z-sticky)}
 .pp-app>.pp-bottomnav{display:grid;position:sticky;bottom:0;z-index:var(--z-sticky)}
-.pp-main{flex:1;padding:var(--space-4);gap:var(--space-4)}
+.pp-main{flex:1;--pp-pad:var(--space-4);gap:var(--space-4)}
 .pp-ph h1{font:650 var(--text-xl)/var(--leading-xl) var(--font-sans)}
 }
 .pp-device.rail{width:640px;flex:none}
@@ -350,7 +349,7 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-device.phone .pp-side{display:none}
 .pp-device.phone .pp-app>.pp-phone-top{display:flex}
 .pp-device.phone .pp-app>.pp-bottomnav{display:grid}
-.pp-device.phone .pp-main{flex:1;padding:var(--space-4);gap:var(--space-4)}
+.pp-device.phone .pp-main{flex:1;--pp-pad:var(--space-4);gap:var(--space-4)}
 .pp-device.phone .pp-ph h1{font:650 var(--text-xl)/var(--leading-xl) var(--font-sans)}
 /* drawer (phone menu) */
 .pp-drawer-backdrop{position:fixed;inset:0;z-index:var(--z-overlay);background:var(--overlay);display:flex}
@@ -454,7 +453,7 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-spoolbtn .end{margin-left:auto}
 .pp-opt.sm{font-size:var(--text-sm)}
 .pp-plate{display:block;flex:none;width:var(--space-8);height:var(--space-8);border-radius:var(--radius-sm);object-fit:cover;background:var(--surface-2);border:1px solid var(--border)}
-.pp-plate.tinted{background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,0) 55%),var(--c1);border-color:transparent}
+.pp-plate.tinted{background:var(--surface-2);border-color:var(--border)}
 .pp-pop.sm{padding:var(--space-3);width:260px}
 .pp-model.s{width:90px;height:90px}
 /* tag editor and tag management (GAP-027) */
@@ -795,9 +794,6 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 /* GAP-068 list-view thumbnail */
 .pp-table .pp-thumb.sm{width:40px;aspect-ratio:1;border-radius:var(--radius-sm)}
 .pp-table td.img,.pp-table th.img{width:56px;padding-right:0}
-/* GAP-071 tint floor: the app sets --mix (percent of filament colour) */
-.pp-thumb.tinted{background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,0) 55%),color-mix(in srgb,var(--c1) var(--mix,100%),var(--border-strong))}
-.pp-thumb.tinted::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px var(--border-strong);opacity:.5;pointer-events:none}
 /* GAP-080 Openstaand: collapsed klant groups */
 .pp-ogrp{overflow:hidden}
 .pp-ogrp>summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto 24px;gap:var(--space-3);align-items:center;min-height:var(--pp-tap);padding:var(--space-3) var(--space-4);cursor:pointer;list-style:none}
@@ -832,3 +828,89 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-w-160{width:160px}
 .pp-warnico{color:var(--warning)}
 .pp-help.dupwarn{display:flex;gap:var(--space-2);align-items:flex-start}
+
+/* ===== v2.0 ===== */
+/* GAP-071 the filament colour marks the object, never the ground behind it.
+   A thumbnail, a plate and a model-strip button sit on surface-2 in both themes; the colour
+   returns as the 4px bar along the bottom edge of a card thumbnail and as the SpoolSwatch.
+   The blend factor the app used to set is gone; nothing reads it any more. */
+.pp-thumb.tinted{background:var(--surface-2);color:var(--muted)}
+.pp-print .pp-thumb.tinted::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;box-sizing:border-box;background:var(--c1);border-top:1px solid var(--border-strong);pointer-events:none}
+.pp-table .pp-thumb.sm.tinted::after,.pp-modelbtn .pp-thumb.tinted::after{content:none}
+
+/* GAP-090 which files a print lacks. Absent when nothing is missing (70% of tiles). */
+.pp-lacks{display:inline-flex;align-items:center;gap:var(--space-1);padding:2px var(--space-2);border-radius:var(--radius-sm);font:500 var(--text-xs)/var(--leading-xs) var(--font-sans);color:var(--warning);background:linear-gradient(var(--warning-tint),var(--warning-tint)),var(--surface);white-space:nowrap}
+.pp-lacks .pp-ico{color:var(--warning)}
+
+/* GAP-091 + GAP-093 + GAP-099 one target per tile or row.
+   The tile and the row open the print; the checkbox selects; a cell that opens nothing is not styled like a target. */
+.pp-table tbody tr{position:relative}
+.pp-rowlink{color:inherit;text-decoration:none}
+.pp-rowlink::after{content:"";position:absolute;inset:0}
+.pp-table tbody tr:has(.pp-rowlink:focus-visible){outline:2px solid var(--focus-ring);outline-offset:-2px}
+.pp-rowlink:focus-visible{outline:none}
+.pp-table td .pp-btn,.pp-table td .pp-check,.pp-table td .pp-anchor,.pp-table td .pp-opt{position:relative;z-index:1}
+.pp-print .pp-sel{box-shadow:inset 0 0 0 1px var(--border-strong);padding:0}
+.pp-print .pp-sel .pp-opt{min-height:var(--pp-tap);min-width:var(--pp-tap);justify-content:center}
+
+/* GAP-098 a popover inside a sticky table: the cell that holds it is raised, not the popover. */
+.pp-matrix th.has-pop,.pp-matrix td.has-pop{z-index:var(--z-popover)}
+.pp-matrix td.has-pop{position:relative}
+
+/* GAP-094 + GAP-096 the media strip: every model and the timelapse, one control at any count. */
+.pp-models.is-overflow{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - var(--space-6)),transparent);mask-image:linear-gradient(to right,#000 calc(100% - var(--space-6)),transparent)}
+.pp-modelbtn .pp-thumb{position:relative}
+.pp-modelbtn.video .pp-thumb{background:var(--surface-2);color:var(--muted)}
+.pp-modelbtn .dur{display:block;font-variant-numeric:tabular-nums}
+
+/* GAP-095 + GAP-097 print detail: the media row carries the print's pictures, the panel beside it its facts. */
+.pp-pdtop{display:grid;grid-template-columns:minmax(0,560px) minmax(260px,1fr);gap:var(--space-5);align-items:start}
+.pp-pdtop>div{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+@media (max-width:900px){.pp-pdtop{grid-template-columns:minmax(0,1fr)}}
+.pp-device.phone .pp-pdtop,.pp-device.rail .pp-pdtop,.pp-device.pp-w-768 .pp-pdtop{grid-template-columns:minmax(0,1fr)}
+.pp-pdfiles{min-width:0}
+.pp-pdnew{display:flex;gap:var(--space-2);flex-wrap:wrap}
+.pp-asset .ord{color:var(--muted);font-size:var(--text-xs);line-height:var(--leading-xs);white-space:nowrap}
+@media (max-width:480px){.pp-main>.pp-pdfiles{order:2}.pp-main>.pp-pdnew{order:1}}
+.pp-device.phone .pp-main>.pp-pdfiles{order:2}
+.pp-device.phone .pp-main>.pp-pdnew{order:1}
+/* at 900px and below the order's sections run Betaling, Totaalkosten, In deze bestelling */
+@media (max-width:900px){
+.pp-order .pp-detail>div:last-child{order:-1}
+.pp-order .pp-detail>div+div{border-left:0;border-top:0}
+.pp-order .pp-detail>div:first-child{border-top:1px solid var(--border)}
+}
+.pp-device.phone .pp-order .pp-detail>div:last-child,.pp-device.pp-w-768 .pp-order .pp-detail>div:last-child{order:-1}
+.pp-device.phone .pp-order .pp-detail>div+div,.pp-device.pp-w-768 .pp-order .pp-detail>div+div{border-left:0;border-top:0}
+.pp-device.phone .pp-order .pp-detail>div:first-child,.pp-device.pp-w-768 .pp-order .pp-detail>div:first-child{border-top:1px solid var(--border)}
+
+/* GAP-092 a chip's name carries the weight; count and amount are plain. */
+.pp-chip{color:var(--text)}
+.pp-chip .nm{font-weight:600;color:var(--text-strong)}
+.pp-chip .n,.pp-chip .amt{font-weight:400}
+.pp-chip .n::before,.pp-chip .amt::before{content:"·";margin-right:var(--space-1)}
+.pp-chip[aria-pressed=true]{font-weight:400}
+.pp-chip[aria-pressed=true] .nm{color:inherit}
+.pp-chip.is-deleted .nm{color:var(--muted)}
+
+/* GAP-101 a page of short rows or short fields lays out in columns up to a 1080px measure. */
+.pp-settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--space-4);align-items:start;max-width:1080px}
+.pp-settings>.span-2{grid-column:1/-1}
+@media (max-width:480px){.pp-settings{grid-template-columns:minmax(0,1fr)}}
+.pp-device.phone .pp-settings{grid-template-columns:minmax(0,1fr)}
+.pp-taggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin-right:-1px}
+.pp-taggrid>.pp-tagrow{border-right:1px solid var(--border)}
+.pp-taggrid>.pp-tagrow.edit{grid-column:1/-1;border-right:0}
+@media (max-width:480px){.pp-taggrid{grid-template-columns:minmax(0,1fr);margin-right:0}.pp-taggrid>.pp-tagrow{border-right:0}}
+.pp-device.phone .pp-taggrid{grid-template-columns:minmax(0,1fr);margin-right:0}
+.pp-device.phone .pp-taggrid>.pp-tagrow{border-right:0}
+.pp-w-1080{max-width:1080px}
+
+/* GAP-102 a renderer that draws its own frame fills the content area, through the page padding. */
+.pp-bleed{margin:0 calc(-1 * var(--pp-pad)) calc(-1 * var(--pp-pad))}
+
+/* GAP-105 the logo is shown in both themes with no adaptation, so both grounds are shown at once.
+   #ffffff and #1a1b26 are the two `surface` values; a theme-aware var cannot show the other theme. */
+.pp-logo-pair{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center}
+.pp-logo-box.on-light{background:#ffffff;border-style:solid;border-color:var(--border-strong);color:#586282}
+.pp-logo-box.on-dark{background:#1a1b26;border-style:solid;border-color:var(--border-strong);color:#98a2cf}

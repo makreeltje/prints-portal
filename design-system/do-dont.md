@@ -78,3 +78,48 @@
 - **Do** make a whole tile the control when its job is to filter (one `button`, the controls inside above it). **Don't** make only the name clickable.
 - **Do** floor the thumbnail tint with `--mix` for dark filaments. **Don't** tint the customer-facing share page: it uses the neutral `surface-2` ground.
 - **Do** name the missing input in a cost warning and link to the setting. **Don't** report the same condition twice in the same words.
+
+## Added in 2.0
+
+**Targets — one per tile, row or cell.** This is one rule, not four answers (GAP-091, and GAP-093 and GAP-099 merged into it).
+
+**Do**
+- Give a tile or row that leads somewhere **exactly one** target, covering the whole tile or row: one real link, stretched with a `::after` over its positioned ancestor (`pp-rowlink` in a table, `pp-cust-name` on a klant tile, the card link on a print tile). The grid and the list behave the same way.
+- Put every other control (checkbox, Herstellen, "⋯", a menu) **above** that stretched link (`position: relative; z-index: 1`) and give it its own `--pp-tap` hit area and its own accessible name.
+- Let the checkbox, and only the checkbox (plus "Alles selecteren"), select. A tile shows `is-selected` after it is ticked, never before.
+- Make a control that is a control *look* like one: the selection chip on a thumbnail carries a `border-strong` hairline.
+
+**Don't**
+- Don't make one click do two jobs ("open" and "select"); two learned clicks beat one ambiguous one.
+- Don't style text that leads nowhere like a target: no `text-strong` at weight 500 in a first table cell, no hover change, no pointer cursor, no underline. In a table, `text-strong` + 500 in the identifying cell means "this opens something" — if it opens nothing, it is `text` with `cursor: default` (Toegang).
+- Don't rely on a popover's own `z-index` inside a sticky table: a z-index is only compared inside its own stacking context, so raise the **cell** with `has-pop` instead (GAP-098).
+
+**Colour that belongs to the data.**
+
+**Do**
+- Put a user-chosen colour (filament, tag) on **the object**: the model in the viewer and in the render, the 4px bar under a card thumbnail, the SpoolSwatch, the tag chip.
+- Keep every ground that a render or a photo sits on neutral (`surface-2`) in both themes, and let a baked 1px `#6f7a96` outline separate the object from it.
+
+**Don't**
+- Don't use a user-chosen colour as a **ground** behind content. An arbitrary colour and any fixed ground have no guaranteed contrast in either direction, so no blend factor, floor or luminance rule can fix it — that is what the `--mix` measurements proved (GAP-071).
+- Don't promise a picture the stack cannot make: no poster frame where there is no decoder (GAP-089). Say "there is a video here" with a neutral ground, an icon and a play badge.
+
+**Width.**
+
+**Do**
+- Lay a page of short rows or short fields out in columns of at least 300–320px, up to a measure of 1080px (`pp-settings`, `pp-taggrid`).
+- Let a third-party renderer that draws its own frame fill the content area through the page padding (`pp-bleed`); keep the heading on the padding.
+
+**Don't**
+- Don't stretch one short row or one 160px field across 1100px, and don't stretch a form to a third column: a label 1000px from its heading is worse than empty space.
+
+**Absence.**
+
+**Do**
+- Show what is **missing** rather than what is present when the common case is "nothing to say": the missing-files chip is absent on 70% of tiles and costs them no space (GAP-090).
+- Give every error code an endpoint can return its own copy key, and list the set per field in the screen's spec.
+
+**Don't**
+- Don't reserve space for an indicator most items do not have.
+- Don't let "Er ging iets mis." stand in for a known error code; that fallback is for unknown codes only (GAP-100).
+

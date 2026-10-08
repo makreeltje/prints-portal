@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-07T21:00:00Z",
-  "via": "Claude",
-  "note": "v1.9: GAP-062 to 087 \u2014 share page (studio header, payment block, thumbnails), print detail, dashboard strip and filters, Openstaand groups with age, ModelPicker, VideoPlayer, OverflowMenu"
+  "at": "2026-10-08T12:05:00Z",
+  "via": "Claude Code",
+  "note": "Version 2.0: the 20 gaps open after 1.9 decided — 18 resolved, 2 merged, four halves rejected with reasons. Breaking: --mix and the poster frame leave the contract, the print detail is restructured."
  },
  "layout": "files",
  "libraries": [],

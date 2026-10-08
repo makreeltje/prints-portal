@@ -11,3 +11,7 @@ Toegang (`/access`, admin only) grants each user access to klant folders.
 **Dutch copy.** Toegang | Gebruiker | Admin en Editor hebben altijd toegang. | Alles selecteren | Niets selecteren
 
 **1.7.** (2026-10-07) **Empty state (GAP-058).** With no User accounts the page shows the help line and the EmptyState of AccessMatrix instead of the matrix; see AccessMatrix. States line: loading, default, saving cell, error (revert and toast), empty (no accounts with the role User).
+
+**2.0.** (2026-10-08) **GAP-098 and GAP-099**, both in AccessMatrix: the cell that holds an open column or row menu carries `has-pop` so the menu paints over the sticky user column, and the user name is `text` with `cursor: default` because it opens nothing. The preview draws the page at 1360px with the leftmost column menu open over the sticky column, which is the case that was broken.
+
+**To measure (owner):** after the change, the left edge of the open panel and the right edge of the sticky column at 1360px again — I expect the full 140px panel to be visible and the items to read "Alles selecteren". If any of it is still cut off, the scroll box *is* clipping it and the answer is a different one (a portal), so tell me and I will redesign it.
