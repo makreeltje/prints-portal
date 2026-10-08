@@ -371,3 +371,43 @@
   border-start-start-radius: var(--radius-lg);
   border-start-end-radius: var(--radius-lg);
 }
+
+/*
+  A popover that does not fit below its trigger. The design system places every
+  one below and never flips, so a panel opened low on the page is drawn past the
+  bottom of the window. Capping the height makes the panel's own list scroll
+  rather than the page.
+  ds-gap: GAP-112
+*/
+.app-pop-fit {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/*
+  Scoped to the anchor so it outweighs `.pp-anchor > .pp-pop`, which sets `top`.
+  Leaving that in place set top and bottom at once and squeezed the panel to
+  18px of its 302.
+*/
+.pp-anchor > .app-pop-above {
+  top: auto;
+  bottom: calc(100% + var(--space-2));
+}
+
+/*
+  The file row's three columns. The design system gives the controls an `auto`
+  track that never yields and the name a track that may shrink to nothing, so
+  just above its 760px breakpoint the name is left with 75px and the duplicate
+  badge is drawn on top of the controls. Letting the controls shrink makes them
+  wrap instead, which is what the row already knows how to do. The name track
+  needs the floor as well: letting the controls shrink is not enough on its own,
+  because nothing forces them to while the free space still covers them.
+
+  No breakpoint is needed to say this: below the system's own breakpoint the
+  controls span columns 2 to -1, so the third track has nothing of its own and
+  collapses to zero, leaving the narrow layout exactly as it was.
+  ds-gap: GAP-111
+*/
+.pp-asset {
+  grid-template-columns: auto minmax(min-content, 1fr) minmax(0, auto);
+}

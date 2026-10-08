@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useFlipAbove } from '../components/useFlipAbove';
 import { ChevronDown, RotateCw, Search, TriangleAlert } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { formatMoney } from '../i18n/format';
@@ -105,6 +106,7 @@ export function SpoolPopover({
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const panel = useRef<HTMLDivElement>(null);
+  const above = useFlipAbove(panel, !inline);
   const input = useRef<HTMLInputElement>(null);
   const latestClose = useRef(onClose);
   useEffect(() => {
@@ -165,7 +167,15 @@ export function SpoolPopover({
 
   const unreachable = spools.isError;
   return (
-    <div ref={panel} className={inline ? 'pp-pop pp-picker pp-fill' : 'pp-pop pp-picker'}>
+    <div
+      ref={panel}
+      className={
+        inline
+          ? 'pp-pop pp-picker pp-fill'
+          : // ds-gap: GAP-112
+            `pp-pop pp-picker app-pop-fit${above ? ' app-pop-above' : ''}`
+      }
+    >
       <div className="pp-iwrap" role="search">
         <Search className="pp-ico" aria-hidden="true" />
         <input
