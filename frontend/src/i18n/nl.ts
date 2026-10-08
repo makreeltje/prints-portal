@@ -306,6 +306,12 @@ export const nl = {
   'print.files': 'Bestanden', // component copy: ScreenPrintDetail
   'print.fileCount': '{count, plural, one {# bestand} other {# bestanden}}', // component copy: ScreenPrintDetail, OrderSection previews
   'print.noWeightOrTime': 'geen gewicht of tijd', // component copy: ScreenPrintDetail preview
+  'print.this': 'Deze print',
+  'print.project': 'Project',
+  'print.date': 'Datum',
+  'print.orders': 'Bestellingen',
+  'order.filesInOrder': 'In deze bestelling',
+  'asset.countsIn': 'Telt in {bestelling}',
   'print.userView': 'Je ziet alleen prijs en status.', // component copy: ScreenPrintDetail
 
   'asset.timesPrinted': 'Aantal keer geprint',

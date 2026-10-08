@@ -1,12 +1,21 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Box, ChevronDown, Info, Trash2, TriangleAlert } from 'lucide-react';
-import { lazy, Suspense, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  Fragment,
+  lazy,
+  Suspense,
+  useEffect,
+  useId,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ApiError } from '../api/client';
 import { useCurrentUser } from '../auth/context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useToast } from '../components/toast-context';
-import { formatDate } from '../i18n/format';
+import { formatDate, formatDuration, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { LoadingRows } from '../pages/ErrorState';
 import { ForbiddenState, GlobalErrorState } from '../pages/StatePages';
@@ -40,7 +49,7 @@ import { OverflowMenu } from '../components/OverflowMenu';
 import { TagEditor } from './TagEditor';
 import { placeOf } from './filter';
 import { Meta } from './PrintCard';
-import { assetsForOrder, isSettled, newestFirst, unassignedAssets } from './orders';
+import { assetsForOrder, isSettled, newestFirst, orderLabels, unassignedAssets } from './orders';
 import type { Order, PrintDetail } from './types';
 
 const Viewer3D = lazy(() => import('./Viewer3D'));
@@ -206,7 +215,6 @@ export function PrintDetailPage() {
           ))}
           {canManage && <TagEditor printId={detail.id} current={detail.tags} />}
         </div>
-        <Meta print={detail} />
       </div>
 
       {detail.status === 'archived' && (
@@ -292,6 +300,89 @@ export function PrintDetailPage() {
         }}
       />
     </>
+  );
+}
+
+const LACKS_KEY = { gcode: 'gcode', '3mf': 'threemf', stl: 'stl' } as const;
+
+/**
+ * "Deze print" (GAP-095): the facts that belong to the print rather than to an
+ * order, in the space the capped viewer leaves beside it. Nothing here repeats
+ * PaymentPanel — no price, no payment, no status — because those belong to an
+ * order, and that duplication is what made the 1.9 page read wrong.
+ */
+function ThisPrint({
+  detail,
+  spoolmanOn,
+  quiet,
+  toast,
+  canManage,
+}: {
+  detail: PrintDetail;
+  spoolmanOn: boolean;
+  quiet: (action: () => Promise<unknown>) => Promise<void>;
+  toast: ReturnType<typeof useToast>;
+  canManage: boolean;
+}) {
+  const titleId = useId();
+  const facts: [string, ReactNode][] = [[t('filters.customer'), detail.customerFolder]];
+  if (detail.projectFolder !== null && detail.projectFolder !== '') {
+    facts.push([t('print.project'), detail.projectFolder]);
+  }
+  if (detail.printDate !== null) facts.push([t('print.date'), formatDate(detail.printDate)]);
+  if (canManage) {
+    if (detail.material !== null) facts.push([t('print.material'), detail.material]);
+    if (detail.printSeconds !== null) {
+      facts.push([t('print.time'), formatDuration(detail.printSeconds)]);
+    }
+    if (detail.grams !== null) facts.push([t('print.weight'), formatGrams(detail.grams)]);
+    if (detail.orders.length > 0) {
+      facts.push([t('print.orders'), String(detail.orders.length)]);
+    }
+  }
+  return (
+    <section className="pp-card pp-sec pp-gap-3" aria-labelledby={titleId}>
+      <b id={titleId} className="pp-strong">
+        {t('print.this')}
+      </b>
+      <dl className="pp-kv tight">
+        {facts.map(([label, value]) => (
+          <Fragment key={label}>
+            <dt className="pp-muted">{label}</dt>
+            <dd>{value}</dd>
+          </Fragment>
+        ))}
+      </dl>
+      {canManage && spoolmanOn && (
+        <div className="pp-col pp-gap-1">
+          <SpoolPicker
+            value={detail.spool}
+            label={t('spool.forPrint')}
+            onChange={(spoolId) =>
+              quiet(async () => {
+                const result = await setPrintSpool(detail.id, spoolId);
+                // A locked order keeps its spools; say so instead of failing silently.
+                if (result.skipped > 0) {
+                  toast.success(
+                    t('spool.wholePrintSkipped', { n: result.changed, m: result.skipped }),
+                  );
+                }
+              })
+            }
+          />
+          <span className="pp-help">{t('spool.forPrintHelp')}</span>
+        </div>
+      )}
+      {detail.lacks.length > 0 && (
+        <span className="pp-help">
+          {t('print.lacks.aria', {
+            types: detail.lacks
+              .map((type) => t('print.lacks.item', { type: t(`print.lacks.${LACKS_KEY[type]}`) }))
+              .join(', '),
+          })}
+        </span>
+      )}
+    </section>
   );
 }
 
@@ -458,42 +549,28 @@ function ManagedOrders({
   );
   return (
     <>
-      <ModelView detail={detail} />
-      {spoolmanOn && (
-        // Spoel voor de hele print: full width under the viewer (ScreenPrintDetail 1.5).
-        <section className="pp-card pp-sec pp-gap-2" aria-labelledby="spool-title">
-          <b id="spool-title" className="pp-strong">
-            {t('spool.forPrint')}
-          </b>
-          <SpoolPicker
-            value={detail.spool}
-            label={t('spool.forPrint')}
-            onChange={(spoolId) =>
-              quiet(async () => {
-                const result = await setPrintSpool(detail.id, spoolId);
-                // A locked order keeps its spools; say so instead of failing silently.
-                if (result.skipped > 0) {
-                  toast.success(
-                    t('spool.wholePrintSkipped', { n: result.changed, m: result.skipped }),
-                  );
-                }
-              })
-            }
-          />
-          <span className="pp-help">{t('spool.forPrintHelp')}</span>
-        </section>
-      )}
+      {/* The media row: the viewer takes what it needs, the facts take the rest
+          (GAP-095). The dead space of 1.9 was this card's missing half. */}
+      <div className="pp-pdtop">
+        <ModelView detail={detail} />
+        <ThisPrint detail={detail} spoolmanOn={spoolmanOn} quiet={quiet} toast={toast} canManage />
+      </div>
       {unassignedCount > 0 && (
-        <>
-          <div className="pp-alert info" role="status">
-            <Info className="pp-ico" aria-hidden="true" />
-            <div>
-              {t('orders.unassignedAlert', { count: unassignedCount })}
-              <div className="pp-mt">{createButton(true)}</div>
-            </div>
+        <div className="pp-alert info" role="status">
+          <Info className="pp-ico" aria-hidden="true" />
+          <div>
+            {t('orders.unassignedAlert', { count: unassignedCount })}
+            <div className="pp-mt">{createButton(true)}</div>
           </div>
-          <AssetList assets={unassigned} title={t('orders.unassignedGroup')} />
-        </>
+        </div>
+      )}
+      {/* One inventory, at print level, each file once and saying which order
+          counts it. "Nog niet in een bestelling" is a badge here, not a card
+          of its own (GAP-097). */}
+      {assets.length > 0 && (
+        <div className="pp-pdfiles">
+          <AssetList assets={assets} ordLabels={orderLabels(assets, orders)} />
+        </div>
       )}
       <div className="pp-orders">
         {orders.map((order) => {
@@ -506,7 +583,11 @@ function ManagedOrders({
               files={
                 <>
                   {files.length > 0 && (
-                    <AssetList assets={files} controls={controlsFor(order.id, order.invoice)} />
+                    <AssetList
+                      assets={files}
+                      controls={controlsFor(order.id, order.invoice)}
+                      title={t('order.filesInOrder')}
+                    />
                   )}
                   {order.cost !== undefined && (
                     <CostBreakdown
@@ -539,7 +620,7 @@ function ManagedOrders({
         })}
       </div>
       {assets.some((asset) => asset.lines.length > 0) && (
-        <div className="pp-row">{createButton(false)}</div>
+        <div className="pp-pdnew">{createButton(false)}</div>
       )}
       {creating && (
         <NabestellingDialog

@@ -106,7 +106,7 @@ export function SpoolPopover({
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const panel = useRef<HTMLDivElement>(null);
-  const above = useFlipAbove(panel, !inline);
+  useFlipAbove(panel, !inline);
   const input = useRef<HTMLInputElement>(null);
   const latestClose = useRef(onClose);
   useEffect(() => {
@@ -169,12 +169,8 @@ export function SpoolPopover({
   return (
     <div
       ref={panel}
-      className={
-        inline
-          ? 'pp-pop pp-picker pp-fill'
-          : // ds-gap: GAP-112
-            `pp-pop pp-picker app-pop-fit${above ? ' app-pop-above' : ''}`
-      }
+      // ds-gap: GAP-112 — useFlipAbove adds app-pop-above when it must.
+      className={inline ? 'pp-pop pp-picker pp-fill' : 'pp-pop pp-picker app-pop-fit'}
     >
       <div className="pp-iwrap" role="search">
         <Search className="pp-ico" aria-hidden="true" />

@@ -13,7 +13,10 @@ export function assetsForOrder(assets: readonly Asset[], order: Order): Asset[] 
     if (item.lineId !== null) times.set(item.lineId, item.timesPrinted);
   }
   return assets.flatMap((asset) => {
-    if (asset.lines.length === 0) return order.number === 1 ? [asset] : [];
+    // 2.0: an order holds only what it bills. A file with no printable line —
+    // an STL, a video, a PDF, a link — is the print's, not an order's, and
+    // lives in the print's file list alone (GAP-097).
+    if (asset.lines.length === 0) return [];
     const lines = asset.lines.flatMap((line) => {
       const timesPrinted = times.get(line.id);
       return timesPrinted === undefined ? [] : [{ ...line, timesPrinted, inOrder: true }];
@@ -43,4 +46,30 @@ export function subLine(print: PrintSummary): string {
   return orders > 1
     ? `${placeOf(print)} · ${t('orders.count', { count: orders })}`
     : placeOf(print);
+}
+
+/**
+ * Which order counts each asset, for the print's own file list (GAP-097). An
+ * asset with no printable line is billed by nobody and gets no label; one whose
+ * lines are in no order keeps the "Niet in een bestelling" badge it already had.
+ */
+export function orderLabels(
+  assets: readonly Asset[],
+  orders: readonly Order[],
+): ReadonlyMap<string, string> {
+  const labels = new Map<string, string>();
+  for (const order of orders) {
+    const lineIds = new Set(
+      (order.items ?? []).flatMap((item) => (item.lineId === null ? [] : [item.lineId])),
+    );
+    if (lineIds.size === 0) continue;
+    const name = order.number === 1 ? t('orders.first') : t('orders.repeat', { n: order.number });
+    for (const asset of assets) {
+      if (labels.has(asset.id)) continue;
+      if (asset.lines.some((line) => lineIds.has(line.id))) {
+        labels.set(asset.id, t('asset.countsIn', { bestelling: name }));
+      }
+    }
+  }
+  return labels;
 }

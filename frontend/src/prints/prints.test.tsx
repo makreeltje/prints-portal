@@ -598,7 +598,9 @@ describe('PrintDetailPage', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Babybox locks' }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Joey')).toBeInTheDocument();
+    // "Joey" is both the breadcrumb and the Klant row of "Deze print" (GAP-095).
+    expect(document.querySelector('.pp-crumb')).toHaveTextContent('Joey');
+    expect(screen.getByRole('region', { name: 'Deze print' })).toHaveTextContent('Joey');
     const files = screen.getByRole('region', { name: 'Bestanden' });
     expect(within(files).getByText('2 bestanden')).toBeInTheDocument();
     expect(within(files).getByText('× 2')).toBeInTheDocument();
@@ -627,7 +629,9 @@ describe('PrintDetailPage', () => {
     });
     renderDetail('Editor');
     expect(await screen.findByText('Op factuur 2026-007.')).toBeInTheDocument();
-    const files = screen.getByRole('region', { name: 'Bestanden' });
+    // The locked controls live in the order's own list now, not in the print's
+    // inventory: an order shows only what it bills (GAP-097).
+    const files = screen.getByRole('region', { name: 'In deze bestelling' });
     const help = 'Staat op een definitieve factuur en kan niet meer worden gewijzigd.';
     expect(within(files).getByText(help)).toBeInTheDocument();
     expect(within(files).queryByRole('textbox', { name: 'Aantal keer geprint' })).toBeNull();

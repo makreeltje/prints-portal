@@ -386,8 +386,8 @@
 
 /*
   Scoped to the anchor so it outweighs `.pp-anchor > .pp-pop`, which sets `top`.
-  Leaving that in place set top and bottom at once and squeezed the panel to
-  18px of its 302.
+  Leaving that in place set top and bottom at once, which squeezed the panel to
+  a sliver of its own height.
 */
 .pp-anchor > .app-pop-above {
   top: auto;
@@ -397,8 +397,8 @@
 /*
   The file row's three columns. The design system gives the controls an `auto`
   track that never yields and the name a track that may shrink to nothing, so
-  just above its 760px breakpoint the name is left with 75px and the duplicate
-  badge is drawn on top of the controls. Letting the controls shrink makes them
+  just above its own breakpoint the name is left with less width than the
+  duplicate badge needs, and the badge is drawn on top of the controls. Letting the controls shrink makes them
   wrap instead, which is what the row already knows how to do. The name track
   needs the floor as well: letting the controls shrink is not enough on its own,
   because nothing forces them to while the free space still covers them.

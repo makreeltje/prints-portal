@@ -53,11 +53,14 @@ export function AssetList({
   assets,
   controls,
   title,
+  ordLabels,
 }: {
   assets: readonly Asset[];
   controls?: AssetControls;
   /** Card title; default "Bestanden" ("Nog niet in een bestelling" for files in no order). */
   title?: string;
+  /** Which order counts each asset, in the print's own file list (GAP-097). */
+  ordLabels?: ReadonlyMap<string, string>;
 }) {
   const titleId = useId();
   const lockedId = useId();
@@ -83,7 +86,12 @@ export function AssetList({
       )}
       <ul className="app-plain-list">
         {assets.map((asset) => (
-          <AssetRow key={asset.id} asset={asset} controls={rowControls} />
+          <AssetRow
+            key={asset.id}
+            asset={asset}
+            controls={rowControls}
+            ord={ordLabels?.get(asset.id)}
+          />
         ))}
       </ul>
     </section>
@@ -93,7 +101,15 @@ export function AssetList({
 /** Controls as rows get them: `lockedHelp` is the id of the locked reason. */
 type RowControls = AssetControls & { lockedHelp?: string };
 
-function AssetRow({ asset, controls }: { asset: Asset; controls?: RowControls }) {
+function AssetRow({
+  asset,
+  controls,
+  ord,
+}: {
+  asset: Asset;
+  controls?: RowControls;
+  ord?: string;
+}) {
   const Icon = ICONS[asset.type];
   const [playing, setPlaying] = useState<Asset | null>(null);
   // A sliced 3MF: the parent row has only the download; plates are child rows.
@@ -122,6 +138,7 @@ function AssetRow({ asset, controls }: { asset: Asset; controls?: RowControls })
             {plates.length > 0 && <span>{t('asset.plates', { count: plates.length })}</span>}
             {own?.possibleDuplicate === true && <StatusBadge kind="duplicate" />}
             {own !== undefined && !own.inOrder && <NotInOrderBadge />}
+            {ord !== undefined && <span className="ord">{ord}</span>}
           </div>
           {own !== undefined && !own.inOrder && (
             <span className="pp-help">{t('orders.notInOrderHint')}</span>
