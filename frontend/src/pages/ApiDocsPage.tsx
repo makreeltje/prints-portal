@@ -117,7 +117,9 @@ export function ApiDocsPage() {
       <div className="pp-ph">
         <h1>{t('api.title')}</h1>
       </div>
-      <div className="pp-scalar" ref={card}>
+      {/* A renderer with its own frame fills the content area through the
+          page padding; only the heading keeps it (GAP-102). */}
+      <div className="pp-scalar pp-bleed" ref={card}>
         {spec.isPending ? (
           <LoadingRows rows={4} />
         ) : spec.isError ? (

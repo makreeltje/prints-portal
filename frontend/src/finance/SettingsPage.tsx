@@ -95,7 +95,8 @@ export function SettingsPage() {
           setLeaveTo(null);
         }}
       />
-      <div className="pp-col pp-gap-4">
+      {/* Columns of at least 320px up to a 1080px measure (GAP-101). */}
+      <div className="pp-settings">
         <GeneralSection />
         {settings.isPending ? (
           <LoadingRows rows={3} />

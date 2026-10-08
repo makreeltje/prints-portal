@@ -1065,7 +1065,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-092 [open] A klant chip sets the name and the count in the same weight
+## GAP-092 [resolved in v2.0] A klant chip sets the name and the count in the same weight
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** CustomerChips on ScreenDashboard
@@ -1164,7 +1164,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-101 [open] Instellingen and Tags leave most of their width empty
+## GAP-101 [resolved in v2.0.1] Instellingen and Tags leave most of their width empty
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenSettings and ScreenTags
@@ -1175,7 +1175,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-102 [open] API-docs still reads as a box inside a box
+## GAP-102 [resolved in v2.0] API-docs still reads as a box inside a box
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenApiDocs
@@ -1208,7 +1208,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-105 [open] Nothing says what a logo has to satisfy to work in both themes
+## GAP-105 [resolved in v2.0] Nothing says what a logo has to satisfy to work in both themes
 - **Type:** missing spec
 - **Found while:** drawing a logo for this installation (2026-10-08)
 - **Where needed:** LogoField on ScreenSettings; the brand slot in AppShell; DocInvoice, DocReminder, DocOverview and ScreenSharePage

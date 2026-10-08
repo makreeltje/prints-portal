@@ -408,6 +408,9 @@ export const nl = {
   'settings.theme.light': 'Licht', // component copy: ScreenSettings
   'settings.theme.dark': 'Donker', // component copy: ScreenSettings
   'settings.logoUpload': 'Logo uploaden',
+  'settings.logo.onLight': 'Op licht',
+  'settings.logo.onDark': 'Op donker',
+  'settings.logo.themes': "Het logo wordt in beide thema's ongewijzigd getoond.",
   'settings.logoHelp': 'PNG of SVG. Vervangt de naam op het scherm en op documenten.',
   'settings.reindexProgress': 'Indexeren… {done} van {total} bestanden',
   'settings.logoOptional': 'Logo (optioneel)', // component copy: ScreenSettings preview

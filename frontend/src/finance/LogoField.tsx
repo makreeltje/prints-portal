@@ -65,12 +65,24 @@ export function LogoField() {
         {t('settings.logoOptional')}
       </span>
       <div className="pp-row pp-gap-3">
-        <span className="pp-logo-box">
-          {present === true ? (
-            <img className="app-logo-img" src={`${logoUrl}?v=${String(version)}`} alt="" />
-          ) : (
-            <ImageIcon className="pp-ico" aria-hidden="true" />
-          )}
+        {/*
+          The same file on both grounds at once (GAP-105): it is shown in both
+          themes with no adaptation, and no validator can measure for an
+          arbitrary file whether it survives either.
+        */}
+        <span className="pp-logo-pair">
+          {(['on-light', 'on-dark'] as const).map((ground) => (
+            <span key={ground} className={`pp-logo-box ${ground}`}>
+              {present === true ? (
+                <img className="app-logo-img" src={`${logoUrl}?v=${String(version)}`} alt="" />
+              ) : (
+                <ImageIcon className="pp-ico" aria-hidden="true" />
+              )}
+              <span className="pp-sr">
+                {t(ground === 'on-light' ? 'settings.logo.onLight' : 'settings.logo.onDark')}
+              </span>
+            </span>
+          ))}
         </span>
         <input
           ref={input}
