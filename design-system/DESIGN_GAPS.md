@@ -1094,7 +1094,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-094 [open] The model picker shows names where thumbnails would say more, and a Select above six
+## GAP-094 [resolved in v2.3] The model picker shows names where thumbnails would say more, and a Select above six
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ModelPicker on ScreenPrintDetail
@@ -1116,7 +1116,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-096 [open] A timelapse is buried in the file list while the model gets a viewer
+## GAP-096 [resolved in v2.3] A timelapse is buried in the file list while the model gets a viewer
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** VideoPlayer, ModelPicker and Viewer3D on ScreenPrintDetail
