@@ -396,6 +396,11 @@ export const nl = {
   'settings.spoolman': 'Spoolman',
   'settings.connected': 'Verbonden',
   'settings.spoolmanMeta': '{url} · {count} spoelen · laatste sync {time}', // component copy: ScreenSettings preview
+  'settings.company.noIban': 'Zonder IBAN staat er geen betaalinstructie op de deelpagina.',
+  'shareLinks.noIban':
+    'Deze klant ziet geen betaalinstructie: er is nog geen IBAN ingevuld bij Bedrijfsgegevens.',
+  'shareLinks.noIban.link': 'Naar Bedrijfsgegevens',
+  'shareLinks.hasPayLink': 'Deze klant heeft wel een betaallink.',
   'customers.payLink': 'Betaallink (optioneel)',
   'customers.payLinkHelp':
     'Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert.',

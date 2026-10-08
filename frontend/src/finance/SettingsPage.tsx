@@ -260,6 +260,17 @@ function CompanySection({
       {key === 'email' && emailInvalid && (
         <FieldError id={`${id}-email-err`}>{t('error.invalidEmail')}</FieldError>
       )}
+      {/*
+        A help line, not an error: an IBAN is optional for a studio that is
+        never paid by transfer. But without one the share page has no payment
+        instruction at all, and nothing else would say so (GAP-103).
+      */}
+      {key === 'iban' && values.iban.trim() === '' && (
+        <span className="pp-help pp-row pp-gap-2 pp-items-start">
+          <TriangleAlert className="pp-ico pp-warnico" aria-hidden="true" />
+          <span>{t('settings.company.noIban')}</span>
+        </span>
+      )}
     </div>
   );
   const save = async () => {
