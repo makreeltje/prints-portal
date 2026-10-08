@@ -115,6 +115,8 @@ export function PrintDetailPage() {
       ? {
           locked: invoice !== null,
           ...(invoice === null ? {} : { invoiceNumber: invoice.number }),
+          // So a row can say that it is being costed with the print's spool.
+          printSpool: detail.spool,
           setTimesPrinted: (line, times) =>
             quiet(() => setTimesPrinted(detail.id, line.id, times, orderId ?? undefined)),
           setExcluded: (line, excluded) =>
@@ -563,14 +565,6 @@ function ManagedOrders({
           </div>
         </div>
       )}
-      {/* One inventory, at print level, each file once and saying which order
-          counts it. "Nog niet in een bestelling" is a badge here, not a card
-          of its own (GAP-097). */}
-      {assets.length > 0 && (
-        <div className="pp-pdfiles">
-          <AssetList assets={assets} ordLabels={orderLabels(assets, orders)} />
-        </div>
-      )}
       <div className="pp-orders">
         {orders.map((order) => {
           const files = assetsForOrder(assets, order);
@@ -618,6 +612,18 @@ function ManagedOrders({
           );
         })}
       </div>
+      {/*
+        One inventory, at print level, each file once and saying which order
+        counts it (GAP-097). It sits after the orders, not before them: on an
+        ordinary print it is 31% of the page and the operator was scrolling
+        past all of it to reach the price. The phone layout already said so.
+        ds-gap: GAP-117
+      */}
+      {assets.length > 0 && (
+        <div className="pp-pdfiles">
+          <AssetList assets={assets} ordLabels={orderLabels(assets, orders)} />
+        </div>
+      )}
       {assets.some((asset) => asset.lines.length > 0) && (
         <div className="pp-pdnew">{createButton(false)}</div>
       )}

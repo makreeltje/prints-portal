@@ -31,6 +31,13 @@ export interface AssetControls {
   locked?: boolean;
   /** Invoice number for the "Op factuur {nummer}" badge above the list. */
   invoiceNumber?: string;
+  /**
+   * The whole-print spool. A slot without its own is costed with this one, and
+   * until 2.2 nothing on the row said so: the trigger read "Kies een spoel"
+   * while that spool was being used (GAP-115).
+   * ds-gap: GAP-115
+   */
+  printSpool?: { name: string } | null;
 }
 
 const ICONS: Record<AssetType, typeof File> = {
@@ -278,6 +285,26 @@ function ExclusionReason({ line }: { line: Line }) {
 }
 
 /**
+ * Where a spool comes from when the row has not chosen one (GAP-115).
+ *
+ * The print's spool costs every slot without its own, and the trigger beside
+ * this said "Kies een spoel" while that was happening — measured: the total
+ * moved from EUR 7,05 to EUR 5,13 and no control changed. This marks the value
+ * the way the slicer colour is already marked, rather than inventing a form.
+ * ds-gap: GAP-115
+ */
+function InheritedSpool({
+  own,
+  print,
+}: {
+  own: { name: string } | null;
+  print: { name: string } | null;
+}) {
+  if (own !== null || print === null) return null;
+  return <span className="pp-hintchip">{t('asset.fromPrint', { naam: print.name })}</span>;
+}
+
+/**
  * Multi-colour: one indented row per used slot. Without an assigned spool
  * the slicer colour shows with the hint chip "slicer".
  */
@@ -303,13 +330,16 @@ function Slots({ line, controls }: { line: Line; controls?: RowControls }) {
             </span>
           )}
           {setSpool !== undefined && (
-            <SpoolPicker
-              value={slot.spool}
-              label={t('asset.slot', { n: slot.slot })}
-              disabled={controls?.locked === true}
-              describedBy={controls?.lockedHelp}
-              onChange={(spoolId) => setSpool(line, slot.slot, spoolId)}
-            />
+            <>
+              <SpoolPicker
+                value={slot.spool}
+                label={t('asset.slot', { n: slot.slot })}
+                disabled={controls?.locked === true}
+                describedBy={controls?.lockedHelp}
+                onChange={(spoolId) => setSpool(line, slot.slot, spoolId)}
+              />
+              <InheritedSpool own={slot.spool} print={controls?.printSpool ?? null} />
+            </>
           )}
         </li>
       ))}
@@ -333,13 +363,19 @@ function LineControls({ line, controls }: { line: Line; controls: RowControls })
           <TimesPrinted line={line} onSave={controls.setTimesPrinted} />
         ))}
       {setSpool !== undefined && line.slots.length <= 1 && (
-        <SpoolPicker
-          value={line.spool ?? line.slots[0]?.spool ?? null}
-          label={t('asset.pickSpool')}
-          disabled={locked}
-          describedBy={controls.lockedHelp}
-          onChange={(spoolId) => setSpool(line, 0, spoolId)}
-        />
+        <>
+          <SpoolPicker
+            value={line.spool ?? line.slots[0]?.spool ?? null}
+            label={t('asset.pickSpool')}
+            disabled={locked}
+            describedBy={controls.lockedHelp}
+            onChange={(spoolId) => setSpool(line, 0, spoolId)}
+          />
+          <InheritedSpool
+            own={line.spool ?? line.slots[0]?.spool ?? null}
+            print={controls.printSpool ?? null}
+          />
+        </>
       )}
       <label className="pp-opt sm">
         <input

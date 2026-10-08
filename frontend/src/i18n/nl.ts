@@ -321,6 +321,8 @@ export const nl = {
   'asset.plates': '{count} platen',
   'asset.slot': 'Slot {n}',
   'asset.slicerHint': 'slicer',
+  // ds-gap: GAP-115 — placeholder wording until the design system rules.
+  'asset.fromPrint': 'van de print: {naam}',
   'asset.excluded': 'Telt niet mee in kosten',
   'asset.excludedReason.duplicate': 'Telt niet mee: dubbel met G-code',
   'asset.excludedReason.folder': 'Telt niet mee: map {folder}',

@@ -1337,3 +1337,27 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.2
 
+## GAP-116 [open] The owner wants the model strip to scroll sideways at any count, and there are no per-model renders
+- **Type:** conflict
+- **Found while:** the owner read ModelPicker in the component gallery (2026-10-08)
+- **Where needed:** ModelPicker, ScreenPrintDetail
+- **What is missing or wrong:** two things, and the second is a correction of mine.
+  1. **The overflow direction.** 2.0.1 decided that above eight pictures the strip wraps into a bounded grid that scrolls down, on my measurement that 29 models is about 2,400px of sideways scrolling. The owner wants it to keep scrolling **sideways** with the small previews visible: *"ik zou liever zijwaarts willen scrollen met gewoon de kleine previews zichtbaar."* Measured for this library, models plus timelapses per print: median **4**, 64 of 83 prints are at eight or fewer, 14 are 9–15, 5 are above 15, the largest is **34**. So the question only touches 19 prints of 83, and the base `.pp-models` already scrolls sideways with a fading edge — the deviation is only that `wrap` is never applied.
+  2. **There are no per-model renders, and I told you there were.** GAP-094's button is specified as "the per-model render when one exists, else the type glyph and the name", and in the 2.0.1 round I answered your measurement question with "one PNG per model file, not per print". That was wrong, and you used it to strengthen the rejection of the Select. The thumbnail service renders **one image per print record** (`thumbnails.get(recordId)`), chosen from a candidate asset; there is no per-asset thumbnail route. So every button in the strip shows the type glyph and the file name, whatever the count, and the information argument for a strip over a list is weaker than we both thought.
+- **Why it matters:** the strip is the operator's way through a print that holds up to 34 pictures, and it is currently a Select above six — the 1.9 form both sides reject. Whatever is decided, the Select goes.
+- **Proposal:** decide the overflow direction knowing the real distribution (19 prints of 83 ever reach it) and knowing the buttons are glyphs, not pictures. If per-model renders are wanted, that is indexer work and belongs in its own gap rather than being assumed by this one.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** yes (2026-10-08). The strip is used at every count and never wraps, marked `ds-gap: GAP-116`.
+- **Design system version:** 2.2
+
+## GAP-117 [open] The file list stands between the operator and the price on every print
+- **Type:** improvement idea
+- **Found while:** the owner asked whether files could be less prominent on the print detail (2026-10-08)
+- **Where needed:** ScreenPrintDetail, the order of `pp-pdfiles` and `pp-orders`
+- **What is missing or wrong:** 2.0 puts the print's file list **third**, between the media row and the orders, on desktop; on a phone it is placed last for exactly the reason that applies here too. Measured on an ordinary print: the page is 1892px, the list is **585px — 31% of it** — it starts at y=652 and the orders do not start until y=1257. So on every print the operator scrolls past the whole inventory to reach the price and the payment, which is the thing they open the page to do. Files per print: median **5**, 17 prints hold more than ten, the largest holds **48**.
+- **Why it matters:** it is the daily path. The phone layout already concedes the point; the desktop layout does not.
+- **Proposal:** put `pp-pdfiles` after `pp-orders` on desktop as well, which is what the phone order already says, and give the list its own maximum height with its own scroll so a 48-file print cannot set the page's length. The owner also asked whether the list should be collapsible or folded into "Deze print"; I would argue against both — a disclosure costs a click on the thing the page is for, and "Deze print" is deliberately facts without controls.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** yes (2026-10-08, the owner chose the reorder). The list moves after the orders, marked `ds-gap: GAP-117`.
+- **Design system version:** 2.2
+
