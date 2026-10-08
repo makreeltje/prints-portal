@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="200" viewBox="0 0 560 200">
+  <!--
+    meels — monogram and wordmark.
+    One colour (#5878d6): 4.14:1 on white (invoice, light sidebar) and 4.13:1
+    on #1a1b26 (dark sidebar), so one file works in both themes.
+    No subline: the app caps this at 32px tall in the sidebar, where a second
+    line of type is about 4px and unreadable.
+  -->
+  <rect x="20" y="30" width="140" height="140" rx="34" fill="#5878d6"/>
+  <path d="M 56 138 L 56 68 L 90 108 L 124 68 L 124 138"
+        fill="none" stroke="#ffffff" stroke-width="19"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="196" y="132" font-family="Avenir Next, Helvetica Neue, Helvetica, Arial"
+        font-size="96" font-weight="600" letter-spacing="-2" fill="#5878d6">meels</text>
+</svg>

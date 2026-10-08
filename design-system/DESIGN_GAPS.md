@@ -1195,3 +1195,15 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** Nothing; the manual details work.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
+
+## GAP-104 [open] An uploaded SVG logo silently loses all of its text
+- **Type:** suspected design bug
+- **Found while:** drawing a logo for this installation (2026-10-08)
+- **Where needed:** LogoField on ScreenSettings; `backend/src/finance/billing-routes.ts` (the SVG is rasterised with `@resvg/resvg-js`)
+- **What is missing or wrong:** the container ships **no fonts at all** (`/usr/share/fonts` does not exist, `fc-list` returns 0), and the rasteriser is given no font configuration, so `<text>` in an uploaded SVG renders as nothing. Measured in the running container with an SVG holding one rectangle and one word: **1600 opaque pixels for the shape, 0 for the text**. Most real logo files are a mark plus a wordmark, or type alone, so the common case is a logo that uploads "successfully" and comes back partly or entirely blank, on screen and on every invoice.
+- **Why it matters:** the failure is silent. The upload is accepted, the preview shows what survived, and nothing says that the studio's name has been dropped from its own documents. Settings offers "PNG of SVG" with no caveat.
+- **Proposal:** this needs a decision at two levels, so both are stated. **Product:** either ship fonts in the image and point the rasteriser at them (the app already carries the design system's font stack by name, so one metric-compatible face would do), or refuse an SVG whose text cannot be drawn. **Design:** whichever is chosen, LogoField needs the state — a refusal with a reason ("Deze SVG bevat tekst die niet kan worden weergegeven; upload een PNG of zet de tekst om in vormen."), or a warning beside the preview. Copy and the state are the design system's part.
+- **Blocked:** nothing is built. This installation's own logo is supplied as PNG, which is unaffected: the app rasterises an SVG to an 800px PNG anyway, so nothing is lost by using one.
+- **Temporary placeholder approved:** no
+- **Design system version:** 1.9
+
