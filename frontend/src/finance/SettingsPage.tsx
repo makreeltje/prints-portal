@@ -8,6 +8,7 @@ import { joinSections, useDirtySections } from './useDirtySections';
 /** What a section calls to say whether it holds unsaved edits. */
 type DirtyReport = (key: string, title: string, isDirty: boolean) => void;
 import { api } from '../api/client';
+import { formatDate } from '../i18n/format';
 import { FieldError, GenericError } from '../components/FieldError';
 import { useToast } from '../components/toast-context';
 import { t, type MessageKey } from '../i18n/nl';
@@ -406,6 +407,18 @@ function CustomersSection() {
                     onBlur={(event) => void saveLink(customer.folder, event.target.value)}
                   />
                   <span className="pp-help">{t('customers.payLinkHelp')}</span>
+                  {/* An old link is then visibly old, without the app guessing
+                      at an expiry it cannot read (GAP-103). */}
+                  {/* A truthy check, not `!== null`: a role that may not see
+                      the link gets no field at all, and an older payload has
+                      neither. */}
+                  {customer.payLink != null && customer.payLinkAddedAt != null && (
+                    <span className="pp-muted pp-text-xs">
+                      {t('customers.payLinkAdded', {
+                        datum: formatDate(customer.payLinkAddedAt),
+                      })}
+                    </span>
+                  )}
                 </label>
               )}
             </li>

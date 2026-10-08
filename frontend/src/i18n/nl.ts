@@ -398,7 +398,8 @@ export const nl = {
   'settings.spoolmanMeta': '{url} · {count} spoelen · laatste sync {time}', // component copy: ScreenSettings preview
   'customers.payLink': 'Betaallink (optioneel)',
   'customers.payLinkHelp':
-    'Een link met een vast bedrag, bijvoorbeeld een betaalverzoek. Het bedrag erin verandert niet mee met wat openstaat.',
+    'Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert.',
+  'customers.payLinkAdded': 'Toegevoegd op {datum}',
   'customers.notBilled': 'Niet factureren',
   'customers.notBilledHelp':
     'Voor een klant die niet wordt gefactureerd (bijvoorbeeld je eigen prints) zie je alleen de kosten.',

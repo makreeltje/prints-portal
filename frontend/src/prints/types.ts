@@ -198,6 +198,8 @@ export interface Customer {
   openAmount: number | null;
   /** The klant's optional payment link (GAP-103); null for anyone but an Admin. */
   payLink: string | null;
+  /** When that link was set, so one pasted months ago is visibly old. */
+  payLinkAddedAt: string | null;
 }
 
 export const PRINT_SORTS = ['newest', 'oldest', 'priceDesc', 'priceAsc', 'customer'] as const;
