@@ -1054,7 +1054,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-091 [open] Selecting a print needs its checkbox, but the tile looks selectable
+## GAP-091 [resolved in v2.0] Selecting a print needs its checkbox, but the tile looks selectable
 - **Type:** unclear spec
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** PrintCard on ScreenDashboard
@@ -1076,7 +1076,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-093 [open] In the list view only the title opens a print; in the grid the whole card does
+## GAP-093 [resolved in v2.0] In the list view only the title opens a print; in the grid the whole card does
 - **Type:** unclear spec
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** PrintRow on ScreenDashboard

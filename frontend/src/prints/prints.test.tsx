@@ -518,6 +518,33 @@ function renderDetail(role: 'Admin' | 'Editor' | 'User' = 'Admin') {
   );
 }
 
+describe('one target per row (GAP-091, GAP-093)', () => {
+  it('stretches the name link over the whole row and keeps the checkbox above it', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary()], total: 1 } }),
+      'GET /api/customers': () => ({ json: customers }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderDashboard();
+    // Two switches exist, one per width; either one does.
+    await screen.findAllByRole('button', { name: 'Lijst' });
+    await userEvent.click(screen.getAllByRole('button', { name: 'Lijst' })[0] as HTMLElement);
+    // Both layouts live in the DOM at once, so scope to the table.
+    const link = await waitFor(() => {
+      const found = document.querySelector('.pp-table .pp-rowlink');
+      if (found === null) throw new Error('no row link yet');
+      return found;
+    });
+    // The grid and the list behave the same: one real link, stretched.
+    expect(link).toHaveTextContent('Babybox locks');
+    const row = link.closest('tr');
+    expect(row).not.toBeNull();
+    // Every other control sits above that link rather than under it.
+    const checkbox = within(row as HTMLElement).getByRole('checkbox');
+    expect(checkbox).toHaveClass('app-above-link');
+  });
+});
+
 describe('missing-files chip (GAP-090)', () => {
   it('is absent when nothing is missing, so most tiles are unchanged', async () => {
     stubFetch({
