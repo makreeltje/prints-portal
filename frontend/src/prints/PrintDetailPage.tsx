@@ -34,7 +34,7 @@ import { OrderSection } from '../finance/OrderSection';
 import { PaymentPanel } from '../finance/PaymentPanel';
 import { SpoolPicker } from '../finance/SpoolPicker';
 import { deletePrint, fetchPrint, keys, modelUrl, restorePrint, setPrintTags } from './api';
-import { RecordBadge, TagChip, Thumbnail } from './bits';
+import { LacksChip, RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList, type AssetControls } from './AssetList';
 import { OverflowMenu } from '../components/OverflowMenu';
 import { TagEditor } from './TagEditor';
@@ -195,6 +195,8 @@ export function PrintDetailPage() {
         <div className="pp-tags">
           {detail.money !== null && <PaymentBadge status={detail.money.status} />}
           <RecordBadge print={detail} />
+          {/* The same chip the card carries, in the header badge row (GAP-090). */}
+          <LacksChip lacks={detail.lacks} />
           {detail.tags.map((tag) => (
             <TagChip
               key={tag.id}

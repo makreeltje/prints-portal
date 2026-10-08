@@ -1218,3 +1218,36 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
+## GAP-106 [open] The owner asked for icons and 2.0 gave words
+- **Type:** conflict
+- **Found while:** the owner's first look at the GAP-090 chip in the running app (2026-10-08)
+- **Where needed:** PrintCard, PrintRow, ScreenPrintDetail — the `pp-lacks` chip
+- **What is missing or wrong:** the owner asked twice for **small icons on the tile**. 2.0 rejected that half of GAP-090 and specified one word chip instead ("Ontbreekt: G-code, 3MF, STL"). Built as specified, the owner's reaction on seeing it was immediate: *"ik dacht dat je met simpele icoontjes ging werken, niet met texten voor de missende bestanden."* At the long end the chip is 27 characters on a 261px card, and it is the widest thing in the tag row.
+- **Why it matters:** the design system's reasons were good ones — three slashed glyphs are three inventions, a legend to learn, and still need a text alternative — but the person who has to read this grid every day has now said twice what they want. This is their product, and the preference is not a misunderstanding of the trade-off; they saw the result and still prefer icons.
+- **Proposal:** the design system decides the form, not us. Options worth weighing: the three type icons the system already names (`file-code`, `package`, `box`) at 16px with a slash or at reduced opacity, with a `title` and an off-screen sentence carrying the text alternative; or the chip shortened to the icon plus the types without the word "Ontbreekt:"; or icons on the card and the full chip on the detail page, where there is room.
+- **Blocked:** nothing. The word chip is built and works; it is the form that is in question.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.0.1
+
+## GAP-107 [open] The selection box on a tile reads as oversized
+- **Type:** improvement idea
+- **Found while:** the same first look (2026-10-08)
+- **Where needed:** PrintCard, `.pp-print .pp-sel`
+- **What is missing or wrong:** 2.0 gave the selection chip the full tap area and a hairline, so it measures **36×36px around a 20px checkbox** where it was about 24×24 before. The owner: *"De selectiebox is ineens heel erg groot op de tiles."* On a 261px card it is the first thing the eye meets, on every tile, whether or not anything is selected.
+- **Why it matters:** the intent was right — the checkbox was not visibly its own control, which is half of GAP-091 — but the cure is now louder than the thing it sits on, and it is drawn 24 times on a dashboard page.
+- **Proposal:** keep the 36px *hit* area and shrink what is *drawn*: a 24px visible chip centred in a 36px target (the hit area may exceed the painted box), or drop the hairline on the thumbnail and keep it only on hover and focus. A pointer target can be larger than its paint; WCAG 2.2 2.5.8 asks for the target, not the ink.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.0.1
+
+## GAP-108 [open] The missing-files chip and "Geen prijs" sit on opposite edges
+- **Type:** unclear spec
+- **Found while:** the same first look (2026-10-08)
+- **Where needed:** PrintCard — the tag row and `pp-foot`
+- **What is missing or wrong:** measured on a 261px card: the `pp-lacks` chip starts at the card's left padding, and the "Geen prijs" badge in the footer is right-aligned 141px further along. Two warning chips of the same shape, one left, one right, on consecutive lines. The owner calls the result misaligned. "Geen prijs" has sat on the right since it existed; the new chip simply makes the ragged edge visible.
+- **Why it matters:** it is the only place in the system where two chips of the same kind and colour line up against opposite edges, and on a card with no price (about 30% of this library) it is the whole bottom half of the tile.
+- **Proposal:** say where a price-less card puts its badge. Either "Geen prijs" joins the tag row beside the missing-files chip, since neither is a price, or the footer keeps it left when the price block is empty rather than pushing it to an edge with nothing opposite it.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.0.1
+
