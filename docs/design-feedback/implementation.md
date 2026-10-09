@@ -8,10 +8,9 @@ open, and where either of us got something wrong. The design system owns
 Everything below was measured in the running app against a real library (83
 prints, 10 klanten, 29 spools, about two years of history).
 
-- App version **1.0.0**, built against design system **2.3**; 2.4 and 2.5 are published and not yet imported.
-- **119 gaps logged, 2 open**: GAP-118 (raised below) and GAP-119, which 2.5 answers
-  and this app has not yet built. Numbering is unbroken.
-- 2.0, 2.0.1, 2.1, 2.2 and 2.3 are imported and verified; the export checker
+- App version **1.0.0**, built against design system **2.7**.
+- **120 gaps logged, 0 open.** Numbering is unbroken.
+- Every round from 2.0 to 2.7 is imported and verified; the export checker
   confirms every class and copy key each changelog claims.
 - **No `ds-gap` marker is left in the frontend.**
 
@@ -139,9 +138,41 @@ by extending the tail at all**, because this library's collision is a number in
 the *middle* of a long name (`Babybox lock corner 20 inner width.stl` against
 `21` and `22`, at index 20 of 38). Neither end reaches it.
 
+## 2.4 to 2.7 are built
+
+- **2.6's label rule** — verified on the colliding print: 19 buttons at 120px,
+  every name `.pp-fname`, tails keeping `.stl`/`.3mf`, **18 distinct labels of
+  19**, the odd one being the two files that really do share a name. The bubble
+  sits outside `.pp-models` at **opacity 1**, which is the first evidence either
+  of us has that your sibling rule does what you said. The *reason* in README
+  rule 8 is still unverified: I never tried a bubble inside the mask.
+- **2.7's four cells** — measured by setting a whole-print spool and clearing it
+  again: "Een spoel hier geldt voor 2 slots zonder eigen spoel." with none set,
+  "Geldt nu voor 2 slots zonder eigen spoel." with one, and back. The word *nu*
+  appears only in the second.
+- **2.7's same-name line** — both rows marked, neither in `warning` ink, no
+  badge: "Twee verschillende bestanden met dezelfde naam in deze print." on the
+  row at the print root and "… Dit is het bestand in map Nog te printen." on the
+  other.
+
+**Your measurement 1, answered.** Every asset carries a folder (`subPath`); 80
+of 676 are non-empty and **the deepest is one segment**, so `{map}` never needs
+more than one. All **3** same-name pairs differ in it, so `asset.sameName`
+fires — except that in one pair a row sits at the print root with no folder at
+all, and that row takes `asset.sameNameNoFolder`. So the two keys are not a
+pair/no-pair choice but a per-row one, and both are live. Neither is dead copy.
+
+**Your measurement 2** — whether a whole-print spool ever gets set now the
+control says what it does — needs time rather than a query. It is still 0 of 83.
+
+**The `play`/`film` conflict** is settled your way and nothing changes in the
+app: `film` says what the file is, `play` says what pressing does.
+
 ## What I am raising
 
-**GAP-118 — "Geldt nu voor 2 slots" while no whole-print spool is set.** The
+Nothing. Both gaps I raised are answered and built.
+
+**GAP-118, for the record — "Geldt nu voor 2 slots" while no whole-print spool is set.** The
 condition you named is about the slots, not about whether a spool is chosen, so
 on a print with no whole-print spool the line claims two slots are covered while
 nothing is in force — the same shape as the fault GAP-115 was raised for, on the

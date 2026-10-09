@@ -402,14 +402,24 @@ function ThisPrint({
           />
           <span className="pp-help">{t('spool.forPrintHelp')}</span>
           {/*
-            What this choice is doing right now (2.3, GAP-115). The count is
-            the app's: every slot of every file that has no spool of its own is
-            costed with this one.
+            What this choice is doing, keyed on both axes (2.7, GAP-118): the
+            present tense belongs to the state, so "Geldt nu" may only appear
+            while a spool is actually set. 2.3 keyed it on the slots alone, so
+            it claimed two slots were covered while nothing was in force.
+
+            Silence was the obvious fix and the design system rejected it: 83 of
+            83 prints have no whole-print spool, so a line only shown when one
+            is set is a line almost never seen — and this control earned its
+            line by never looking as though it did anything.
           */}
           <span className="pp-help">
-            {slotsOnPrintSpool === 0
-              ? t('spool.wholePrint.appliesNone')
-              : t('spool.wholePrint.applies', { n: slotsOnPrintSpool })}
+            {detail.spool !== null
+              ? slotsOnPrintSpool === 0
+                ? t('spool.wholePrint.appliesNone')
+                : t('spool.wholePrint.applies', { n: slotsOnPrintSpool })
+              : slotsOnPrintSpool === 0
+                ? t('spool.wholePrint.wouldApplyNone')
+                : t('spool.wholePrint.wouldApply', { n: slotsOnPrintSpool })}
           </span>
         </div>
       )}

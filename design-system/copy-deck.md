@@ -591,3 +591,30 @@ Two groups. The first is new: a control that can override an inherited value has
 **Changed in 2.3:** the video button's accessible name loses its duration — "Timelapse {bestandsnaam}, {duur}" becomes `models.videoName`, "Timelapse {bestandsnaam}" — because the indexer reads no duration and reading one in the browser would fetch every video to draw a strip. The visible label is `models.video`, "Timelapse".
 
 **Unused but kept:** `models.select` ("Model") was the label of the Select above six models, which 2.0 dropped. It stays in the deck so nothing breaks on import and goes in 3.0. No key was removed in 2.3.
+
+## Added in 2.7
+
+Two groups, both one sentence each, and neither is a new feature. The first fixes a line that stated the opposite of the truth in the state this library is almost always in (GAP-118). The second names a data condition the file list was silently leaving to the model strip (GAP-120).
+
+| Key | Text |
+|---|---|
+| spool.wholePrint.wouldApply | Een spoel hier geldt voor {n, plural, one {# slot} other {# slots}} zonder eigen spoel. |
+| spool.wholePrint.wouldApplyNone | Elk slot heeft al een eigen spoel, dus een spoel hier verandert niets. |
+| asset.sameName | Twee verschillende bestanden met dezelfde naam. Dit is het bestand in map {map}. |
+| asset.sameNameNoFolder | Twee verschillende bestanden met dezelfde naam in deze print. |
+| spool.wholePrint.help | Bestanden en slots met een eigen spoel gaan hierboven voor. |
+
+**`spool.wholePrint.help` is not new text.** It is the existing help line under "Spoel voor de hele print", shown in the preview since 2.3 and never entered in this deck — the same oversight the `print.lacks*` keys had in 2.2 and the `models.*` keys in 2.3. It is recorded here with the words the app already renders; nothing visible changes.
+
+**The whole-print line now has four states, and the word *nu* is the tell.** `spool.wholePrint.applies` and `spool.wholePrint.appliesNone` are unchanged and may be rendered **only while a whole-print spool is set**: they are present-tense claims about what is costing money. Where no spool is set, the same two cells use `wouldApply` / `wouldApplyNone`, which speak about the control ("een spoel hier") instead of the state. Keyed on both axes:
+
+| | a whole-print spool is set | no whole-print spool |
+|---|---|---|
+| n ≥ 1 slots without their own spool | `spool.wholePrint.applies` | `spool.wholePrint.wouldApply` |
+| n = 0 | `spool.wholePrint.appliesNone` | `spool.wholePrint.wouldApplyNone` |
+
+`{n}` is the same count in all four and is the app's to compute. Measured before the change: on a print with two such slots and no spool, the trigger said "Kies een spoel", the total was EUR 1,86, and the line claimed two slots were covered. The 2.3 note in this deck said no print in the library of 83 had a whole-print spool set — which is exactly why the right-hand column needs words and not silence.
+
+**`asset.sameName` is not a duplicate warning and its ink says so.** It is a `muted` `.pp-reason` line, no badge, no `warning`, drawn on **both** rows of a same-name pair, each naming its own `{map}` — the shortest folder form, relative to the print root, that differs between the two. `asset.duplicate` ("Mogelijk dubbel") and `asset.duplicateHint` are unchanged and keep their meaning: the same *content*, where "Gebruik liever Aantal keer geprint" is sound advice. For two distinct files that advice would lose one of them off the invoice, which is why this condition gets its own words. `asset.sameNameNoFolder` is the fallback where the app has no folder for an asset.
+
+**Changed in 2.7:** nothing. **No key was removed.**

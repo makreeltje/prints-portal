@@ -50,3 +50,29 @@ AssetListItem is one file of a print (G-code, 3MF, STL, video, Fusion 360, PDF, 
 - **Accessible name** of an inherited trigger: "Spoel van de print: {naam}. Kies hier een eigen spoel voor dit bestand." The chip is never the only carrier of the fact.
 
 Nothing about the row's grid, its name floor or its badges changes.
+
+**2.7.** (2026-10-09) **Two files of one print with the same name (GAP-120, resolved — marked, but not as a duplicate).** The model strip draws two buttons with the same picture and the same label where a print holds two files of the same name, and 2.6 accepted that on the understanding that the file list would explain it. Measured: it does not. On the print holding `Babybox lock corner 2.stl` twice, both rows come back `possibleDuplicate: null`, `duplicateOf: null`, and no badge is rendered. The indexer raises "Mogelijk dubbel" for the same *content*; these are two distinct files that happen to share a name across folders. 3 pairs in 2 prints of 83.
+
+**"Mogelijk dubbel" must not widen to cover this, and that is the first decision.** The badge is `warning` ink and it carries `asset.duplicateHint`, "Zelfde bestand als {bestand}. Gebruik liever Aantal keer geprint." — which is advice to stop counting one of the two files and raise the other's count instead. Applied to two files with different content that is wrong advice, and following it drops a real file off the invoice. A `warning` badge also says *something is missing or needs your attention*, and here nothing is: the condition needs no action at all. A badge whose hint is false in the case it was widened to cover is worse than no badge.
+
+**What the row gets instead: one neutral line, on both rows.** `.pp-reason` as it already is — `muted`, `text-xs`, the info glyph, real text in the row — in the name column under the meta line:
+
+- **`asset.sameName`** — "Twee verschillende bestanden met dezelfde naam. Dit is het bestand in map {map}." The first sentence states the fact that distinguishes this from a duplicate; the second says which of the two this row is.
+- **`asset.sameNameNoFolder`** — "Twee verschillende bestanden met dezelfde naam in deze print." The fallback where the app has no folder for an asset. It states the fact and does not pretend to tell the two apart.
+
+**The rules around it.**
+
+- **Both rows carry it**, each naming **its own** folder. Neither file is the original, so marking one of the two would invent a culprit; and two rows naming their own folders are what actually tells the operator which is which. ("Mogelijk dubbel" marks the later file only, because there a first file genuinely is the one to keep.)
+- **`{map}` is the shortest form that separates the two**: the folder as `asset.excludedReason.folder` already names folders, extended leftwards along the path relative to the print root until the two rows differ. Two files of the same name cannot live in one directory, so a path that differs always exists; only the app's record of it may be missing, which is what the fallback is for.
+- **Both contexts.** The fact belongs to the file, not to an order, so the line is drawn in the print's "Bestanden" card (which always holds both) and in an order's "In deze bestelling" section (which may hold one or both). Where controls sit beside the row, the line is the difference between setting the right spool or count and the wrong one.
+- **Any file type**, not only the models the strip shows. The measured pairs are STL; a G-code pair would carry costs and is drawn in the preview as the case this library does not have.
+- **It changes nothing else.** No badge, no `warning`, no strike-through, no effect on cost, price, exclusion or the duplicate logic. A row can be both excluded and same-named: then two `.pp-reason` lines, **the exclusion first**, because that one changes the money.
+- **No new class and no new token.** `.pp-reason` without a colour override is exactly this: a statement of fact, not a warning.
+
+**Accessibility.** The line is real text inside the list item and is read before the row's controls, so no control needs its own copy of the fact; the full name stays in `title` as before. It is not a live region — the condition is a property of the print, not of anything the viewer does.
+
+**Both themes, no new pair.** `.pp-reason` is `muted` on `surface` and on `surface-2` for a child or slot row; both are in the contrast report at 4.5:1 or better.
+
+**The strip gets no new words (rejected).** ModelPicker's labels are a picker's labels; turning one into a sentence to explain a data condition is what the file list is for, and the strip's two identical labels stay as 2.6 specifies them. The cost of the answer is six muted lines in the whole library, in the one place the operator is already reading file names.
+
+**Drawn in the preview:** the measured STL pair at print level, a G-code pair with the order-level controls, the row at a 420px container where the line wraps and the controls drop to the second row, and the long case — one row both excluded and same-named, with the fallback form on the row beneath it.

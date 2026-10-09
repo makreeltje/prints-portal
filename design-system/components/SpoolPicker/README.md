@@ -32,3 +32,27 @@ SpoolPicker chooses a spool from Spoolman by material, colour, vendor or price p
 **Dutch copy (new).** van de print | Spoel van de print: {naam}. Kies hier een eigen spoel voor dit bestand. | Geldt nu voor {n} slots zonder eigen spoel. | Elk slot heeft een eigen spoel, dus deze keuze verandert nu niets.
 
 If a file-level spool ever governs its own slots, the same chip applies with "van het bestand"; that key is not in the deck until the app has that relation, because dead copy is worse than a missing line.
+
+**2.7 — "Geldt nu" may only be written where something is in force (GAP-118, resolved).** 2.3 added one line under the whole-print control and keyed it on the wrong condition: `spool.wholePrint.applies` asks *how many slots have no spool of their own*, which is true of the slots whether or not a spool has been chosen. Measured in the app on a print with two such slots and no whole-print spool: the trigger says "Kies een spoel", the total is EUR 1,86, and the line underneath says "Geldt nu voor 2 slots zonder eigen spoel." Nothing is in force. After choosing a spool the same line becomes true and the total is EUR 1,39. It is the same fault GAP-115 was raised for, on the control GAP-115 fixed, and it was mine: the condition I wrote named one axis of a two-axis state.
+
+**The line is keyed on both axes now, and all four cells have words.**
+
+| | **a whole-print spool is set** | **no whole-print spool** |
+|---|---|---|
+| **n ≥ 1 slots without their own spool** | `spool.wholePrint.applies` — "Geldt nu voor {n} slots zonder eigen spoel." *(unchanged)* | `spool.wholePrint.wouldApply` — "Een spoel hier geldt voor {n} slots zonder eigen spoel." *(new)* |
+| **n = 0, every slot has its own spool** | `spool.wholePrint.appliesNone` — "Elk slot heeft een eigen spoel, dus deze keuze verandert nu niets." *(unchanged)* | `spool.wholePrint.wouldApplyNone` — "Elk slot heeft al een eigen spoel, dus een spoel hier verandert niets." *(new)* |
+
+`n` is the same count in all four cells and stays the app's to compute. The line always sits third, under `spool.wholePrint` and its help line `spool.wholePrint.help` ("Bestanden en slots met een eigen spoel gaan hierboven voor."), in `pp-help`. No class, no token, no colour: the only change is which of four strings is rendered.
+
+**The tell is the word *nu*.** It appears in the left column only. A sentence in the present tense is a claim about the present state, so it may be rendered only where that state holds; the right column speaks about the control instead ("een spoel hier"), which is true before anything is chosen. That is the general rule and it is in `README.md`.
+
+**Two answers I did not take, and the reasons, because both were defensible.**
+
+- **Show nothing when no spool is set** — the implementer's own reading, and the obvious fix. Rejected: it removes the line in precisely the state the line was written for. This control had never looked like it did anything, which is why 2.3 gave it a line at all, and **83 of 83 prints in this library have no whole-print spool** — so silence would mean the line is almost never seen and the control goes back to looking inert. The trigger's placeholder says there is no spool; it does not say that choosing one would cost anything, and that is the fact the operator is missing.
+- **One tenseless line, "Geldt voor {n} slots zonder eigen spoel."** Rejected: it is true in both states by being specific in neither, and this gap exists because a sentence about money was ambiguous about when it applied. A line under a control that changes a total has to say whether it is describing the total or an offer.
+
+**Accessibility.** The line is part of the trigger's description (`aria-describedby`, together with the help line), not a live region: it changes only as a result of the viewer's own choice in that same control, and the new total is announced where totals are announced. It must be real text, never a tooltip — it is an essential instruction and Tooltip forbids that.
+
+**Both themes, no new pair.** `pp-help` is `muted` on `surface` in both themes and is already in the contrast report; nothing visual changes.
+
+**Drawn in the preview:** all four cells, each with the trigger state that goes with it, and the n = 1 singular.
