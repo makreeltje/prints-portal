@@ -61,6 +61,26 @@ export class ThumbnailService {
     },
   ) {}
 
+  /**
+   * The preview for one model file, or null when that file cannot give one.
+   *
+   * The same machinery as `get`, narrowed to a single asset: an STL is
+   * rendered, a 3MF gives up its plate image, and anything else has no
+   * picture. There is deliberately no fallback to the print's own thumbnail —
+   * a strip of buttons all showing the same image would say nothing, which was
+   * the whole complaint behind GAP-094.
+   */
+  async getForAsset(recordId: string, assetId: string): Promise<Thumbnail | null> {
+    const candidate = (await this.candidates(recordId)).find(
+      (one) => one.assetId === assetId && (one.kind === 'stl' || one.kind === '3mf'),
+    );
+    if (candidate === undefined) return null;
+    const key = cacheKey(candidate);
+    const cached = await this.readCache(recordId, key);
+    if (cached !== null) return cached;
+    return this.once(`${recordId}/${key}`, () => this.make(recordId, key, candidate));
+  }
+
   /** The preview for a print, or null when there is none. */
   async get(recordId: string): Promise<Thumbnail | null> {
     for (const candidate of await this.candidates(recordId)) {

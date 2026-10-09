@@ -109,7 +109,7 @@ export interface PrintDetail extends PrintSummary {
   /** A model file exists for the 3D viewer (STL, else 3MF). */
   hasModel: boolean;
   /** Every viewable model, file order; the viewer's picker uses it. */
-  models: { id: string; fileName: string }[];
+  models: { id: string; fileName: string; hasPicture: boolean }[];
   /** Null for Users. */
   assets: AssetDto[] | null;
   /** "Niet factureren" klant: cost only, no price or payment. */

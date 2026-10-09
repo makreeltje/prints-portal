@@ -200,6 +200,34 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
   );
 
   /**
+   * The preview of one model file. The strip on a print detail draws these, so
+   * two buttons of the same print no longer look identical: until now the only
+   * picture was the print's own, one per print record, and every button in the
+   * strip carried the same generic glyph (GAP-094).
+   *
+   * 404 is the ordinary answer, not an error: a model that cannot give a
+   * picture keeps the type glyph.
+   */
+  app.get<{ Params: { id: string }; Querystring: { asset?: string } }>(
+    '/api/prints/:id/model-thumbnail',
+    {
+      schema: {
+        params: idParams,
+        querystring: { type: 'object', properties: { asset: UUID_PARAM }, required: ['asset'] },
+      },
+    },
+    async (request, reply) => {
+      if ((await authorise(request, reply, request.params.id)) === null) return reply;
+      const asset = request.query.asset ?? '';
+      const thumbnail = await deps.thumbnails.getForAsset(request.params.id, asset);
+      if (thumbnail === null) return reply.code(404).send({ error: 'no_thumbnail' });
+      reply.header('etag', thumbnail.etag).header('cache-control', 'private, max-age=60');
+      if (request.headers['if-none-match'] === thumbnail.etag) return reply.code(304).send();
+      return reply.type(thumbnail.contentType).send(thumbnail.data);
+    },
+  );
+
+  /**
    * The viewer's model. Without `asset` the first by file name, which is the
    * one the thumbnail is rendered from; with it, that model of this print
    * (ModelPicker 1.9, GAP-086). Users may see it (owner decision).

@@ -49,6 +49,9 @@ export function fetchTags() {
 
 export const thumbnailUrl = (print: { id: string; version: string }) =>
   `/api/prints/${print.id}/thumbnail?v=${encodeURIComponent(print.version)}`;
+/** The picture of one model file, not of its print (GAP-094). */
+export const modelThumbnailUrl = (printId: string, assetId: string) =>
+  `/api/prints/${printId}/model-thumbnail?asset=${encodeURIComponent(assetId)}`;
 export const modelUrl = (print: { id: string; version: string }, assetId?: string) =>
   `/api/prints/${print.id}/model?v=${encodeURIComponent(print.version)}${
     assetId === undefined ? '' : `&asset=${encodeURIComponent(assetId)}`

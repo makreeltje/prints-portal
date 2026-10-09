@@ -427,7 +427,14 @@ export async function getPrintDetail(
   // thumbnail is rendered from (ModelPicker 1.9, GAP-086).
   const models = assets
     .filter((asset) => asset.type === 'stl' || asset.type === '3mf')
-    .map((asset) => ({ id: asset.id, fileName: asset.file_name }))
+    .map((asset) => ({
+      id: asset.id,
+      fileName: asset.file_name,
+      // Whether this file can give a picture of its own: an STL is rendered,
+      // a 3MF only if it carries a plate image. The strip takes one form for
+      // all of its buttons, so it has to know before it draws (ModelPicker).
+      hasPicture: asset.type === 'stl' || toBool(asset.has_thumbnail),
+    }))
     .sort((a, b) => a.fileName.localeCompare(b.fileName, 'nl'));
   const settings = await readSettings(db);
   const [money, tints, finance] = await Promise.all([

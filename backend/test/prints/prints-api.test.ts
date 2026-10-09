@@ -226,6 +226,54 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
     expect(adminModel.headers['content-disposition']).toMatch(/^inline;/);
   });
 
+  it('gives each model file its own picture, and 404 for one that has none', async () => {
+    // Two models in one print: before this, the strip showed the print's one
+    // image or a glyph, so both buttons looked the same (GAP-094).
+    const dir = path.join(root, 'Wouter', 'Empty');
+    await writeFile(path.join(dir, 'cube.stl'), asciiCube());
+    await writeFile(path.join(dir, 'cube_two.stl'), asciiCube());
+    await writeFile(path.join(dir, 'notes.txt'), 'not a model');
+    await t.app.services.indexer.indexAll();
+    const id = await idOf('Empty');
+    const detail = (await t.as(admin, { url: `/api/prints/${id}` })).json<PrintDetail>();
+    // Dutch collation puts the underscore before the dot; what matters here is
+    // that both models are listed and each gets a picture of its own.
+    expect([...detail.models.map((m) => m.fileName)].sort()).toEqual(['cube.stl', 'cube_two.stl']);
+    expect(detail.models.every((m) => m.hasPicture)).toBe(true);
+
+    const pictures = await Promise.all(
+      detail.models.map(async (model) => {
+        const response = await t.as(admin, {
+          url: `/api/prints/${id}/model-thumbnail?asset=${model.id}`,
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.headers['content-type']).toBe('image/png');
+        return { etag: String(response.headers.etag), body: response.rawPayload };
+      }),
+    );
+    // Each file is keyed on its own asset, so one cache entry cannot serve both.
+    expect(pictures[0]?.etag).not.toBe(pictures[1]?.etag);
+
+    const cached = await t.as(admin, {
+      url: `/api/prints/${id}/model-thumbnail?asset=${detail.models[0]?.id ?? ''}`,
+      headers: { 'if-none-match': pictures[0]?.etag ?? '' },
+    });
+    expect(cached.statusCode).toBe(304);
+
+    // A file that is not a model has no picture of its own.
+    const other = detail.assets?.find((a) => a.fileName === 'notes.txt');
+    const none = await t.as(admin, {
+      url: `/api/prints/${id}/model-thumbnail?asset=${other?.id ?? ''}`,
+    });
+    expect(none.statusCode).toBe(404);
+
+    // The same authorisation as every other route on this print.
+    const denied = await t.as(helper, {
+      url: `/api/prints/${id}/model-thumbnail?asset=${detail.models[0]?.id ?? ''}`,
+    });
+    expect(denied.statusCode).toBe(403);
+  });
+
   it('downloads files with Range support for Admins and Editors only', async () => {
     const id = await idOf('Babybox locks');
     const detail = (await t.as(admin, { url: `/api/prints/${id}` })).json<PrintDetail>();
