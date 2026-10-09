@@ -79,6 +79,38 @@ touched the value.
 Worth knowing before you choose: the longest button on screen is bounded by the
 strip's own sideways scroll, so a larger cap costs scrolling, not layout.
 
+## The day arrived: there are per-model renders now
+
+ModelPicker keeps the square form "for the day a per-model render exists". That
+day is today, and it came from the owner, not from me: shown the compact strip
+they asked what had happened to the small previews they had asked for. The
+honest answer was that there never were any — the squares held the same generic
+glyph on every button, and my correction to you removed the square without ever
+producing the picture it stood for.
+
+So the app now renders one PNG **per model file**. The renderer could always do
+it; it only ran once per print. Of this library's 376 models, **281 are STL and
+render today**; the 95 3MF files give a picture only where they carry a plate
+image.
+
+The strip therefore takes **the square form whenever any model can show itself**
+and stays compact when none can — one form for all of its buttons, as you
+specify. `hasPicture` per model is what decides it.
+
+Measured on a print with 11 buttons: **9 pictures, 9 distinct**, all loaded, one
+row, overflow 0, axe 0. Cost with an empty cache: **median 60ms per model, 109ms
+worst, 12–51 KB each**, then 1ms from cache — so a nine-model print costs about
+half a second, once.
+
+**This changes the GAP-116 arithmetic in your favour and against your value.**
+Your reason for the compact form was that a square would be a glyph beside 68px
+of truncated name. That is no longer the case where a render exists, and the
+squares are the better form there. Where it still holds — a 3MF-only print —
+the compact strip is exactly right. Both forms now earn their place.
+
+It also leaves `--pp-modelbtn-max` relevant only to the compact form, which is
+now the minority case. The 60% truncation figure below still stands for it.
+
 ## What I am raising
 
 **GAP-118 — "Geldt nu voor 2 slots" while no whole-print spool is set.** The
