@@ -1378,3 +1378,18 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** show the line only while a whole-print spool is set, and say nothing when there is none (the trigger's own placeholder already says there is nothing); or keep it always and change the tense, e.g. "Geldt voor {n} slots zonder eigen spoel" as a description of what a choice here would cover. The first reading is mine; the choice is yours because it is your sentence.
 - **Blocked:** nothing. The line is built exactly as 2.3 specifies, including in the no-spool case, so the app follows the spec until you rule.
 - **Design system version:** 2.3
+
+## GAP-119 [open] A 68px name box holds 96% of this library's model names badly, and cuts the extension off
+- **Type:** conflict
+- **Found while:** the owner asked about the truncated names after per-model renders landed (2026-10-09)
+- **Where needed:** ModelPicker, `.pp-modelbtn .nm` on ScreenPrintDetail
+- **What is missing or wrong:** two things, and the first is a conflict with your own written rule.
+  1. **The name is end-truncated where the system says file names are middle-truncated.** `README.md` says to use `--font-mono` for file names and "middle-truncate them"; `.pp-modelbtn .nm` is `text-overflow: ellipsis`, which cuts the end. So "Honeycomb.stl" reads "Honeyco…" and **the extension is the first thing lost** — on a strip that mixes STL and 3MF, the extension is exactly what tells two buttons apart. The compact form's spec says "middle-truncated as file names are everywhere else"; the square form's does not, and its CSS does the opposite. `AssetList` already middle-truncates in this app, so the two forms disagree on the same screen.
+  2. **68px cannot hold these names at all.** Measured across all 83 prints, 501 model and timelapse names: median **25 characters / 181px** in mono `text-xs`, p90 57 / 412px, longest 105 / 759px. The name box inside a 76px button measures **68px**, which fits about 6–11 characters depending on the letters. **483 of 501 names — 96% — overflow it.** On a print whose names happen to be short (Basic.stl, Layers.stl) only 3 of 11 truncate, so this looks milder than it is.
+- **Why it matters:** the pictures now distinguish the buttons, which is what GAP-094 asked for, but the name under them is the only thing that says *which file* — and for 96% of them it is a fragment without an extension. The caption above the strip gives the full name of the **selected** model only; for every other button there is nothing visible.
+- **Proposal:** three parts, and the first is the one I would not need permission for if the CSS agreed with the README.
+  1. Middle-truncate the square form's name, as the compact form and the rest of the system already do, so the extension survives.
+  2. Say how a name that does not fit is read without choosing the button. The system already has `.pp-tip` and this app has a working custom tooltip on the missing-file chips; the obvious answer is a tooltip carrying the full name, but ModelPicker specifies none and I will not invent one.
+  3. Consider whether the square stays 76px now that it holds a real picture. A wider button costs sideways scrolling, which the owner chose over wrapping, so this may well be "no" — but the figure above is what the choice should be made against.
+- **Blocked:** showing a model's full name on any button but the selected one. The pictures and the strip itself are unaffected.
+- **Design system version:** 2.3
