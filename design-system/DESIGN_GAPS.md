@@ -825,7 +825,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.8
 
-## GAP-071 [open] A dark filament tint swallows the model in the thumbnail
+## GAP-071 [resolved in v2.3] A dark filament tint swallows the model in the thumbnail
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of 1.0; measured again against the v1.9 mechanism
 - **Where needed:** Thumbnail on PrintCard and PrintRow; `.pp-thumb.tinted` in `bundle.css`
@@ -1094,7 +1094,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-094 [open] The model picker shows names where thumbnails would say more, and a Select above six
+## GAP-094 [resolved in v2.3] The model picker shows names where thumbnails would say more, and a Select above six
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ModelPicker on ScreenPrintDetail
@@ -1116,7 +1116,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-096 [open] A timelapse is buried in the file list while the model gets a viewer
+## GAP-096 [resolved in v2.3] A timelapse is buried in the file list while the model gets a viewer
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** VideoPlayer, ModelPicker and Viewer3D on ScreenPrintDetail
@@ -1320,7 +1320,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08). The bubble shows the short phrase, marked `ds-gap: GAP-113`; the accessible name is unchanged.
 - **Design system version:** 2.1
 
-## GAP-114 [open] 2.2's floating panels are still trapped by the card they live in
+## GAP-114 [resolved in v2.3] 2.2's floating panels are still trapped by the card they live in
 - **Type:** suspected design bug
 - **Found while:** the owner's fourth walkthrough, with both symptoms photographed (2026-10-08)
 - **Where needed:** Tooltip (`.pp-tip.at`), Popover (`.pp-anchor > .pp-pop`), and `.pp-card`
@@ -1333,7 +1333,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08, the owner has now reported both twice). The tooltip's wrapper is **not** a `.pp-anchor`, so the stray `bottom` never applies; it lifts itself above the stretched card link, which the anchor had been doing. The card stops clipping while a panel is open. Both marked `ds-gap: GAP-114`.
 - **Design system version:** 2.2
 
-## GAP-115 [open] A file says "Kies een spoel" while it is already being costed with the print's spool
+## GAP-115 [resolved in v2.3] A file says "Kies een spoel" while it is already being costed with the print's spool
 - **Type:** missing state
 - **Found while:** the owner's fourth walkthrough (2026-10-08): *"in de prints detail heb je een spool keuze boven aan de pagina en vervolgens in de bestelling, is totaal losgekoppeld"*
 - **Where needed:** SpoolPicker, AssetListItem, CostBreakdown, ScreenPrintDetail
@@ -1344,7 +1344,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.2
 
-## GAP-116 [open] The owner wants the model strip to scroll sideways at any count, and there are no per-model renders
+## GAP-116 [resolved in v2.3] The owner wants the model strip to scroll sideways at any count, and there are no per-model renders
 - **Type:** conflict
 - **Found while:** the owner read ModelPicker in the component gallery (2026-10-08)
 - **Where needed:** ModelPicker, ScreenPrintDetail
@@ -1357,7 +1357,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08). The strip is used at every count and never wraps, marked `ds-gap: GAP-116`.
 - **Design system version:** 2.2
 
-## GAP-117 [open] The file list stands between the operator and the price on every print
+## GAP-117 [resolved in v2.3] The file list stands between the operator and the price on every print
 - **Type:** improvement idea
 - **Found while:** the owner asked whether files could be less prominent on the print detail (2026-10-08)
 - **Where needed:** ScreenPrintDetail, the order of `pp-pdfiles` and `pp-orders`
@@ -1368,3 +1368,13 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08, the owner chose the reorder). The list moves after the orders, marked `ds-gap: GAP-117`.
 - **Design system version:** 2.2
 
+
+## GAP-118 [open] "Geldt nu voor 2 slots" is shown while no whole-print spool is set
+- **Type:** unclear spec
+- **Found while:** verifying GAP-115 in the running app after importing 2.3 (2026-10-08)
+- **Where needed:** SpoolPicker, the print-level control on ScreenPrintDetail
+- **What is missing or wrong:** 2.3 gives the whole-print control a line that "says what the whole-print choice is doing right now": `spool.wholePrint.applies`, "Geldt nu voor {n} slots zonder eigen spoel.", with `spool.wholePrint.appliesNone` when every slot has its own. The condition named is about the slots, not about whether a spool is chosen, so on a print with **no** whole-print spool the line reads "Geldt nu voor 2 slots zonder eigen spoel." while nothing is in force. Measured on such a print: the trigger says "Kies een spoel", the total is EUR 1,86, and the line still claims two slots are covered. After choosing a spool the same line is true and the total is EUR 1,39.
+- **Why it matters:** it is the same shape as the fault GAP-115 was raised for — a control stating something is in force when it is not — and it is on the very control that gap fixed.
+- **Proposal:** show the line only while a whole-print spool is set, and say nothing when there is none (the trigger's own placeholder already says there is nothing); or keep it always and change the tense, e.g. "Geldt voor {n} slots zonder eigen spoel" as a description of what a choice here would cover. The first reading is mine; the choice is yours because it is your sentence.
+- **Blocked:** nothing. The line is built exactly as 2.3 specifies, including in the no-spool case, so the app follows the spec until you rule.
+- **Design system version:** 2.3

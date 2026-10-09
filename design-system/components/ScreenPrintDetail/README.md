@@ -40,3 +40,19 @@ Print detail (`/prints/:id`) shows one print: identity and status, the 3D model,
 
 **2.1.** (2026-10-08) **This page is where the legend is written (GAP-106).** The card and the row show the missing-file **icons**; the print detail shows the **worded chip** `pp-lacks has-text` ("Ontbreekt: G-code, 3MF, STL") in the header badge row, and the "Deze print" card keeps the full sentence under its facts. So a slashed `file-code` on a tile is learnable in one place, which was my strongest objection to icons and is now answered rather than argued. Nothing else on the screen changes.
 
+
+**2.3.** (2026-10-08) **One order of the page at every width, and the price before the inventory (GAP-117, confirmed as built).**
+
+2.0 put the file list third on desktop, ahead of the orders, and last on the phone. Measured on an ordinary print at desktop: the page is 1892px, the list **585px — 31% of it** — starting at y=652, while the orders did not start until y=1257. Every visit scrolled past the whole inventory to reach the price. The phone layout had already been given the other order for exactly this reason in 2.0, and two orders for one page was the mistake: a rule that is right at 360px is not wrong at 1360px.
+
+**The order of the page, now the same at every width:** header; `pp-pdtop` (viewer and media strip left, "Deze print" right — one column below 901px); `pp-orders`, newest first; `pp-pdnew` ("Nabestelling maken"); and `pp-pdfiles` last — the `info` alert for files in no order and the "Bestanden" card, which is one wrapper and moves as one. The owner's reorder is built and is confirmed; what 2.3 adds is writing it down as one order instead of two, so nothing has to be kept in step. The flex `order` overrides on `.pp-main>.pp-pdfiles` and `.pp-main>.pp-pdnew` now agree with the DOM order and are redundant; they stay in `bundle.css` so an older build does not reflow, and they will go in 3.0.
+
+**The system rule behind it, so the next screen does not have to ask:** *a card that something important follows is capped; the last card on a page is as long as its content.* A long list costs nothing when nothing is behind it.
+
+**Rejected, all three, and each for its own reason:**
+
+- **A collapsible "Bestanden".** A disclosure buys back scroll on the page's own subject — the files are what a print *is* here — and charges a click for it on every visit. Nothing is behind the list to protect any more, which is exactly when a disclosure has nothing to earn. (The implementer argued this; I agree with it, and it is now a decision rather than an argument.)
+- **Folding the list into "Deze print".** That card is deliberately facts without controls: Klant, Project, Datum, Materiaal, Tijd, Gewicht, Bestellingen. The file list is downloads, per-file spools, counts and an order badge per row. Putting them together makes one card with two jobs and destroys the only place on the page you can read without worrying what you might change.
+- **Capping the list's height with its own scroll.** Proposed by me in another form and not built, correctly. Files per print: median **5**, 17 prints over ten, largest **48** — so the cap would do nothing for most prints and, where it fired, would trap a scroll inside a card, hide rows from the browser's own find, and cut the list off at a height nobody asked for. Last on the page, it may be 48 rows long.
+
+Nothing else on the screen changes. The "Deze print" card gains the one line the spool control owes it (`spool.wholePrint.applies`, GAP-115).

@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, FileVideo, Info, Play, Trash2, TriangleAlert } from 'lucide-react';
+import { Box, Film, Info, Package, Trash2, TriangleAlert } from 'lucide-react';
 import {
   Fragment,
   lazy,
@@ -8,7 +8,6 @@ import {
   useId,
   useRef,
   useState,
-  type CSSProperties,
   type ReactNode,
 } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -335,6 +334,22 @@ function ThisPrint({
   canManage: boolean;
 }) {
   const titleId = useId();
+  // Every slot that has no spool of its own is costed with the print's.
+  const slotsOnPrintSpool = (detail.assets ?? []).reduce(
+    (total, asset) =>
+      total +
+      asset.lines.reduce(
+        (lineTotal, line) =>
+          lineTotal +
+          (line.slots.length === 0
+            ? (line.spool ?? null) === null
+              ? 1
+              : 0
+            : line.slots.filter((slot) => slot.spool === null).length),
+        0,
+      ),
+    0,
+  );
   const facts: [string, ReactNode][] = [[t('filters.customer'), detail.customerFolder]];
   if (detail.projectFolder !== null && detail.projectFolder !== '') {
     facts.push([t('print.project'), detail.projectFolder]);
@@ -381,6 +396,16 @@ function ThisPrint({
             }
           />
           <span className="pp-help">{t('spool.forPrintHelp')}</span>
+          {/*
+            What this choice is doing right now (2.3, GAP-115). The count is
+            the app's: every slot of every file that has no spool of its own is
+            costed with this one.
+          */}
+          <span className="pp-help">
+            {slotsOnPrintSpool === 0
+              ? t('spool.wholePrint.appliesNone')
+              : t('spool.wholePrint.applies', { n: slotsOnPrintSpool })}
+          </span>
         </div>
       )}
       {detail.lacks.length > 0 && (
@@ -402,21 +427,21 @@ function ThisPrint({
  *
  * It scrolls sideways at any count and never becomes a Select — the owner's
  * choice over 2.0.1's wrap, measured against their library: median 4 pictures,
- * 64 of 83 prints at eight or fewer, the largest 34 (`ds-gap: GAP-116`).
+ * 64 of 83 prints at eight or fewer, the largest 34. 2.3 confirmed it and gave
+ * the strip its compact form, because with one image per print a square would
+ * be a glyph beside 68px of truncated name.
  *
- * The buttons carry a type glyph and the file name rather than a render,
- * because the thumbnail service makes one image per print, not one per model.
- * No duration is shown either: the indexer does not read one.
+ * The buttons carry a type glyph and the file name rather than a render, and no
+ * duration: the indexer reads none, and reading one in the browser would fetch
+ * every video to draw a strip.
  */
 function MediaStrip({
   items,
   index,
-  colour,
   onChoose,
 }: {
   items: Picture[];
   index: number;
-  colour: string | null;
   onChoose: (id: string) => void;
 }) {
   const strip = useRef<HTMLDivElement>(null);
@@ -440,7 +465,7 @@ function MediaStrip({
 
   const caption =
     current?.kind === 'video'
-      ? t('models.captionVideo', { bestandsnaam: current.fileName })
+      ? t('models.videoCaption', { bestandsnaam: current.fileName })
       : t('models.caption', {
           n: index + 1,
           totaal: items.length,
@@ -452,64 +477,65 @@ function MediaStrip({
       <span className="pp-muted pp-text-sm">{caption}</span>
       <div
         ref={strip}
-        // ds-gap: GAP-116
-        className={overflows ? 'pp-models is-overflow' : 'pp-models'}
+        className={overflows ? 'pp-models compact is-overflow' : 'pp-models compact'}
         role="group"
         aria-label={
-          items.some((item) => item.kind === 'video') ? t('models.groupBoth') : t('models.group')
+          items.some((item) => item.kind === 'video') ? t('models.groupVideo') : t('models.group')
         }
       >
-        {items.map((item, position) => (
-          <button
-            key={item.id}
-            type="button"
-            className={[
-              'pp-modelbtn',
-              item.kind === 'video' ? 'video' : '',
-              position === index ? 'is-selected' : '',
-            ]
-              .filter((name) => name !== '')
-              .join(' ')}
-            aria-pressed={position === index}
-            /*
-              The name goes on the button, not in a hidden span inside it: a
-              .pp-sr is absolutely positioned and takes the body as its
-              containing block, so inside a sideways scroller it escapes the
-              clip and stretches the page — it made this one 366px too wide.
-            */
-            aria-label={
-              item.kind === 'video' ? `${t('models.timelapse')} ${item.fileName}` : undefined
-            }
-            onClick={() => {
-              onChoose(item.id);
-            }}
-          >
-            <span
-              className={item.kind === 'video' || colour === null ? 'pp-thumb' : 'pp-thumb tinted'}
-              style={
-                item.kind === 'video' || colour === null
-                  ? undefined
-                  : ({ '--c1': colour } as CSSProperties)
+        {items.map((item, position) => {
+          const Glyph = glyphOf(item);
+          return (
+            <button
+              key={item.id}
+              type="button"
+              className={[
+                'pp-modelbtn',
+                item.kind === 'video' ? 'video' : '',
+                position === index ? 'is-selected' : '',
+              ]
+                .filter((name) => name !== '')
+                .join(' ')}
+              aria-pressed={position === index}
+              /*
+                The name goes on the button, not in a hidden span inside it: a
+                .pp-sr is absolutely positioned and takes the body as its
+                containing block, so inside a sideways scroller it escapes the
+                clip and stretches the page — it made this one 366px too wide.
+              */
+              aria-label={
+                item.kind === 'video'
+                  ? t('models.videoName', { bestandsnaam: item.fileName })
+                  : t('models.modelName', { bestandsnaam: item.fileName })
               }
+              onClick={() => {
+                onChoose(item.id);
+              }}
             >
-              {item.kind === 'video' ? (
-                <>
-                  <FileVideo className="pp-ico" aria-hidden="true" />
-                  {/* The badge is what reads as "video" at this size. */}
-                  <span className="pp-play" aria-hidden="true">
-                    <Play className="pp-ico" />
-                  </span>
-                </>
-              ) : (
-                <Box className="pp-ico" aria-hidden="true" />
-              )}
-            </span>
-            <span className="nm">{item.fileName}</span>
-          </button>
-        ))}
+              <Glyph className="pp-ico pp-ico-20" aria-hidden="true" />
+              <span className="nm">
+                {item.kind === 'video' ? t('models.video') : item.fileName}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
+}
+
+/**
+ * The type glyph, which is the whole of the picture a compact button has: the
+ * thumbnail service makes one image per print, not one per model, so a square
+ * would be this same glyph beside 68px of truncated name (2.3, GAP-116).
+ *
+ * `Film` is the preview's glyph where ModelPicker's prose says "play"; the
+ * preview wins because it is the rendered truth, and because a film strip was
+ * the point of the owner's complaint that a play badge did not read as video.
+ */
+function glyphOf(item: Picture): typeof Box {
+  if (item.kind === 'video') return Film;
+  return /\.3mf$/i.test(item.fileName) ? Package : Box;
 }
 
 /** One thing the strip can show: a model to turn, or a timelapse to play. */
@@ -532,9 +558,13 @@ function ModelView({ detail }: { detail: PrintDetail }) {
   const videos: Picture[] = (detail.assets ?? [])
     .filter((asset) => asset.type === 'video')
     .map((asset) => ({ id: asset.id, fileName: asset.fileName, kind: 'video' }));
+  // Ordered by file name with the timelapse last (2.3): the strip is a list of
+  // names now, so it needs the order a list of names has.
   const items: Picture[] = [
-    ...detail.models.map((model) => ({ ...model, kind: 'model' as const })),
-    ...videos,
+    ...detail.models
+      .map((model) => ({ ...model, kind: 'model' as const }))
+      .sort((a, b) => a.fileName.localeCompare(b.fileName, 'nl')),
+    ...videos.sort((a, b) => a.fileName.localeCompare(b.fileName, 'nl')),
   ];
   const index = Math.max(
     0,
@@ -545,7 +575,6 @@ function ModelView({ detail }: { detail: PrintDetail }) {
     <MediaStrip
       items={items}
       index={index}
-      colour={detail.colour}
       onChoose={(id) => {
         setFailed(false);
         setChosen(id);
@@ -742,8 +771,8 @@ function ManagedOrders({
         One inventory, at print level, each file once and saying which order
         counts it (GAP-097). It sits after the orders, not before them: on an
         ordinary print it is 31% of the page and the operator was scrolling
-        past all of it to reach the price. The phone layout already said so.
-        ds-gap: GAP-117
+        past all of it to reach the price. The phone layout already said so,
+        and 2.3 made it the rule: one order of blocks at every width.
       */}
       {assets.length > 0 && (
         <div className="pp-pdfiles">

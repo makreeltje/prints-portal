@@ -1,4 +1,4 @@
-Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 1.9 (see `changelog.md`).
+Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 2.3 (see `changelog.md`).
 
 ## Principles
 
@@ -44,11 +44,22 @@ Everything that floats beside a trigger — Popover, SpoolPicker, TagEditor, Ove
 
 1. **The app chooses the side, per axis, before the first paint**, from the trigger's rect and the panel's own height: down by default, `.up` when the room below is less than the panel's height and the room above is more; left-aligned by default, `.end` when a left-aligned panel would pass the right edge less `space-4`. A panel that reopens after a scroll is measured again.
 2. **The app passes the room it has**, less `space-4`: `--pp-pop-max` for a popover, `--pp-tip-x`/`--pp-tip-y` for a tooltip's rect. These are inline data properties, like `--c1`: the app passes numbers it measured, never lengths it chose. Every length — offset, radius, maximum width, the sheet's height — stays in `bundle.css`.
-3. **The panel caps itself and scrolls its own region.** A list inside a capped panel gives up its fixed 240px maximum and takes what is left, so the search field above it stays in view.
+3. **The panel caps itself and scrolls its own region.** A list inside the panel keeps its 240px as the height it *prefers* and shrinks below it only when the panel is capped, so a panel with room looks exactly as it did and the search field above the list stays in view.
 4. **Under 240px of room on the better side, the panel becomes a bottom sheet** at any width (`.pp-anchor.sheet`), the form phones already get. 240px is the height of the list caps: below it a panel cannot show its list, and a sliver of scroller is worse than moving.
 5. **A tooltip whose trigger sits inside anything that clips or scrolls** (`.pp-print` is `overflow:hidden`, a table lives in `.pp-scroll`) uses the window-placed form `.pp-tip.at`. Stacking tokens do not help there: a sticky cell paints over `z-popover` inside a scroll box (GAP-098), and `overflow:hidden` cuts off whatever `z-index` says.
+6. **Every floating thing has that window-placed form (2.3).** 2.2 gave it to the tooltip only, so a popover inside a clipping card was still cut off: `.pp-pop.at` is the same rule with the same words (`--pp-pop-x`, `--pp-pop-y`, `--pp-pop-max`). A panel in `.at` form is re-measured while the page scrolls and closed when its trigger leaves the window, because a fixed box does not follow the page.
+7. **A window-placed panel resets the edges it does not use, and never sits inside a `.pp-anchor` (2.3).** An anchor is an offset parent; a window-placed panel has no offset parent. The one that leaked cost a real bug: `bottom` survived from the anchored rule into `.pp-tip.at`, and a fixed box with both edges set is sized between them — the bubble collapsed to 8px. If a trigger needs the anchor's *other* quiet effect, sitting above a stretched card or row link, use **`.pp-lift`**.
+8. **Nothing above a trigger carries a `transform`, `filter` or `backdrop-filter` (2.3).** Each of them makes that element the containing block of a fixed box, which re-clips the panel the `.at` form exists to free. (`.pp-art`'s filter is on the picture itself, which never has a panel inside it.)
 
 A tooltip appears **at once** on hover and on focus — no delay. Details and the name-or-description rule: Tooltip's README.
+
+## Three rules this round wrote down (2.3)
+
+**A control states what is in force, not what is unset.** Where a value can be inherited — the slot spool that falls back to the print's, and anything like it later — the trigger shows the inherited value and names where it came from with a `pp-hintchip` ("van de print"), in normal ink. It never shows its empty placeholder while a value is costing something. The placeholder is for the one case where nothing is in force. Measured: a print's total moved from EUR 7,05 to EUR 5,13 on a spool whose own control said "Kies een spoel" throughout. The chip belongs on the control that can override the value, not beside it. Details: SpoolPicker.
+
+**A card that something important follows is capped; the last card on a page is as long as its content.** The print detail's file list is 585px of a 1892px page and up to 48 rows, and the answer is its position, not a disclosure, a fold or an inner scroller — all three are rejected under GAP-117. A long list costs nothing when nothing is behind it. One consequence: a page has **one** order of blocks at every width, not a desktop order and a phone order.
+
+**We never rewrite a picture we did not make.** 79 of 83 thumbnails are images the slicer embedded and we pass through. Where a picture needs separating from its ground, the page draws the separation — `.pp-art` outlines the silhouette from the picture's own alpha channel in `border-strong`, which is a token and therefore right in both themes. Nothing visual is baked into an asset, because a baked value cannot read a theme and cannot be changed without re-encoding the library.
 
 ## Components
 
@@ -111,7 +122,7 @@ Customers Joey, Denise, Wouter (and Rick, niet factureren); project "Babybox loc
 - **Admin** and **Editor** delete prints (a project folder is one print) and whole klanten, and manage tags on the page "Tags". Only **Admin** sees and restores deleted prints and klanten ("Toon verwijderde"). **User** sees name, price, status, thumbnail, 3D model and tags read-only: no files, downloads, costs or notes, and no Tags page.
 - The print colour sits behind the thumbnail through `.pp-thumb.tinted` and `--c1`.
 - Tags are case-insensitively unique, at most 64 characters, with an optional colour from ten tokens (`tag-rose` to `tag-grey`). Chip text is `#141a33` or `#ffffff`.
-- Screens contain no raw layout values: use tokens and `bundle.css` classes. Only the data properties `--c1`, `--mix`, `--tag`, `--tag-ink` and preview scaffolding (`min-height` on `.pp-device`) remain inline.
+- Screens contain no raw layout values: use tokens and `bundle.css` classes. The only things that may be inline are **data properties the app measured or read**, and preview scaffolding (`min-height` on `.pp-device`). The whole list, current at 2.3: `--c1` and `--c2` (spool colours), `--tag` and `--tag-ink` (tag colours), `--pp-pop-max` (the room a popover has), `--pp-tip-x` and `--pp-tip-y` (a tooltip trigger's rect), `--pp-pop-x` and `--pp-pop-y` (a popover trigger's rect, 2.3). **`--mix` left the contract in 2.0** when the filament colour stopped being the thumbnail's ground; if you still find it set anywhere, it does nothing.
 
 ## Orders, settings and stacking (1.4)
 
@@ -132,9 +143,6 @@ Share page and PDF without prices, aligned share-link columns, calendar button, 
 ## Versie 1.7 (2026-10-07)
 Scalar is the API-docs renderer (`.pp-scalar` mapping), the contrast report names the ground of every pair, wrapping lock help, scrolling folder diagram, empty Toegang. Details: `changelog.md`.
 
-## Versie 1.7 (2026-10-07)
-Scalar is the API-docs renderer (`.pp-scalar` mapping), the contrast report names the ground of every pair, wrapping lock help, scrolling folder diagram, empty Toegang. Details: `changelog.md`.
-
 ## Versie 1.8 (2026-10-07)
 Badges sit on an opaque `surface` base, the contrast report covers translucent tokens inside tinted rows, and a rule for third-party renderers (focusable scroll regions). Details: `changelog.md`.
 
@@ -146,3 +154,6 @@ A round driven by the real app (83 prints, 10 klanten): the share page (studio h
 
 ## Versie 2.2 (2026-10-08)
 Where floating things go: popovers choose their side, cap their height and fall back to a sheet, and the tooltip finally has a placement and no delay (GAP-112, GAP-110, section *Floating panels*). The file row's name column keeps a 240px floor so a badge is never drawn over the controls (GAP-111). The missing-file icons ride behind the print name instead of making a tag row of their own (GAP-109) and say "Ontbreekt: G-code, 3MF en STL" in one line, with the full sentence kept as the accessible name (GAP-113). No token added, renamed or removed. Details: `changelog.md`.
+
+## Versie 2.3 (2026-10-08)
+The five gaps that were left. The thumbnail outline moves out of the renderer and into the page (`.pp-art`, GAP-071): it covered 2 prints of 83 where it was, and we do not rewrite the 79 pictures the slicer made. Floating panels get the two fixes 2.2 left: `.at` resets the edges it does not use and the popover gains the window-placed form the tooltip had (GAP-114), with `.pp-lift` for the job the anchor was doing quietly. A spool trigger shows the spool that is in force instead of "Kies een spoel" (GAP-115). The media strip keeps one sideways-scrolling line at every count and, with no per-model renders to show, puts the file name first (`.pp-models.compact`, GAP-116). The print detail has one order of blocks at every width, with the file list last (GAP-117). No token added, renamed or removed. Details: `changelog.md`.

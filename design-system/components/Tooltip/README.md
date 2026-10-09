@@ -26,3 +26,16 @@ Tooltip explains an icon-only button or a disabled action in one short line.
 - **The bubble adds something the name does not.** "Voeg eerst een printerprofiel toe voor stroomkosten." on a control named "Stroomkosten": then `aria-describedby` points at the `role="tooltip"` bubble, which is **not** `aria-hidden`, and the bubble must not repeat the name.
 
 Never both, and never a bubble that is neither (if the text is worth showing it is worth exposing). **A non-focusable trigger keeps its tooltip pointer-only, deliberately:** the missing-file group is a graphic, not a control, and we do not add a tab stop inside a stretched card link on every card that is missing a file. Its words live on the print detail — the worded chip and the sentence in "Deze print" — which is the path that teaches the icons anyway.
+
+**2.3.** (2026-10-08) **`.at` resets the edges it does not use, and it does not live in an anchor (GAP-114, resolved).** Measured in the app: `.pp-anchor > .pp-tip` sets `bottom`, `.pp-tip.at` sets `position: fixed` with `top`, both selectors weighed two classes, so `bottom` survived — and a fixed box with both edges set is sized between them. The bubble collapsed to its own padding: **8px where its text needs 24.** My mistake, the same shape as the 302px panel squeezed to 18px in GAP-112, from the other side.
+
+Two changes in `bundle.css`, because either alone leaves a hole:
+
+- **`.pp-tip.at` now sets `right: auto; bottom: auto`.** A window-placed bubble is placed by two edges and must disown the other two.
+- **The anchored rules are wrapped in `:where()`**, so they carry no specificity. `.pp-anchor.end > .pp-tip` weighed *three* classes and beat `.pp-tip.at` outright, so an `.at` bubble inside an `.end` or `.down` anchor lost its x or its y as well — resetting `bottom` would not have saved it.
+
+**May an `.at` bubble sit inside a `.pp-anchor`? No.** The anchor exists to be a panel's offset parent, and a window-placed panel has no offset parent; the two forms are alternatives, never layers. The CSS no longer *depends* on that being obeyed, which is the point of fixing it twice.
+
+**But the anchor was doing a second job, and that one is real.** Inside a stretched card or row link (`.pp-rowlink::after`, `.pp-cust-name::after` cover the whole tile) a trigger must be raised or it cannot be hovered or clicked at all — which is how the chip became unhoverable for one build when the anchor was taken away. That job now has its own name: **`.pp-lift`** (`position: relative`, `z-raised`) on the trigger or its wrapper. It is the general form of the `.pp-cust .end .pp-anchor` and `.pp-table td .pp-anchor` rules that were doing it by hand. The placeholder built around this gap is confirmed in substance: a plain wrapper that is not an anchor, lifted above the stretched link — it just gets a class instead of a local rule.
+
+**Drawn:** the `.at.down` bubble crossing the edge of a clipping card, `.at.end` hanging from a right-hand trigger, and `.pp-lift` under a stretched card link — in the preview, inside a `.pp-device`, where the device frame is the window (`.pp-device .pp-tip.at` is `absolute`, so a preview measures against the frame instead of escaping to the page).

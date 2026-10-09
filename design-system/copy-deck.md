@@ -567,3 +567,27 @@ Joining, both for `{types}` and for `{items}`: ", " between items and " en " bef
 `print.lacks` is the only visible form and is used in **two** places with the same words: the tooltip bubble on a print card or row, and the worded chip on the print detail (`pp-lacks has-text`). `print.lacks.aria` is the accessible name of the icon group and the sentence in the "Deze print" card; it is never shown in the bubble, which is `aria-hidden` (Tooltip, *Name or description*).
 
 Changed in 2.2: nothing else. No key was removed.
+
+## Added in 2.3
+
+Two groups. The first is new: a control that can override an inherited value has to say what it is overriding (GAP-115). The second is the ModelPicker's own copy, **named by 2.0 and never entered in this deck** — the same oversight the `print.lacks*` keys had in 2.2 — recorded here with the 2.3 wording, which drops the duration (GAP-116).
+
+| Key | Text |
+|---|---|
+| asset.spoolFromPrint | van de print |
+| asset.spoolFromPrint.aria | Spoel van de print: {naam}. Kies hier een eigen spoel voor dit bestand. |
+| spool.wholePrint.applies | Geldt nu voor {n, plural, one {# slot} other {# slots}} zonder eigen spoel. |
+| spool.wholePrint.appliesNone | Elk slot heeft een eigen spoel, dus deze keuze verandert nu niets. |
+| models.groupVideo | Modellen en timelapse |
+| models.video | Timelapse |
+| models.videoCaption | Timelapse: {bestandsnaam} |
+| models.videoName | Timelapse {bestandsnaam} |
+| models.videoViewer | Timelapse van {naam} |
+
+`asset.spoolFromPrint` is the text of the `pp-hintchip` **inside** the spool trigger, not beside it: the chip marks provenance and belongs on the control that can override the value. It appears only where a spool is genuinely in force and is not the row's own; a slot that has nothing but a slicer colour keeps `asset.pickSpool` ("Kies een spoel") with the existing `asset.slicerHint` chip, because then nothing is being overridden. `asset.spoolFromPrint.aria` is the trigger's accessible name in that state, so the chip is never the only carrier of the fact.
+
+`spool.wholePrint.applies` sits under `spool.wholePrint` and its existing help line, and says what the whole-print choice is doing right now; `{n}` is counted by the app. No print in the library of 83 has a whole-print spool set, which is what a control that never looked like it did anything earns.
+
+**Changed in 2.3:** the video button's accessible name loses its duration — "Timelapse {bestandsnaam}, {duur}" becomes `models.videoName`, "Timelapse {bestandsnaam}" — because the indexer reads no duration and reading one in the browser would fetch every video to draw a strip. The visible label is `models.video`, "Timelapse".
+
+**Unused but kept:** `models.select` ("Model") was the label of the Select above six models, which 2.0 dropped. It stays in the deck so nothing breaks on import and goes in 3.0. No key was removed in 2.3.

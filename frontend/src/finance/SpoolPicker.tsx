@@ -20,6 +20,7 @@ export function SpoolPicker({
   disabled = false,
   label,
   describedBy,
+  inherited = null,
 }: {
   value: Spool | null;
   onChange: (spoolId: number | null) => Promise<void>;
@@ -28,9 +29,16 @@ export function SpoolPicker({
   label?: string;
   /** Id of a help text, e.g. why the picker is disabled. */
   describedBy?: string;
+  /**
+   * The spool in force when this control has none of its own — the whole-print
+   * spool that is costing the slot. A control that can override a value must
+   * state the value it is overriding (2.3, GAP-115): measured here, the total
+   * moved from EUR 7,05 to EUR 5,13 and back while the trigger said "Kies een
+   * spoel" throughout.
+   */
+  inherited?: Spool | null;
 }) {
   const [open, setOpen] = useState(false);
-  const anchorRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -48,10 +56,14 @@ export function SpoolPicker({
       trigger.current?.focus();
     }
   };
-  // Where the panel goes, and how tall it may be (design system 2.2).
-  useAnchoredPanel(anchorRef, panelRef, trigger, open);
+  // What the trigger states: its own value, or the one in force.
+  const shown = value ?? inherited;
+  // Where the panel goes, how tall it may be, and when it has to give up
+  // (design system 2.3). `.pp-lift` rather than `.pp-anchor`: the panel is
+  // window-placed, so an offset parent is exactly what it must not have.
+  useAnchoredPanel(panelRef, trigger, open, close);
   return (
-    <span ref={anchorRef} className="pp-anchor">
+    <span className="pp-lift">
       <button
         ref={trigger}
         type="button"
@@ -59,7 +71,11 @@ export function SpoolPicker({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={
-          label === undefined ? undefined : `${label}: ${value?.name ?? t('spool.choose')}`
+          shown !== null && value === null
+            ? t('asset.spoolFromPrint.aria', { naam: shown.name })
+            : label === undefined
+              ? undefined
+              : `${label}: ${value?.name ?? t('spool.choose')}`
         }
         aria-busy={busy}
         aria-describedby={describedBy}
@@ -68,8 +84,15 @@ export function SpoolPicker({
           setOpen((current) => !current);
         }}
       >
-        {busy ? <span className="pp-spin" aria-hidden="true" /> : <SpoolSwatch spool={value} />}
-        {value?.name ?? t('spool.choose')}
+        {busy ? <span className="pp-spin" aria-hidden="true" /> : <SpoolSwatch spool={shown} />}
+        {shown?.name ?? t('spool.choose')}
+        {/*
+          The chip sits on the trigger, not in the cell beside it: provenance
+          belongs on the control that can override the value (2.3).
+        */}
+        {shown !== null && value === null && (
+          <span className="pp-hintchip">{t('asset.spoolFromPrint')}</span>
+        )}
         <span className="end">
           <ChevronDown className="pp-ico" aria-hidden="true" />
         </span>
@@ -175,7 +198,7 @@ export function SpoolPopover({
 
   const unreachable = spools.isError;
   return (
-    <div ref={panel} className={inline ? 'pp-pop pp-picker pp-fill' : 'pp-pop pp-picker'}>
+    <div ref={panel} className={inline ? 'pp-pop pp-picker pp-fill' : 'pp-pop pp-picker at'}>
       <div className="pp-iwrap" role="search">
         <Search className="pp-ico" aria-hidden="true" />
         <input
