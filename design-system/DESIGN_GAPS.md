@@ -1379,7 +1379,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing. The line is built exactly as 2.3 specifies, including in the no-spool case, so the app follows the spec until you rule.
 - **Design system version:** 2.3
 
-## GAP-119 [open] A 68px name box holds 96% of this library's model names badly, and cuts the extension off
+## GAP-119 [resolved in v2.6] A 68px name box holds 96% of this library's model names badly, and cuts the extension off
 - **Type:** conflict
 - **Found while:** the owner asked about the truncated names after per-model renders landed (2026-10-09)
 - **Where needed:** ModelPicker, `.pp-modelbtn .nm` on ScreenPrintDetail
@@ -1394,3 +1394,13 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **The owner's counter-proposal, and the measurement it needs:** they asked whether the name should simply be **dropped when a button has a picture** — the picture distinguishes the buttons, and a fragment without an extension may be worse than nothing. Measured across the library: of **74** prints with two or more pictures, **66 are fine** that way, but **8 have at least one pair of renders that are pixel-identical** (87 identical pairs out of 1682 compared, a 16x16 alpha-weighted luminance signature at distance 0). The clearest case is a print whose models are `obj_2_new card divider size.stl` through `obj_7_…`: six buttons, one picture, and the only difference is **at the start of the name**. My recommendation is to keep the name, because that is the case the strip exists for — but the owner's instinct is right about the other 89%, and if you want the name gone where it adds nothing, the exception has to be real identical renders rather than a count.
 - **Blocked:** showing a model's full name on any button but the selected one. The pictures and the strip itself are unaffected.
 - **Design system version:** 2.3
+
+## GAP-120 [open] Two files with the same name in one print raise no "Mogelijk dubbel"
+- **Type:** missing state
+- **Found while:** answering 2.6's question about the duplicate-name case (2026-10-09)
+- **Where needed:** AssetListItem, the file list on ScreenPrintDetail
+- **What is missing or wrong:** 2.6 asks whether the duplicate-name pairs reach the duplicate badge, because if they do the model strip needs no new words — the explanation already sits one card below it. They do not. Measured on the print that holds `Babybox lock corner 2.stl` twice: both asset rows come back with `possibleDuplicate: null` and `duplicateOf: null`, and the page never renders "Mogelijk dubbel". The badge is raised for a duplicate *file* (same content, as the indexer decides), not for two files that merely share a name across folders.
+- **Why it matters:** the model strip now draws two buttons with the same picture and the same label, which is honest but unexplained. 2.6 accepted that deliberately on the understanding that the file list says what is going on; it does not. Three pairs in two prints of 83 — rare, but the one case where the strip cannot help the operator at all.
+- **Proposal:** either widen what raises the badge to include two assets of one print sharing a file name (a different sentence from the content-duplicate one — these are two real files, not a copy), or say in AssetListItem that this condition is deliberately unmarked and the strip must carry it alone. The first is mine; the choice is yours, and it is a question about the file list rather than about the picker.
+- **Blocked:** nothing. The strip is built and behaves as 2.6 specifies, including showing the same label twice.
+- **Design system version:** 2.6

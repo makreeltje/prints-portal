@@ -62,3 +62,141 @@ Two things arrived together: the owner overruled 2.0.1's wrap, and the implement
 **Dutch copy (changed).** "Timelapse {bestandsnaam}, {duur}" becomes **"Timelapse {bestandsnaam}"**; the visible button label is "Timelapse". Everything else is unchanged.
 
 **Needs your measurement.** The **longest and median model file-name length** in the library, in characters, and how wide the longest one renders in mono `text-xs`. `--pp-modelbtn-max` is 200px because that holds about 28 mono characters, which fits the sample names; it is a value I chose, not one I measured, and if your names run to 40 characters I will raise it rather than have you do it. The form does not wait on the number — build it at 200px.
+
+
+**2.4.** (2026-10-09) **The renders arrived, so the square is the normal form again — and a file name is cut in the middle, not at the end (GAP-116 resolved, GAP-119 resolved, the owner's "drop the name" rejected).**
+
+2.3 kept the square form "for the day a per-model render exists". That day came from the owner: shown the compact strip they asked what had become of the small previews they had asked for long ago, and the honest answer was that there had never been any. The app now renders one PNG per model file. **281 of 376 models render today** (every STL; a 3MF only where it carries a plate image), median **60ms** cold, 12–51 KB each, 1ms cached. Measured on an 11-button print: **9 pictures, 9 of them distinct**, one row, overflow 0, axe 0.
+
+**Both forms now earn their place, and the switch rule is confirmed as built.** The strip is square whenever **any** button can show itself, compact when none can, one form for every button in the row — which is what 2.3 specified and what the app does. 2.3's reason for the compact form (a square would be a glyph beside 68px of truncated name) holds exactly where no render exists, and nowhere else. `--pp-modelbtn-max` is therefore the minority case's number now, not the main one.
+
+**The conflict with my own brand book, resolved: the name is cut in the MIDDLE.** `README.md` has said since 1.0 that file names are mono and middle-truncated, `.pp-asset .fn` on the same screen does it, and the compact form's spec said it in so many words — but `.pp-modelbtn .nm` was plain `text-overflow: ellipsis`, which cuts the end, so "Honeycomb.stl" read "Honeyco…" and **the extension was the first thing lost** on a strip that mixes STL with 3MF. That was my hole, in both forms (the square form's name was not even mono). Both forms now use **`.pp-fname`**, which is the mechanism `.pp-asset .fn` has always used, given a name so the next component does not have to reinvent it:
+
+- `.pp-fname > .a` is the head and shrinks with an ellipsis; `.pp-fname > .b` is the tail and never shrinks.
+- **The tail is the extension plus the three stem characters before the dot** — `_03.stl`, `ize.stl`. The app splits the string; CSS cannot.
+- Both measured failure families survive it. Names that differ at the **start** — `obj_2_new card divider size.stl` through `obj_7_…`, the six buttons that share one picture — keep their head. Names that differ at the **end** — `Onderdeel_01.stl` through `_06.stl` — keep their tail, which end truncation throws away. Middle is the only direction that survives both, and that is the argument, not the convention.
+
+**The owner's proposal — drop the name where a button has a picture — is rejected.** They are right about 66 of the 74 prints with two or more pictures, and right that a fragment without an extension can be worse than nothing. The reason I still say no:
+
+- **A picture is an accelerator; the file name is the identifier.** The file system guarantees the name is unique inside a print. Nothing guarantees that of a render.
+- **The exception cannot be keyed on identical pixels.** The measurement found 8 prints with renders at distance 0, but perceptual identity is not pixel identity: two parts that differ by 2mm render two pictures at distance 1 that nobody can tell apart at 112px, and a rule keyed on 0 would call them distinct and hide both names. The measured library is full of exactly those families (`Onderdeel_01`…`_06`, `Pen_kort`/`Pen_lang`, `Hoekstuk_01`…`_03`). A rule that is wrong in the hard case and invisible in the easy one is worse than no rule.
+- **The real complaint was the fragment, so the fragment is what changed.** 68px of end-truncated name was close to worthless; 112px of middle-truncated name is "obj_2…ize.stl" and "Onder…_03.stl" — the discriminating character and the extension, both there.
+
+What I take from the proposal is its measurement: the picture carries most of the load now, so the *name* no longer has to be complete. It has to keep its two ends.
+
+**The square is 120px, not 76px.** `--pp-modelbtn-w` (a `bundle.css` variable, like `--pp-name-min`, not a token). 120px of button = **112px of picture** and 112px of name = **15 mono characters at `text-xs`**: 7 + the ellipsis + 7. That is the narrowest width at which both ends stay legible, and the median print (4 pictures) still shows every button inside the 560px strip without scrolling (4×120 + 3×8 = 504). The cost, stated rather than hidden: 4.4 buttons per frame instead of 6.8, so the longest print scrolls further than it did. One width at every breakpoint — a picture button is not a 36/44px control, and the strip scrolls on a phone the way it does on a desktop.
+
+**A per-model render carries `.pp-art`.** It is a picture this app made, so 2.3's rule applies unchanged: the **page** outlines the silhouette from the picture's own alpha channel in `border-strong` (3.69 light / 3.32 dark over the `surface-2` well), and nothing is baked into the PNG. This also settles the render half of GAP-071 for the strip without the renderer doing anything. A model file the renderer could not read keeps its type glyph (`box` for STL, `package` for 3MF) on the same well, so "no picture" and "picture" sit on one ground.
+
+**A name that does not fit is read without choosing the button: the system's tooltip.** `.pp-tip` in the window-placed **`.at`** form, carrying the full file name, **only when the name is actually truncated** (the app knows: `.a` overflows) and never when it fits — a bubble that repeats a visible label is the thing Tooltip's README forbids. The button is a real control, so the bubble appears on hover **and** on keyboard focus, with no delay, and there is no new tab stop. Under *Name or description* this bubble **is** the trigger's name (the accessible name "Model {naam}" already carries it in full), so it is `aria-hidden="true"` and there is **no `aria-describedby`**.
+
+**The bubble is not a child of `.pp-models`.** The strip scrolls and `.pp-models.is-overflow` carries a `mask-image`; a mask creates a stacking context, so a fixed bubble painted over the strip's fading edge fades with it. A mask is now the fourth property in *Floating panels* rule 8, beside `transform`, `filter` and `backdrop-filter`.
+
+**Rejected alongside it:** letting the caption follow the hovered button instead of the selected one. It costs no new mechanism, but it moves a line of text 100px away from the thing being pointed at, it lies about what is selected, and it is no better on touch.
+
+**Touch, said plainly.** On a phone there is no hover and no focus before activation, so the bubble is not the path there. What is: the caption names the selected model in full (`.pp-model-cap b` wraps rather than truncates), the order is file name ascending, and choosing is cheap and reversible — 60ms cold, 1ms cached, and the strip stays put. This is an accepted limit, not an oversight.
+
+**The compact form keeps its shape and gains width.** `--pp-modelbtn-max` goes from **200px to 240px** on your measurement: median name 25 characters / 181px, and 181 + 52px of button chrome = 233. So the median name now fits whole. p90 (57 characters, 412px) and the longest (105, 759px) fit in no width that leaves the strip a picker — a 412px button in a 560px strip shows 1.3 buttons — so they truncate in the middle and the bubble carries them. 200px was a value I chose; 240px is one your numbers chose.
+
+**Unchanged:** the order (file name ascending, timelapse last), the caption, the group labels, the scroll region rule, "Model laden…", the one-model and video-only cases, the timelapse button without a duration, and `.pp-models.wrap` — still deprecated, still going in 3.0.
+
+**Anatomy (replaces the 2.0 line).** Square form: a 120px button holding a 112px picture well (`.pp-thumb`, `surface-2`) — the per-model render as `img.pp-art` with `alt=""` (decorative; the button carries the name), else the 24px type glyph, plus the 20px `pp-play` badge on the timelapse — with the file name under it in mono `text-xs`, middle-truncated (`.nm.pp-fname`), `text` ink and `text-strong` when selected. Compact form: `--pp-control-h` tall, width to content up to 240px, a 20px glyph then the same name element beside it.
+
+**Drawn in the preview:** the median print with four renders; the measured 11-button strip with its two glyph squares; the six-button print whose renders are identical; the bubble over a truncated name in a 600px frame (`.pp-device.pane`, a preview helper); the compact strip with a 59-character name and its bubble; the longest print at 34; the phone at 360px; loading; one model; video only. The stand-in pictures are inline silhouettes, because the system ships no image files — the real ones are PNGs the app serves.
+
+**Needs your measurement.** The head is 7 characters because 7 is where the two measured families separate, and that is a judgement sitting on top of your numbers. The number that would change it: **within a single print, how many model names share their first 7 characters with another model in that print, and how many share their last 7?** If prefixes collide often (`obj_12_…` against `obj_17_…`, or a `Onderdeel_` family of twelve), the head needs more characters and I will widen the button rather than let you widen it. Build at 120px meanwhile.
+
+**Also worth a number, not blocking:** how many prints end up in the **compact** form now — prints where no model and no 3MF can show itself. If it is a handful, `--pp-modelbtn-max` is nearly dead text and I would rather know that than keep sizing it.
+
+
+**2.5.** (2026-10-09) **All five measurements came back before 2.4 was imported, and two of them bite. The button stays at 120px; what moves is the split (GAP-119 extended, GAP-116 confirmed, GAP-071 closed).**
+
+Nothing of 2.4 was built when these arrived, which is the cheapest moment to be wrong.
+
+| Measured | What it did to 2.4 |
+|---|---|
+| **29%** of within-print pairs share their first 7 characters; 10% share their last 7 | **Changed the spec.** The head is the half that collides, and the window needed a rule, not more pixels |
+| Median name **217px**; **90%** still overflow 112px | **Confirmed 120px** and retired the idea that width is the lever. Measured at the wrong size, though — see below |
+| **1** of 79 prints reaches the compact form | **Confirmed `--pp-modelbtn-max` is nearly dead text.** Kept, demoted, not re-tuned |
+| 3MF plate images: **0 of 20 opaque** | **No second branch.** One outline rule for both kinds of picture |
+| 29 pictures with `.pp-art`: p95 **17.4ms vs 17.2ms**, 0 frames over 20ms | **GAP-071's paint question closed** and 2.3's reserve fallback withdrawn |
+
+**120px stays, and your own second number is why.** Going from 68px to 112px of name box — 65% more width — bought **6 points** of overflow, 96% to 90%. Width is not the lever and cannot be: at 7.24px per monospace character the median name (25 characters, 181px) needs a **189px** button, which is 2.9 buttons in the 560px frame, and p90 (57 characters) needs **420px**, which is 1.3. A picker that shows one button is not a picker. So the name is a fragment on most buttons at every width that keeps the strip usable, and the question stops being *how much* of the name is shown and becomes *which part*.
+
+**The spec change: no two buttons in one strip may show the same label.** The default split — the extension plus the three stem characters before the dot — is now the **starting point**, not the rule. The app extends the tail one character at a time until every rendered label in that strip is distinct, with the head's floor at two characters plus the ellipsis. Worked, from your own family:
+
+```
+Onderdeel_01.stl        -> Onderde…_01.stl      distinct already: the difference is in the tail
+Onderdeel_06.stl        -> Onderde…_06.stl
+
+Onderdeel_01_links.stl  -> Onderde…nks.stl      collides: same head, same tail
+Onderdeel_06_links.stl  -> Onderde…nks.stl
+   tail extended to 11  -> Ond…1_links.stl      distinct
+                        -> Ond…6_links.stl
+```
+
+One correction, offered gently because it matters for which case we are fixing: **`Onderdeel_01.stl` against `Onderdeel_06.stl` is not the failure** — those two differ inside the tail, which is the half the split always keeps, so they read differently under 2.4 as published. The failure is the same family **with anything after the number**, and that one is real and your 29% is what exposes it.
+
+**Why this exception is allowed when the pixel-identity one was not.** GAP-119 rejected "drop the name where the renders are identical" because *looks the same* is not computable — perceptual identity is not pixel identity, and a distance-0 rule would call two indistinguishable parts distinct. *Reads the same* is a different kind of thing: exact string equality, over a handful of strings in one strip, deterministic, no threshold, no perception. The rule fires or it does not, and it is checkable by looking at the strip. That is the line between the two, and it is worth keeping in mind the next time a rule wants to compare two things.
+
+**Where even the longest tail cannot separate two names, nothing happens.** The label keeps its default split and the bubble and the caption carry it. The strip must not thrash its own text to chase a difference it cannot show; a picker whose labels shuffle as you scroll is worse than two labels that agree.
+
+**Monospace is load-bearing, not decoration.** The window is computable only because every character has the same advance: the app can count the characters that fit from the box width without measuring glyphs. That is also why the split is the app's job and the **cut** is still CSS's — `text-overflow` cuts at the real rendered width, so a text zoom, a font fallback or a non-ASCII name degrades correctly, while a character count would be wrong by exactly as much as it guessed.
+
+**Your measurement 2 was taken at the wrong size, and the number that matters is the character count.** You wrote "mono at `text` (15px), which is what 2.4 sets". `text` is the **ink** token (`#2b3150` / `#c0caf5`); the size `.pp-modelbtn` sets is `--text-xs`, **12px**. At 12px the 112px box holds **15.47 characters**, which is the 7 + ellipsis + 7 the design is built on; at 15px it holds **12.38**, which leaves the head 4 characters and quietly breaks it. Your 217px median is 181px at `text-xs`, exactly your earlier figure. The conclusion stands either way — most names are fragments — but **the invariant to build and check against is: the name box holds 15 monospace characters at `text-xs`.** If it ever holds 12, the size is wrong, not the split.
+
+**The bubble is the normal path, and the system now says so.** At 85–90% truncation, "only when the name is truncated" is in practice "almost always", and it was wrong of 2.4 to call it the exception. The condition stays — it is `scrollWidth > clientWidth` on `.a`, it costs nothing, and the names that do fit should not carry a bubble that repeats them — but a bubble that is nearly always there has to stay cheap, and everything that keeps it cheap is already in Tooltip: one at a time, no delay, `aria-hidden`, pointer and focus only, never a tab stop of its own.
+
+**The compact form: kept at 240px, demoted in writing, not re-tuned.** One print of 79. I am not going to tune a value that governs a single print, and I am not going to delete the form either: 95 of 376 files are 3MF, the renderer's coverage is a moving target, and one print added tomorrow with two plate-less 3MFs takes that branch. It is **specified and nearly unexercised** — the same standing as Popover's sheet floor, and said in the same words so neither of us mistakes it for a tested path.
+
+**`.pp-art` covers a 3MF plate image too.** 0 of 20 opaque, so every picture in the strip has a silhouette and one rule outlines all of them. The second branch 2.4 asked about is not needed and is not written.
+
+**Two lines of name: considered, rejected.** Two lines of 15 characters would hold the median name (25) whole, which is the most tempting answer to "90% are fragments". Against it: the `.a`/`.b` mechanism cannot middle-truncate across two lines (a line clamp's own ellipsis eats the tail), so the app would have to insert the ellipsis and fix the window in characters — losing exactly the robustness the CSS cut buys; it still fails p90 and the longest name; and it makes the button 156px tall. If the uniqueness rule turns out not to be enough, this is the next move and it is a 3.0-sized change to the mechanism, not a tweak.
+
+**Unchanged:** 120px, 112px of picture, the two forms and the switch rule, the order, the caption, the group labels, the bubble's `.at` form and its mount outside `.pp-models`, every class. **This round changes no CSS at all.**
+
+**Needs your measurement.** None of it blocks the build; each verifies a decision that is otherwise settled.
+
+- **The intersection, which is the number I actually wanted.** How many within-print pairs share their first 7 **and** their last 7 characters? That is the collision rate of the rendered label; 29% and 10% are the two margins and the truth is at most 10%. It tells us how often the uniqueness rule fires, not whether it is right.
+- **How often the rule cannot separate a pair** even with the tail at its longest — a difference that is beyond about 13 characters from the right and beyond 2 from the left. If that is more than a handful, two lines comes back on the table.
+- **The 112px overflow count re-measured at `text-xs`** (12px), so the figure in the record is the one the app renders.
+
+
+**2.6.** (2026-10-09) **The rule extends both ends, and where it still cannot reach, the system says so instead of reaching further (GAP-119, closed with a named residue).**
+
+Three measurements came back and two of them change this. Nothing is built yet.
+
+**You were right that the mechanism only ever extended one end, and there was no reason for that.** The split now grows **whichever end reaches the difference**: the tail first, then the head, with two floors that are the component's own promises — **the extension always survives** (which is what GAP-119 was raised about, so the tail never shrinks below `.stl`/`.3mf`) and **the head keeps at least two characters**. One clause, strictly more capable, and it cannot make anything worse: where there is no collision nothing moves.
+
+**And the window has a blind zone, which is now written down rather than discovered.** At 15 monospace characters the window shows a difference at left-index *d* only if
+
+```
+d < 10              (the head, with the tail at the bare extension)
+d >= len - 12       (the tail, with the head at its floor of two)
+```
+
+so **every name longer than 22 characters has a zone in between that no split can reach.** The median name is 25. Measured in this library: 55 of 1682 within-print pairs share both ends (3.3%), the extension rule separates **15**, and **40 fall in the blind zone** — the dominant shape being a number in the middle of a long name:
+
+```
+Babybox lock corner 20 inner width.stl     ->  Babybox…dth.stl
+Babybox lock corner 21 inner width.stl     ->  Babybox…dth.stl     the number is at index 20 of 38
+Babybox lock corner 22 inner width.stl     ->  Babybox…dth.stl     longest tail: Ba…er width.stl, still identical
+```
+
+**I am choosing to accept those 40 deliberately, which is your option four.** What carries the strip there is not the label: it is the **picture** (which distinguishes 66 of 74 multi-picture prints), the **order** — file name ascending, so a numbered family stands in numeric order and position is monotone — the **caption**, which names the selected model in full at all times, and the **bubble**. The label's job in a picker is to let you choose, not to identify; identification is one hover or one click away and a click costs 60ms cold, 1ms cached, and is reversible. Both of the alternatives that would reach the number cost more than that:
+
+- **Two lines of name (a 30-character window) does reach it**, and I checked rather than assumed: the tail can grow to 27, the blind zone closes for every name up to **52** characters, and the trio reads `Ba…k corner 20 inner width.stl`. It costs the button 16px of height (140 → 156), and it costs the **mechanism**: `text-overflow` cannot cut a two-line box, so the app would have to insert the ellipsis and trust a character count — and the count is not trustworthy, because `--font-mono` is a fallback stack whose advances differ by platform (0.5em to 0.65em), so 15 characters per line is ±2 depending on which monospace the OS supplies. Today CSS cuts at the real rendered width and that error is invisible. **This is the move if the owner looks at those families and calls the strip unusable** — it is costed, it works up to 52 characters, and it is a 3.0-sized change to the mechanism, not a tweak.
+- **A middle window** (`head…diff…tail`) does not fit: the trio needs 5 + 1 + 2 + 1 + 7 = **16 characters** in a 15-character box, it needs a second ellipsis that no CSS rule inserts, and it buys the middle by giving up either the family name or the extension.
+- **Widening the button** to close the zone for a 38-character name needs **174px** — 3.1 buttons per frame against today's 4.4 — and p90 would need 243px. 2.5 already retired width as the lever on your own figures.
+
+**Where the longest split still collides, nothing moves.** The label keeps its default split, the bubble and the caption carry it, and the strip does not re-split its own text to chase a difference it cannot show. Labels that shuffle as you scroll are worse than two labels that agree.
+
+**Two files with the same name: my sentence was wrong and the conclusion is not.** 2.4 said the name stays partly because "the file system guarantees the name is unique inside a print". It does not — you measured 3 pairs in 2 prints, because a print gathers files from more than one folder — and that sentence is **withdrawn**. The reason that survives is better: **the name is the field the rest of the system refers the file by.** The caption, the file list, the download, the duplicate badge and the invoice all speak in names; a picture refers to nothing and cannot be quoted. And the duplicate case strengthens the answer rather than weakening it — two buttons reading the same label state a fact the operator needs ("there really are two files called this"), where two buttons with no label state nothing and invite the wrong click.
+
+**So the duplicate case is not a truncation problem and must not be treated as one.** You said you would build the bubble to show two identical names and would not special-case it: that is right, it is now the spec, and nobody should "fix" it later. The place that *explains* a duplicate is the file list, which already has the words — the `warning` badge **"Mogelijk dubbel"** and its hint in AssetListItem. **One question for you, and it is not rhetorical:** do those 3 pairs actually raise that badge? It is specified for a duplicate *file*, and two files with the same name in different folders may or may not reach it. If they do, the picker needs no new words because the explanation sits one card below. If they do not, that is a gap on your side worth logging, and it is about the file list, not the strip.
+
+**Unchanged:** 120px, 112px of picture, the two forms and the switch rule, the order, the caption, the bubble's `.at` form and its mount outside `.pp-models`, every class, every token. **2.6 changes no CSS either** — 2.4, 2.5 and 2.6 are one import.
+
+**Drawn in the preview (the two cases the system does not solve, drawn rather than omitted):** the `Babybox lock corner 20/21/22` trio with three identical labels and one picture between them, and a print holding the same file name twice with its bubble showing that name twice.
+
+**Nothing left to measure here that changes the answer.** The one open question is the `Mogelijk dubbel` badge above, which is about AssetListItem.

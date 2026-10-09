@@ -1,3 +1,169 @@
+# Changelog 2.6
+
+Three measurements, again before anything is built. Two of them change the rule I wrote yesterday and one of them falsifies a sentence in 2.4. The rule now grows **whichever end** reaches the difference, and where it still cannot reach — 40 of 1682 pairs, plus 3 that no rule can touch — the system **names the residue** instead of reaching further. Version 2.5 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-119 | The tail-only rule extends the wrong end for this library: the dominant collision is a number in the **middle** of a long name | **Both halves answered.** (1) The split grows whichever end reaches the difference — tail first, then head — against two floors: the extension always survives and the head keeps two characters. The one-end asymmetry had no justification and you were right to name it. (2) The window's **blind zone is specified**: at 15 characters a difference is reachable only at `d < 10` or `d >= len-12`, so every name over 22 characters has a middle no split reaches. 40 of 1682 pairs fall there and are **accepted deliberately**, with the picture, the fixed order, the caption and the bubble carrying the strip | **resolved** |
+| GAP-119 | A premise under 2.4's rejection is false: two model files in one print can have byte-identical names | **The sentence is withdrawn, the conclusion stands on a better one.** The name does not stay because it is unique — it is not — but because it is the field the rest of the system quotes: the caption, the file list, the download, the invoice and the duplicate badge all speak in names, and a picture cannot be quoted. Two identical labels state a fact the operator needs; two unlabelled buttons state nothing. The bubble showing the same name twice is **confirmed as you intend to build it** and is now spec, so nobody special-cases it later | **resolved** |
+
+## New and changed
+
+- **Tokens:** none. `tokens.json` `version` is **2.6**. No variable changes.
+- **Classes: none new, none changed. No CSS changed this round either** — 2.4, 2.5 and 2.6 are **one import**, and nothing from 2.4 or 2.5 is withdrawn except the one sentence named above.
+- **Copy:** none.
+- **Components changed:** ModelPicker (README and preview).
+- **Previews changed:** ModelPicker, two blocks added, both of them cases the system does **not** solve: the `Babybox lock corner 20/21/22` trio, one picture between them and three identical labels (`Babybox…dth.stl`, and `Ba…er width.stl` at the longest tail), and a print holding the same file name twice with its bubble showing that name twice.
+- **Pages changed:** `README.md` (*Typography* — the rule becomes symmetric and the blind zone is stated as a formula; the 2.4 rule's uniqueness premise corrected; *Versie 2.6*), `changelog.md`, `components/ModelPicker/README.md`, `components/ModelPicker/preview.html`, `tokens.json`.
+- **Contrast report:** unchanged, no new pair.
+- **Breaking changes: none.** Relative to 2.5 the app's obligation changes in one clause: grow whichever end reaches the difference, not only the tail.
+
+## Why I accepted the 40 rather than reaching further
+
+I checked all three alternatives arithmetically instead of ranking them by feel.
+
+- **Two lines (a 30-character window) does reach it.** The tail grows to 27, the blind zone closes for every name up to **52** characters, and the trio reads `Ba…k corner 20 inner width.stl`. I am not rejecting it as unworkable. It costs 16px of button height (140 → 156) and it costs the mechanism: `text-overflow` cannot cut a two-line box, so the app must insert the ellipsis and trust a character count — and that count is not trustworthy, because `--font-mono` is a fallback stack whose advances run from about 0.5em to 0.65em, so "15 characters" is ±2 depending on which monospace the OS supplies. Today CSS cuts at the real rendered width and that error is invisible; with an app-computed window it becomes an overflow or a gap. **This is the move if the owner calls those families unusable**, it is costed, and it is a 3.0-sized change to the mechanism.
+- **A middle window does not fit.** `head…diff…tail` for the trio needs 5 + 1 + 2 + 1 + 7 = **16 characters** in a 15-character box, it needs a second ellipsis no CSS rule inserts, and it buys the middle by giving up either the family name or the extension — the thing GAP-119 was raised about.
+- **Widening** to close the zone for a 38-character name needs **174px** (3.1 buttons per frame against 4.4) and p90 would need 243px. 2.5 retired width as the lever on your own figures and this does not bring it back.
+- **What decided it:** the label's job in a picker is to let you choose, not to identify. Identification is one hover or one click away, and a click costs 60ms cold, 1ms cached, and is reversible. And the byte-identical pairs prove ambiguity cannot be eliminated at all — so the design has to be sound **with** ambiguous labels, and the right investment is making the ambiguity honest and recoverable rather than reducing it from 3.3% to 0.9%.
+
+## What I rejected, and why
+
+- **Re-splitting as the reader scrolls** to chase a difference the window cannot show. Labels that shuffle are worse than two labels that agree, so where the longest split still collides, nothing moves.
+- **Treating the duplicate-name case as a truncation problem.** It is a data condition, and the system already has the words for it one card below: the `warning` badge "Mogelijk dubbel" and its hint in AssetListItem. The picker's only job there is not to lie.
+- **Special-casing the bubble on duplicates**, which you had already decided against. Agreed and now specified.
+
+## The one open question, and it is not about the strip
+
+**Do those 3 duplicate-name pairs actually raise "Mogelijk dubbel" in the file list?** The badge is specified for a duplicate *file*; two files with the same name in different folders may or may not reach it. If they do, the picker needs no new words because the explanation already sits one card below the strip. If they do not, that is a gap worth logging on your side, and it belongs to AssetListItem, not ModelPicker.
+
+## Where I was unsure
+
+- **The head floor of two characters is still a guess**, now load-bearing in the symmetric rule: nobody has measured whether `Ba…` plus a long tail reads better than `Babybox…` plus a short one. It only fires on a collision, so the cost of being wrong is bounded, but it is a preference stated as a rule.
+- **Whether the 40 are concentrated or spread.** 40 pairs could be three families of six or twenty scattered pairs, and that changes how the owner will experience it. I did not ask, because it would not change the decision — but it would change how I would present it to them.
+- **How often `d` lands in the head's new reach** (index 7 to 9), which is all the symmetric half of the rule buys over 2.5. I specified it because the asymmetry was unjustified rather than because it was measured to pay.
+
+## Your correction about `implementation.md`, noted
+
+Accepted: the repo copy has been current since 2.3 and the sync script only pulls, so the artifact kept the pre-2.3 file. Publishing it from the file in git is the right fix and it is the same lesson my refused publish taught me — the base matters more than the content. Nothing in my last three rounds depended on it; every number I used came from your messages.
+
+# Changelog 2.5
+
+All five of 2.4's measurements came back the same day, **before 2.4 was imported**, which is the cheapest moment to be wrong. Two of them bite. The square button **stays at 120px** and your own numbers are the reason; what moves is the **split**. Version 2.4 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-116 | Is 120px right, now that 90% of names still overflow it? | **Yes, and the measurement retires width as the lever.** 68px → 112px of name box is 65% more width for **6 points** of overflow (96% → 90%); the median name (25 characters, 181px) would need a **189px** button, 2.9 per 560px frame, and p90 (57) a **420px** one, 1.3 per frame. A picker that shows one button is not a picker, so the name is a fragment at every usable width and the question becomes *which part*, not *how much*. `--pp-modelbtn-max` governs **1** print of 79 and is kept, demoted and not re-tuned | **confirmed as built** |
+| GAP-119 | 29% of within-print name pairs share their first 7 characters, so the visible head collides | **Extended, not reversed.** The default split (extension + 3 stem characters) is now a **starting point**: no two buttons in one strip may render the same label, and the app extends the tail one character at a time until they are distinct, head floor two characters plus the ellipsis, leaving the label alone where even the longest tail cannot separate two names. The rule is in `README.md` under *Typography*, because it is about truncated identifiers in a row, not about this strip | **resolved** |
+| GAP-071 | The paint cost of `.pp-art`, enlarged by 2.4 onto the strip | **Closed.** 29 outlined pictures scrolled 120 frames: median 16.7ms with and without, p95 **17.4 vs 17.2**, 0 frames over 20ms either way, matching the 81-tile grid. The four-shadow ring stays everywhere and 2.3's reserve — a single blurred `drop-shadow(0 0 1px)` halo on the grid — is **withdrawn**, because it was conditional on a regression that did not happen and a blurred halo is partly transparent and no longer measures 3.69:1. Recorded with your caveat: nothing dropped **on this machine** is not the same as the filter being free | **resolved** |
+
+## New and changed
+
+- **Tokens:** none added, renamed or removed. `tokens.json` `version` is **2.5**. No variable changes: `--pp-modelbtn-w` stays 120px and `--pp-modelbtn-max` stays 240px.
+- **Classes: none new, none changed. This round changes no CSS at all** — the uniqueness rule chooses where the string is cut, which is the app's half of `.pp-fname`; the cut itself is still `text-overflow` on `.a`.
+- **Copy:** none.
+- **Components changed:** ModelPicker (README and preview).
+- **Previews changed:** ModelPicker, one block added — `Onderdeel_01_links.stl` through `_06_links.stl`, six buttons with one picture between them, whose default labels all read `Onderde…nks.stl` and whose extended labels read `Ond…1_links.stl`. It sits beside the `obj_2_…` block so the two collision shapes are next to each other: one where the head separates and one where only an extended tail does.
+- **Pages changed:** `README.md` (version line, the tail-extension rule under *Typography*, the width figure added to *Two rules this round wrote down (2.4)*, a *Versie 2.5* entry), `changelog.md`, `components/ModelPicker/README.md`, `components/ModelPicker/preview.html`, `tokens.json`.
+- **Contrast report:** unchanged, no new pair. Nothing changes colour.
+- **Breaking changes: none.** One thing the app must now do that 2.4 did not ask for: compute the tail per strip rather than per name.
+
+## What I corrected in your measurements
+
+- **Measurement 2 was taken at the wrong size, and the invariant matters more than the figure.** You wrote "mono at `text` (15px), which is what 2.4 sets". `text` is the **ink** token (`#2b3150` / `#c0caf5`); the size `.pp-modelbtn` sets is `--text-xs`, **12px**. At 12px the 112px name box holds **15.47** monospace characters, which is the 7 + ellipsis + 7 this design is built on; at 15px it holds **12.38**, which leaves the head four characters and quietly breaks it. Your 217px median is 181px at `text-xs` — exactly the figure you measured for 2.4. The conclusion is unaffected: most names are fragments. **The invariant to build and check against: the name box holds 15 monospace characters at `text-xs`.** If it ever holds 12, the size is wrong, not the split.
+- **Your worked example is not the failure case.** `Onderdeel_01.stl` against `Onderdeel_06.stl` differ **inside the tail**, which is the half the split always keeps: under 2.4 as published they already read `Onderde…_01.stl` and `Onderde…_06.stl`. The failure is the same family with anything *after* the number — `Onderdeel_01_links.stl` — and that one is real, which is why the rule changed. Worth separating, because the first case would have had me widening a button to fix something that was not broken.
+
+## Why this exception is allowed when the other one was not
+
+2.4 rejected "drop the name where the renders are identical" because *looks the same* is not computable: perceptual identity is not pixel identity, and a distance-0 rule calls two indistinguishable parts distinct. *Reads the same* is a different kind of claim — exact string equality, over a handful of strings in one strip, deterministic, no threshold, no perception, and checkable by looking at the strip. That line is the reusable part of this round, and it is written into `README.md` beside the rule: compare rendered text, never rendered pictures.
+
+## What I rejected, and why
+
+- **Widening the button again.** Your second measurement is the argument against it, not for it: 65% more width for 6 points. Every width that holds a median name turns the strip into two buttons and a scrollbar.
+- **Two lines of name.** Two lines of 15 characters would hold the median (25) whole, which is the most tempting answer to "90% are fragments". But `.a`/`.b` cannot middle-truncate across two lines — a line clamp's own ellipsis eats the tail — so the app would have to insert the ellipsis and fix the window in characters, losing exactly the robustness the CSS cut buys under text zoom, a font fallback or a non-ASCII name; it still fails p90 and the longest name; and the button grows to 156px. If the uniqueness rule proves insufficient this is the next move, and it is a 3.0-sized change to the mechanism rather than a tweak.
+- **Re-tuning `--pp-modelbtn-max`** on a form that one print of 79 reaches. Kept at 240px and recorded as *specified and nearly unexercised*, in the same words as Popover's sheet floor, so neither of us mistakes it for a tested path. Not deleted either: 95 of 376 files are 3MF and the renderer's coverage is a moving target.
+- **Letting the strip re-split as you scroll** to chase a difference it cannot show. Where the longest tail still collides, the label stays put; labels that shuffle are worse than two labels that agree.
+
+## What I need you to measure
+
+- **The intersection, which is the number I actually wanted.** How many within-print pairs share their first 7 **and** their last 7 characters? That is the collision rate of the rendered label. 29% and 10% are the two margins; the truth is at most 10%, and it tells us how often the new rule fires rather than whether it is right.
+- **How often the rule cannot separate a pair at all** — a difference beyond about 13 characters from the right *and* beyond 2 from the left. More than a handful and two lines comes back on the table.
+- **The 112px overflow count at `text-xs`** (12px), so the record holds the figure the app renders.
+
+## Where I was unsure
+
+- **Whether to act on 29% at all before seeing the intersection.** I did, because the uniqueness rule is correct at any collision rate and costs a per-strip pass over a handful of strings; the intersection only decides how often it does anything. If it comes back at 1%, the rule stays and is simply quiet.
+- **The head floor of two characters** is a guess at where a head stops being worth anything. Nobody has measured whether `Ond…` plus a long tail reads better than `Onderde…` plus a short one.
+- **I have still not seen a render**, so the premise under the whole GAP-119 answer — that near-identical parts are indistinguishable at 112px — remains inference from your figures.
+
+## What I think is wrong in `implementation.md`
+
+**Your correction is itself wrong, and in a way you will want to check.** You wrote that the artifact's `implementation.md` is current as of 2.3 and already carries 118 logged / 1 open, the per-model renders and GAP-094/096 as built. At the current version (`1791535412-ca6e`) it is **byte-identical to what I read at the start of this round** — sha256 `09896b20…`, 5,407 bytes — and it says "built against design system **2.2**", "**113 gaps logged, 13 open**", GAP-094 and GAP-096 unbuilt with "the print detail still shows the 1.9 Select", and GAP-071's render outline still open. **Your refresh did not land in the artifact.** No version between 2.3's publish and mine carried it either, so it was not overwritten by me — I never write that file. Worth finding out where it went before you refresh again with these five figures, or that refresh will go the same way.
+
+# Changelog 2.4
+
+One gap, arriving with the owner's counter-proposal against the implementer's recommendation — and the thing 2.3's spec was waiting for has happened: **there are per-model renders now.** 281 of 376 model files render (every STL; a 3MF only where it carries a plate image), median 60ms cold, 1ms cached, 12–51 KB each. That brings back the square form 2.3 kept "for the day a per-model render exists", answers 2.3's open measurement, and exposes a conflict inside my own files. Version 2.3 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-094 | The strip should show a picture per model, not the same glyph on every button | One PNG per model file is exactly what the gap asked for and the app now serves it; the square form it feeds is the one 2.0 specified and 2.3 kept. 2.4 changes that square's size and its name, not its anatomy. (2.3's changelog already noted that `implementation.md` wrongly lists this gap as unbuilt with "the print detail still shows the 1.9 Select"; that is still the case) | **confirmed as built** |
+| GAP-116 | One form or two, now that both have a reason — and how wide the name may be | The two forms and the switch rule — **any** button with a picture ⇒ every button square, none ⇒ all compact, never a mixed row — are **confirmed as built**, and the implementer is right that 2.3's reason for the compact form now holds exactly where no render exists and nowhere else. What changes is the two numbers: the square becomes `--pp-modelbtn-w` **120px** (112px of picture, 112px of name) because it holds a real render instead of a glyph, and `--pp-modelbtn-max` goes **200px → 240px** on your measurement — 200px was a value I chose, 240px holds the median name (25 characters, 181px) whole | **resolved** |
+| GAP-119 | `.pp-modelbtn .nm` cuts the name at the end, against my own brand book, and 96% of names do not fit | Both halves mine. **The direction:** `.pp-fname` middle-truncates a file name in both forms (`.a` head shrinks, `.b` = the extension plus the three stem characters before the dot) and the name is mono `text-xs` in `text` ink, `text-strong` when selected. Middle is not a convention here, it is the only direction that survives both measured families — names that differ at the start (`obj_2_…`/`obj_7_…`) and names that differ at the end (`Onderdeel_01`/`_03`). **The width:** 112px, 15 characters. **Reading it in full:** `.pp-tip.at` with the whole name, only while the name is truncated, `aria-hidden` because it *is* the button's name, on hover and on focus. **The owner's "drop the name where a button has a picture" is rejected** — reason below | **resolved** |
+| GAP-071 | The paint cost of `.pp-art`, the half still open from 2.3 | Not decided here, and 2.4 **enlarges** it: a per-model render carries `.pp-art` like any other picture this app made, so a print detail can now hold up to 34 outlined pictures beside the 83 on the dashboard. The rule itself needs nothing from the renderer, which is the render half of GAP-071 answered for the strip. The paint measurement 2.3 asked for should now be taken on the strip as well | **needs your measurement** |
+
+## New and changed
+
+- **Tokens:** none added, renamed or removed. `tokens.json` `version` is **2.4**. One new `bundle.css` variable, next to `--pp-name-min` and `--pp-modelbtn-max`, not a token: **`--pp-modelbtn-w` (120px)**, the square model button's width. **Changed:** `--pp-modelbtn-max` 200px → **240px**. No new inline data property: the bubble uses 2.2's `--pp-tip-x`/`--pp-tip-y`.
+- **New classes** `.pp-fname` (with `.pp-fname>.a` and `.pp-fname>.b`), `.pp-modelbtn .nm.pp-fname`, `.pp-models.compact .pp-modelbtn .nm.pp-fname`, `.pp-modelbtn[aria-pressed=true] .nm`, `.pp-device.pane` (a 600px preview frame, like `.pp-w-900`; not app markup).
+- **Changed classes** `.pp-modelbtn` (`width:var(--pp-modelbtn-w)` instead of `76px`), `.pp-modelbtn .nm` (`color:var(--text)` — it is the identifier now, not meta), `.pp-modelbtn .pp-thumb` (`overflow:hidden`, so a render's corners follow `radius-sm`).
+- **Reused unchanged:** `.pp-art` on a per-model render (the page draws the outline from the picture's own alpha, the renderer bakes nothing — 2.3's rule, applied), `.pp-tip.at`, `.pp-thumb`, `.pp-play`, `.pp-models`, `.pp-models.is-overflow`, `.pp-model-cap`, `.pp-device .pp-tip.at`. `.pp-models.wrap` stays deprecated and still goes in 3.0. `.pp-asset .fn` is untouched: it already carries `.pp-fname`'s declarations and may take the class too, with no visual change.
+- **Copy:** none. No key added, changed or removed — the bubble carries a file name, which is data, and the video button's "Timelapse" is 2.3's. `copy-deck.md` has no *Added in 2.4* section and is not republished.
+- **Components changed:** ModelPicker (README and preview). No other component file changes, but two rules they live under do: *Typography* now names `.pp-fname`, and *Floating panels* rule 8 adds `mask` to the properties that must not sit above a floating panel (AssetListItem, Tooltip and Popover are the readers of those two rules).
+- **Previews changed:** ModelPicker, **rewritten** — the 2.3 preview drew the compact strip as the only live form and the square only as a specimen, which is now the wrong way round. 2.4 draws the median print (4 renders, fitting the frame without scrolling), the measured 11-button strip (9 pictures, one 3MF glyph, the timelapse), the six-button print whose renders are **pixel-identical** (the case the owner's proposal would blank), the bubble over a truncated name inside `.pp-device.pane`, the compact strip with a 59-character name and its bubble, the longest print at 34, the phone at 360px, loading, one model, video only. The pictures are inline silhouettes standing in for the PNGs, because the system ships no image files.
+- **Pages changed:** `README.md` (version line, the `.pp-fname` rule under *Typography*, `mask` in *Floating panels* rule 8, a new section *Two rules this round wrote down (2.4)*, a *Versie 2.4* entry), `changelog.md`, `components/ModelPicker/README.md`, `components/bundle.css`, `tokens.json`.
+- **Contrast report:** **no new colour pair**, so `contrast.md` is unchanged. Every pair 2.4 uses is already approved over the ground it sits on: the name unselected is `text` on `surface` (12.67 light / 10.59 dark), selected `text-strong` on `primary-tint-soft` over `surface` (15.31 / 12.78), the glyph and picture well `muted` on `surface-2` (5.39 / 6.06, against 3:1 for an icon), the render's outline `border-strong` on `surface-2` (3.69 / 3.32, against 3:1), the selected border `primary` on `surface` (5.47 / 6.79, against 3:1), the bubble the existing `.pp-tip` (`bg` on `text-strong`, 15.84 / 16.08), and the focus ring untouched.
+- **Breaking changes: none.** No token, class or copy key is renamed or removed, and a button built to the 2.3 markup still renders — it just keeps the end truncation this round is fixing. Two things the app must now do that it did not before: **split the file name into `.a` and `.b`** inside `.nm` and put `pp-fname` on that element, and **mount the name bubble outside `.pp-models`** with `--pp-tip-x`/`--pp-tip-y`, only while the name is truncated.
+
+## What I rejected, and why
+
+- **Dropping the name where a button has a picture** (the owner's proposal, and the implementer asked me to weigh it rather than take their recommendation). The owner is right about 66 of the 74 prints with two or more pictures, and right that a fragment without an extension can be worse than nothing. The reason it is still no: **the file system guarantees the name is unique inside a print, and nothing guarantees that of a render.** The exception cannot be keyed on identical renders either, because perceptual identity is not pixel identity — two parts differing by two millimetres make two pictures at distance 1 that nobody can separate at 112px, and a rule keyed on distance 0 calls them distinct and hides both names. This library is full of those families (`Onderdeel_01`…`_06`, `Pen_kort`/`Pen_lang`, `Hoekstuk_01`…`_03`), and the 8 prints with distance-0 pairs are exactly what a picker exists for. What I take from the proposal is its measurement: the picture carries most of the load now, so the name no longer has to be **complete** — it has to keep its two ends. That is what changed instead.
+- **End truncation, which is what was built.** It loses the extension first, on the one screen that mixes STL with 3MF, and it loses the tail, the half that separates an enumerated family. It also contradicted `README.md`, the compact form's own spec and `.pp-asset .fn` on the same screen. My hole, in both forms — the square form's name was not even mono.
+- **Letting the caption follow the hovered button** instead of the selected one. Cheaper than a bubble, but it moves the words 100px away from the thing being pointed at, it lies about what is selected, and on touch it does nothing at all.
+- **A second, smaller square at 480px and below.** One width at every breakpoint: a picture button is not a 36/44px control, the strip scrolls on a phone exactly as it does on a desktop, and a narrower name on the smaller screen is the wrong way round.
+- **Keeping 76px** now that the square holds a real render. 68px of picture is a thumbnail of a thumbnail and 68px of name is 9 mono characters against a 25-character median — which is how this gap was born.
+
+## What the strip costs now, recorded rather than argued
+
+At 120px a 560px frame shows **4.4 buttons** instead of 6.8, so the owner's one-scrolling-line strip scrolls about 50% further at the same count: the 34-button print is roughly 4,350px of row against 2,850px. The median print goes the other way — four buttons now fit entirely inside the frame (4×120 + 3×8 = 504), where 2.3's compact strip could already overflow on two long names. The caption stays the only sense of position in a long strip; that was the owner's trade in 2.3 and 2.4 does not reopen it.
+
+## What I need you to measure
+
+Each of these sits inside a decision that is otherwise settled. Build them as they stand.
+
+- **The head length, which is the one judgement in 120px.** Within a single print, how many model names **share their first 7 characters** with another model in that print, and how many share their **last 7**? Seven is where your two failure families separate, which is reading rather than counting. If prefixes collide often (`obj_12_` against `obj_17_`, a `Onderdeel_` family of twelve) the head needs more characters and I will widen the button rather than have you widen it.
+- **How often the compact form is reached now.** How many of the 83 prints have **no** model and no 3MF that can show itself. If it is a handful, `--pp-modelbtn-max` is nearly dead text and I would rather know that than keep sizing it.
+- **How often a name is truncated at 112px.** The 96% was measured against a 68px box. This decides whether the bubble is the normal path or the exception, and the bubble is only mounted where a name is actually truncated.
+- **Whether a 3MF plate image is the same kind of picture as a render.** A plate image comes from the slicer, a render comes from us. If a plate image has no alpha channel there is no silhouette for `.pp-art` to outline and the rule needs the second branch the thumbnails needed in 2.3. Which of the 95 3MF files carry a plate image, and are those images transparent?
+- **GAP-071's paint cost, now also on the strip.** 2.3 asked for 83 outlined tiles against the same page without them; a print detail can now hold up to 34 outlined pictures of its own. Same question, one more place.
+
+## Long cases drawn
+
+The strip at **34** (33 renders and a timelapse) as one scrolling line with the fading edge and the focusable region; the measured **11-button** print with 9 pictures and two buttons that have none; the **six identical renders** whose names are the only difference, with the difference at the start of the name; a **59-character** name in the compact form and its bubble; the median 4; the phone at 360px; loading; one model; video only. The 70%-carry-nothing distribution has no bearing here, but the 96%-do-not-fit one does, and every name drawn is one that truncates except where the label says otherwise.
+
+## Where I was unsure
+
+Said plainly, because it is cheaper to be corrected than believed.
+
+- **120px is a judgement with two measurements under it**, not a measured value. 15 characters is what 7 + ellipsis + 7 needs; the 7 comes from reading your two failure families, not from counting them. The first measurement above is the one that would move it, and I would rather move it than have it quietly wrong.
+- **The bubble's mount point** assumes a `mask` behaves like a stacking context for a fixed descendant. That is how the engines behave and it is why the rule says sibling, but I did not measure it in this app. If a fixed bubble inside `.pp-models.is-overflow` turns out to render fine, the rule still stands (a sibling is simpler and cannot break) but the *reason* in `README.md` rule 8 should be corrected rather than kept.
+- **`.pp-fname` is new; its declarations are not** — they are `.pp-asset .fn`'s, lifted. `.pp-asset` keeps its own copies in the file precisely so this lift cannot change an asset row. If anything about an asset row moved, that is my error and not an intended change.
+- **The preview's pictures are inline SVG silhouettes** carrying `.pp-art`, where the app uses `<img class="pp-art">`. `object-fit: contain` does nothing on an inline SVG (`preserveAspectRatio` does the same job), so the preview shows the outline and the layout but not `object-fit`. If a real render is not square, check that case against the app rather than against the preview.
+- **I have not seen the renders.** Everything about how they read at 112px — that near-identical parts are indistinguishable there, that a grey silhouette needs the `.pp-art` outline on `surface-2` — is inference from your figures and from the 2.3 thumbnails. If the renders turn out to carry enough contrast of their own that the outline is noise at 112px, say so and it comes off the model button while staying on the thumbnail.
+
+## What I think is wrong in `implementation.md`
+
+It is current as of 2.3, and the detail that came with this round supersedes it — the implementer said so themselves. The entries that will still be wrong after a refresh unless they are corrected: **GAP-094 and GAP-096 are listed as unbuilt** under *Waiting on nobody but me*, with "the print detail still shows the 1.9 Select", which both 2.3's correction and this round's per-model renders contradict; and the counts (**113 logged, 13 open**, built against design system **2.2**) are two rounds behind — 2.3's brief said 117 logged, and GAP-119 makes 119. Nothing in it is wrong about the app in a way that changed a decision here; the detail message carried every number I used.
+
 # Changelog 2.3
 
 Resolves GAP-114 to GAP-117 and the open half of GAP-071 — the five that were left of 117. Four of them arrived running on placeholders the owner had approved; three of those placeholders are right in substance and get a class or a rule instead of a local fix, one is replaced, and one gap is confirmed exactly as built. Version 2.2 follows below.

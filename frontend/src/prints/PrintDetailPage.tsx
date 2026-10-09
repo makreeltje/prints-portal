@@ -7,11 +7,14 @@ import {
   Suspense,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { placeTip } from '../components/tipPlacement';
+import { splitName, stemForRow } from './fileLabel';
 import { ApiError } from '../api/client';
 import { useCurrentUser } from '../auth/context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -459,6 +462,36 @@ function MediaStrip({
     76px squares and 36px rows is the one thing the spec forbids.
   */
   const squares = items.some((item) => item.kind === 'model' && item.hasPicture);
+  /*
+    No two labels in this row may read the same (2.6). The row picks one stem
+    length for all of its buttons; where even the longest cannot separate two
+    names it keeps the default, because a label that shuffles as you scroll is
+    worse than two labels that agree.
+  */
+  const stem = stemForRow(items.map((item) => item.fileName));
+  /*
+    The bubble is a sibling of `.pp-models`, never a child: the strip's overflow
+    mask makes a stacking context, and a fixed bubble inside it fades with the
+    strip's edge (2.6, Floating panels rule 8).
+  */
+  const [tip, setTip] = useState<{ name: string; rect: DOMRect } | null>(null);
+  const bubble = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const element = bubble.current;
+    if (tip === null || element === null) return;
+    placeTip(element, tip.rect);
+  }, [tip]);
+  /*
+    A name that fits needs no bubble repeating it. The overflow is on `.a`, the
+    head: `.nm` is the flex row around both halves and never overflows, so
+    asking it is how the first build showed no bubble at all.
+  */
+  const show = (event: { currentTarget: HTMLButtonElement }, name: string) => {
+    const head =
+      event.currentTarget.querySelector('.nm .a') ?? event.currentTarget.querySelector('.nm');
+    const cut = head !== null && head.scrollWidth > head.clientWidth + 1;
+    setTip(cut ? { name, rect: event.currentTarget.getBoundingClientRect() } : null);
+  };
 
   // The fading edge is only honest when the row really continues.
   useEffect(() => {
@@ -525,6 +558,18 @@ function MediaStrip({
               onClick={() => {
                 onChoose(item.id);
               }}
+              onPointerEnter={(event) => {
+                show(event, item.fileName);
+              }}
+              onPointerLeave={() => {
+                setTip(null);
+              }}
+              onFocus={(event) => {
+                show(event, item.fileName);
+              }}
+              onBlur={() => {
+                setTip(null);
+              }}
             >
               {squares ? (
                 <span
@@ -552,14 +597,37 @@ function MediaStrip({
               ) : (
                 <Glyph className="pp-ico pp-ico-20" aria-hidden="true" />
               )}
-              <span className="nm">
-                {item.kind === 'video' && !squares ? t('models.video') : item.fileName}
-              </span>
+              {item.kind === 'video' && !squares ? (
+                <span className="nm">{t('models.video')}</span>
+              ) : (
+                <FileName name={item.fileName} stem={stem} />
+              )}
             </button>
           );
         })}
       </div>
+      {tip !== null && (
+        <span ref={bubble} className="pp-tip at" role="tooltip" aria-hidden="true">
+          {tip.name}
+        </span>
+      )}
     </div>
+  );
+}
+
+/**
+ * A file name as `.pp-fname`: `.a` holds the head and CSS cuts it with an
+ * ellipsis, `.b` holds the tail and never shrinks (2.6). The app chooses only
+ * where to cut.
+ */
+function FileName({ name, stem }: { name: string; stem: number }) {
+  const { head, tail } = splitName(name, stem);
+  if (tail === '') return <span className="nm">{name}</span>;
+  return (
+    <span className="nm pp-fname">
+      <span className="a">{head}</span>
+      <span className="b">{tail}</span>
+    </span>
   );
 }
 

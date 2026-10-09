@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-08T21:05:00Z",
+  "at": "2026-10-09T11:40:00Z",
   "via": "Claude Code",
-  "note": "2.3: the thumbnail outline moves from the renderer into the page (.pp-art), the popover gets the window-placed .at form and .pp-tip.at resets its edges, a spool trigger shows the spool in force, the media strip goes name-first at one scrolling line, and the print detail has one order of blocks at every width."
+  "note": "2.6: the label rule grows whichever end reaches the difference instead of always the tail, the truncation window's blind zone is named with its formula and its 40 measured pairs are accepted deliberately, and 2.4's claim that a file name is unique inside a print is withdrawn - the name stays because the rest of the system quotes it. No CSS changed."
  },
  "layout": "files",
  "libraries": [],

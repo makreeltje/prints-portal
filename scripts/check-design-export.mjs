@@ -74,8 +74,12 @@ for (const key of [...claimedKeys].sort()) {
 }
 
 // The deck collects a round's new keys under its own heading; when the
-// changelog says there are some, the deck has to show them.
-const claimsNewCopy = /^- \*\*Copy/im.test(section);
+// changelog says there are some, the deck has to show them. A round that says
+// "Copy: none" is claiming the opposite, so it must not trip this: the first
+// version of this rule matched the word Copy alone and failed 2.6, which added
+// no key at all.
+const copyLine = /^- \*\*Copy[^\n]*/im.exec(section)?.[0] ?? '';
+const claimsNewCopy = copyLine !== '' && !/\bnone\b/i.test(copyLine);
 if (claimsNewCopy && !new RegExp(`Added in ${version.replace('.', '\\.')}`, 'i').test(copyDeck)) {
   problem(`the changelog lists new copy, but copy-deck.md has no "Added in ${version}" section`);
 }
