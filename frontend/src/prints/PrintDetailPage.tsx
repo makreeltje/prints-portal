@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Box, Film, Info, Package, Trash2, TriangleAlert } from 'lucide-react';
 import {
   Fragment,
+  type CSSProperties,
   lazy,
   Suspense,
   useEffect,
@@ -50,6 +51,7 @@ import {
   modelUrl,
   restorePrint,
   setPrintTags,
+  modelThumbnailUrl,
 } from './api';
 import { LacksChip, RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList, type AssetControls } from './AssetList';
@@ -438,15 +440,25 @@ function ThisPrint({
 function MediaStrip({
   items,
   index,
+  colour,
+  printId,
   onChoose,
 }: {
   items: Picture[];
   index: number;
+  colour: string | null;
+  printId: string;
   onChoose: (id: string) => void;
 }) {
   const strip = useRef<HTMLDivElement>(null);
   const [overflows, setOverflows] = useState(false);
   const current = items[index];
+  /*
+    One form for all of a strip's buttons (ModelPicker): squares the moment any
+    model can show a picture of itself, compact when none can. A mixed row of
+    76px squares and 36px rows is the one thing the spec forbids.
+  */
+  const squares = items.some((item) => item.kind === 'model' && item.hasPicture);
 
   // The fading edge is only honest when the row really continues.
   useEffect(() => {
@@ -477,7 +489,9 @@ function MediaStrip({
       <span className="pp-muted pp-text-sm">{caption}</span>
       <div
         ref={strip}
-        className={overflows ? 'pp-models compact is-overflow' : 'pp-models compact'}
+        className={[squares ? 'pp-models' : 'pp-models compact', overflows ? 'is-overflow' : '']
+          .filter((name) => name !== '')
+          .join(' ')}
         role="group"
         aria-label={
           items.some((item) => item.kind === 'video') ? t('models.groupVideo') : t('models.group')
@@ -512,9 +526,34 @@ function MediaStrip({
                 onChoose(item.id);
               }}
             >
-              <Glyph className="pp-ico pp-ico-20" aria-hidden="true" />
+              {squares ? (
+                <span
+                  className={
+                    item.kind === 'video' || colour === null ? 'pp-thumb' : 'pp-thumb tinted'
+                  }
+                  style={
+                    item.kind === 'video' || colour === null
+                      ? undefined
+                      : ({ '--c1': colour } as CSSProperties)
+                  }
+                >
+                  {item.kind === 'model' && item.hasPicture ? (
+                    <img
+                      className="pp-art"
+                      src={modelThumbnailUrl(printId, item.id)}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <Glyph className="pp-ico pp-ico-24" aria-hidden="true" />
+                  )}
+                </span>
+              ) : (
+                <Glyph className="pp-ico pp-ico-20" aria-hidden="true" />
+              )}
               <span className="nm">
-                {item.kind === 'video' ? t('models.video') : item.fileName}
+                {item.kind === 'video' && !squares ? t('models.video') : item.fileName}
               </span>
             </button>
           );
@@ -543,6 +582,8 @@ interface Picture {
   id: string;
   fileName: string;
   kind: 'model' | 'video';
+  /** Whether this file can show a picture of itself, not of its print. */
+  hasPicture: boolean;
 }
 
 const UNPLAYABLE = /\.(mkv|avi|wmv|flv)$/i;
@@ -557,7 +598,12 @@ function ModelView({ detail }: { detail: PrintDetail }) {
   const [failed, setFailed] = useState(false);
   const videos: Picture[] = (detail.assets ?? [])
     .filter((asset) => asset.type === 'video')
-    .map((asset) => ({ id: asset.id, fileName: asset.fileName, kind: 'video' }));
+    .map((asset) => ({
+      id: asset.id,
+      fileName: asset.fileName,
+      kind: 'video' as const,
+      hasPicture: false,
+    }));
   // Ordered by file name with the timelapse last (2.3): the strip is a list of
   // names now, so it needs the order a list of names has.
   const items: Picture[] = [
@@ -575,6 +621,8 @@ function ModelView({ detail }: { detail: PrintDetail }) {
     <MediaStrip
       items={items}
       index={index}
+      colour={detail.colour}
+      printId={detail.id}
       onChoose={(id) => {
         setFailed(false);
         setChosen(id);
