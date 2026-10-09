@@ -71,6 +71,13 @@ export function AssetList({
 }) {
   const titleId = useId();
   const lockedId = useId();
+  /*
+    File names that more than one asset of this print carries. Both rows of a
+    pair are marked, because neither is "the other one" (2.7, GAP-120).
+  */
+  const shareAName = new Set(
+    assets.map((asset) => asset.fileName).filter((name, index, all) => all.indexOf(name) !== index),
+  );
   const rowControls = controls?.locked === true ? { ...controls, lockedHelp: lockedId } : controls;
   return (
     <section className="pp-card pp-assetlist pp-flush" aria-labelledby={titleId}>
@@ -98,6 +105,7 @@ export function AssetList({
             asset={asset}
             controls={rowControls}
             ord={ordLabels?.get(asset.id)}
+            sameName={shareAName.has(asset.fileName)}
           />
         ))}
       </ul>
@@ -112,10 +120,13 @@ function AssetRow({
   asset,
   controls,
   ord,
+  sameName = false,
 }: {
   asset: Asset;
   controls?: RowControls;
   ord?: string;
+  /** Another file of this print carries the same name (2.7, GAP-120). */
+  sameName?: boolean;
 }) {
   const Icon = ICONS[asset.type];
   const [playing, setPlaying] = useState<Asset | null>(null);
@@ -154,6 +165,20 @@ function AssetRow({
             <div className="pp-reason app-reason-warning">
               <TriangleAlert className="pp-ico" aria-hidden="true" />
               {t('asset.duplicateHint', { fileName: own.duplicateOf })}
+            </div>
+          )}
+          {/*
+            Two real files of this print that share a name (2.7, GAP-120).
+            Deliberately not the duplicate badge: that one advises deleting one
+            and counting the other twice, which here would drop a file off the
+            invoice. Plain ink, no warning — nothing needs attention, the
+            operator just needs to know which of the two this row is.
+          */}
+          {sameName && (
+            <div className="pp-reason">
+              {asset.subPath === ''
+                ? t('asset.sameNameNoFolder')
+                : t('asset.sameName', { map: asset.subPath })}
             </div>
           )}
           {own !== undefined && <ExclusionReason line={own} />}

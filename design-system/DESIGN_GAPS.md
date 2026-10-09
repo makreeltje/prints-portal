@@ -1369,7 +1369,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Design system version:** 2.2
 
 
-## GAP-118 [open] "Geldt nu voor 2 slots" is shown while no whole-print spool is set
+## GAP-118 [resolved in v2.7] "Geldt nu voor 2 slots" is shown while no whole-print spool is set
 - **Type:** unclear spec
 - **Found while:** verifying GAP-115 in the running app after importing 2.3 (2026-10-08)
 - **Where needed:** SpoolPicker, the print-level control on ScreenPrintDetail
@@ -1395,7 +1395,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** showing a model's full name on any button but the selected one. The pictures and the strip itself are unaffected.
 - **Design system version:** 2.3
 
-## GAP-120 [open] Two files with the same name in one print raise no "Mogelijk dubbel"
+## GAP-120 [resolved in v2.7] Two files with the same name in one print raise no "Mogelijk dubbel"
 - **Type:** missing state
 - **Found while:** answering 2.6's question about the duplicate-name case (2026-10-09)
 - **Where needed:** AssetListItem, the file list on ScreenPrintDetail

@@ -327,10 +327,16 @@ export const nl = {
   'asset.plates': '{count} platen',
   'asset.slot': 'Slot {n}',
   'asset.slicerHint': 'slicer',
+  'asset.sameName':
+    'Twee verschillende bestanden met dezelfde naam. Dit is het bestand in map {map}.',
+  'asset.sameNameNoFolder': 'Twee verschillende bestanden met dezelfde naam in deze print.',
   'asset.spoolFromPrint': 'van de print',
   'asset.spoolFromPrint.aria':
     'Spoel van de print: {naam}. Kies hier een eigen spoel voor dit bestand.',
   'spool.wholePrint.applies': 'Geldt nu voor {n} slots zonder eigen spoel.',
+  'spool.wholePrint.wouldApply': 'Een spoel hier geldt voor {n} slots zonder eigen spoel.',
+  'spool.wholePrint.wouldApplyNone':
+    'Elk slot heeft al een eigen spoel, dus een spoel hier verandert niets.',
   'spool.wholePrint.appliesNone':
     'Elk slot heeft een eigen spoel, dus deze keuze verandert nu niets.',
   'asset.excluded': 'Telt niet mee in kosten',

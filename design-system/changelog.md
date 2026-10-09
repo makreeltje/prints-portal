@@ -1,3 +1,63 @@
+# Changelog 2.7
+
+Two gaps, both one sentence of UI, and both of the same kind: a line that is true in the state somebody looked at and false in the state nobody did. Neither needs a token, a class or a pixel. Version 2.6 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-118 | "Geldt nu voor 2 slots zonder eigen spoel." while no whole-print spool is set — the condition names the slots, not whether a choice exists | **The line is keyed on both axes and all four cells get words.** The two present-tense lines are unchanged and may be rendered **only while a spool is set**; where none is, the line speaks about the control instead — `spool.wholePrint.wouldApply` "Een spoel hier geldt voor {n} slots zonder eigen spoel." and `spool.wholePrint.wouldApplyNone`. The word *nu* is the tell and now appears in one column only. **Silence is rejected** (see below), and so is one tenseless line | **resolved** |
+| GAP-120 | The strip draws two buttons with the same picture and the same label, and the file list does not raise "Mogelijk dubbel" for them — measured `possibleDuplicate: null` on both rows | **Marked, but not as a duplicate and not in `warning`.** One `muted` `.pp-reason` line on **both** rows, each naming its own folder: `asset.sameName` "Twee verschillende bestanden met dezelfde naam. Dit is het bestand in map {map}.", with `asset.sameNameNoFolder` where the app has no folder. **Widening "Mogelijk dubbel" is rejected:** its hint tells you to delete one file and count the other twice, which for two real files drops one off the invoice. The strip gets no new words | **resolved** |
+
+## New and changed
+
+- **Tokens:** none. `tokens.json` `version` is **2.7**. No variable added, renamed or removed.
+- **New classes: none. Changed classes: none. `bundle.css` is byte-identical to 2.6** — every class the two previews use was already there (`.pp-reason`, `.pp-help`, `.pp-row`, `.pp-items-start`, `.pp-w-420`, `.pp-card`, `.pp-p3`, `.pp-w-340`, `.pp-assetlist`, `.pp-flush`, `.pp-asset`, `.pp-spool`, `.pp-spoolbtn`, `.pp-qty`, `.pp-opt`, `.pp-switch`, `.pp-badge`, `.pp-mono`, `.pp-num`, `.pp-ico-20`), and both files were checked class by class against it.
+- **Copy** `spool.wholePrint.wouldApply`, `spool.wholePrint.wouldApplyNone`, `asset.sameName`, `asset.sameNameNoFolder`, and `spool.wholePrint.help` — the last one **is not new text**: it is the help line the app has rendered under "Spoel voor de hele print" since 2.3, recorded in the deck for the first time. All five are in `copy-deck.md` under *Added in 2.7*. No key changed, no key removed.
+- **Components changed:** SpoolPicker (README and preview), AssetListItem (README and preview), ModelPicker (README only — the 2.6 question is answered and one word is withdrawn).
+- **Previews changed:** SpoolPicker — the whole-print control is drawn in **all four** cells of the grid, each with the trigger state that belongs to it, plus the n = 1 singular. AssetListItem — the measured STL pair at print level, a G-code pair with the order-level controls, the row in a 420px container, and the long case: one row both excluded and same-named (two reason lines, the exclusion first) with the no-folder fallback beneath it.
+- **Pages changed:** `README.md` (*Two rules this round wrote down (2.7)*, *Versie 2.7*), `changelog.md`, `copy-deck.md`, `tokens.json`.
+- **Contrast report:** unchanged, **no new pair.** Both lines are `muted` on `surface` (and on `surface-2` for a child or slot row), already in the report at 4.5:1 or better in both themes. Nothing new is colour-carried: the same-name line is deliberately *not* `warning`.
+- **Breaking changes: none.** Two obligations are added to the app and nothing is withdrawn: pick one of four strings under the whole-print control instead of one of two, and draw one line per row of a same-name pair.
+
+## GAP-118: why not silence, which was the obvious fix
+
+The implementer's own reading was to show the line only while a spool is set, and it is the move I would expect. I am not taking it, for one reason that is measured: **83 of 83 prints in this library have no whole-print spool**, so silence would mean the line is almost never rendered. That line exists because the control had never looked like it did anything — that is what 2.3 says in SpoolPicker — so removing it in the state the whole library is in puts the control straight back to looking inert. The trigger's placeholder says there is no spool; it does not say that choosing one would move the total, and that is the fact the operator is missing.
+
+The third option, one tenseless line ("Geldt voor {n} slots zonder eigen spoel.") in both states, is also rejected: it is true in both by being specific in neither, and the whole gap exists because a sentence about money was vague about when it applied.
+
+**The fault was mine and it is the same fault twice.** GAP-115 was raised because a trigger showed its placeholder while an inherited spool was costing money; GAP-118 is the line I added in the same round, on the same control, claiming coverage while nothing was in force. In both cases I keyed a sentence on one axis of a two-axis state. The rule that follows is in `README.md`: write the grid before the sentence, and treat the word *nu* as a promise about the present.
+
+## GAP-120: why the existing badge must not stretch to cover it
+
+"Mogelijk dubbel" means **the same content**, and it carries advice: "Gebruik liever Aantal keer geprint" — delete one, count the other twice. For two distinct files that advice loses a file off the invoice. And `warning` ink says *something needs your attention*, where this condition needs nothing: two files with the same name in two folders is a fact about the library, not a fault. A badge whose hint is false in the case it was widened to cover is worse than no badge, so the badge keeps its meaning and the condition gets plain words.
+
+**Both rows carry the line, each naming its own folder.** Neither file is the original, so marking one of the two would invent a culprit, and two rows naming their own folders are what actually tells the operator which is which. `{map}` is the shortest folder form relative to the print root that differs between the two; a path that differs always exists, because one directory cannot hold two files of the same name — only the app's *record* of it can be missing, which is what `asset.sameNameNoFolder` is for.
+
+It is 3 pairs in 2 prints of 83: six muted lines in the whole library, in the one place the operator is already reading file names.
+
+## What I rejected
+
+- **Widening "Mogelijk dubbel"**, for the reason above: a true badge with false advice.
+- **New words in the model strip.** A picker's label is for choosing; the sentence that explains a data condition belongs where the files are listed, one card below. 2.6's spec stands: two identical buttons, the bubble showing the same name twice, no special case.
+- **Silence under the whole-print control** when no spool is set, and **one tenseless line** in both states. Reasons above.
+- **A live region** for either line. Both change only as a result of the viewer's own action in that same control, or not at all.
+
+## Not a numbered gap: the `play` / `film` conflict, settled
+
+`implementation.md` reports that ModelPicker's prose calls the timelapse glyph `play` while the preview draws `film`, and that the app is built as `film`. **The preview is the intention, the word is withdrawn, and nothing in the app changes.** The system already draws the distinction and I broke it in one sentence: `film` is a type glyph and says *what the file is* (AssetListItem's video row has used it since 1.9); `play` is an action and only ever an action — the `Afspelen` button, and the `.pp-play` badge that sits on top of the well in the square form. Square button: film or picture in the well, play badge over it. Compact button: film alone. It has no GAP id because it was raised in prose; if you want it tracked, the number is yours to assign.
+
+## What I want measured
+
+1. **Does an asset record carry a folder for every model file, and do the 3 same-name pairs differ in it?** This decides which of `asset.sameName` and `asset.sameNameNoFolder` fires, and whether the folder form ever needs more than one path segment. It does **not** block the build — both forms are specified — but if the answer is "no folder at all", the richer line is dead copy and I would want to know.
+2. **How often is a whole-print spool set, once the control stops looking inert?** 0 of 83 today is the measurement that drove this gap. If it is still 0 in a month, the right question is not this line but whether the control is in the wrong place.
+3. **The 240px sheet floor** is still unexercised, as `implementation.md` says. Not a gap; recorded again so it does not quietly become a claim.
+
+## Where I was unsure
+
+- **Whether four strings is one too many.** The n = 0 cells cover a state nobody has reported seeing (every slot with its own spool *and* no print spool). I wrote words for all four because this gap exists precisely from a missing cell, but the fourth is reasoning, not evidence.
+- **`asset.sameName`'s second sentence names a folder the operator may not recognise.** The print gathers files from more than one folder, but I do not know whether those folder names mean anything to them — the alternative would be naming the other file's path on each row, which says the same two things twice. If the folder names turn out to be noise, the fallback form is the better line for both rows and that is a one-key change.
+- **Whether the same-name line belongs in the order section at all.** I put it in both contexts because the fact belongs to the file; a reasonable person would keep the print's "Bestanden" card as the only place and keep the order list clean. The measured pairs are STL and never appear in an order, so this half of the rule is unexercised in this library.
+- **I did not re-verify `bundle.css`'s content beyond the class list.** I am telling you it is unchanged because I did not touch it, and the two previews only use classes I checked against the 2.6 file.
+
 # Changelog 2.6
 
 Three measurements, again before anything is built. Two of them change the rule I wrote yesterday and one of them falsifies a sentence in 2.4. The rule now grows **whichever end** reaches the difference, and where it still cannot reach — 40 of 1682 pairs, plus 3 that no rule can touch — the system **names the residue** instead of reaching further. Version 2.5 follows below.
