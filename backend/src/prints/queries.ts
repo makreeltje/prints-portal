@@ -430,10 +430,12 @@ export async function getPrintDetail(
     .map((asset) => ({
       id: asset.id,
       fileName: asset.file_name,
-      // Whether this file can give a picture of its own: an STL is rendered,
-      // a 3MF only if it carries a plate image. The strip takes one form for
-      // all of its buttons, so it has to know before it draws (ModelPicker).
-      hasPicture: asset.type === 'stl' || toBool(asset.has_thumbnail),
+      // Whether this file can give a picture of its own. Both types are
+      // rendered now: an STL from its triangles, a 3MF from its plate image
+      // or, failing that, the mesh inside the archive. A file the renderer
+      // cannot read still 404s and the button falls back to its type glyph,
+      // which is the state ModelPicker specifies.
+      hasPicture: asset.type === 'stl' || asset.type === '3mf',
     }))
     .sort((a, b) => a.fileName.localeCompare(b.fileName, 'nl'));
   const settings = await readSettings(db);

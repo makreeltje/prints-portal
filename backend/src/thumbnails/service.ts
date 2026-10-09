@@ -7,6 +7,7 @@ import { readThreeMf } from '../core/threemf.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { AssetType } from '../core/files.js';
 import { parseStl, renderStl } from './stl.js';
+import { readThreeMfMesh } from './threemf-mesh.js';
 
 /**
  * Preview image per print, in this order (plan, "Thumbnail order"):
@@ -164,7 +165,20 @@ export class ThumbnailService {
       } else if (candidate.kind === '3mf' || candidate.kind === 'cxprj') {
         const meta = await readThreeMf(absolute);
         const data = meta.thumbnail;
-        if (data !== null) image = { data, contentType: 'image/png' };
+        if (data !== null) {
+          image = { data, contentType: 'image/png' };
+        } else if (candidate.kind === '3mf') {
+          // No plate image: render the geometry, the way an STL is rendered.
+          // 95 of this library's 376 models are 3MF, and before this the ones
+          // the slicer gave no picture showed a glyph beside STLs that had one.
+          const mesh = await readThreeMfMesh(absolute);
+          if (mesh !== null) {
+            image = {
+              data: renderStl(mesh, { ...STL_SIZE, colour: null }),
+              contentType: 'image/png',
+            };
+          }
+        }
       } else {
         const info = await stat(absolute);
         if (info.size <= MAX_STL_BYTES) {
