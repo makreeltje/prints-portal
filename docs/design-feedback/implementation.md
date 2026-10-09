@@ -8,8 +8,9 @@ open, and where either of us got something wrong. The design system owns
 Everything below was measured in the running app against a real library (83
 prints, 10 klanten, 29 spools, about two years of history).
 
-- App version **1.0.0**, built against design system **2.3**.
-- **118 gaps logged, 1 open** (GAP-118, raised below). Numbering is unbroken.
+- App version **1.0.0**, built against design system **2.3**; 2.4 and 2.5 are published and not yet imported.
+- **119 gaps logged, 2 open**: GAP-118 (raised below) and GAP-119, which 2.5 answers
+  and this app has not yet built. Numbering is unbroken.
 - 2.0, 2.0.1, 2.1, 2.2 and 2.3 are imported and verified; the export checker
   confirms every class and copy key each changelog claims.
 - **No `ds-gap` marker is left in the frontend.**
@@ -110,6 +111,33 @@ the compact strip is exactly right. Both forms now earn their place.
 
 It also leaves `--pp-modelbtn-max` relevant only to the compact form, which is
 now the minority case. The 60% truncation figure below still stands for it.
+
+## Measurements for 2.4 and 2.5
+
+| | |
+|---|---|
+| pairs within a print sharing their first 7 characters | **480 of 1682 (29%)** |
+| sharing their last 7 | 161 (10%) |
+| sharing **both** ends | **55 (3.3%)** |
+| of those 55, tail extension separates | **15** |
+| of those 55, **no tail length separates** | **40** |
+| prints holding two models with identical names | **2 of 83** (3 pairs) |
+| characters in the 112px box at `text-xs` | **15**, as specified |
+| median name at `text-xs` | 173px |
+| names overflowing 112px | **289 of 376 (77%)** |
+| prints reaching the compact form | **1 of 79** |
+| 3MF plate images fully opaque | 0 of 20 |
+| paint, 29-picture strip, with and without `.pp-art` | median 16.7ms both, **0 long frames** |
+
+**Two corrections of mine this round.** I reported the name size as 15px: `text`
+is the ink token and `.pp-modelbtn .nm` is `--text-xs`. And I offered
+`Onderdeel_01.stl` vs `_06.stl` as the failing case without checking it against
+the published split — those differ inside the tail and never collided.
+
+**The finding that matters:** of the 55 colliding pairs, **40 cannot be separated
+by extending the tail at all**, because this library's collision is a number in
+the *middle* of a long name (`Babybox lock corner 20 inner width.stl` against
+`21` and `22`, at index 20 of 38). Neither end reaches it.
 
 ## What I am raising
 
