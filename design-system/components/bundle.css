@@ -724,9 +724,9 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-viewer.is-empty .pp-ico-24{margin:0;flex:none}
 /* GAP-086 model picker */
 .pp-models{display:flex;gap:var(--space-2);overflow-x:auto;padding:var(--space-1);max-width:560px;scrollbar-width:thin}
-.pp-modelbtn{appearance:none;flex:none;width:76px;display:flex;flex-direction:column;gap:var(--space-1);align-items:stretch;padding:var(--space-1);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);color:var(--muted);font:inherit;font-size:var(--text-xs);line-height:var(--leading-xs);cursor:pointer;text-align:center}
+.pp-modelbtn{appearance:none;flex:none;width:var(--pp-modelbtn-w);display:flex;flex-direction:column;gap:var(--space-1);align-items:stretch;padding:var(--space-1);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);color:var(--muted);font:inherit;font-size:var(--text-xs);line-height:var(--leading-xs);cursor:pointer;text-align:center}
 .pp-modelbtn .pp-thumb{width:100%;aspect-ratio:1;border-radius:var(--radius-sm)}
-.pp-modelbtn .nm{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-modelbtn .nm{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
 .pp-modelbtn:hover{border-color:var(--border-strong)}
 .pp-modelbtn[aria-pressed=true]{border-color:var(--primary);background:var(--primary-tint-soft);color:var(--text-strong)}
 .pp-modelbtn:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
@@ -1063,10 +1063,72 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
    specified for the day a per-model render exists; until then `.pp-models.compact` puts
    the glyph beside the name and gives the name the width. The strip scrolls sideways at
    every count (the owner's decision over 2.0.1's wrap). */
-:root{--pp-modelbtn-max:200px}
+:root{--pp-modelbtn-max:240px}
 .pp-models.compact{align-items:center;padding-block:var(--space-1)}
 .pp-models.compact .pp-modelbtn{width:auto;max-width:var(--pp-modelbtn-max);min-width:0;flex-direction:row;align-items:center;gap:var(--space-2);min-height:var(--pp-control-h);padding:0 var(--space-3);text-align:left}
 .pp-models.compact .pp-modelbtn .pp-ico{flex:none}
 .pp-models.compact .pp-modelbtn .nm{font-family:var(--font-mono);font-size:var(--text-xs);min-width:0}
 /* `.dur` is kept for a strip that one day knows a duration; the indexer reads none and
    reading it in the browser would fetch every video, so 2.3 shows no duration. */
+
+/* ---- 2.4 (2026-10-09) --------------------------------------------------
+   GAP-119 A FILE NAME IS CUT IN THE MIDDLE, AND THE MECHANISM HAS A NAME.
+   `README.md` has said since 1.0 that file names are mono and middle-truncated,
+   and `.pp-asset .fn` has done it with a shrinking head (`.a`) and a fixed tail
+   (`.b`). `.pp-modelbtn .nm` was plain `text-overflow:ellipsis`, which cuts the
+   END: "Honeycomb.stl" read "Honeyco..." and the extension -- on a strip that
+   mixes STL and 3MF, the one thing that tells two buttons apart -- was the first
+   thing lost. Measured: 483 of 501 model and timelapse names (96%) overflow the
+   name box, so that was the normal case and not an edge.
+   `.pp-fname` is the mechanism with a name, for any file name in any component.
+   The APP splits the string, CSS cannot: `.b` is the extension plus the three
+   stem characters before the dot ("_03.stl", "ize.stl"), `.a` is the rest and
+   shrinks. Both measured families survive it -- names that differ at the start
+   (obj_2_... / obj_7_...) keep their head, names that differ at the end
+   (Onderdeel_01 / _03) keep their tail. End truncation keeps only the first.
+   `.pp-asset .fn` already carries identical rules and is left alone; it may take
+   `.pp-fname` as well, with no visual change. */
+.pp-fname{display:flex;flex-wrap:nowrap;min-width:0;max-width:100%;font-family:var(--font-mono)}
+.pp-fname>.a{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-fname>.b{flex:none;white-space:nowrap}
+
+/* GAP-116 THE SQUARE HOLDS A REAL PICTURE NOW, SO IT IS 112px WIDE.
+   281 of 376 model files render (every STL; a 3MF only where it carries a plate
+   image), so the square form is the normal one again and `.pp-models.compact` is
+   the minority -- the strip a print gets when no button can show itself. A 68px
+   square held a glyph; a real render is worth the width.
+   120px of button = 112px of picture and 112px of name, which is 15 mono
+   characters at `text-xs`: 7 + the ellipsis + 7. That is the narrowest width at
+   which both ends of a name stay legible, and the median print (4 pictures)
+   still shows every button inside the 560px strip without scrolling
+   (4x120 + 3x8 = 504). One width at every breakpoint: a picture button is not a
+   36/44px control, and the strip scrolls on a phone as it does on a desktop.
+   `--pp-modelbtn-max` (240px) is the compact form's cap and holds the median
+   name (25 characters, 181px) whole; p90 (57) and the longest (105) cannot be
+   held by any width that leaves the strip a picker, so they truncate and the
+   bubble below carries them. */
+:root{--pp-modelbtn-w:120px}
+.pp-modelbtn .pp-thumb{overflow:hidden}
+.pp-modelbtn[aria-pressed=true] .nm{color:var(--text-strong)}
+.pp-modelbtn .nm.pp-fname{display:flex;justify-content:center}
+.pp-models.compact .pp-modelbtn .nm.pp-fname{justify-content:flex-start}
+/* A per-model render is a picture this app made, so it carries `.pp-art` like a
+   print thumbnail: the page outlines the silhouette from the picture's own alpha
+   in `border-strong` (3.69 light / 3.32 dark on `surface-2`). Nothing is baked
+   into the PNG. A model file the renderer could not read keeps the type glyph on
+   the same `surface-2` well. */
+
+/* GAP-119 THE FULL NAME IS READ WITHOUT CHOOSING THE BUTTON, with the system's
+   own tooltip in the window-placed `.at` form -- only when the name is actually
+   truncated, never when it fits. The bubble IS the button's accessible name
+   ("Model {naam}" already carries the whole name), so it is `aria-hidden="true"`
+   and there is no `aria-describedby` (Tooltip, *Name or description*).
+   THE BUBBLE IS NOT A CHILD OF `.pp-models`. The strip scrolls, and
+   `.pp-models.is-overflow` carries a `mask-image`, which creates a stacking
+   context: a fixed bubble painted over the strip's fading edge fades with it.
+   A mask is the fourth property in the list under *Floating panels* rule 8,
+   beside transform, filter and backdrop-filter. */
+.pp-device.pane{width:600px;flex:none}
+/* `.pp-device.pane` is a preview helper, like `.pp-w-900`: a 600px frame that
+   stands in for the window so a preview can draw a `.at` bubble without it
+   escaping to the page (`.pp-device .pp-tip.at` is absolute). Not app markup. */

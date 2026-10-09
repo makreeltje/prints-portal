@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { placeTip } from './tipPlacement';
 
 /**
  * Tooltip: the design system's bubble, in its window-placed form.
@@ -22,25 +23,9 @@ export function Tooltip({ label, children }: { label: string; children: ReactNod
   useLayoutEffect(() => {
     if (!open) return;
     const trigger = anchor.current?.getBoundingClientRect();
-    const box = bubble.current?.getBoundingClientRect();
-    if (trigger === undefined || box === undefined) return;
-    // Each axis on its own, as Popover does: hang from the right edge when a
-    // left-aligned bubble would pass the window, and drop below when there is
-    // no room above.
-    const end = trigger.left + box.width > window.innerWidth;
-    const down = trigger.top < box.height;
     const element = bubble.current;
-    if (element === null) return;
-    element.classList.toggle('end', end);
-    element.classList.toggle('down', down);
-    element.style.setProperty(
-      '--pp-tip-x',
-      `${String(Math.round(end ? trigger.right : trigger.left))}px`,
-    );
-    element.style.setProperty(
-      '--pp-tip-y',
-      `${String(Math.round(down ? trigger.bottom : trigger.top))}px`,
-    );
+    if (trigger === undefined || element === null) return;
+    placeTip(element, trigger);
   }, [open]);
 
   useEffect(() => {
