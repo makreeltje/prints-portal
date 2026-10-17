@@ -76,6 +76,18 @@ export function Dialog({
         event.preventDefault();
         if (!busy) onClose();
       }}
+      /*
+        A click beside the panel closes a dialog that has nothing to lose
+        (`ds-gap: GAP-147`). Not one with a form or a destructive confirmation:
+        there a stray click would discard work or answer a question nobody
+        meant to answer. The target test is how a native dialog reports a
+        backdrop click — the event lands on the dialog element itself, never on
+        anything inside the panel.
+      */
+      onClick={(event) => {
+        if (busy || onSubmit !== undefined || alert) return;
+        if (event.target === ref.current) onClose();
+      }}
     >
       {open && (
         <Panel size={size} panelClass={panelClass} onSubmit={onSubmit}>

@@ -1,5 +1,6 @@
 import { Ellipsis } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useAnchoredPanel } from './anchoredPanel';
 import { t } from '../i18n/nl';
 
 export interface MenuItem {
@@ -39,12 +40,23 @@ export function OverflowMenu({ items, label }: { items: MenuItem[]; label?: stri
     };
   }, [open]);
 
-  if (items.length === 0) return null;
-
   const close = () => {
     setOpen(false);
     trigger.current?.focus();
   };
+
+  /*
+    Window-placed, not anchored (`ds-gap: GAP-146`). The card's own rule
+    `.pp-cust .acts .pp-btn,.pp-cust .end .pp-anchor{position:relative;z-index:1}`
+    gives the anchor a stacking context, so `.pp-pop`'s z-index 30 is compared
+    only inside it — and the Factuur button, lifted by the same rule to the
+    same level, then wins on DOM order and paints over the menu. `.at` leaves
+    the context altogether, which is what 2.3 gave Popover for the clipping
+    case.
+  */
+  useAnchoredPanel(panel, trigger, open, close);
+
+  if (items.length === 0) return null;
 
   /** Up and down walk the items, as a menu is expected to. */
   const onPanelKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -64,7 +76,7 @@ export function OverflowMenu({ items, label }: { items: MenuItem[]; label?: stri
   };
 
   return (
-    <span className="pp-anchor end">
+    <span className="pp-lift">
       <button
         ref={trigger}
         type="button"
@@ -81,7 +93,7 @@ export function OverflowMenu({ items, label }: { items: MenuItem[]; label?: stri
       {open && (
         <div
           ref={panel}
-          className="pp-pop pp-menu"
+          className="pp-pop pp-menu at"
           role="menu"
           aria-label={label ?? t('menu.more')}
           onKeyDown={onPanelKeyDown}

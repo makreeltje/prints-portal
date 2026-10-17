@@ -173,18 +173,25 @@ function CustomerCard({
       <div className="hd">
         <b>
           {/* The button is stretched over the tile, so the amount filters too. */}
+          {/*
+            The name alone: CustomerCard's anatomy puts the count in `.cnt`
+            beside it, and showing both made the tile read "Anouk, 2 prints …
+            2 prints" and squeezed the small one onto three lines. The count
+            stays in the accessible name, where it is not repetition.
+          */}
           <button
             type="button"
             className="pp-cust-name"
             aria-pressed={isSelected}
+            aria-label={t('customers.tile', {
+              customer: customer.folder,
+              count: customer.printCount,
+            })}
             onClick={() => {
               onSelect(isSelected ? null : customer.folder);
             }}
           >
-            {t('customers.tile', {
-              customer: customer.folder,
-              count: customer.printCount,
-            })}
+            {customer.folder}
           </button>
         </b>
         <span className="end">
