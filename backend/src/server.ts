@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildApp } from './app.js';
 import { BootstrapError, ensureBootstrapAdmin } from './auth/bootstrap.js';
+import { CALLBACK_PATH } from './auth/oidc.js';
 import { ConfigError, loadConfig, type AppConfig } from './config/config.js';
 import { checkDataDir } from './config/data-dir.js';
 import { createDatabase } from './db/connection.js';
@@ -86,6 +87,24 @@ async function main(): Promise<void> {
     },
     'prints portal started',
   );
+
+  /*
+    The redirect address, where the provider's own error for a mismatch never
+    says what was sent. It is built from PUBLIC_URL, so this line also shows
+    whether that value reached the container at all — behind a proxy it is the
+    external https address, not the internal one, and the two are easy to swap.
+    No secret is in it; the issuer and client id are the public half.
+  */
+  if (config.auth.oidc !== null && config.auth.publicUrl !== null) {
+    app.log.info(
+      {
+        issuer: config.auth.oidc.issuer,
+        clientId: config.auth.oidc.clientId,
+        redirectUri: `${config.auth.publicUrl}${CALLBACK_PATH}`,
+      },
+      'OIDC is on; register this exact redirect address with the provider',
+    );
+  }
 
   // The watcher starts first so nothing changed during the initial scan is missed;
   // both go through the indexer's queue.
