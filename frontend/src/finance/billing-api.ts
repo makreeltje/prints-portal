@@ -46,7 +46,10 @@ export interface InvoicePreview {
   total: number;
   paid: number;
   open: number;
+  /** Left out because no sale price is set: an input is missing. */
   excluded: string[];
+  /** Left out because the klant refused the quote: a decision was taken. */
+  declined: string[];
   earlier: { description: string; invoiceNumber: string }[];
   nextNumber: string;
   /** Bedrijfsgegevens has a name and an IBAN; without them finalising is refused. */

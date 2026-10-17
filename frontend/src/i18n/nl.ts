@@ -496,7 +496,11 @@ export const nl = {
   'invoice.total': 'Totaal',
   'invoice.paid': 'Betaald',
   'invoice.outstanding': 'Openstaand',
-  'invoice.omitted': '{count} prints zonder verkoopprijs zijn weggelaten: {names}.',
+  'invoice.omitted':
+    '{count, plural, one {# print zonder verkoopprijs is weggelaten} other {# prints zonder verkoopprijs zijn weggelaten}}: {names}.',
+  'invoice.omittedDeclined':
+    '{count, plural, one {# print is niet doorgegaan en wordt niet gefactureerd} other {# prints zijn niet doorgegaan en worden niet gefactureerd}}: {names}.',
+  'invoice.omittedMore': 'en {count} andere',
   'invoice.conceptDownload': 'Concept downloaden',
   'invoice.finalize': 'Definitief maken',
   'invoice.noLines': 'Geen regels in deze periode.',

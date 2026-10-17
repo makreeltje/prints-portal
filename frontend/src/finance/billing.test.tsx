@@ -179,9 +179,34 @@ describe('InvoiceExportDialog', () => {
     paid: onlyOpen ? 0 : 5,
     open: onlyOpen ? 6.89 : 40.67,
     excluded: ['Dopje', 'Houder blauw'],
+    declined: [],
     earlier: [],
     nextNumber: '2026-008',
     companyReady: true,
+  });
+
+  it('says why a print is left out, and never calls a declined one price-less', async () => {
+    const many = ['Een', 'Twee', 'Drie', 'Vier', 'Vijf', 'Zes', 'Zeven'];
+    stubFetch({
+      'GET /api/customers/Joey/invoice/preview': () => ({
+        json: { ...preview(false), excluded: ['Dopje'], declined: many },
+      }),
+    });
+    renderWithAuth(<InvoiceExportDialog customer="Joey" onClose={() => undefined} />);
+
+    // The two reasons are different sentences; the declined one is not a warning.
+    const declined = await screen.findByText(/niet doorgegaan en worden niet gefactureerd/i);
+    expect(declined.closest('.pp-alert')).toBeNull();
+    expect(declined.textContent).toContain('7 prints');
+    // Five names, then the rest counted: an unbounded list would put 83 in one sentence.
+    expect(declined.textContent).toContain('Een, Twee, Drie, Vier, Vijf en 2 andere');
+    expect(declined.textContent).not.toContain('Zes');
+
+    // The price-less sentence keeps its warning, and does not claim the declined ones.
+    const omitted = screen.getByText(/zonder verkoopprijs is weggelaten/i);
+    expect(omitted.closest('.pp-alert')).not.toBeNull();
+    expect(omitted.textContent).toContain('1 print');
+    expect(omitted.textContent).not.toContain('Een');
   });
 
   it('previews, downloads a concept and finalises after confirming', async () => {

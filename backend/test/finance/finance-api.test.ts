@@ -368,12 +368,18 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       false,
     );
 
-    // Named in the invoice draft's exclusions rather than silently dropped.
+    /*
+      Named in the draft's exclusions rather than silently dropped — and in its
+      own list, because a declined order has a price and must not be announced
+      as one "zonder verkoopprijs" (GAP-140).
+    */
     const preview = (await t.as(admin, { url: '/api/customers/Joey/invoice/preview' })).json<{
       lines: unknown[];
       excluded: string[];
+      declined: string[];
     }>();
-    expect(preview.excluded.some((d) => d.includes('Babybox locks'))).toBe(true);
+    expect(preview.declined.some((d) => d.includes('Babybox locks'))).toBe(true);
+    expect(preview.excluded.some((d) => d.includes('Babybox locks'))).toBe(false);
 
     // Any state may follow any other, with no confirmation (owner's rule).
     expect((await call('PUT', '/state', { state: 'undecided' })).statusCode).toBe(204);

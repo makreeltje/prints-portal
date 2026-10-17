@@ -311,6 +311,7 @@ describe('DashboardPage', () => {
           paid: 0,
           open: 0,
           excluded: [],
+          declined: [],
           earlier: [],
           nextNumber: '2026-001',
           companyReady: true,

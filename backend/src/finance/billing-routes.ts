@@ -225,6 +225,7 @@ export function registerBillingRoutes(app: FastifyInstance, deps: BillingRouteDe
           paid: draft.paidCents / 100,
           open: draft.openCents / 100,
           excluded: draft.excluded,
+          declined: draft.declined,
           earlier: draft.earlier,
           nextNumber: await nextInvoiceNumber(db, now()),
           companyReady: companyReady(await readSettings(db)),
