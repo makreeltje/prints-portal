@@ -1443,3 +1443,236 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing; Esc and the close button work.
 - **Temporary placeholder approved:** yes (2026-10-17, the owner asked for it). A backdrop click closes a dialog that has no `onSubmit` and is not an `alert`, marked `ds-gap: GAP-147`.
 - **Design system version:** 2.7
+
+<!--
+  GAP-121 to GAP-145 were raised by the design system itself, in versions
+  2.8, 2.9 and 2.10, rather than by this app. They are recorded here so the
+  log is the whole record and so nobody reuses a number — which nearly
+  happened with 146 and 147. Each entry says what it was about and how it was
+  decided; the reasoning lives in the changelog of the version named.
+-->
+
+## GAP-121 [resolved in v2.8] Do the tags earn their place, now that the five production tags look like a state machine?
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** Do the tags earn their place, now that the five production tags look like a state machine?
+- **Decision:** **Yes — as labels, and the rule for what a tag may be is written down.** A tag is a property; a label whose values are mutually exclusive and ordered is state and gets a status. The reason is mechanical and in this system: TagEditor's rows are checkboxes, FilterBar's tag filter is AND, tags have no order and carry no date, so `printing` + `done` on one print is representable and nothing refuses it. Of the owner's five, `gift` is a tag; `waiting`, `abandoned`, `printing`, `done` are stages. **Nothing to build** — no class, token, copy key or migration
+- **Status as published:** resolved
+- **Design system version:** 2.8
+
+## GAP-122 [resolved in v2.8] What shape a record with no files takes
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** What shape a record with no files takes
+- **Decision:** **Not the shape of a record with files.** No PrintCard, no thumbnail well, no SpoolSwatch, no 40px `.pp-thumb`, and the "no preview" box icon is **not** reused — it means *this print has no picture*, not *this job has no files*, and one glyph may not carry both. It reads as a line of text: a `.pp-table` row or a stacked block. **Nothing to build today**; it is a refusal that binds whatever gets built
+- **Status as published:** resolved
+- **Design system version:** 2.8
+
+## GAP-123 [resolved in v2.10] Where a fileless record lives
+- **Type:** raised by the design system (v2.10)
+- **Found while:** the request-lifecycle rounds, 2.10
+- **Where needed:** see 2.10 in `changelog.md`
+- **What is missing or wrong:** Where a fileless record lives
+- **Decision:** **Confirmed, and now live rather than hypothetical.** The owner chose **hand-linking** — requests reach him anywhere and he only ever makes folders on his laptop — so a record exists with no folder, and ScreenQueue is the **only** place it appears: not the dashboard grid or list, not "{shown} van {total} prints", not the klant count, not the print search. It joins all of them the moment it has files, with no special case
+- **Status as published:** confirmed as built
+- **Design system version:** 2.10
+
+## GAP-124 [resolved in v2.10] The queue: page or a block on the dashboard
+- **Type:** raised by the design system (v2.10)
+- **Found while:** the request-lifecycle rounds, 2.10
+- **Where needed:** see 2.10 in `changelog.md`
+- **What is missing or wrong:** The queue: page or a block on the dashboard
+- **Decision:** **A page, `/wachtrij`, and my instinct was wrong.** 2.8 set the threshold at about eight and said no screen gets a nav item for three rows. Measured: **about 4 open requests at a normal moment, regularly above 10** — and the state that costs him is not the steady one, it is *"die moet ik dan allemaal onthouden"*. Two collapsible groups keyed on the states that shipped in 2.9, built from `.pp-ogrp` unchanged, both open by default because at four to ten rows the value is seeing them all. No stat tiles and no expand-all toolbar (GAP-101's lesson), and the ten-row cap with "Toon alle {n} regels" i
+- **Status as published:** resolved
+- **Design system version:** 2.10
+
+## GAP-125 [resolved in v2.8] Should the queue schedule — dates, priorities, drag-ordering, "when will this print"
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** Should the queue schedule — dates, priorities, drag-ordering, "when will this print"
+- **Decision:** **No.** One operator, one printer, 84 prints. A stage per job is the whole value; a planner is a second product with its own staleness problem, and every date in it would be an asserted fact nobody re-checks. Rejected now, before it is asked for, so the queue does not grow into one
+- **Status as published:** rejected (scheduling is a second product; a stage per job is the whole value)
+- **Design system version:** 2.8
+
+## GAP-126 [resolved in v2.8] Carrying the request lifecycle in the payment StatusBadge
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** Carrying the request lifecycle in the payment StatusBadge
+- **Decision:** **No.** That badge's payment group means *money owed* and the whole UI reads it that way; the completeness group means *an input is missing from a record*, which a declined quote is not. A request stage is its own group, neutral or `info`, never `paid`/`unpaid`/`warning`
+- **Status as published:** rejected (the payment group means money owed; a request stage is not money)
+- **Design system version:** 2.8
+
+## GAP-127 [resolved in v2.9] How a declined quote reads
+- **Type:** raised by the design system (v2.9)
+- **Found while:** the request-lifecycle rounds, 2.9
+- **Where needed:** see 2.9 in `changelog.md`
+- **What is missing or wrong:** How a declined quote reads
+- **Decision:** **Built as specified and verified.** `Niet doorgegaan` with the neutral badge, the amount `muted` and prefixed "was" with **no strikethrough**, the date, and out of every total — measured: a declined order leaves Openstaand, EUR 299,82 → 299,65 → 299,82, and comes back. The three words are exactly as written. Nothing in the system changes
+- **Status as published:** confirmed as built
+- **Design system version:** 2.9
+
+## GAP-128 [resolved in v2.10] The matching mechanism
+- **Type:** raised by the design system (v2.10)
+- **Found while:** the request-lifecycle rounds, 2.10
+- **Where needed:** see 2.10 in `changelog.md`
+- **What is missing or wrong:** The matching mechanism
+- **Decision:** **The owner chose, and it is the option I ranked first for UI cost — for a reason neither of us had.** Not "fewest controls": **capture**. A request arrives while he is in someone's kitchen or on the road, and "empty folder first" would ask him there to do the one thing he only ever does at his laptop. "Aanvraag toevoegen" works in a phone browser with no folder. The UI consequence is one control, **"Bestanden koppelen"**, on the row that has none — and it links to a folder that exists; nothing creates one (rule 7)
+- **Status as published:** resolved
+- **Design system version:** 2.10
+
+## GAP-129 [open] Whether a tag set really does hold two stages at once in the real library
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** Whether a tag set really does hold two stages at once in the real library
+- **Decision:** My central argument in GAP-121 is mechanical and I have not seen it happen. If **no** print carries two of the four stage tags, the argument is sound but theoretical, and I want that on the record rather than implied. **Production only** — the local build has 0 tags, so this is the owner's to answer, not the implementer's
+- **Status as published:** needs your measurement
+- **Design system version:** 2.8
+
+## GAP-130 [resolved in v2.8] `pp-allcust` on the wrong element in the app — and the spec that could not have told them
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** `pp-allcust` on the wrong element in the app — and the spec that could not have told them
+- **Decision:** **The dialog's markup is named, which it never was.** `pp-allcust` goes on the same element as `pp-dialog`; `pp-custs` is the grid wrapper inside `.pp-body` and appeared in **no README in this system**, only in `bundle.css` and the preview. The app bug is the implementer's; the half of it that is a spec hole is mine, and this closes it
+- **Status as published:** resolved
+- **Design system version:** 2.8
+
+## GAP-131 [resolved in v2.9] Setting a state from a selection
+- **Type:** raised by the design system (v2.9)
+- **Found while:** the request-lifecycle rounds, 2.9
+- **Where needed:** see 2.9 in `changelog.md`
+- **What is missing or wrong:** Setting a state from a selection
+- **Decision:** **Built: `Status instellen` beside `Prijs instellen`**, verified on three prints at once, axe 0, 1455 backend tests on three databases
+- **Status as published:** confirmed as built
+- **Design system version:** 2.9
+
+## GAP-132 [resolved in v2.8] Is **revision** — v1…v5 of one design, where the later supersedes the earlier — a fourth thing, or is it what 
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** Is **revision** — v1…v5 of one design, where the later supersedes the earlier — a fourth thing, or is it what *in progress* looks like?
+- **Decision:** **A fourth thing, and the answer is a rule rather than a feature.** It is not a stage: the three request states are about the **job**, revision is about the **files**, and a job sitting in `Mee bezig` is exactly where versions accumulate — so the stages do not cover it and do not conflict with it either. Supersession is the **third relation** between two files of one print and the only one carrying a direction. The rule: **a direction between two files may be drawn only where it is observed or recorded, never where it is read out of the file's name.** Nothing is drawn until it is recorded
+- **Status as published:** resolved
+- **Design system version:** 2.8
+
+## GAP-133 [resolved in v2.8] Making the model strip version-aware: v5 first, v1–v4 collapsed, one marked "huidige"
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** Making the model strip version-aware: v5 first, v1–v4 collapsed, one marked "huidige"
+- **Decision:** **No.** The direction would be inferred from the middle of a long file name — the exact zone 2.4–2.6 proved unreadable (`v10` sorts before `v9`; `Fidget Clicking Wheel 2.0` is a product name) — off a figure its own author calls a regex. Hiding four buttons on that basis is GAP-115's fault with a worse consequence: the operator cannot reach a file. The sort stays the file name and every button stays an equal
+- **Status as published:** rejected (the direction would be inferred from the one zone of a name this system cannot read)
+- **Design system version:** 2.8
+
+## GAP-134 [resolved in v2.8] How much of 2.6's accepted residue is version pairs rather than distinct parts
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** How much of 2.6's accepted residue is version pairs rather than distinct parts
+- **Decision:** **Zero of 55 — my hypothesis is falsified and 2.6 was right.** The pair that prompted it is two files with the byte-identical name (the GAP-120 case), not `v1` against `v2`; versions in this library never collide. 2.6's residue is exactly what 2.6 called it. **It strengthens GAP-132** rather than weakening it: supersession is a relation the label never meets, not a special case of one it does
+- **Status as published:** confirmed as built
+- **Design system version:** 2.8
+
+## GAP-135 [resolved in v2.8] The label rule had two floors and no ceiling, so a sweep derived from it can propose a tail longer than its ow
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** The label rule had two floors and no ceiling, so a sweep derived from it can propose a tail longer than its own window
+- **Decision:** **The ceiling is stated as arithmetic, and the spec hole was mine.** The tail never exceeds `W - 1 - 2` characters **including the extension** — **12** at the strip's 15-character window — the head is `W - 1 - tail`, and the sweep runs over the tail from `extension + 3` up to 12 and back down to the bare extension (stem at most 8 for a four-character extension). 2.5 wrote the floors and not the bound, and an implementation grew the *stem* to `W - 1 - 2` and added the extension, proposing a 16-character tail in a 15-character box. Latent, not live, in this library; the code fix is the implement
+- **Status as published:** resolved
+- **Design system version:** 2.8
+
+## GAP-136 [resolved in v2.8] The split I derived by subtraction, and what class of figure any of these counts are
+- **Type:** raised by the design system (v2.8)
+- **Found while:** the request-lifecycle rounds, 2.8
+- **Where needed:** see 2.8 in `changelog.md`
+- **What is missing or wrong:** The split I derived by subtraction, and what class of figure any of these counts are
+- **Decision:** **16 separated, not the 19 I derived — and the split is three buckets, not two: 55 = 3 byte-identical + 16 separated + 36 unreachable.** `55 - 36` counts the byte-identical pairs as separated; they are **neither**, because the rule never runs where there is nothing to tell apart. That is the rule's **domain**, not a failure of it, and it is now stated as such. Second half, and it is a rule: **a figure counted from a re-implementation of a spec is "as specified", not "as rendered"**, and may not be quoted as the latter
+- **Status as published:** resolved
+- **Design system version:** 2.8
+
+## GAP-137 [resolved in v2.9] `/prints:ro` is about **ownership**, not only safety
+- **Type:** raised by the design system (v2.9)
+- **Found while:** the request-lifecycle rounds, 2.9
+- **Where needed:** see 2.9 in `changelog.md`
+- **What is missing or wrong:** `/prints:ro` is about **ownership**, not only safety
+- **Decision:** **New rule 7.** Nextcloud owns that tree; anything written behind it is invisible to the person it was written for. So **no screen may offer to put a file where the operator will look for it** — no "create folder", no "save to the prints folder", no "export here", and no empty state that tells them the app will make a place for their files. The portal reads that tree and writes to it never. This generalises past the mount: wherever another system owns a location, the design treats it as **read-only in principle**, not as a permission that might be widened
+- **Status as published:** resolved
+- **Design system version:** 2.9
+
+## GAP-138 [resolved in v2.9] "Geen status" as a fourth choice in the dialog rather than a separate clear action
+- **Type:** raised by the design system (v2.9)
+- **Found while:** the request-lifecycle rounds, 2.9
+- **Where needed:** see 2.9 in `changelog.md`
+- **What is missing or wrong:** "Geen status" as a fourth choice in the dialog rather than a separate clear action
+- **Decision:** **The implementer's call and it is right; it becomes the rule.** Absence is a **value**, not an operation: four radios, one of them "Geen status". A separate "Status wissen" would make clearing a different kind of act from setting, give the bulk report two shapes to explain, and offer a destructive-looking button for something that is not destructive. **It is also the precedent this system already set** — BulkDialogs' spool dialog has carried "Geen spoel" as the **last option in the list** since 1.4, not a remove button, and the Tags page has "Geen kleur" in the palette. I had not generalised 
+- **Status as published:** resolved
+- **Design system version:** 2.9
+
+## GAP-139 [resolved in v2.9] A declined order is **named** in an invoice draft's exclusions instead of silently absent
+- **Type:** raised by the design system (v2.9)
+- **Found while:** the request-lifecycle rounds, 2.9
+- **Where needed:** see 2.9 in `changelog.md`
+- **What is missing or wrong:** A declined order is **named** in an invoice draft's exclusions instead of silently absent
+- **Decision:** **Better than my spec, and adopted.** 2.8 said only "excluded from every total", which is satisfied by saying nothing — and silence is exactly what the operator cannot check. **An amount left out of a document is named in that document, with its reason.** This too was already the system's habit and I failed to state it: ScreenInvoiceExport has carried a `warning` alert naming the prints left out for having no price since 1.0. **One thing to confirm: which string does it use?** If the declined order is listed under `{n} prints zonder verkoopprijs zijn weggelaten: {namen}.` that line is false of
+- **Status as published:** resolved**, with the copy key to confirm
+- **Design system version:** 2.9
+
+## GAP-140 [resolved in v2.9] The declined order is named through `invoice.omitted` — "{count} prints **zonder verkoopprijs** zijn weggelate
+- **Type:** raised by the design system (v2.9)
+- **Found while:** the request-lifecycle rounds, 2.9
+- **Where needed:** see 2.9 in `changelog.md`
+- **What is missing or wrong:** The declined order is named through `invoice.omitted` — "{count} prints **zonder verkoopprijs** zijn weggelaten" — in a `pp-alert warning` with `triangle-alert`
+- **Decision:** **The list splits: two conditions, two lines, two tones.** A print quoted at EUR 24,50 and refused was announced as having no sale price, in orange: the reason false and the ink claiming something to do on the one line whose point is that nothing is. The `warning` alert keeps **only** the missing-price exclusions (there is something to do: set a price, remake the invoice). The declined ones become a **`muted` `.pp-reason` line in the preview card**, under the `Regels` row it qualifies, **no alert, no border, no glyph** — GAP-120's ruling applied to the same shape of fault. Not `info` either: `
+- **Status as published:** resolved
+- **Design system version:** 2.9
+
+## GAP-141 [resolved in v2.9] Both exclusion lines: no plural form, and `{names}` unbounded
+- **Type:** raised by the design system (v2.9)
+- **Found while:** the request-lifecycle rounds, 2.9
+- **Where needed:** see 2.9 in `changelog.md`
+- **What is missing or wrong:** Both exclusion lines: no plural form, and `{names}` unbounded
+- **Decision:** **ICU plurals and a cap of five.** "1 prints zonder verkoopprijs **zijn** weggelaten" renders today and n = 1 is the common case for that alert, so `invoice.omitted` **changes** (same key, correct grammar). And 83 price-less prints would list 83 names in one sentence in a 560px dialog: both lines name at most five, then `invoice.omittedMore` "en {count} andere". `do-dont.md` has required a cap on a growing list since 2.2 and this alert was exempt by oversight
+- **Status as published:** resolved
+- **Design system version:** 2.9
+
+## GAP-142 [resolved in v2.9] 2.9's own wording: "an amount left out of a document is named in **that document**"
+- **Type:** raised by the design system (v2.9)
+- **Found while:** the request-lifecycle rounds, 2.9
+- **Where needed:** see 2.9 in `changelog.md`
+- **What is missing or wrong:** 2.9's own wording: "an amount left out of a document is named in **that document**"
+- **Decision:** **Narrowed, and the fault is mine.** Read literally it puts the operator's internal exclusions on a **customer invoice**. The rule is: **the surface where the operator creates or reviews a document names what it leaves out.** Neither line appears in the Concept PDF, the final invoice, the Overzicht or the share page — a customer needs no list of what they declined, and internal reasoning has been barred from customer-facing output since 1.0
+- **Status as published:** resolved
+- **Design system version:** 2.9
+
+## GAP-143 [resolved in v2.10] "Aanvragen die ik nog helemaal zelf moet designen" against "sliced and waiting for the printer": two groups, o
+- **Type:** raised by the design system (v2.10)
+- **Found while:** the request-lifecycle rounds, 2.10
+- **Where needed:** see 2.10 in `changelog.md`
+- **What is missing or wrong:** "Aanvragen die ik nog helemaal zelf moet designen" against "sliced and waiting for the printer": two groups, one list, or a distinction to refuse?
+- **Decision:** **One group, and the difference is drawn by whether files exist — not by a fourth state.** Both are *his turn*; the difference is how long it takes, not what kind of act it is. A fourth state would make him **assert** what the app can **observe** (the files appeared), and rule 1 says an asserted stage goes stale in silence while an observed one cannot. So fileless rows **sort first** inside `Mee bezig` with `queue.noFiles` on each, and the summary carries "waarvan {n} zonder bestanden" — the one figure that answers *how much of my own labour is queued*. The word is the **observation**, never t
+- **Status as published:** resolved
+- **Design system version:** 2.10
+
+## GAP-144 [open] "Geprint, nog niet geleverd" — the owner's third bucket
+- **Type:** raised by the design system (v2.10)
+- **Found while:** the request-lifecycle rounds, 2.10
+- **Where needed:** see 2.10 in `changelog.md`
+- **What is missing or wrong:** "Geprint, nog niet geleverd" — the owner's third bucket
+- **Decision:** **No state exists, so it gets no group, and I am not inventing one.** 2.8 also flagged it as the group nobody would ever clear. My reading is still that *delivered* wants asserting at the moment payment is recorded rather than as an action of its own, which is one fewer thing to remember — but that is a flow question for the owner and nothing is designed for it
+- **Status as published:** proposed, needs your confirmation
+- **Design system version:** 2.10
+
+## GAP-145 [open] The age thresholds on a queue row
+- **Type:** raised by the design system (v2.10)
+- **Found while:** the request-lifecycle rounds, 2.10
+- **Where needed:** see 2.10 in `changelog.md`
+- **What is missing or wrong:** The age thresholds on a queue row
+- **Decision:** **Reused from ScreenOutstanding as a starting point and flagged as unmeasured:** neutral to 30 days, `warning` 31–90, `unpaid` over 90. Those were chosen for **money** ageing. A *request* sitting 30 days may already be bad — the owner says one can sit for weeks — so the escalation may be far too lenient here. The app picks the class, so the cut-offs move without a design change
+- **Status as published:** needs your measurement
+- **Design system version:** 2.10

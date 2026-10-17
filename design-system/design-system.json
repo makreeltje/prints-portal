@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-09T12:15:00Z",
+  "at": "2026-10-17T12:40:00Z",
   "via": "Claude Code",
-  "note": "2.7: the whole-print spool line is keyed on both axes and all four cells get words, so \"Geldt nu\" is never shown while nothing is in force (GAP-118); and two files of one print with the same name get one muted line on both rows, each naming its own folder, deliberately not the \"Mogelijk dubbel\" badge (GAP-120). Four copy keys, no token and no CSS changed."
+  "note": "2.10: the queue is a page (/wachtrij), on the owner's numbers and against my instinct. Two groups from .pp-ogrp, no new class. The design-vs-slice distinction is drawn by whether files exist, not by a fourth state — that is rejected. 13 copy keys. GAP-123 to 145."
  },
  "layout": "files",
  "libraries": [],

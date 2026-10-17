@@ -76,3 +76,21 @@ Nothing about the row's grid, its name floor or its badges changes.
 **The strip gets no new words (rejected).** ModelPicker's labels are a picker's labels; turning one into a sentence to explain a data condition is what the file list is for, and the strip's two identical labels stay as 2.6 specifies them. The cost of the answer is six muted lines in the whole library, in the one place the operator is already reading file names.
 
 **Drawn in the preview:** the measured STL pair at print level, a G-code pair with the order-level controls, the row at a 420px container where the line wraps and the controls drop to the second row, and the long case — one row both excluded and same-named, with the fallback form on the row beneath it.
+
+**2.8.** (2026-10-17) **A third relation between two files of one print, and it is the only one with a direction (GAP-132, resolved as a rule).** Nineteen percent of this library's prints (16 of 84, 84 of 379 model files) carry a version mark in a model file name — `v5.3mf`, `Case_A_v5.stl`, `Babybox lock straight v3.3mf` — and 7 prints hold an editable source file (`.f3d`, `.step`, `.scad`), which is the subset the owner designed himself. His loop there is: model, print, let the user try it, change it on their feedback, send a final one. So a print's files are sometimes a **set** and sometimes a **history**.
+
+This row now knows three relations between two files of one print, and they are not variations of each other:
+
+| relation | what it means | direction? | how it is known | what the row draws |
+|---|---|---|---|---|
+| **duplicate** | the same content | **yes** — the first file is the one to keep | **observed**: same bytes, and which was indexed first | `warning` badge "Mogelijk dubbel" + `asset.duplicateHint`, on the later file only |
+| **same name** | different content, one name | **no** — neither is the original | **observed**: the names and the folders | `asset.sameName` / `asset.sameNameNoFolder`, `muted`, on **both** rows (2.7) |
+| **superseded** | one version replaced another | **yes** — and it is the whole content of the relation | **not known at all today** | **nothing**, by rule below |
+
+**The rule: a direction between two files may be drawn only where the direction is observed or recorded — never where it is read out of the file's name.** The first two relations pass: the duplicate's direction comes from identical bytes and an index order, and the same-name line claims no direction precisely because none is observable. Supersession fails, and it fails on this system's own findings rather than on caution:
+
+- The version mark sits **in or near the middle of a long name**, which 2.4, 2.5 and 2.6 established is the one zone this system cannot read reliably — and `v10` sorts before `v9` in the file-name order the strip and this list both use.
+- The implementer's own count is a regex over names and says so: `Fidget Clicking Wheel 2.0` is a product name, not a revision, and a version kept in a separate folder or marked another way is missed. **19% is the shape of the thing, not a count.**
+- Supersession is an **asserted** fact in the sense of `README.md` rule 1: that v5 replaced v1, and above all **which version the customer actually received**, is something only the owner knows. Nothing can re-check it, so it carries a date and an author or it is not shown.
+
+Until it is recorded, the row is **unchanged** and that is deliberate: a superseded file is a normal file, with its real name, its real size and its real place in an order. No dimming, no strike-through (that is exclusion, which changes money), no "oud" badge, no grouping, no reordering. **No new class, token, copy key or colour pair.** What is settled is only what the system may *claim*; nothing is claimed yet.
