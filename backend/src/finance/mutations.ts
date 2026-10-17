@@ -1,5 +1,6 @@
 import type { Kysely, Transaction } from 'kysely';
 import type { Database, PrintOrderTable } from '../db/schema.js';
+import type { RequestState } from './state.js';
 import { recalculatePrint } from './costs.js';
 import { ordersWithMoney } from './read.js';
 import type { SpoolSnapshot } from './spools.js';
@@ -65,6 +66,38 @@ async function moneyOf(db: Db, order: PrintOrderTable) {
 }
 
 /** Verkoopprijs; null removes it (the markup suggestion applies again). */
+/**
+ * Where a request stands (step 1 of the request lifecycle).
+ *
+ * Any state may follow any other, with no confirmation: these are set in bulk
+ * across a backlog and the owner's rule is that a klant can always change
+ * their mind about one print, so a wrong click must cost one click to undo.
+ *
+ * An invoiced order refuses, as it refuses a price change: its price and items
+ * are locked and a declined order may not sit on an invoice.
+ */
+export async function setRequestState(
+  db: Kysely<Database>,
+  orderId: string,
+  state: RequestState | null,
+  now: string,
+): Promise<PrintOrderTable> {
+  return db.transaction().execute(async (trx) => {
+    const order = await orderById(trx, orderId);
+    assertUnlocked(order);
+    await trx
+      .updateTable('print_orders')
+      .set({
+        request_state: state,
+        request_state_at: state === null ? null : now,
+        updated_at: now,
+      })
+      .where('id', '=', orderId)
+      .execute();
+    return orderById(trx, orderId);
+  });
+}
+
 export async function setSalePrice(
   db: Kysely<Database>,
   orderId: string,

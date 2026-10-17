@@ -63,6 +63,7 @@ function order(overrides: Partial<Order> = {}): Order {
     date: '2026-09-12T10:00:00.000Z',
     createdAt: '2026-10-01T10:00:00.000Z',
     status: 'open',
+    requestState: null,
     price: 21.3,
     salePrice: null,
     priceSuggested: true,
@@ -280,7 +281,15 @@ describe('PaymentPanel', () => {
 
   it('is read-only for Users', () => {
     renderPanel(
-      { id: 'o1', number: 1, createdAt: '', date: '', status: 'open', price: 11.89 },
+      {
+        id: 'o1',
+        number: 1,
+        createdAt: '',
+        date: '',
+        status: 'open',
+        requestState: null,
+        price: 11.89,
+      },
       'User',
     );
     expect(screen.getByText('Je ziet alleen prijs en status.')).toBeInTheDocument();

@@ -3,7 +3,8 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Dialog } from '../components/Dialog';
 import { FieldError, GenericError } from '../components/FieldError';
 import { parseAmount } from '../i18n/format';
-import { t } from '../i18n/nl';
+import { t, type MessageKey } from '../i18n/nl';
+import type { RequestState } from '../prints/types';
 import type { BulkFailure } from './bulk-results';
 import { SpoolPopover } from './SpoolPicker';
 
@@ -200,6 +201,76 @@ export function BulkPriceDialog({
             </span>
           </>
         )}
+      </div>
+    </Dialog>
+  );
+}
+
+/**
+ * "Status instellen" for a selection (2.8). The primary path for this, not a
+ * per-print dialog: the owner sets these across a whole backlog in one pass,
+ * so the cost of a fiddly control is multiplied by the size of it.
+ *
+ * "Geen status" is offered like any other value — clearing is as ordinary as
+ * setting, because a klant can change their mind back.
+ */
+export function BulkStateDialog({
+  count,
+  onApply,
+  onClose,
+}: {
+  count: number;
+  onApply: (state: RequestState | null) => Promise<void>;
+  onClose: () => void;
+}) {
+  const id = useId();
+  const [state, setState] = useState<RequestState | null>('undecided');
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const submit = async () => {
+    setBusy(true);
+    setFailed(false);
+    try {
+      await onApply(state);
+      onClose();
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const choices: readonly (readonly [RequestState | null, MessageKey])[] = [
+    ['undecided', 'request.undecided'],
+    ['inProgress', 'request.inProgress'],
+    ['declined', 'request.declined'],
+    [null, 'request.none'],
+  ];
+  return (
+    <Dialog
+      open
+      title={t('bulk.stateTitle', { count })}
+      onClose={onClose}
+      busy={busy}
+      onSubmit={() => void submit()}
+      footer={<Footer busy={busy} label={t('request.set')} onClose={onClose} />}
+    >
+      <div className="pp-col">
+        {failed && <GenericError />}
+        <span className="pp-muted">{t('bulk.stateIntro')}</span>
+        {choices.map(([value, label]) => (
+          <label key={value ?? 'none'} className="pp-opt">
+            <input
+              type="radio"
+              className="pp-radio"
+              name={`${id}-state`}
+              checked={state === value}
+              onChange={() => {
+                setState(value);
+              }}
+            />
+            {t(label)}
+          </label>
+        ))}
       </div>
     </Dialog>
   );

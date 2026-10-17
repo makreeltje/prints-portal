@@ -335,11 +335,59 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
         createdAt: order.createdAt,
         date: order.date,
         status: 'partial',
+        requestState: null,
         price: 11.89,
       },
     ]);
     expect(seen.money).toMatchObject({ status: 'partial', price: 11.89, cost: null });
     expect(seen.markupPercent).toBeNull();
+  });
+
+  it('a declined request owes nothing, keeps its price and leaves every total', async () => {
+    const order = await firstOrder('Babybox locks');
+    const call = (method: string, path: string, payload?: object) =>
+      t.as(editor, { method: method as 'PUT', url: `/api/orders/${order.id}${path}`, payload });
+
+    expect((await call('PUT', '/sale-price', { salePrice: 24.5 })).statusCode).toBe(204);
+    const openBefore = (await t.as(editor, { url: '/api/outstanding' })).json<{
+      groups: { lines: { orderId: string }[] }[];
+    }>();
+    expect(openBefore.groups.flatMap((g) => g.lines).some((l) => l.orderId === order.id)).toBe(
+      true,
+    );
+
+    expect((await call('PUT', '/state', { state: 'declined' })).statusCode).toBe(204);
+    const declined = await firstOrder('Babybox locks');
+    // The price is history, not a debt: kept, but nothing is owed.
+    expect(declined).toMatchObject({ status: 'declined', price: 24.5, remaining: null });
+
+    const openAfter = (await t.as(editor, { url: '/api/outstanding' })).json<{
+      groups: { lines: { orderId: string }[] }[];
+    }>();
+    expect(openAfter.groups.flatMap((g) => g.lines).some((l) => l.orderId === order.id)).toBe(
+      false,
+    );
+
+    /*
+      Named in the draft's exclusions rather than silently dropped — and in its
+      own list, because a declined order has a price and must not be announced
+      as one "zonder verkoopprijs" (GAP-140).
+    */
+    const preview = (await t.as(admin, { url: '/api/customers/Joey/invoice/preview' })).json<{
+      lines: unknown[];
+      excluded: string[];
+      declined: string[];
+    }>();
+    expect(preview.declined.some((d) => d.includes('Babybox locks'))).toBe(true);
+    expect(preview.excluded.some((d) => d.includes('Babybox locks'))).toBe(false);
+
+    // Any state may follow any other, with no confirmation (owner's rule).
+    expect((await call('PUT', '/state', { state: 'undecided' })).statusCode).toBe(204);
+    expect(await firstOrder('Babybox locks')).toMatchObject({ status: 'open', price: 24.5 });
+    expect((await call('PUT', '/state', { state: null })).statusCode).toBe(204);
+    expect(await firstOrder('Babybox locks')).toMatchObject({ status: 'open' });
+
+    expect((await call('PUT', '/state', { state: 'nonsense' })).statusCode).toBe(400);
   });
 
   it('writes off the remainder only, and lets Admins undo it', async () => {
@@ -498,6 +546,32 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       removed.assets?.find((a) => a.fileName === 'spare_PLA_11m.gcode')?.lines[0],
     ).toMatchObject({ inOrder: false, timesPrinted: 0 });
     expect(removed.money).toMatchObject({ orderCount: 1, price: 11.89 });
+  });
+
+  it('sets the request state in bulk, on the newest order, per print', async () => {
+    const box = await idOf('Babybox locks');
+    const keychain = await idOf('Keychain');
+    const send = (ids: string[], state: string | null) =>
+      t.as(editor, {
+        method: 'POST',
+        url: '/api/prints/bulk',
+        payload: { action: 'setRequestState', ids, state },
+      });
+
+    expect((await send([box, keychain], 'undecided')).json()).toEqual({
+      results: [
+        { id: box, ok: true },
+        { id: keychain, ok: true },
+      ],
+    });
+    expect((await firstOrder('Babybox locks')).requestState).toBe('undecided');
+    expect((await firstOrder('Keychain')).requestState).toBe('undecided');
+
+    // Clearing is as ordinary as setting: no confirmation, no special path.
+    expect((await send([box], null)).json()).toEqual({ results: [{ id: box, ok: true }] });
+    expect((await firstOrder('Babybox locks')).requestState).toBeNull();
+
+    expect((await send([box], 'nonsense')).statusCode).toBe(400);
   });
 
   it('runs bulk actions with a result per print', async () => {

@@ -1,5 +1,5 @@
 import { api } from '../api/client';
-import type { Spool } from '../prints/types';
+import type { Spool, RequestState } from '../prints/types';
 
 /** Calls behind the money screens (Admin and Editor; undo and settings are Admin-only). */
 export interface SpoolList {
@@ -45,7 +45,8 @@ export type BulkAction =
   | { action: 'setPrice'; suggested: true }
   | { action: 'assignSpool'; spoolId: number | null }
   | { action: 'delete' }
-  | { action: 'addTags' | 'removeTags'; tagIds: string[] };
+  | { action: 'addTags' | 'removeTags'; tagIds: string[] }
+  | { action: 'setRequestState'; state: RequestState | null };
 
 export interface BulkResult {
   id: string;
@@ -99,6 +100,10 @@ export const setOrderOverrides = (
   orderId: string,
   overrides: { pricePerKg: number | null; grams: number | null; printSeconds: number | null },
 ) => api(`/api/orders/${orderId}/overrides`, { method: 'PUT', body: overrides });
+
+/** Where a request stands; null clears it back to "as before" (2.8). */
+export const setRequestState = (orderId: string, state: RequestState | null) =>
+  api(`/api/orders/${orderId}/state`, { method: 'PUT', body: { state } });
 
 export const setSalePrice = (orderId: string, salePrice: number | null) =>
   api(`/api/orders/${orderId}/sale-price`, { method: 'PUT', body: { salePrice } });

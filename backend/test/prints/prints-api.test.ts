@@ -229,12 +229,15 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
   it('gives each model file its own picture, and 404 for one that has none', async () => {
     // Two models in one print: before this, the strip showed the print's one
     // image or a glyph, so both buttons looked the same (GAP-094).
-    const dir = path.join(root, 'Wouter', 'Empty');
+    // Its own folder: the test above also fills Wouter/Empty, and sharing it
+    // made this one fail about one run in three.
+    const dir = path.join(root, 'Wouter', 'Twee modellen');
+    await mkdir(dir, { recursive: true });
     await writeFile(path.join(dir, 'cube.stl'), asciiCube());
     await writeFile(path.join(dir, 'cube_two.stl'), asciiCube());
     await writeFile(path.join(dir, 'notes.txt'), 'not a model');
     await t.app.services.indexer.indexAll();
-    const id = await idOf('Empty');
+    const id = await idOf('Twee modellen');
     const detail = (await t.as(admin, { url: `/api/prints/${id}` })).json<PrintDetail>();
     // Dutch collation puts the underscore before the dot; what matters here is
     // that both models are listed and each gets a picture of its own.

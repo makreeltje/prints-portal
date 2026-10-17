@@ -156,6 +156,21 @@ export function InvoiceExportDialog({
                 {t('invoice.noLines')}
               </span>
             )}
+            {/*
+              Left out because the klant refused it, not because something is
+              missing: plain ink, no alert and no glyph (2.9, GAP-140). It sits
+              in the card because the card is already `aria-live`, so a
+              declined print entering or leaving the period is announced when
+              the filters change, without claiming anything needs doing.
+            */}
+            {(data?.declined ?? []).length > 0 && (
+              <div className="pp-reason">
+                {t('invoice.omittedDeclined', {
+                  count: (data?.declined ?? []).length,
+                  names: nameList(data?.declined ?? []),
+                })}
+              </div>
+            )}
           </div>
           {data !== undefined && data.excluded.length > 0 && (
             <div className="pp-alert warning" role="alert">
@@ -163,7 +178,7 @@ export function InvoiceExportDialog({
               <div>
                 {t('invoice.omitted', {
                   count: data.excluded.length,
-                  names: data.excluded.join(', '),
+                  names: nameList(data.excluded),
                 })}
               </div>
             </div>
@@ -219,4 +234,16 @@ export function InvoiceExportDialog({
       )}
     </>
   );
+}
+
+/**
+ * At most five names, then "en {n} andere": an unbounded list would put 83
+ * names in one sentence in a 560px dialog (2.9).
+ */
+const NAME_CAP = 5;
+
+function nameList(names: readonly string[]): string {
+  if (names.length <= NAME_CAP) return names.join(', ');
+  const shown = names.slice(0, NAME_CAP).join(', ');
+  return `${shown} ${t('invoice.omittedMore', { count: names.length - NAME_CAP })}`;
 }

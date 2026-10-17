@@ -62,7 +62,10 @@ export interface InvoiceDraft {
   customer: string;
   lines: DocumentLine[];
   /** Orders in the period without a customer price, by description. */
+  /** Left out because no sale price is set: an input is missing. */
   excluded: string[];
+  /** Left out because the klant refused the quote: a decision was taken. */
+  declined: string[];
   /** Orders in the period already on a final invoice (information only). */
   earlier: { description: string; invoiceNumber: string }[];
   totalCents: number;
@@ -111,6 +114,7 @@ export async function draftInvoice(
     .sort(byDateThenName);
   const lines: BillableOrder[] = [];
   const excluded: string[] = [];
+  const declined: string[] = [];
   const earlier: InvoiceDraft['earlier'] = [];
   for (const item of inPeriod) {
     const description = orderDescription(item.print.name, item.order.number);
@@ -119,7 +123,14 @@ export async function draftInvoice(
       continue;
     }
     const status = item.money.status;
+    /*
+      Two reasons, two lists: an input that is missing, and a decision that was
+      taken. They are not the same fact and must not share a sentence — a
+      declined order has a price, so naming it "zonder verkoopprijs" would be a
+      true notice with a false reason (2.9, GAP-140).
+    */
     if (status === 'noPrice') excluded.push(description);
+    else if (status === 'declined') declined.push(description);
     else if (status === 'open' || status === 'partial') lines.push(item);
     else if (status === 'paid' && !query.onlyOpen) lines.push(item);
   }
@@ -148,6 +159,7 @@ export async function draftInvoice(
     lines: documentLines,
     prices: Object.fromEntries(lines.map((item) => [item.order.id, item.money.priceCents ?? 0])),
     excluded,
+    declined,
     earlier,
     totalCents,
     paidCents,

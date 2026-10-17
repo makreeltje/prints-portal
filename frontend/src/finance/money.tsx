@@ -1,4 +1,12 @@
-import { Ban, CircleCheck, CircleDashed, Clock, Receipt, TriangleAlert } from 'lucide-react';
+import {
+  Ban,
+  CircleCheck,
+  CircleDashed,
+  CircleX,
+  Clock,
+  Receipt,
+  TriangleAlert,
+} from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { formatMoney } from '../i18n/format';
 import { t, type MessageKey } from '../i18n/nl';
@@ -21,6 +29,13 @@ const BADGES: Record<OrderStatus, { tone: string; label: MessageKey; Icon: typeo
   writtenOff: { tone: 'unpaid', label: 'status.writtenOff', Icon: Ban },
   noPrice: { tone: 'warning', label: 'status.noPrice', Icon: TriangleAlert },
   notBilled: { tone: 'neutral', label: 'status.notBilled', Icon: Receipt },
+  /*
+    Declined is in this map because `OrderStatus` requires every value, but it
+    is not a payment state and the UI does not draw it here — the request badge
+    does (2.8, GAP-126: this group means money owed). Anything that does reach
+    this entry gets the neutral, settled reading rather than a debt.
+  */
+  declined: { tone: 'neutral', label: 'request.declined', Icon: CircleX },
 };
 
 /** StatusBadge for payment and billing: always an icon and a word. */

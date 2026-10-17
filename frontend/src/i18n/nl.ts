@@ -108,6 +108,14 @@ export const nl = {
   'view.list': 'Lijst',
   'view.label': 'Weergave',
 
+  'request.undecided': 'Nog niet besloten',
+  'request.inProgress': 'Mee bezig',
+  'request.declined': 'Niet doorgegaan',
+  'request.set': 'Status instellen',
+  'request.none': 'Geen status',
+  'request.was': 'was {bedrag}',
+  'bulk.stateTitle': 'Status instellen voor {count, plural, one {# print} other {# prints}}',
+  'bulk.stateIntro': 'De status geldt voor de laatste bestelling van elke geselecteerde print.',
   'status.archived': 'Gearchiveerd',
   'status.deleted': 'Verwijderd',
   'status.paid': 'Betaald',
@@ -488,7 +496,11 @@ export const nl = {
   'invoice.total': 'Totaal',
   'invoice.paid': 'Betaald',
   'invoice.outstanding': 'Openstaand',
-  'invoice.omitted': '{count} prints zonder verkoopprijs zijn weggelaten: {names}.',
+  'invoice.omitted':
+    '{count, plural, one {# print zonder verkoopprijs is weggelaten} other {# prints zonder verkoopprijs zijn weggelaten}}: {names}.',
+  'invoice.omittedDeclined':
+    '{count, plural, one {# print is niet doorgegaan en wordt niet gefactureerd} other {# prints zijn niet doorgegaan en worden niet gefactureerd}}: {names}.',
+  'invoice.omittedMore': 'en {count} andere',
   'invoice.conceptDownload': 'Concept downloaden',
   'invoice.finalize': 'Definitief maken',
   'invoice.noLines': 'Geen regels in deze periode.',

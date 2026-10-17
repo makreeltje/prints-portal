@@ -22,8 +22,10 @@ import {
   undoLastPayment,
   undoWriteOff,
   writeOff,
+  setRequestState,
 } from './mutations.js';
 import { emptyOrder, itemKey } from './orders.js';
+import { REQUEST_STATES, parseRequestState } from './state.js';
 import { ordersWithMoney } from './read.js';
 import { readSettings, writeSetting, type Settings } from './settings.js';
 import { SpoolmanUnavailableError, type SpoolmanClient } from './spoolman.js';
@@ -452,6 +454,39 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
     },
   );
 
+  /** Where a request stands: null clears it back to "as before". */
+  app.put<{ Params: { orderId: string }; Body: { state: string | null } }>(
+    '/api/orders/:orderId/state',
+    {
+      config: { auth: MANAGE },
+      schema: {
+        params: orderParams,
+        body: {
+          type: 'object',
+          required: ['state'],
+          properties: { state: { type: ['string', 'null'], enum: [...REQUEST_STATES, null] } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const print = await orderFor(request, reply, request.params.orderId);
+      if (print === null) return reply;
+      try {
+        await setRequestState(
+          db,
+          request.params.orderId,
+          parseRequestState(request.body.state),
+          iso(),
+        );
+      } catch (error) {
+        return financeError(reply, error);
+      }
+      await indexer.recalculateRecord(print.id);
+      broadcast('print:updated', print.id, print.customer_folder);
+      return reply.code(204).send();
+    },
+  );
+
   app.post<{ Params: { orderId: string }; Body: { amount: number } }>(
     '/api/orders/:orderId/payments',
     {
@@ -802,7 +837,8 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
     | { action: 'setPrice'; ids: string[]; salePrice?: number | null; suggested?: boolean }
     | { action: 'assignSpool'; ids: string[]; spoolId: number | null }
     | { action: 'delete'; ids: string[] }
-    | { action: 'addTags' | 'removeTags'; ids: string[]; tagIds: string[] };
+    | { action: 'addTags' | 'removeTags'; ids: string[]; tagIds: string[] }
+    | { action: 'setRequestState'; ids: string[]; state: string | null };
 
   /** One action for many prints; every print gets its own result, failures do not stop the rest. */
   app.post<{ Body: BulkBody }>(
@@ -816,7 +852,15 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
           properties: {
             action: {
               type: 'string',
-              enum: ['markPaid', 'setPrice', 'assignSpool', 'delete', 'addTags', 'removeTags'],
+              enum: [
+                'markPaid',
+                'setPrice',
+                'assignSpool',
+                'delete',
+                'addTags',
+                'removeTags',
+                'setRequestState',
+              ],
             },
             ids: { type: 'array', minItems: 1, maxItems: 200, items: UUID },
             salePrice: nullable(EUROS),
@@ -824,6 +868,7 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
             suggested: { type: 'boolean' },
             spoolId: nullable({ type: 'integer', minimum: 1 }),
             tagIds: { type: 'array', maxItems: 50, items: UUID },
+            state: { type: ['string', 'null'], enum: [...REQUEST_STATES, null] },
           },
         },
       },
@@ -901,6 +946,31 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
         for (const o of open) {
           await addPayment(db, o.order.id, o.money.remainingCents ?? 0, userId(request), stamp);
         }
+        await touch(recordId);
+        return;
+      }
+      case 'setRequestState': {
+        /*
+          The newest order, as "Prijs instellen" does (GAP-034): a repeat order
+          is the live one, and that is what a request state is about. An
+          invoiced order refuses, the way a price change does — its items are
+          locked and a declined order may not sit on an invoice.
+        */
+        const orders = (await ordersWithMoney(db, [recordId])).get(recordId) ?? [];
+        const newest = orders.at(-1);
+        if (newest === undefined) throw new FinanceError('not_found');
+        if (newest.order.invoice_id !== null) {
+          const invoice = await db
+            .selectFrom('invoices')
+            .select('number')
+            .where('id', '=', newest.order.invoice_id)
+            .executeTakeFirst();
+          throw new FinanceError('locked', {
+            orderNumber: newest.order.number,
+            invoiceNumber: invoice?.number ?? '',
+          });
+        }
+        await setRequestState(db, newest.order.id, parseRequestState(body.state ?? null), stamp);
         await touch(recordId);
         return;
       }
