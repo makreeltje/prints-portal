@@ -1,5 +1,7 @@
 import { Ellipsis } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useAnchoredPanel } from './anchoredPanel';
+import { Portal } from './Portal';
 import { t } from '../i18n/nl';
 
 export interface MenuItem {
@@ -39,12 +41,30 @@ export function OverflowMenu({ items, label }: { items: MenuItem[]; label?: stri
     };
   }, [open]);
 
-  if (items.length === 0) return null;
-
   const close = () => {
     setOpen(false);
     trigger.current?.focus();
   };
+
+  /*
+    Window-placed and portalled to the body (`ds-gap: GAP-146`).
+
+    The card's own rule
+    `.pp-cust .acts .pp-btn,.pp-cust .end .pp-anchor{position:relative;z-index:1}`
+    lifts both above the tile's stretched link, and in doing so gives the
+    wrapper a stacking context. `.pp-pop`'s z-index 30 is then compared only
+    inside that wrapper, so a Factuur button at z-index 1 — in this card or
+    the next one along — wins on DOM order and paints over the menu.
+
+    `position: fixed` alone does not help: a fixed box escapes *clipping*, not
+    its ancestors' stacking contexts, and `.pp-lift` carries `z-index: 1` just
+    as `.pp-anchor` does. The panel has to leave the card entirely, which is
+    the same reasoning that makes the model strip's bubble a sibling of
+    `.pp-models` rather than a child.
+  */
+  useAnchoredPanel(panel, trigger, open, close);
+
+  if (items.length === 0) return null;
 
   /** Up and down walk the items, as a menu is expected to. */
   const onPanelKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -64,7 +84,7 @@ export function OverflowMenu({ items, label }: { items: MenuItem[]; label?: stri
   };
 
   return (
-    <span className="pp-anchor end">
+    <span className="pp-lift">
       <button
         ref={trigger}
         type="button"
@@ -79,31 +99,33 @@ export function OverflowMenu({ items, label }: { items: MenuItem[]; label?: stri
         <Ellipsis className="pp-ico" aria-hidden="true" />
       </button>
       {open && (
-        <div
-          ref={panel}
-          className="pp-pop pp-menu"
-          role="menu"
-          aria-label={label ?? t('menu.more')}
-          onKeyDown={onPanelKeyDown}
-        >
-          {items.map((item) => (
-            <div key={item.key}>
-              {item.separated === true && <hr className="sep" />}
-              <button
-                type="button"
-                role="menuitem"
-                className={item.danger === true ? 'danger' : undefined}
-                onClick={() => {
-                  close();
-                  item.run();
-                }}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            </div>
-          ))}
-        </div>
+        <Portal from={trigger}>
+          <div
+            ref={panel}
+            className="pp-pop pp-menu at"
+            role="menu"
+            aria-label={label ?? t('menu.more')}
+            onKeyDown={onPanelKeyDown}
+          >
+            {items.map((item) => (
+              <div key={item.key}>
+                {item.separated === true && <hr className="sep" />}
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={item.danger === true ? 'danger' : undefined}
+                  onClick={() => {
+                    close();
+                    item.run();
+                  }}
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              </div>
+            ))}
+          </div>
+        </Portal>
       )}
     </span>
   );

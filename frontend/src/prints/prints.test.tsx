@@ -297,6 +297,34 @@ describe('DashboardPage', () => {
     });
   });
 
+  it('gives the klant overview the dialog class and the grid the spec names', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [summary()], total: 12 } }),
+      'GET /api/customers': () => ({
+        json: {
+          customers: [
+            { folder: 'Joey', printCount: 12, deleted: false },
+            { folder: 'Denise', printCount: 4, deleted: false },
+          ],
+        },
+      }),
+      'GET /api/tags': () => ({ json: tags }),
+    });
+    renderWithAuth(<DashboardPage />);
+    await screen.findByRole('button', { name: /klantenoverzicht/i });
+    await userEvent.click(screen.getByRole('button', { name: /klantenoverzicht/i }));
+    const dialog = await screen.findByRole('dialog');
+    /*
+      `pp-allcust` belongs on the panel: the design system writes it as
+      `.pp-allcust .pp-body`, so a copy on a child matches nothing and the body
+      silently never scrolls (W-01).
+    */
+    expect(dialog.querySelector('.pp-dialog.pp-allcust')).not.toBeNull();
+    expect(dialog.querySelector('.pp-body > .pp-custs')).not.toBeNull();
+    // `.pp-dialog.lg` is two classes and would cap the panel at 560px.
+    expect(dialog.querySelector('.pp-dialog.lg')).toBeNull();
+  });
+
   it('offers Factuur in the tile menu and in the phone toolbar', async () => {
     stubFetch({
       'GET /api/prints': () => ({ json: { items: [summary()], total: 12 } }),

@@ -1404,3 +1404,42 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** either widen what raises the badge to include two assets of one print sharing a file name (a different sentence from the content-duplicate one — these are two real files, not a copy), or say in AssetListItem that this condition is deliberately unmarked and the strip must carry it alone. The first is mine; the choice is yours, and it is a question about the file list rather than about the picker.
 - **Blocked:** nothing. The strip is built and behaves as 2.6 specifies, including showing the same label twice.
 - **Design system version:** 2.6
+
+<!--
+  The numbering jumps from 120 to 146: the design system issued GAP-121 to
+  GAP-145 in versions 2.8, 2.9 and 2.10, which this repository has not imported
+  yet. Those numbers are theirs. Mine continue after them.
+-->
+
+## GAP-146 [open] One bundle.css rule makes the klant tile's menu paint under its own Factuur button
+- **Type:** suspected design bug
+- **Found while:** the owner's walkthrough of the klant overview dialog (2026-10-17)
+- **Where needed:** CustomerCard, OverflowMenu on the "Alle klanten" dialog and the dashboard tiles
+- **What is missing or wrong:** opening the "⋯" menu on a klant tile draws it **behind** the Factuur button. The app uses `.pp-anchor` and `.pp-pop.pp-menu` exactly as OverflowMenu specifies; the cause is one rule in `bundle.css`:
+
+  ```css
+  .pp-cust .acts .pp-btn,.pp-cust .end .pp-anchor{position:relative;z-index:1}
+  ```
+
+  It lifts both above the tile's stretched link, which is right. But giving `.pp-anchor` a `z-index` makes it a **stacking context**, so `.pp-pop`'s `z-index: var(--z-popover)` (30) is compared only *inside the anchor* and no longer against anything in the card. The anchor and the Factuur button are then both at `z-index: 1` in the card's context, and DOM order decides — `.acts` comes after `.hd`, so the button wins.
+
+  Measured in the running app: the menu spans y=343–438, the Factuur button y=379–411, and `elementFromPoint` at their overlap returns the button. Both stacking chains confirm it: `span.pp-anchor.end pos=relative z=1` and `button.pp-btn pos=relative z=1`, siblings in `div.pp-card.pp-cust`.
+- **Why it matters:** two of the menu's three items are unreachable on every klant tile, and the one destructive action in it ("Klant verwijderen") is among them. It is also GAP-098's lesson in a new place — a z-index only counts inside its own stacking context — which suggests the rule rather than the component.
+- **The `.at` form alone does not fix it, and I found that out by building it.** My first attempt swapped `.pp-anchor` for `.pp-lift` and added `.at`, which made the panel `position: fixed`. The owner still saw the bug. A fixed box escapes *clipping*, not its ancestors' stacking contexts — and `.pp-lift` is `position:relative;z-index:var(--z-raised)`, so it traps a panel exactly as `.pp-anchor` does. The real failure is also wider than one card: in the owner's screenshot it is the **next tile's** Factuur button covering the menu, because every tile's lifted children sit at `z-index: 1` in the grid's context and DOM order decides between them.
+- **What does fix it:** taking the panel out of the card's subtree altogether — but only as far as the dialog it is in. Portalled all the way to the body it is worse, not better: a modal `<dialog>` paints in the top layer, so a panel outside it lands beneath the whole modal. Measured all three ways over a grid of 575 points per menu covering the panel's whole area: anchored, 1 of 11 menus clear; portalled to the body, 0 of 11; portalled to the nearest open `<dialog>`, **11 of 11 clear**.
+- **Proposal:** either drop `z-index` from the `.pp-anchor` half of that rule (`position: relative` alone lifts it above the link without making a context), or say in Popover that a window-placed panel must leave its stacking context and name where it goes. The second is the general answer, because the first fixes this card and leaves the next component to rediscover it — which is what happened here between the model strip's bubble (2.6, a sibling of `.pp-models`) and this menu.
+- **A caution for whoever measures this next:** sampling each menu item's centre is not enough. The covering button landed in the *gap between* two items, so a centre-point check reported the menu clear while the owner could see it covered. The grid is what caught it.
+- **Blocked:** the klant tile's "⋯" menu, everywhere it appears.
+- **Temporary placeholder approved:** yes (2026-10-17, the owner reported it as a bug and asked for it fixed). OverflowMenu uses `.pp-pop.at` and portals the panel into the nearest open `<dialog>`, else the body, marked `ds-gap: GAP-146`.
+- **Design system version:** 2.7
+
+## GAP-147 [open] A modal says Esc closes it and nothing about clicking outside
+- **Type:** missing state
+- **Found while:** the same walkthrough (2026-10-17)
+- **Where needed:** Dialog, and every dialog built on it
+- **What is missing or wrong:** Dialog's Accessibility line says "Esc closes (unless a request is running)" and the spec says nothing about a click on the backdrop. The app implements exactly that, so the klant overview can only be dismissed with Esc or the close button. The owner expected a click beside the panel to close it, and said so unprompted — which is the usual convention for a dialog that only shows information.
+- **Why it matters:** it is the first thing a mouse reaches for, and this particular dialog has no form to lose: it lists klanten and every action in it opens something else. A dialog that *does* hold unsaved input would want the opposite, which is why this needs a rule rather than a local fix.
+- **Proposal:** say per dialog kind. A dialog with no input (this one, a preview) closes on a backdrop click; one holding a form or a destructive confirmation does not, because a stray click would discard work. If that split is right, the rule belongs in Dialog's README beside the Esc line, and ConfirmDialog is explicitly excluded.
+- **Blocked:** nothing; Esc and the close button work.
+- **Temporary placeholder approved:** yes (2026-10-17, the owner asked for it). A backdrop click closes a dialog that has no `onSubmit` and is not an `alert`, marked `ds-gap: GAP-147`.
+- **Design system version:** 2.7
