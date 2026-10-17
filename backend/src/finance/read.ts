@@ -2,7 +2,13 @@ import type { Kysely, Transaction } from 'kysely';
 import type { Database, PrintOrderTable } from '../db/schema.js';
 import { readSettings, type Settings } from './settings.js';
 import { parseSnapshot } from './spools.js';
-import { leastSettled, orderMoney, type OrderMoney, type OrderStatus } from './state.js';
+import {
+  leastSettled,
+  orderMoney,
+  type OrderMoney,
+  type OrderStatus,
+  parseRequestState,
+} from './state.js';
 
 type Db = Kysely<Database> | Transaction<Database>;
 
@@ -44,6 +50,7 @@ export async function ordersWithMoney(
       defaultMarkupPercent: markup,
       paidCents: paid.get(order.id) ?? 0,
       writtenOffCents: order.written_off_cents,
+      requestState: parseRequestState(order.request_state),
     });
     const list = result.get(order.print_record_id) ?? [];
     list.push({ order, money, noBilling });

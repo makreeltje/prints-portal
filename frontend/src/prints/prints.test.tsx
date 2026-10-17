@@ -414,6 +414,7 @@ function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
         createdAt: '2026-10-01T10:00:00.000Z',
         date: '2026-09-12T10:00:00.000Z',
         status: 'open',
+        requestState: null,
         price: 11.89,
         salePrice: 11.89,
         paid: 0,

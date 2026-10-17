@@ -38,6 +38,7 @@ import {
   undoPayment,
   undoWriteOff,
   writeOff,
+  setRequestState,
 } from '../finance/api';
 import { CostBreakdown } from '../finance/CostBreakdown';
 import { CostOverrideDialog } from '../finance/CostOverrideDialog';
@@ -156,6 +157,7 @@ export function PrintDetailPage() {
         writeOff: (reason) => change(() => writeOff(order.id, reason)),
         undoPayment: () => change(() => undoPayment(order.id)),
         undoWriteOff: () => change(() => undoWriteOff(order.id)),
+        setRequestState: (state) => change(() => setRequestState(order.id, state)),
       }}
     />
   );
@@ -178,6 +180,8 @@ export function PrintDetailPage() {
       : {
           id: detail.id,
           number: 1,
+          // A synthetic order for the User view: no request state is shown there.
+          requestState: null,
           createdAt: '',
           date: '',
           status: detail.money.status,

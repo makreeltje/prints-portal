@@ -25,7 +25,11 @@ export interface Spool {
   takenAt?: string;
 }
 
-export type OrderStatus = 'open' | 'partial' | 'paid' | 'writtenOff' | 'noPrice' | 'notBilled';
+export type OrderStatus =
+  'open' | 'partial' | 'paid' | 'writtenOff' | 'noPrice' | 'notBilled' | 'declined';
+
+/** Where a request stands; null means "as before" (2.8). */
+export type RequestState = 'undecided' | 'inProgress' | 'declined';
 export type PriceSource = 'spoolman' | 'manual' | 'estimated';
 export type MissingInput = 'grams' | 'price' | 'printTime' | 'printerProfile' | 'tariff';
 
@@ -94,6 +98,8 @@ export interface Order {
   /** Newest counted G-code in the order, else its creation time. */
   date: string;
   status: OrderStatus;
+  /** Where the request stands; null means "as before" (2.8). */
+  requestState: RequestState | null;
   price: number | null;
   salePrice?: number | null;
   priceSuggested?: boolean;

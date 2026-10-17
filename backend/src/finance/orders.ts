@@ -36,6 +36,8 @@ export function emptyOrder(
     number,
     created_at: now,
     created_by: userId,
+    request_state: null,
+    request_state_at: null,
     sale_price_cents: null,
     sale_price_set_at: null,
     sale_price_set_by: null,

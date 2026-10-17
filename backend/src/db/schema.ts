@@ -211,6 +211,9 @@ export interface PrintOrderTable {
   updated_at: string;
   /** The final invoice this order is on; set means price and items are locked. */
   invoice_id: string | null;
+  /** Where the request stands: null, 'undecided', 'inProgress' or 'declined'. */
+  request_state: string | null;
+  request_state_at: string | null;
 }
 
 /** A file or plate in an order, with how often it was printed for that order. */

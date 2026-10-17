@@ -22,8 +22,10 @@ import {
   undoLastPayment,
   undoWriteOff,
   writeOff,
+  setRequestState,
 } from './mutations.js';
 import { emptyOrder, itemKey } from './orders.js';
+import { REQUEST_STATES, parseRequestState } from './state.js';
 import { ordersWithMoney } from './read.js';
 import { readSettings, writeSetting, type Settings } from './settings.js';
 import { SpoolmanUnavailableError, type SpoolmanClient } from './spoolman.js';
@@ -452,6 +454,39 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
     },
   );
 
+  /** Where a request stands: null clears it back to "as before". */
+  app.put<{ Params: { orderId: string }; Body: { state: string | null } }>(
+    '/api/orders/:orderId/state',
+    {
+      config: { auth: MANAGE },
+      schema: {
+        params: orderParams,
+        body: {
+          type: 'object',
+          required: ['state'],
+          properties: { state: { type: ['string', 'null'], enum: [...REQUEST_STATES, null] } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const print = await orderFor(request, reply, request.params.orderId);
+      if (print === null) return reply;
+      try {
+        await setRequestState(
+          db,
+          request.params.orderId,
+          parseRequestState(request.body.state),
+          iso(),
+        );
+      } catch (error) {
+        return financeError(reply, error);
+      }
+      await indexer.recalculateRecord(print.id);
+      broadcast('print:updated', print.id, print.customer_folder);
+      return reply.code(204).send();
+    },
+  );
+
   app.post<{ Params: { orderId: string }; Body: { amount: number } }>(
     '/api/orders/:orderId/payments',
     {
@@ -816,7 +851,15 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
           properties: {
             action: {
               type: 'string',
-              enum: ['markPaid', 'setPrice', 'assignSpool', 'delete', 'addTags', 'removeTags'],
+              enum: [
+                'markPaid',
+                'setPrice',
+                'assignSpool',
+                'delete',
+                'addTags',
+                'removeTags',
+                'setRequestState',
+              ],
             },
             ids: { type: 'array', minItems: 1, maxItems: 200, items: UUID },
             salePrice: nullable(EUROS),

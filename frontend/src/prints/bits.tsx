@@ -1,7 +1,10 @@
 import {
   Archive,
   Box,
+  CircleHelp,
+  CircleX,
   Copy,
+  Hammer,
   FileCode,
   FolderOpen,
   Package,
@@ -12,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
 import { Tooltip } from '../components/Tooltip';
+import { formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { thumbnailUrl } from './api';
 import { isPaletteKey } from './tag-palette';
@@ -89,9 +93,37 @@ export function LacksChip({
 export function StatusBadge({
   kind,
 }: {
-  kind: 'archived' | 'deleted' | 'duplicate' | 'missingFile';
+  kind:
+    'archived' | 'deleted' | 'duplicate' | 'missingFile' | 'undecided' | 'inProgress' | 'declined';
 }) {
   switch (kind) {
+    /*
+      The request states (2.8). A live state takes live ink; a settled negative
+      one does not — "Niet doorgegaan" is finished and needs nothing, so it is
+      neutral like Gearchiveerd. `warning` stays out of this group on purpose:
+      it means something needs doing, and a refused quote needs nothing.
+    */
+    case 'undecided':
+      return (
+        <span className="pp-badge info">
+          <CircleHelp className="pp-ico" aria-hidden="true" />
+          {t('request.undecided')}
+        </span>
+      );
+    case 'inProgress':
+      return (
+        <span className="pp-badge info">
+          <Hammer className="pp-ico" aria-hidden="true" />
+          {t('request.inProgress')}
+        </span>
+      );
+    case 'declined':
+      return (
+        <span className="pp-badge neutral">
+          <CircleX className="pp-ico" aria-hidden="true" />
+          {t('request.declined')}
+        </span>
+      );
     case 'archived':
       return (
         <span className="pp-badge neutral">
@@ -234,5 +266,17 @@ export function EmptyState({
       <p>{t(`empty.${kind}.body`)}</p>
       {action}
     </div>
+  );
+}
+
+/**
+ * The price of a request that did not go ahead: kept as history, in `muted`
+ * ink and prefixed, because the amount is real but will never be paid.
+ * Deliberately not struck through — `<s>` means replaced, not refused (2.8).
+ */
+export function WasPrice({ price }: { price: number | null }) {
+  if (price === null) return null;
+  return (
+    <span className="pp-muted pp-text-sm">{t('request.was', { bedrag: formatMoney(price) })}</span>
   );
 }

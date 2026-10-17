@@ -1,5 +1,6 @@
 import type { Kysely } from 'kysely';
 import type { CostBreakdown, MissingInput, PriceSource } from '../core/cost.js';
+import { parseRequestState } from './state.js';
 import { suggestSalePrice } from '../core/pricing.js';
 import type { Database } from '../db/schema.js';
 import { loadPrintCosts, type LineFacts } from './costs.js';
@@ -7,7 +8,7 @@ import { orderDates } from './billing.js';
 import { itemKey } from './orders.js';
 import { ordersWithMoney } from './read.js';
 import type { SpoolSnapshot } from './spools.js';
-import type { OrderStatus } from './state.js';
+import type { OrderStatus, RequestState } from './state.js';
 
 /** One payment in the order's history (undone ones stay, marked). */
 export interface PaymentDto {
@@ -64,6 +65,8 @@ export interface OrderDto {
   /** The order's date: newest counted G-code in the order, else its creation time. */
   date: string;
   status: OrderStatus;
+  /** Where the request stands; null means "as before" (2.8). */
+  requestState: RequestState | null;
   /** What the klant pays, in euros; null when unknown or niet factureren. */
   price: number | null;
   /** Admin and Editor only from here on. */
@@ -179,6 +182,7 @@ export async function printFinance(
       createdAt: order.created_at,
       date: dates.get(order.id) ?? order.created_at,
       status: m.status,
+      requestState: parseRequestState(order.request_state),
       price: m.priceCents === null ? null : m.priceCents / 100,
     };
     if (!options.full) return base;

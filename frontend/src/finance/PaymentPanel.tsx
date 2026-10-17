@@ -11,7 +11,8 @@ import {
   parseAmount,
 } from '../i18n/format';
 import { t } from '../i18n/nl';
-import type { Order } from '../prints/types';
+import { StatusBadge, WasPrice } from '../prints/bits';
+import type { Order, RequestState } from '../prints/types';
 import { Money, PaymentBadge } from './money';
 import { WriteOffDialog } from './WriteOffDialog';
 
@@ -21,6 +22,8 @@ export interface PaymentActions {
   writeOff: (reason: string | null) => Promise<void>;
   undoPayment: () => Promise<void>;
   undoWriteOff: () => Promise<void>;
+  /** Where the request stands; absent for a role that may not set it (2.8). */
+  setRequestState?: (state: RequestState | null) => Promise<void>;
 }
 
 /**
@@ -206,7 +209,16 @@ function ManagedPanel({
         </div>
       )}
 
-      {order.status !== 'open' && order.status !== 'noPrice' && (
+      {/*
+        Where the request stands (2.8). It is its own control, not a payment
+        state: the payment group means money owed, and "Nog niet besloten" or
+        "Niet doorgegaan" are not debts. Any value may follow any other with no
+        confirmation — these are set in bulk across a backlog, and a klant can
+        always change their mind about one print.
+      */}
+      <RequestStateControl order={order} onSet={locked ? undefined : actions.setRequestState} />
+
+      {order.status !== 'open' && order.status !== 'noPrice' && order.status !== 'declined' && (
         <div className="pp-row pp-between">
           <PaymentBadge status={order.status} />
           {order.price === null ? null : (
@@ -453,5 +465,60 @@ function ManagedPanel({
         }}
       />
     </section>
+  );
+}
+
+/**
+ * The request state, as a row of toggle buttons rather than a Select: there
+ * are four values including "none", they are mutually exclusive, and the
+ * current one has to be readable without opening anything.
+ */
+function RequestStateControl({
+  order,
+  onSet,
+}: {
+  order: Order;
+  onSet?: (state: RequestState | null) => Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
+  if (onSet === undefined) {
+    return order.requestState == null ? null : (
+      <div className="pp-row">
+        <StatusBadge kind={order.requestState} />
+        {order.requestState === 'declined' && <WasPrice price={order.price} />}
+      </div>
+    );
+  }
+  const choose = (state: RequestState | null) => {
+    setBusy(true);
+    void onSet(state).finally(() => {
+      setBusy(false);
+    });
+  };
+  return (
+    <div className="pp-col pp-gap-2">
+      <span className="pp-label">{t('request.set')}</span>
+      <div className="pp-row pp-gap-2" role="group" aria-label={t('request.set')}>
+        {([null, 'undecided', 'inProgress', 'declined'] as const).map((state) => (
+          <button
+            key={state ?? 'none'}
+            type="button"
+            className={
+              (order.requestState ?? null) === state
+                ? 'pp-btn pp-btn-secondary pp-btn-sm is-selected'
+                : 'pp-btn pp-btn-ghost pp-btn-sm'
+            }
+            aria-pressed={(order.requestState ?? null) === state}
+            disabled={busy}
+            onClick={() => {
+              choose(state);
+            }}
+          >
+            {state === null ? t('request.none') : t(`request.${state}`)}
+          </button>
+        ))}
+      </div>
+      {order.requestState === 'declined' && <WasPrice price={order.price} />}
+    </div>
   );
 }

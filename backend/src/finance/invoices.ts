@@ -119,7 +119,12 @@ export async function draftInvoice(
       continue;
     }
     const status = item.money.status;
-    if (status === 'noPrice') excluded.push(description);
+    /*
+      Declined is named rather than left to fall through: it belongs on no
+      invoice, but the operator has to see *why* a print they expected is
+      missing, and "left out" is where that is said.
+    */
+    if (status === 'noPrice' || status === 'declined') excluded.push(description);
     else if (status === 'open' || status === 'partial') lines.push(item);
     else if (status === 'paid' && !query.onlyOpen) lines.push(item);
   }

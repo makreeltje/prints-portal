@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { PaymentBadge } from '../finance/money';
 import { formatDuration, formatGrams, formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
-import { LacksChip, RecordBadge, TagChip, Thumbnail } from './bits';
+import { LacksChip, RecordBadge, TagChip, Thumbnail, StatusBadge, WasPrice } from './bits';
 import { subLine } from './orders';
 import type { PrintSummary } from './types';
 
@@ -64,12 +64,22 @@ export function PrintCard({
             edge instead of pushing two chips to opposite sides.
           */
           <div className="pp-foot">
-            {print.money?.status === 'noPrice' ? (
+            {/*
+              A refused quote is `noPrice` no longer: it keeps the price it was
+              given, shown as history. Before 2.8 it wore "Geen prijs", a
+              warning meaning something needs doing, on a print that needs
+              nothing.
+            */}
+            {print.money?.status === 'declined' ? (
+              <WasPrice price={print.money.price} />
+            ) : print.money?.status === 'noPrice' ? (
               <PaymentBadge status="noPrice" />
             ) : (
               <PriceBlock print={print} />
             )}
-            {print.status !== 'indexed' ? (
+            {print.money?.status === 'declined' ? (
+              <StatusBadge kind="declined" />
+            ) : print.status !== 'indexed' ? (
               <span className="pp-row pp-gap-2">
                 <RecordBadge print={print} />
                 {restore !== undefined && (
