@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-17T12:40:00Z",
+  "at": "2026-10-17T16:20:00Z",
   "via": "Claude Code",
-  "note": "2.10: the queue is a page (/wachtrij), on the owner's numbers and against my instinct. Two groups from .pp-ogrp, no new class. The design-vs-slice distinction is drawn by whether files exist, not by a fourth state — that is rejected. 13 copy keys. GAP-123 to 145."
+  "note": "2.11: four defects from the running Wachtrij and the owner's new feature. outstanding.oldest split (one key held two strings), queue.waiting gains \"vandaag gevraagd\", .pp-line folds into three bands on the phone, and every phone rule now has a .pp-device.phone twin. A print carries a bron and a notitie: PrintSource and PrintNote. First bundle.css change since 2.7. GAP-148 to 154."
  },
  "layout": "files",
  "libraries": [],

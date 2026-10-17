@@ -1,3 +1,213 @@
+# Changelog 2.11
+
+Four defects out of the running queue page, the owner's new feature, and **the first change to
+`bundle.css` since 2.7**. Three of the four defects were words, and one of them was a key holding
+two different strings — the shipped app has been reading "118 dagen open" where this system's own
+preview says "oudste 118 dagen". The fourth was measured at 360px and could not be seen in the
+preview that specified it, which is itself a hole in how this system draws phones and is closed
+here. Version 2.10 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-148 | `outstanding.oldest` is two different strings in one deck: the StatTile label "Oudste openstaande print" and the badge "oudste {n} dagen" | **Split, and the class of fault closed.** The tile label keeps `outstanding.oldest`; the badge becomes **`outstanding.oldestDays`** "{days, plural, =0 {alles van vandaag} one {oudste # dag} other {oudste # dagen}}". You were right that this is a live wording bug and not deck tidiness — and it is **not the only one**: the deck held **twelve** duplicated keys, and `api.loadErrorBody` was a second contradiction ("De Swagger UI…" against "De documentatie…", the 1.7 rewording sitting behind the 1.6 row). The deck is now **one key, one row**, with the rule written at the top of the file, because your importer takes the first occurrence, so a duplicate row silently ships the string a later round replaced | **resolved** |
+| GAP-149 | ScreenQueue's group summary draws an age badge with no `queue.*` key for it | **Answered by GAP-148, with one key rather than a new one.** The badge is one component's slot (`.pp-ogrp > summary > .age`), the words are identical on Openstaand and Wachtrij, and neither shortens on the phone, so a `queue.oldest` would be the same string under a second name — the thing GAP-148 exists to stop. `outstanding.oldestDays` serves both screens, as `outstanding.showAll` already does | **merged into GAP-148** |
+| GAP-150 | `queue.waiting` renders "0 dagen geleden gevraagd" on the day a request is entered | **Resolved as you proposed, and the same fault fixed on the money side.** `queue.waiting` gains `=0 {vandaag gevraagd}`; the placeholder stays `count`, so no call site moves. **No `=1 {gisteren}` arm** — "1 dag geleden gevraagd" is correct Dutch and keeps one vocabulary across days 1, 2 and 3. **`status.daysOpen` is changed with it, unraised:** it had no plural at all, so it rendered "1 dagen open" and "0 dagen open" | **resolved** |
+| GAP-151 | At 360px the badge takes 192px of a 326px row and the name column gets 90px | **Resolved with the row, not the words: `.pp-line` folds into three bands on the phone.** The name block spans both columns, the age badge and the figure share the second band (badge left, figure right — the shape `.pp-ogrp > summary` has had since 1.9), the actions keep the third. **Shortening the row copy is rejected:** "geleden gevraagd" is exactly what makes the badge a wait and not a debt, and it would leave the two screens' badges in different words at different widths. Your closing observation is the more valuable half and is **also resolved**: a phone frame is a 360px container at desktop viewport width, so every phone rule now needs a `.pp-device.phone` twin, which is a rule in `README.md` and eight twinned phone rules in `bundle.css` | **resolved** |
+| GAP-152 | A print's **bron** (URL) and **notitie**: "alleen printen" against "zelf maken" | **Resolved as two fields on the print record and two new components, PrintSource and PrintNote — and deliberately not a state.** A bron is a second **observation** in GAP-143's spirit: a link means a model exists somewhere, so the job is a download. A note is the owner's own prose and the system makes **no** claim about it — no badge, no sort, no filter, no "nog te ontwerpen". Typed and found stand side by side with no precedence (chip "uit de map" only on the folder's entries); the klant sees the bron once per print on the share page and **never** the note; role User never sees the note. A row with neither is today's row, which is **69 of 84 prints** | **resolved** |
+| GAP-153 | Eleven other phone rules had no preview twin; four still have none | **Seven more twinned (eight with `.pp-line`), four left out on purpose, and I want the app checked rather than guessing.** Twinned: `.pp-line`, `.pp-slot`, `.pp-asset.child`, `.pp-cols-2`, `.pp-printer .fields`, `.pp-pick` (+ `.pp-qty`), `.pp-tagrow` (+ `.cnt`), `.pp-order>summary` (+ `.ttl`, `.chev`, `.sum`). **Left without a twin:** the 44px tap floor and `--pp-control-h` on `:root`, the 16px input font, `.pp-dialog.sheet`, and `.pp-pop.at` — the first three change control metrics in *every* phone frame and the fourth is window-placed on purpose (2.3, rule 7), and I will not change twenty frames I cannot render | **needs your measurement** |
+| GAP-154 | Three more day-count strings with no plural, and one that may be dead | **Not changed, because the answer depends on call sites I cannot see.** `share.expiresIn` "Over {days} dagen" and `overview.expiryNotice` would read "Over 1 dagen" — but `share.expiresTomorrow` and `share.expiresToday` exist for 1 and 0, and so do `date.daysOne` / `date.daysOther`, so one of those pairs may already own the case. `outstanding.groupMeta` "{count} prints · oudste {days} dagen open" looks dead since 1.9 split the summary into `.ttl` and `.age` | **needs your measurement** |
+
+## New and changed
+
+- **Tokens:** none. `tokens.json` `version` is **2.11**. No variable added, renamed or removed.
+- **New classes** `.pp-srcs`, `.pp-src`, `.pp-note`, and the row modifier `.pp-reason.one` with its
+  counter child `.n`. Their required descendants, documented in the component READMEs as 2.8's rule
+  asks: `.pp-src > .pp-ico`, `.pp-src .pp-link` (the ellipsis lives on the link), `.pp-src
+  .pp-hintchip`, `.pp-note .l`, `.pp-note p`, `.pp-reason.one > span`, `.pp-reason.one > .pp-link`.
+- **Changed classes.** `.pp-line`'s phone rule is rewritten (three bands; `grid-template-columns:
+  minmax(0,1fr) auto`, `row-gap: space-2`, `>:first-child` spanning, `.pp-badge` and `.pp-right` on
+  row 2, `.acts` spanning) and gains a `.pp-device.phone` twin. Eight phone rules in all now have
+  twins — thirteen selectors with their parts (listed
+  under GAP-153); every twin repeats declarations that already existed, so **no app behaviour
+  changes from them** — they change what five existing phone frames *show* — OrderSection's, ScreenPrintDetail's, AssetListItem's, ScreenSettings's and ScreenTags's, checked frame by frame — which is the point.
+  **`bundle.css` is no longer byte-identical to 2.7**, for the first time in five rounds.
+- **Copy — new:** `outstanding.oldestDays`, `print.source`, `print.source.add`,
+  `print.source.placeholder`, `print.source.fromFolder`, `print.source.fromFolderAria`,
+  `print.source.open`, `print.source.more`, `print.source.invalid`, `print.note`, `print.note.add`,
+  `print.note.placeholder`, `print.note.internal` — thirteen, all in `copy-deck.md` under *Added in
+  2.11*. **Changed:** `queue.waiting`, `status.daysOpen`, `api.loadErrorBody` (same keys, same
+  placeholders). **Removed rows, no key removed:** the second `outstanding.oldest`, the second
+  `invoice.omitted`, the second `cost.incomplete`, the second `api.loadErrorBody` and the whole
+  duplicated *Added in 1.7* section. The deck now holds **544 rows and no duplicate key**.
+- **New components:** **PrintSource** and **PrintNote** (README and preview each).
+- **Components changed:** ScreenQueue (README and preview), ScreenOutstanding (README),
+  OutstandingGroup (README), ScreenPrintDetail (README), ScreenSharePage (README).
+- **Previews changed:** ScreenQueue gains a fifth frame — **the day a request arrives**, at 360px,
+  with "vandaag gevraagd" on three rows and "alles van vandaag" in the summary — and its rows now
+  draw a bron, a note, and four fileless rows with neither, which is the measured distribution. Its
+  phone frames show the three-band row, because the twin makes them able to. PrintSource's preview
+  draws typed, found, three-at-once, empty, editing, invalid, the row form, 360px and the share-page
+  form; PrintNote's draws the note, empty, editing, saving, the row form on a fileless row **and on
+  a row with files**, 360px, and the role that sees nothing.
+- **Pages changed:** `README.md` (the version line, the twin rule under *Responsive*, two icons,
+  *Versie 2.11*), `do-dont.md` (*Added in 2.11*), `copy-deck.md`, `changelog.md`, `tokens.json`.
+- **Contrast report:** unchanged, **no new pair.** The bron link is `primary` on `surface` (6.12
+  light / 6.79 dark), the note is `text` on `surface-2` (10.89 / 9.38) with `muted` for its label
+  and help line (5.18 / 6.06), and the chip is the existing `.pp-hintchip`. Every one of those rows
+  is already in `contrast.md`; nothing new is carried by colour alone.
+- **Breaking changes: none**, and three obligations: render the summary badge from
+  `outstanding.oldestDays` instead of falling back to `status.daysOpen`; re-import the three changed
+  strings (two of which need a `=0` arm your formatter already supports, since 2.9's keys use ICU
+  plurals); and read the two new print fields where the four screens above say so.
+
+## GAP-148 is bigger than the key it was raised about
+
+You raised one key. The deck had **twelve** duplicated keys, because every round since 1.4 recorded
+a changed key by re-listing it in the new version's table and leaving the old row where it was.
+Four of the twelve were harmless repetition and seven were the same value twice. Two were not:
+
+- **`outstanding.oldest`** — label and badge, the one you found.
+- **`api.loadErrorBody`** — "De Swagger UI kon niet worden opgehaald." (1.6) against "De
+  documentatie kon niet worden opgehaald." (1.7). 1.7 deliberately took the word *Swagger* out, and
+  since your importer takes the first occurrence, **the app has been showing the string 1.7
+  replaced.** Please check that one in the running app after importing; I would also check
+  `invoice.omitted`, whose 2.9 plural forms sat behind an older unpluralized row in the same way, so
+  "1 prints … zijn weggelaten" may still be rendering despite 2.9 claiming it fixed.
+
+There was also a whole *Added in 1.7* section duplicated word for word (nine rows), and
+`changelog.md` has carried **two `# Changelog 1.7` headings** since that round — the same accident
+in two files on the same day. The deck's duplicate section is removed; the changelog's double
+heading is left, because a changelog records what happened and both of those rounds did.
+
+**The rule, which is the actual fix:** one key, one row, in the section where the key was added,
+carrying its current value; a change is recorded in prose. It is at the top of `copy-deck.md` and in
+`do-dont.md`.
+
+## Why the queue badge keeps its words, and the row changed instead
+
+Your two options were to move the badge to its own row or to shorten the copy to "118 dagen". The
+second is cheaper and it is the one I am refusing, for the reason GAP-149 and GAP-150 are about:
+**these words are the design.** "118 dagen" in a queue is a number with no verb — it reads as a
+debt, which is what the same badge means two screens away, and the one thing this page must not do
+is look like Openstaand with different nouns. `status.daysOpen` already carries "open"; this badge
+carries "gevraagd". Shortening it on the phone would also split the two screens' badges into
+different vocabularies at different widths, which is the maintenance cost StatusBadge's own
+shortening rule was written to contain (one word, every width).
+
+**The three bands are not a new shape.** `.pp-ogrp > summary` has folded to exactly this since 1.9:
+title block on row 1 across, `.age` bottom-left, `.amt` bottom-right. The row now matches the
+summary above it, so a group and its lines fold the same way, and `.pp-line` keeps one rule for
+both screens. At 360px: the name block gets the full 326px; the second band is a 192px badge and a
+60px figure with a 12px gap, which fits with 62px spare — so the longest badge this system can
+produce ("203 dagen geleden gevraagd", about 196px) still fits beside an amount.
+
+## The preview could not show the bug, which is the part worth keeping
+
+`.pp-device.phone` is a **container** 360px wide inside a page that is 1400px wide, so
+`@media (max-width:480px)` never matches and the frame renders the desktop grid. Every "phone" frame
+in this system has that property, and `bundle.css` has carried hand-written `.pp-device.phone`
+twins since 1.2 for the app shell — the convention existed and `.pp-line` simply never got one. So
+the frame that specified ScreenQueue's phone layout was showing a four-column row while the app drew
+a two-column one, and no amount of looking at it would have found GAP-151.
+
+Eight rules are twinned this round and four are left alone on purpose (GAP-153). What I cannot do is
+verify them by eye: I write them, the page renders them. I checked which frames are affected
+rather than guessing: **`.pp-asset.child`** reaches OrderSection's, AssetListItem's and
+ScreenPrintDetail's phone frames, **`.pp-order > summary`** reaches OrderSection's and
+ScreenPrintDetail's, **`.pp-printer .fields`** ScreenSettings's and **`.pp-tagrow`** ScreenTags's;
+`.pp-cols-2`, `.pp-pick` and `.pp-slot` appear in no phone frame at all, so those three twins are
+inert today and exist so the next frame is honest. **If one of those five frames now looks wrong,
+that is either a twin I got wrong or a phone layout nobody had ever seen — tell me which and I will
+fix the right one.** The four I left are the ones that change control *metrics*
+(44px taps, 16px inputs) or placement (`.pp-dialog.sheet`, `.pp-pop.at`); twinning those would
+reflow about twenty frames at once.
+
+## GAP-152: a second observation, and the three things it must not become
+
+The owner's distinction is real and 2.10 already refused to model it as a state. What makes this
+version buildable is that **both halves are observations**, not classifications:
+
+- A **bron** is "a link exists", and the indexer can find most of them without anyone typing: 15 of
+  84 folders hold a `.url` file. So the fact arrives for free and stays true on its own.
+- A **notitie** is "he wrote this down". The system renders the words and claims nothing about them.
+
+Three things it is deliberately **not**:
+
+1. **Not a job type.** No "zelf te maken" badge, no derived state, no sort. A note may say "in
+   zwart printen"; an absent bron may mean he never kept the page. Naming an inference is the fault
+   rule 6 exists for, and GAP-143 refused this exact inference three rounds ago.
+2. **Not a precedence.** A typed bron and a `.url` in the folder are both true and both show, the
+   way a typed price and measured grams do. The only folding is exact string equality, which is one
+   fact written twice.
+3. **Not a filter or a search field.** A note is prose the owner wrote for one row; indexing it
+   would make it a tag, and 2.8 settled what tags are for.
+
+**Where the klant is concerned, the two fields are opposites, by the owner's own decision:** the
+bron appears on the share page, once per print, with no provenance chip and no folder name; the
+note appears nowhere a customer can reach and not at all for role User. ScreenSharePage and
+PrintNote both say so, before it can be forgotten.
+
+**The 280-character cap on a note** is mine, not the owner's: the row shows one clamped line and the
+card shows about three, and a field that can hold a paragraph promises a view that does not exist.
+If he wants a paragraph, that is a different field and I would rather be told.
+
+## What I rejected
+
+- **Shortening the queue row's badge on the phone** ("118 dagen"). Reasons above.
+- **A `queue.oldest` key** for the summary badge (GAP-149's proposal). Same slot, same words, same
+  widths: a second name for one string is what GAP-148 is about.
+- **A `=1 {gisteren gevraagd}` arm** for `queue.waiting`. Correct Dutch either way, and "gisteren"
+  switches the badge's vocabulary twice in three days.
+- **Changing `share.expiresIn`, `overview.expiryNotice` and `outstanding.groupMeta`** in the same
+  sweep. They are wrong in the same way, but two existing key pairs may already cover their cases
+  and one may be dead copy; guessing which would be inventing a measurement (GAP-154).
+- **Twinning the four remaining phone rules** (tap floor, input font size, sheet dialog, `.pp-pop.at`).
+- **A remove button for a bron or a note.** 2.9 settled that absence is a value: you empty the
+  field and save.
+- **Inferring "nog te ontwerpen"** from a note, and **a fourth state** for it. GAP-143 stands.
+
+## What I want measured
+
+1. **Do the new preview twins make any existing phone frame look wrong?** Five frames change:
+   OrderSection's, ScreenPrintDetail's, AssetListItem's, ScreenSettings's and ScreenTags's — plus
+   ScreenQueue's and ScreenOutstanding's from `.pp-line` itself, which is a real app change and not
+   only a frame. A twin that is wrong is my bug; a phone layout that is ugly is a gap nobody could
+   see before (GAP-153).
+2. **`api.loadErrorBody`, and `invoice.omitted`.** Which string does the running app actually show
+   for each? If it is the older one in either case, the duplicate-row fault has been shipping
+   wording for several rounds and I would like that confirmed rather than assumed (GAP-148).
+3. **Which of `share.expiresIn`, `overview.expiryNotice`, `outstanding.groupMeta`,
+   `date.daysOne`/`date.daysOther` and `share.expiresToday`/`share.expiresTomorrow` are imported,
+   and which call site renders each?** That decides GAP-154 in one pass.
+4. **How many of the 15 `.url` files parse to a URL the app can show**, and whether any folder's
+   `.url` points at something that is not a model page. If a third of them are junk, the chip "uit
+   de map" is making a promise the folder does not keep.
+5. **Still standing from 2.10:** whether design jobs dominate the queue (GAP-143's overturning
+   measurement) and the age thresholds on a queue row (GAP-145). GAP-152 does not answer either —
+   a bron tells you a job is a download, not how the ten rows split.
+
+## Where I was unsure
+
+- **"alles van vandaag"** for the summary badge at zero days. It is true (if the oldest is today,
+  everything is), it fits the slot and it avoids "oudste 0 dagen", but it changes the sentence's
+  shape rather than its number, and on Openstaand it sits beside money where "sinds vandaag open"
+  is the line form. If it reads oddly in the app, "sinds vandaag" in both places is the fallback and
+  it is one key.
+- **Whether the bron belongs on a queue row at all**, rather than only on the print. It earns its
+  place by telling a download from an evening at a glance, which is the gap; but it is the first
+  link in a row of this system, and a row that is not itself a link now contains one.
+- **Putting Bron and Notitie in "Deze print".** 2.3 called that card "facts without controls" while
+  rejecting the file list, and this puts two writable fields in it. I think the honest rule is 2.0's
+  (what belongs to the print is shown once, at print level) and that "facts without controls" was
+  already untrue of a card holding the SpoolPicker — but it is a sentence of mine that I am
+  overruling, and you should know that is what happened.
+- **I have not rendered anything.** Every statement about how these frames look is reasoning over
+  the CSS, not a screenshot: the three-band row, the eight twins and both new previews.
+- **`project/implementation.md` in this artifact is stale** — it still describes the 2.7 round (app
+  version 1.0.0 against design system 2.7, "120 gaps logged"). Everything I decided this round came
+  from `DESIGN_GAPS.md`'s GAP-148 to GAP-152 instead. If that file is meant to be the hand-off, it
+  did not carry this round's measurements; the gap entries did, and they were enough.
+
 # Changelog 2.10
 
 The queue is a page, on the owner's numbers rather than my instinct, and it is drawn. One new screen, one nav item, one real design question answered and one fourth state **rejected**. No new token, no new class, and `bundle.css` is byte-identical to 2.7 for the fifth round running — the page is built entirely from OutstandingGroup's form. Version 2.9 follows below.

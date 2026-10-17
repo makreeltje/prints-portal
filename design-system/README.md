@@ -1,4 +1,4 @@
-Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 2.10 (see `changelog.md`).
+Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 2.11 (see `changelog.md`).
 
 ## Principles
 
@@ -40,6 +40,16 @@ Design system for **3D Prints Portal**, a self-hosted web app that indexes print
 ## Responsive
 
 Breakpoints: up to 480px phone, 481–900px tablet, 901px and up desktop, 1440px and up wide. On phones tables become stacked cards, the bulk bar sticks to the bottom, dialogs become full-height sheets and the 3D viewer sits above the fold at a fixed aspect ratio. The app shell switches with media queries (see AppShell): sidebar above 900px, a 56px icon rail from 481 to 900px, top bar, bottom bar and drawer at 480px and below; the app never sets a `.phone` class. Never scroll the page horizontally; scroll wide tables inside their own container with a visible edge shadow.
+
+**A phone rule is not delivered until it has a `.pp-device.phone` twin (2.11).** A preview frame is
+a 360px **container** at the page's own viewport width, so no `@media (max-width:480px)` rule ever
+fires inside it: the frame draws the *desktop* layout and a phone-only fault is invisible here
+until the app renders it. GAP-151 was exactly that — a badge taking 192px of a 326px row, leaving
+the name 90px, measured in the running app and unshowable in the preview that specified it. So
+every phone rule in `bundle.css` is written twice: once in the media query, for the app, and once
+as `.pp-device.phone <selector>` with the same declarations, for the frame. The twin is preview
+markup only; the app still never sets `.phone`. When the two disagree, the media query is the
+truth and the twin is a bug in the preview.
 
 ## Floating panels (2.2)
 
@@ -131,6 +141,8 @@ Use Lucide line icons (`lucide-react`), 1.75px stroke, in sizes 16 (inline with 
 | Gearchiveerd | `archive` |
 | Verwijderd | `trash-2` |
 | Missing data | `triangle-alert` |
+| Bron (de pagina waar een model vandaan komt) | `external-link` |
+| Notitie | `sticky-note` |
 
 No logo has been supplied. Show the studio name in `heading-lg` type in the app shell, on the share page and on the invoice, with an optional uploaded logo image that replaces it when set in Instellingen.
 
@@ -220,3 +232,23 @@ Two sentences, both about telling the truth in the state nobody looked at. The w
 
 **The queue is a page, and my instinct was wrong on the owner's numbers.** 2.8 said a screen does not get a nav item for three rows and put the threshold at about eight; measured, it is about **four open requests at a normal moment and regularly above ten**, and the state that costs him is not the steady one — it is *"die moet ik dan allemaal onthouden"*. **ScreenQueue** (`/wachtrij`) is two collapsible groups keyed on the states that shipped in 2.9, built from OutstandingGroup's `.pp-ogrp` form without one new class, and **Wachtrij** joins the nav between Dashboard and Openstaand. The real design question was the owner's own distinction between a request he must still design himself and one that is sliced and waiting for the printer: **one group, with the difference drawn by whether files exist** — fileless rows first, "waarvan {n} zonder bestanden" in the heading — because a fourth state would make him *assert* what the indexer can *observe*, and rule 1 says an asserted stage is the only kind that goes stale in silence. A fourth state is **rejected** with the measurement that would overturn it named. The matching mechanism is the owner's: **hand-linking**, chosen on *capture* rather than on controls — a request arrives while he is in someone's kitchen, and "Aanvraag toevoegen" works in a phone browser with no folder — so a record with no files is live, GAP-122's shape rule is live with it, and the row gains "Bestanden koppelen", which links to a folder that exists and never makes one (rule 7). Thirteen copy keys, no token, no class, no CSS. Details: `changelog.md`.
 
+## Versie 2.11 (2026-10-17)
+
+**Four defects from the running queue, and the first CSS change since 2.7.** Three of the four were
+words: one key held **two different strings** (`outstanding.oldest` was the stat-tile label *and*
+the group's age badge, so the shipped page read "118 dagen open" where this system's own preview
+says "oudste 118 dagen"), the badge that needed the second string had no key at all, and
+`queue.waiting` had no zero arm, so a request entered this morning read **"0 dagen geleden
+gevraagd"** — the common case, on the one row the owner is certain about. All three are fixed, and
+the deck gains the rule that prevents the class: **one key, one row**, since the importer takes the
+first occurrence and the deck held twelve duplicated keys, two of them contradictory. The fourth
+was measured in the app: at 360px a queue row's badge took 192px of 326px and starved the name to
+90px, so **`.pp-line` now folds into three bands** on the phone — name, then badge and figure, then
+actions — and the row copy is **not** shortened, because "geleden gevraagd" is what makes the badge
+a wait rather than a debt. The lesson generalises into *Responsive* above: a phone rule needs a
+`.pp-device.phone` twin, or the preview that specifies it cannot show it. **And the owner's new
+feature:** a print carries a **bron** (the model's page, which the klant sees) and a **notitie**
+(internal, which the role User never sees), two new components, so a queue row can say whether a
+fileless job is a download or an evening of modelling — a second observation, deliberately not a
+fourth state (GAP-143 stands). Two new icons, thirteen new copy keys, three changed, no token
+added, renamed or removed. Details: `changelog.md`.

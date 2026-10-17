@@ -146,10 +146,15 @@ function Group({ group, onLink }: { group: QueueGroup; onLink: (row: QueueRow) =
           </span>
         </span>
         {/*
-          The spec's own preview shows an age badge here ("oudste 118 dagen"),
-          but 2.10 ships no key for it and the one the deck points at is
-          defined twice with different strings: GAP-148, GAP-149. Left out
-          rather than invented — every row still carries its own badge.
+          The age badge belongs here — the preview has drawn it since 2.10 and
+          `outstanding.oldestDays` exists for it since 2.11 — but it is held
+          back on this screen until GAP-155 is settled, by the owner's
+          decision. `.pp-ogrp > summary`'s phone rule pairs `.age` with
+          `.amt`, which was written for Openstaand where `.amt` is money; here
+          it is a sentence, and at 360px the two overprint by 10px while the
+          group heading is squeezed onto two lines. The age is on every row
+          below, so nothing is lost by waiting. Openstaand renders the badge
+          today: there the slot is clear in all eleven groups.
         */}
         <span className="age" />
         {/*

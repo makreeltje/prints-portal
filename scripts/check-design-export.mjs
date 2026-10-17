@@ -112,11 +112,27 @@ if (/\*\*Tokens:\*\*\s*none/i.test(section)) {
 }
 
 // --- Gap table: what is settled, and what still waits on us -----------------
-const rows = [...section.matchAll(/^\|\s*(GAP-\d{3})[^|]*\|([^|]*)\|([^|]*)\|/gm)];
+// The table's width has changed over the rounds: early ones are "GAP | About |
+// Decision", later ones "GAP | About | Decision | Status". The status is always
+// the LAST cell either way, so the row is split rather than matched by a fixed
+// number of columns. A three-group regex read the Decision cell of a
+// four-column table, which is why 2.11 passed while saying nothing about
+// GAP-153 and GAP-154 — both published as "needs your measurement", which is
+// precisely what this block exists to surface.
+const rows = [];
+for (const line of section.split('\n')) {
+  if (!/^\|\s*GAP-\d{3}\s*\|/.test(line)) continue;
+  const cells = line
+    .replace(/^\|/, '')
+    .replace(/\|\s*$/, '')
+    .split('|');
+  const id = /GAP-\d{3}/.exec(cells[0] ?? '')?.[0];
+  if (id === undefined) continue;
+  rows.push({ id, result: (cells.at(-1) ?? '').trim() });
+}
 const gapsFile = existsSync(join(ds, 'DESIGN_GAPS.md')) ? read('DESIGN_GAPS.md') : '';
 const waiting = [];
-for (const [, id, , resultRaw] of rows) {
-  const result = resultRaw.trim();
+for (const { id, result } of rows) {
   if (!gapsFile.includes(`## ${id} `)) {
     problem(`${id} is in the changelog's table but has no entry in DESIGN_GAPS.md`);
   }

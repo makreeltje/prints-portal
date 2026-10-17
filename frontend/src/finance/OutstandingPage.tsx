@@ -177,9 +177,18 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
             {t('outstanding.groupMeta', { count: group.count, days: group.oldestDays })}
           </span>
         </span>
+        {/*
+          The summary badge is "oudste 118 dagen", not "118 dagen open": it is
+          an age, and the line badges below it are the ones about money. Until
+          2.11 the deck gave those words the key `outstanding.oldest`, which
+          it also used for the StatTile label, so this fell back to
+          `status.daysOpen` and the page read "118 dagen open" where
+          ScreenOutstanding's own preview reads "oudste 118 dagen"
+          (GAP-148). 2.11 split the key.
+        */}
         <span className={`age pp-badge ${ageTone(group.oldestDays)}`}>
           <Clock className="pp-ico" aria-hidden="true" />
-          {t('status.daysOpen', { days: group.oldestDays })}
+          {t('outstanding.oldestDays', { days: group.oldestDays })}
         </span>
         <span className="amt pp-money pp-text-lg">{formatMoney(group.total)}</span>
         <span className="chev">

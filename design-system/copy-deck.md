@@ -2,6 +2,22 @@
 
 Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Component and screen copy.
 
+**Every key appears exactly once in this deck (2.11).** A key's row lives in the section where the
+key was added and carries its **current** value; a later change is recorded in prose under the
+version that changed it ("Changed in 2.11: …"), never as a second row. Until 2.11 a changed key was
+re-listed in the new section and the old row stayed behind, which left twelve duplicated keys and
+two keys holding two *different* strings: `outstanding.oldest` was both a tile label and an age
+badge (GAP-148), and `api.loadErrorBody` was both "De Swagger UI…" and "De documentatie…". The
+importer takes the **first** occurrence, so a duplicate row is not untidiness — it is the deck
+quietly shipping the string a later round replaced. One row per key is what makes this file
+checkable.
+
+**A counted sentence carries an ICU plural *and* its zero arm.** 2.9 required the plural
+(`do-dont.md`, GAP-141); 2.11 adds the zero, because Dutch sends 0 to `other`, so "0 dagen geleden
+gevraagd" is what the owner reads on the row he just added (GAP-150). Where a count of zero means
+*today*, say the day: this deck has done that since 1.6 with `share.expiresToday` and
+`share.expiresTomorrow`.
+
 | Key | Text |
 |---|---|
 | common.save | Opslaan |
@@ -43,7 +59,7 @@ Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Co
 | status.noSpool | Geen spoel |
 | status.noPrice | Geen prijs |
 | status.noCost | Kosten ontbreken |
-| status.daysOpen | {days} dagen open |
+| status.daysOpen | {days, plural, =0 {sinds vandaag open} one {# dag open} other {# dagen open}} |
 | status.paidOn | Betaald op {date} |
 | money.suggested | voorgesteld |
 | money.priceTbd | Prijs volgt |
@@ -189,7 +205,7 @@ Key to text, ready for a strings file. Values use ICU-style `{placeholders}`. Co
 | invoice.total | Totaal |
 | invoice.paid | Betaald |
 | invoice.outstanding | Openstaand |
-| invoice.omitted | {count} prints zonder verkoopprijs zijn weggelaten: {names}. |
+| invoice.omitted | {count, plural, one {# print zonder verkoopprijs is weggelaten} other {# prints zonder verkoopprijs zijn weggelaten}}: {names}. |
 | invoice.conceptDownload | Concept downloaden |
 | invoice.finalize | Definitief maken |
 | invoice.noLines | Geen regels in deze periode. |
@@ -435,7 +451,7 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | share.expiresToday | Deze link verloopt vandaag ({datum}) |
 | spool.wholePrintSkipped | Spoel gewijzigd in {n, plural, one {# bestelling} other {# bestellingen}}. {m, plural, one {# bestelling} other {# bestellingen}} overgeslagen: staat op een factuur. |
 | api.loadError | API-docs konden niet worden geladen |
-| api.loadErrorBody | De Swagger UI kon niet worden opgehaald. Probeer het opnieuw. |
+| api.loadErrorBody | De documentatie kon niet worden opgehaald. Probeer het opnieuw. |
 
 ## Added in 1.7
 
@@ -448,21 +464,6 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | api.noLoginField | Er is geen inlogveld: de documentatie gebruikt je sessie. |
 | api.search | Zoeken |
 | api.testRequest | Test request |
-| api.loadErrorBody | De documentatie kon niet worden opgehaald. Probeer het opnieuw. |
-| firstrun.tree.label | Voorbeeld van de mappenstructuur |
-
-## Added in 1.7
-
-| Key | Text |
-|---|---|
-| access.empty.title | Nog geen gebruikers om toegang te geven |
-| access.empty.body | Alleen Admins en Editors bestaan nu; zij zien altijd elke klant. |
-| access.empty.link | Naar Gebruikers |
-| api.title | API-docs |
-| api.noLoginField | Er is geen inlogveld: de documentatie gebruikt je sessie. |
-| api.search | Zoeken |
-| api.testRequest | Test request |
-| api.loadErrorBody | De documentatie kon niet worden opgehaald. Probeer het opnieuw. |
 | firstrun.tree.label | Voorbeeld van de mappenstructuur |
 
 ## Added in 1.9
@@ -503,7 +504,6 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | video.error.body | Download het bestand om het in een andere speler te openen. |
 | video.unsupported.title | Dit formaat speelt niet in de browser. |
 | video.unsupported.body | Download het bestand om het af te spelen. |
-| cost.incomplete | Onvolledig |
 | cost.missingWattage | Geen vermogen voor {printer}. |
 | cost.missingWattageAndPrice | Geen vermogen voor {printer} en geen prijs per kWh. |
 | cost.setWattage | Vermogen instellen |
@@ -526,7 +526,6 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 | strip.overview.label | Klantenoverzicht ({n} klanten) |
 | strip.dialog.title | Alle klanten |
 | thumb.label | Voorbeeld |
-| outstanding.oldest | oudste {n} dagen |
 | outstanding.expandAll | Alles uitklappen |
 | outstanding.collapseAll | Alles inklappen |
 | outstanding.showAll | Toon alle {n} regels |
@@ -625,7 +624,6 @@ Two groups, both one sentence each, and neither is a new feature. The first fixe
 
 | key | text |
 |---|---|
-| invoice.omitted | {count, plural, one {# print zonder verkoopprijs is weggelaten} other {# prints zonder verkoopprijs zijn weggelaten}}: {names}. |
 | invoice.omittedDeclined | {count, plural, one {# print is niet doorgegaan en wordt niet gefactureerd} other {# prints zijn niet doorgegaan en worden niet gefactureerd}}: {names}. |
 | invoice.omittedMore | en {count} andere |
 
@@ -660,7 +658,7 @@ Two groups, both one sentence each, and neither is a new feature. The first fixe
 | queue.group.inProgress | Mee bezig |
 | queue.groupMeta | {count, plural, one {# aanvraag} other {# aanvragen}} |
 | queue.ofWhichWithoutFiles | waarvan {count} zonder bestanden |
-| queue.waiting | {count, plural, one {# dag} other {# dagen}} geleden gevraagd |
+| queue.waiting | {count, plural, =0 {vandaag gevraagd} one {# dag geleden gevraagd} other {# dagen geleden gevraagd}} |
 | queue.noFiles | Nog geen bestanden |
 | queue.linkFiles | Bestanden koppelen |
 | queue.changeStatus | Status wijzigen |
@@ -677,3 +675,83 @@ Two groups, both one sentence each, and neither is a new feature. The first fixe
 
 **Changed in 2.10:** nothing. **No key was removed.**
 
+## Added in 2.11
+
+**The queue's wording, the deck's own duplicates and a print's bron and notitie (GAP-148, GAP-149,
+GAP-150, GAP-152).** Thirteen new keys, three changed values, five duplicate rows removed, no key
+removed.
+
+| key | text |
+|---|---|
+| outstanding.oldestDays | {days, plural, =0 {alles van vandaag} one {oudste # dag} other {oudste # dagen}} |
+| print.source | Bron |
+| print.source.add | Bron toevoegen |
+| print.source.placeholder | https://… |
+| print.source.fromFolder | uit de map |
+| print.source.fromFolderAria | Gevonden in {bestandsnaam}, in de map van deze print |
+| print.source.open | {host}, opent in een nieuw tabblad |
+| print.source.more | +{count} |
+| print.source.invalid | Vul een volledige link in, met https:// ervoor. |
+| print.note | Notitie |
+| print.note.add | Notitie toevoegen |
+| print.note.placeholder | Wat moet er nog gemaakt worden? |
+| print.note.internal | Alleen voor jou. Niet zichtbaar op de deel-link. |
+
+**`outstanding.oldestDays` is the group summary's age badge, on Openstaand and on Wachtrij both.**
+`outstanding.oldest` keeps its one meaning — the StatTile label "Oudste openstaande print" — and
+the badge that 1.9 gave the same key gets this one (GAP-148). It is **one** key for both screens
+because the badge is one component's slot (`.pp-ogrp > summary > .age`), the words are identical in
+both places and neither shortens on the phone; the `outstanding.` prefix names where
+OutstandingGroup's copy lives, exactly as `outstanding.showAll` already does on Wachtrij. So
+ScreenQueue needs no `queue.oldest` of its own (GAP-149).
+
+**`print.*` is the print record's own copy, not the queue's.** A request is the same record without
+a folder (2.10), so a bron and a notitie are print fields that a queue row happens to read; keying
+them to `queue.` would make the print detail borrow the queue's words.
+
+**No `print.source.remove` and no `print.note.remove`.** Clearing is done by emptying the field and
+saving, because 2.9 settled that absence is a **value** and not a separate act (GAP-138, "Geen
+spoel", "Geen status"): a remove button would offer something destructive-looking for an act that
+destroys nothing, and would need its own confirmation story. `common.save` and `common.cancel`
+carry the editor.
+
+**`print.source.open` is the link's accessible name, not visible text.** The visible text is the
+host (`makerworld.com/models/482193`, ellipsised at its end); the accessible name says where it
+goes and that it opens a new tab, because "(opent in een nieuw tabblad)" belongs in the name, as
+the share page's payment link already has it (2.0.1).
+
+**`print.note.internal` is rendered beside the field, always, not only while typing.** It is the
+one field on a print that never reaches a customer, and the only place that fact can be checked is
+where the note is written.
+
+**Changed in 2.11** (same keys, same placeholders, no call site moves):
+
+- **`queue.waiting`** — was "{count, plural, one {# dag} other {# dagen}} geleden gevraagd", is now
+  "{count, plural, =0 {vandaag gevraagd} one {# dag geleden gevraagd} other {# dagen geleden
+  gevraagd}}". The zero arm is the **common** case: most requests are entered the day they arrive,
+  so "0 dagen geleden gevraagd" was what the owner read right after "Aanvraag toevoegen"
+  (GAP-150). There is deliberately **no `=1 {gisteren gevraagd}`** arm: "1 dag geleden gevraagd" is
+  correct Dutch and reads consistently with 2 and 3 days, where "gisteren" would switch the badge's
+  vocabulary twice inside three days.
+- **`status.daysOpen`** — was "{days} dagen open", is now "{days, plural, =0 {sinds vandaag open}
+  one {# dag open} other {# dagen open}}". The same fault on the money side, changed without being
+  raised: with no plural at all, an invoice dated today rendered "0 dagen open" and one dated
+  yesterday "1 dagen open".
+- **`api.loadErrorBody`** — was "De Swagger UI kon niet worden opgehaald. Probeer het opnieuw.",
+  is now "De documentatie kon niet worden opgehaald. Probeer het opnieuw." This was a **live
+  conflict**, not a tidy-up: 1.7 reworded it away from the word *Swagger* and left the 1.6 row in
+  place, and since the importer takes the first occurrence the app has been showing the wording 1.7
+  replaced. Check it in the running app after importing — and check `invoice.omitted`, whose 2.9
+  plural forms sat behind an older unpluralized row in exactly the same way.
+
+**Removed rows (no key removed):** the second `outstanding.oldest`, the second `invoice.omitted`,
+the second `cost.incomplete`, the second `api.loadErrorBody`, and the whole duplicated *Added in
+1.7* section — nine rows repeating the section above them word for word. Every key those rows named
+still exists, once.
+
+**Not changed, deliberately:** `share.expiresIn` "Over {days} dagen", `overview.expiryNotice` and
+`outstanding.groupMeta` "{count} prints · oudste {days} dagen open" are unpluralized too, but
+`share.expiresToday` / `share.expiresTomorrow` and `date.daysOne` / `date.daysOther` may already
+cover the counts that would read wrong, and `outstanding.groupMeta` may be dead copy since 1.9
+split the summary into `.ttl` and `.age`. Which of them is imported, and which call site renders
+it, is a question for the app (GAP-154).

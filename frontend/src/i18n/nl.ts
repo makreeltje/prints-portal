@@ -125,7 +125,8 @@ export const nl = {
   'status.noSpool': 'Geen spoel',
   'status.noPrice': 'Geen prijs',
   'status.noCost': 'Kosten ontbreken',
-  'status.daysOpen': '{days} dagen open',
+  'status.daysOpen':
+    '{days, plural, =0 {sinds vandaag open} one {# dag open} other {# dagen open}}',
   'status.paidOn': 'Betaald op {date}',
   'status.remaining': 'Nog {amount} open',
   'status.notBilled': 'Niet factureren',
@@ -212,7 +213,8 @@ export const nl = {
   'queue.group.inProgress': 'Mee bezig',
   'queue.groupMeta': '{count, plural, one {# aanvraag} other {# aanvragen}}',
   'queue.ofWhichWithoutFiles': 'waarvan {count} zonder bestanden',
-  'queue.waiting': '{count, plural, one {# dag} other {# dagen}} geleden gevraagd',
+  'queue.waiting':
+    '{count, plural, =0 {vandaag gevraagd} one {# dag geleden gevraagd} other {# dagen geleden gevraagd}}',
   'queue.noFiles': 'Nog geen bestanden',
   'queue.linkFiles': 'Bestanden koppelen',
   'queue.changeStatus': 'Status wijzigen',
@@ -494,6 +496,8 @@ export const nl = {
   'outstanding.total': 'Totaal openstaand',
   'outstanding.customers': 'Aantal klanten',
   'outstanding.oldest': 'Oudste openstaande print',
+  'outstanding.oldestDays':
+    '{days, plural, =0 {alles van vandaag} one {oudste # dag} other {oudste # dagen}}',
   'outstanding.groupMeta': '{count} prints · oudste {days} dagen open',
   'outstanding.empty': 'Niets openstaand',
   'outstanding.emptyHint': 'Alle prints zijn betaald.',
@@ -707,6 +711,13 @@ export type MessageKey = keyof typeof nl;
  * Looks up a string and fills `{name}` placeholders. ICU plurals from the copy
  * deck (`{count, plural, one {# print} other {# prints}}`) pick `one` for 1 and
  * `other` otherwise, with `#` replaced by the number.
+ *
+ * An exact-value arm wins over both: `{count, plural, =0 {vandaag gevraagd}
+ * one {# dag geleden gevraagd} other {# dagen geleden gevraagd}}` renders
+ * "vandaag gevraagd" at 0, where Dutch plural rules would otherwise send 0 to
+ * `other` and produce "0 dagen geleden gevraagd" (design system 2.11,
+ * GAP-150). 2.11's changelog expected this to work already; it did not — the
+ * form pattern took `\w+`, which `=0` is not.
  */
 export function t(key: MessageKey, values: Readonly<Record<string, string | number>> = {}): string {
   return fill(plurals(nl[key], values), values);
@@ -725,15 +736,18 @@ function plurals(text: string, values: Readonly<Record<string, string | number>>
   const count = Number(values[head[1] ?? '']);
   const forms = new Map<string, string>();
   let index = head.index + head[0].length;
-  // Forms: `one {…} other {…}`; a form's text has no nested braces of its own.
+  // Forms: `=0 {…} one {…} other {…}`; a form's text has no nested braces of
+  // its own. An `=N` selector is not a `\w+`, which is why it has to be spelled
+  // out here rather than falling out of the word pattern.
   for (;;) {
-    const form = /^\s*(\w+) \{([^{}]*)\}/.exec(text.slice(index));
+    const form = /^\s*(=\d+|\w+) \{([^{}]*)\}/.exec(text.slice(index));
     if (form === null) break;
     forms.set(form[1] ?? '', form[2] ?? '');
     index += form[0].length;
   }
   const end = text.indexOf('}', index);
-  const chosen = (count === 1 ? forms.get('one') : undefined) ?? forms.get('other') ?? '';
+  const exact = Number.isNaN(count) ? undefined : forms.get(`=${String(count)}`);
+  const chosen = exact ?? (count === 1 ? forms.get('one') : undefined) ?? forms.get('other') ?? '';
   const replaced = chosen.replace(/#/g, Number.isNaN(count) ? '#' : String(count));
   return plurals(text.slice(0, head.index) + replaced + text.slice(end + 1), values);
 }

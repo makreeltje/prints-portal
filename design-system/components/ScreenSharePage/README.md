@@ -47,3 +47,23 @@ The share page (`/share/:token`) is what a customer sees when opening a Deel-lin
 
 **And the correction to my own row:** GAP-103's "the share page offers no way to pay" is false — you verified the block renders with heading, IBAN and the owed amount on a live share page. The 2.0 warning for a missing IBAN stays (it is still a real hole, just not this one), and nothing about it was wrong; only my reading of why the gap was written was.
 
+**2.11.** (2026-10-17) **The klant sees where the model came from (GAP-152, the owner's decision).**
+A print's **bron** — the page the model came from — appears under the print's name as the host,
+linked: `span.pp-src` with the `external-link` glyph and `a.pp-link`, at `text-sm`, with the
+accessible name "{host}, opent in een nieuw tabblad", `rel="noopener noreferrer"` and
+`target="_blank"`. **Once per print**, on the first line that print has in the list, so a
+nabestelling does not repeat it. Several links: all of them, one per line. No link: nothing is
+drawn — no label, no empty row, the rule this page has followed since 1.6 for totals and since 1.9
+for the payment block. In the **not-billed** variant the link sits under the print name in the
+first cell of the table, not in a column of its own: a column of URLs cannot survive a 360px
+table.
+
+**Never the provenance chip and never the notitie.** The "uit de map" chip is internal — the klant
+has no use for the library's shape — and the **note is internal by the owner's decision**: it does
+not appear on this page, in the Overzicht PDF, on an invoice, in a file name or in the tab title.
+That is the same rule the link label got in 1.9 and 2.0 (GAP-077, GAP-088), and it is now written
+down for the second field, before it can be forgotten.
+
+**Colour and contrast.** `primary` on `surface` for the link (6.12 light / 6.79 dark, already in
+`contrast.md`); the glyph is `muted` and `aria-hidden`, so colour carries nothing on its own. No
+new pair.

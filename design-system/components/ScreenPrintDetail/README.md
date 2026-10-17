@@ -56,3 +56,33 @@ Print detail (`/prints/:id`) shows one print: identity and status, the 3D model,
 - **Capping the list's height with its own scroll.** Proposed by me in another form and not built, correctly. Files per print: median **5**, 17 prints over ten, largest **48** — so the cap would do nothing for most prints and, where it fired, would trap a scroll inside a card, hide rows from the browser's own find, and cut the list off at a height nobody asked for. Last on the page, it may be 48 rows long.
 
 Nothing else on the screen changes. The "Deze print" card gains the one line the spool control owes it (`spool.wholePrint.applies`, GAP-115).
+
+**2.11.** (2026-10-17) **Bron and Notitie on the print (GAP-152).** The card **"Deze print"** gains
+the two fields that say where a print came from and what still has to be made. Both belong to the
+print as a whole — not to an order — which is why they sit here and not in an OrderSection.
+
+- **Bron** is a `pp-kv tight` row (`dt` "Bron") whose `dd` holds `div.pp-srcs`: one `span.pp-src`
+  per link, each with the `external-link` glyph, the host as `a.pp-link`, and `span.pp-hintchip`
+  "uit de map" on the entries the indexer read out of a `.url` file in the folder. Typed and found
+  sit side by side with no precedence; the typed one comes first and is the only editable one. Full
+  spec: **PrintSource**.
+- **Notitie** is `div.pp-note` at the foot of the card, under the facts and under the spool
+  control, with the line "Alleen voor jou. Niet zichtbaar op de deel-link." Full spec:
+  **PrintNote**.
+
+**This makes "Deze print" the card of the print's own things, not a card of facts only.** 2.3
+rejected folding the file list into it on the ground that it is "facts without controls", which was
+already not quite true — the SpoolPicker trigger has been in it since 1.5. The honest rule is the
+one 2.0 wrote: *what belongs to the print is shown once, at print level.* A bron and a note are
+exactly that, and both are one field each, read far more often than written. What 2.3 refused is
+still refused: the file list, with its downloads, counts and order badges, stays its own card.
+
+**Empty and read-only.** No bron: no "Bron" row, and a ghost button "Bron toevoegen" for an Admin
+or Editor. No note: no empty frame, and "Notitie toevoegen" for the same roles. **Role User** sees
+the bron (the klant sees it too, on the share page) and **never** the note — the 1.1 rule "User
+never sees cost or notes" has its first literal field. On an archived print both still show: they
+are records, not files, and nothing about them needs the disk.
+
+**Phone.** Both are full width inside the card, which keeps its place in the one page order
+(header, `pp-pdtop`, orders, "Nabestelling maken", files). Neither field moves the price field,
+which the 1.9 and 2.0 measurements are still waiting on.

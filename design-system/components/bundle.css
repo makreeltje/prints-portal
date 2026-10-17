@@ -205,7 +205,21 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-group h3{margin:0;font:600 var(--text-md)/var(--leading-base) var(--font-sans);color:var(--text-strong);margin-right:auto}
 .pp-line{display:grid;grid-template-columns:1fr auto auto auto;gap:var(--space-3);align-items:center;padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border);font-size:var(--text-sm)}
 .pp-line:last-child{border-bottom:0}
-@media (max-width:480px){.pp-line{grid-template-columns:1fr auto}.pp-line .acts{grid-column:1/-1}}
+/* GAP-151 (2.11): THE PHONE ROW IS THREE BANDS, NOT TWO COLUMNS. Measured in the app at a 360px
+   viewport: the badge "118 dagen geleden gevraagd" took 192px of the 326px row and left the name
+   column 90px, so a three-word name broke over three lines beside a one-line badge. The name block
+   now owns the full width; the age badge and the figure share the second band -- the same pairing
+   `.pp-ogrp>summary` already uses on the phone (.age left, .amt right) -- and the actions keep the
+   third. The row copy is NOT shortened: "geleden gevraagd" is what makes the badge a wait rather
+   than a debt. The .pp-device.phone twin below is the preview frame's copy of the same rule: a
+   frame is a 360px CONTAINER at the page's own viewport width, so no media query fires inside it
+   (README, *Responsive*). The app still never sets .phone (do-dont, 1.2). */
+@media (max-width:480px){.pp-line{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-2)}.pp-line>:first-child{grid-column:1/-1}.pp-line>.pp-badge{grid-column:1;grid-row:2;justify-self:start}.pp-line>.pp-right{grid-column:2;grid-row:2;justify-self:end}.pp-line .acts{grid-column:1/-1}}
+.pp-device.phone .pp-line{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-2)}
+.pp-device.phone .pp-line>:first-child{grid-column:1/-1}
+.pp-device.phone .pp-line>.pp-badge{grid-column:1;grid-row:2;justify-self:start}
+.pp-device.phone .pp-line>.pp-right{grid-column:2;grid-row:2;justify-self:end}
+.pp-device.phone .pp-line .acts{grid-column:1/-1}
 /* share link, token */
 .pp-share{--pp-share-act:88px;display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr)) var(--pp-share-act);gap:var(--space-3);align-items:center;padding:var(--space-3) var(--space-4);font-size:var(--text-sm)}
 .pp-share b{color:var(--text-strong);font-weight:600;display:block}
@@ -1132,3 +1146,55 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 /* `.pp-device.pane` is a preview helper, like `.pp-w-900`: a 600px frame that
    stands in for the window so a preview can draw a `.at` bubble without it
    escaping to the page (`.pp-device .pp-tip.at` is absolute). Not app markup. */
+
+/* ===== 2.11: every phone rule gets its preview twin (GAP-151, GAP-152) =====
+   A rule inside @media (max-width:480px) cannot be seen in a preview at all: `.pp-device.phone`
+   is a 360px container at the page's own viewport width, so the query never fires in the frame and
+   the frame draws the DESKTOP layout. That is why GAP-151's row -- a badge eating two thirds of a
+   360px row -- was invisible here and only showed up in the running app. So a phone rule is not
+   delivered until it has a `.pp-device.phone` twin carrying the same declarations.
+   Twins added this round for the reflows a published phone frame actually contains. They change
+   nothing in the app (`.pp-device` is preview markup); they change what five existing frames show
+   -- OrderSection, ScreenPrintDetail, AssetListItem, ScreenSettings, ScreenTags -- which is the
+   point. `.pp-cols-2`, `.pp-pick` and `.pp-slot` are in no phone frame yet; their twins exist so
+   the next frame that uses them is honest. The four phone rules deliberately left without a twin are named in
+   `changelog.md` 2.11 under GAP-153. */
+.pp-device.phone .pp-slot{padding-left:var(--space-5)}
+.pp-device.phone .pp-asset.child{padding-left:var(--space-5)}
+.pp-device.phone .pp-cols-2{grid-template-columns:1fr}
+.pp-device.phone .pp-printer .fields{grid-template-columns:1fr}
+.pp-device.phone .pp-pick{grid-template-columns:auto minmax(0,1fr)}
+.pp-device.phone .pp-pick .pp-qty{grid-column:2}
+.pp-device.phone .pp-tagrow{grid-template-columns:minmax(0,1fr) auto}
+.pp-device.phone .pp-tagrow .cnt{grid-column:1}
+.pp-device.phone .pp-order>summary{display:grid;grid-template-columns:minmax(0,1fr) auto}
+.pp-device.phone .pp-order>summary .ttl{grid-row:1;grid-column:1;min-width:0}
+.pp-device.phone .pp-order>summary .chev{grid-row:1;grid-column:2}
+.pp-device.phone .pp-order>summary .sum{grid-row:2;grid-column:1/-1}
+
+/* ===== 2.11: a print's bron and its notitie (GAP-152) =====
+   `.pp-srcs` is the list, `.pp-src` is one entry, and `.pp-src .pp-link` is REQUIRED inside it:
+   the ellipsis lives on the link, not on the entry (do-dont 2.8 -- name the descendants a scoping
+   class needs). A URL truncates at its END, unlike a file name (`.pp-fname`, middle): the host is
+   the identifying part of a URL and it sits at the front. `.pp-src .pp-hintchip` marks an entry the
+   indexer read out of a `.url` file in the print's folder; a typed one carries no chip, because the
+   chip states provenance and the typed value's provenance is "you". */
+.pp-srcs{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
+.pp-src{display:flex;align-items:center;gap:var(--space-2);min-width:0;font-size:var(--text-sm);line-height:var(--leading-sm)}
+.pp-src>.pp-ico{flex:none;color:var(--muted)}
+.pp-src .pp-link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.pp-src .pp-hintchip{flex:none}
+/* `.pp-note` is the internal note. Required descendants: `.l` (its label) and a `p` (the text,
+   which keeps the operator's own line breaks). A `.pp-help` inside it carries "Niet zichtbaar op de
+   deel-link." -- the note is the one field on a print that never reaches a customer, so the field
+   says so where it is written, not in a help page. */
+.pp-note{display:flex;flex-direction:column;gap:var(--space-1);padding:var(--space-3);border-radius:var(--radius-md);background:var(--surface-2);min-width:0}
+.pp-note .l{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted)}
+.pp-note p{margin:0;font-size:var(--text-sm);line-height:var(--leading-sm);color:var(--text);white-space:pre-line;overflow-wrap:anywhere}
+/* A meta line of a row that must stay on ONE line. The name block owns the whole row width on the
+   phone since GAP-151, and a bron or a note is often longer than it; `.n` is the "+1" counter and
+   never shrinks. */
+.pp-reason.one{min-width:0}
+.pp-reason.one>span,.pp-reason.one>.pp-link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.pp-reason.one>.n{flex:none;overflow:visible}
+

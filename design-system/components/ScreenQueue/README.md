@@ -16,8 +16,8 @@ Wachtrij (`/wachtrij`) is the page for work that is asked for and not finished: 
 
 | cell | content |
 |---|---|
-| 1 | `b.pp-strong` print or request name, `div.pp-muted` klant (and project when it differs, per GAP-072), and — **only when the record has no files** — `div.pp-reason` "Nog geen bestanden" |
-| 2 | `span.pp-badge` with the waiting time, text plus icon: `queue.waiting` "{n} dagen geleden gevraagd", using ScreenOutstanding's three age steps unchanged (neutral to 30 days, `warning` 31–90, `unpaid` over 90) |
+| 1 | `b.pp-strong` print or request name, `div.pp-muted` klant (and project when it differs, per GAP-072), and — **only when the record has no files** — `div.pp-reason` "Nog geen bestanden". Then, since 2.11, at most two one-line meta rows (`div.pp-reason.one`): the **bron** (PrintSource, only on a fileless row) and the **notitie** (PrintNote, on any row). Never more than three meta lines, each clamped to one line |
+| 2 | `span.pp-badge` with the waiting time, text plus icon: `queue.waiting`, which reads **"vandaag gevraagd"** at zero days (2.11, GAP-150), "1 dag geleden gevraagd" at one and "{n} dagen geleden gevraagd" above that, using ScreenOutstanding's three age steps unchanged (neutral to 30 days, `warning` 31–90, `unpaid` over 90) |
 | 3 | `span.pp-right` the price in `pp-money` when one is set, empty when none — the dashboard already badges a missing price and this page does not repeat it |
 | 4 | `div.pp-row.acts` ghost buttons: **"Status wijzigen"**, and **"Bestanden koppelen"** only on a row with no files |
 
@@ -45,12 +45,54 @@ The owner named two things that are both "not printed yet" and are not interchan
 
 **States.** Loading (Skeleton rows), default, a group busy, a row busy (spinner in its button, the row kept), **empty** (`.pp-empty`: "Niets in de wachtrij" with "Nieuwe aanvragen komen hier te staan." and the "Aanvraag toevoegen" button), error (inline alert, nothing changed). A group with no rows is **not rendered** — an empty `Mee bezig` card is a box about nothing.
 
-**Phone (480px and below).** `.pp-ogrp>summary` already reflows to its two-column, two-row form and `.pp-line` to `1fr auto` with `.acts` spanning — both inherited, nothing new. Groups stay open; actions wrap under each row at 44px.
+**Phone (480px and below).** `.pp-ogrp>summary` reflows to its two-column, two-row form (inherited) and **`.pp-line` reflows to three bands** (2.11, GAP-151): the name block over the full width, then the age badge left with the figure right, then the actions. That is the same pairing the summary above it uses, and it is a change to `bundle.css` rather than something inherited — see *2.11* below. Groups stay open; actions wrap under each row at 44px.
 
 **Accessibility.** One `<h1>`; each group is a native `<details>` with an `<h3>` in its summary, reachable by Enter and Space; the summary's accessible name is "Mee bezig, 6 aanvragen, waarvan 4 zonder bestanden"; the age badge is text plus icon, never colour alone; "Nog geen bestanden" is real text in the row and not a tooltip; the row count is announced politely when a filter or an action changes it.
 
-**Dutch copy.** Wachtrij | Aanvraag toevoegen | Nog niet besloten | Mee bezig | {n} aanvragen | waarvan {n} zonder bestanden | {n} dagen geleden gevraagd | Nog geen bestanden | Bestanden koppelen | Status wijzigen | Niets in de wachtrij | Nieuwe aanvragen komen hier te staan. | Toon alle {n} regels (reused from ScreenOutstanding).
+**Dutch copy.** Wachtrij | Aanvraag toevoegen | Nog niet besloten | Mee bezig | {n} aanvragen | waarvan {n} zonder bestanden | vandaag gevraagd / {n} dagen geleden gevraagd | Nog geen bestanden | Bestanden koppelen | Status wijzigen | Niets in de wachtrij | Nieuwe aanvragen komen hier te staan. | Toon alle {n} regels and oudste {n} dagen / alles van vandaag (both reused from ScreenOutstanding: `outstanding.showAll` and `outstanding.oldestDays`) | Bron | Notitie.
 
 **Nav.** Between Dashboard and Openstaand — what is coming, what is here, what is owed. See AppShell.
 
 **Not designed here, deliberately.** The "Aanvraag toevoegen" dialog's own anatomy (what a request is typed as before it has a print), and anything to do with delivery (GAP-144). Both wait: the first on the data model the implementer is working out, the second on the owner.
+
+## 2.11 (2026-10-17)
+
+**The summary's age badge has a key at last (GAP-148, GAP-149).** The `.age` slot of each group's
+summary shows `outstanding.oldestDays` — "oudste 118 dagen", "oudste 1 dag", and **"alles van
+vandaag"** when the oldest request in the group arrived today. 2.10's preview drew that badge and
+2.10's copy deck had no key for it; it could not borrow `outstanding.oldest`, which was a tile
+label *and* a badge in one key, and `status.daysOpen` says "dagen open", which is about money. The
+deck's duplicate is split and **one** key now serves this slot on both screens, because it is one
+component's slot with identical words in both places.
+
+**The row says "vandaag gevraagd" on the day it arrives (GAP-150).** `queue.waiting` had plural
+arms but no zero arm, and Dutch sends 0 to `other`, so the row the owner had just created read "0
+dagen geleden gevraagd" — the first thing he saw after "Aanvraag toevoegen", and most requests are
+entered the day they arrive. The badge keeps its `neutral` step and its clock; only the words
+change. No `=1 {gisteren}` arm: "1 dag geleden gevraagd" is correct and keeps one vocabulary.
+
+**The phone row is three bands (GAP-151, measured).** At 360px the badge took **192px** of a 326px
+row and left the name **90px**, so "Nog te ontwerpen kastje" broke over three lines beside a
+one-line badge. ScreenOutstanding survived the same `1fr auto` rule only because its badge is
+127px. The name block now spans both columns, the badge and the figure share the second band, and
+the actions keep the third — the same shape as the summary above the list. **The row copy is not
+shortened**, which was the alternative: "geleden gevraagd" is exactly what makes the badge a wait
+and not a debt, and shortening it on the phone would have put the two screens' badges in different
+words at different widths. The rule and its preview twin are in `bundle.css`; nothing on this page
+changes above 480px.
+
+**A row can now say what kind of job it is (GAP-152).** Two new meta lines in the name block, both
+read off the print record and neither a state:
+
+- **the bron** (PrintSource) — the host of the model's page as a link, **only on a row with no
+  files**: a link means a model exists somewhere, so this is a download. With files on disk the row
+  has nothing to gain from it.
+- **the notitie** (PrintNote) — one clamped line of the owner's own words, **on any row**: the note
+  is about the work, which outlives the arrival of the files ("In zwart printen, de vorige was
+  wit").
+
+**A row with neither is unchanged, and that is the majority.** 15 of 84 folders carry a `.url`, so
+most rows show "Nog geen bestanden" and nothing more. Nothing is inferred from an absent bron or an
+absent note — no badge, no sort, no filter, no "nog te ontwerpen". The sort inside a group is still
+2.10's (fileless rows first). The preview draws that distribution rather than the convenient case:
+of the six fileless rows in the 980px frame, one has a bron, one has a note and four have neither.

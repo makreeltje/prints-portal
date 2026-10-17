@@ -112,3 +112,31 @@
 - **Do** give each exclusion its own sentence and its own ink when the reasons differ: a missing input is a `warning` with something to do, a decision already taken is a `muted` `.pp-reason` line with nothing to do. **Don't** render two reasons through one sentence in one tone — a print quoted and refused was announced as having no sale price, in orange (ScreenInvoiceExport, GAP-140).
 - **Do** give every counted sentence an ICU plural and cap any name list it embeds: five names, then "en {count} andere". **Don't** ship "1 prints … zijn weggelaten" or a sentence that can list eighty-three names in a 560px dialog (GAP-141).
 
+## Added in 2.11
+
+- **Do** write a phone rule twice: inside `@media (max-width:480px)` for the app and as
+  `.pp-device.phone <selector>` for the preview frame. **Don't** trust a phone frame that has no
+  twin — it is a 360px container at desktop viewport width, so the media query never fires and the
+  frame shows the desktop layout (`README.md` *Responsive*, GAP-151).
+- **Do** measure a row's widest cell against the narrowest screen before giving it `1fr auto`: a
+  192px badge in a 326px row leaves a three-word name 90px and three lines. **Don't** fix it by
+  shortening the words that carry the meaning — send the long cell to its own band instead
+  (GAP-151).
+- **Do** keep one key per row in `copy-deck.md`, carrying its current value, and record a change in
+  prose. **Don't** re-list a changed key as a second row: the importer takes the first occurrence,
+  so a duplicate silently ships the string a later round replaced (GAP-148).
+- **Do** give a counted sentence a **zero** arm as well as a plural, and say the day where zero
+  means today ("vandaag gevraagd", "sinds vandaag open"). **Don't** ship "0 dagen geleden gevraagd"
+  for the state that is the most common one on the screen (GAP-150).
+- **Do** let a typed value and an observed one stand side by side, each saying where it came from,
+  when both are true: a typed bron never overwrites a `.url` in the folder, as a typed price never
+  overwrites measured grams. **Don't** invent a precedence rule for something that was never a
+  single value (GAP-152, PrintSource).
+- **Do** read a job's kind from a second **observation** — a link exists, a note was written — and
+  show the observation itself. **Don't** turn it into a state, a badge, a sort or a word like "nog
+  te ontwerpen": a print without a bron is not a design job, and a note may say "in zwart printen"
+  (GAP-152, `README.md` rule 6, and GAP-143, which refused this once already).
+- **Do** say beside an internal field that it is internal, every time it is shown ("Alleen voor
+  jou. Niet zichtbaar op de deel-link."). **Don't** leave "internal" to a role check nobody can
+  see from the screen (GAP-152, PrintNote).
+
