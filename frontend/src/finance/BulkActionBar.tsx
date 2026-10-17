@@ -8,10 +8,10 @@ import { keys } from '../prints/api';
 import { TagPopover, type TagState } from '../prints/TagEditor';
 import type { PrintSummary } from '../prints/types';
 import { fetchMarkup, fetchSpoolmanStatus, financeKeys, runBulk, type BulkAction } from './api';
-import { BulkPriceDialog, BulkSpoolDialog } from './BulkDialogs';
+import { BulkPriceDialog, BulkSpoolDialog, BulkStateDialog } from './BulkDialogs';
 import { reasonOf, type BulkFailure } from './bulk-results';
 
-type Dialog = 'markPaid' | 'delete' | 'spool' | 'price' | null;
+type Dialog = 'markPaid' | 'delete' | 'spool' | 'price' | 'state' | null;
 
 /**
  * BulkActionBar: "{n} geselecteerd", Spoel toewijzen, Prijs instellen,
@@ -121,6 +121,17 @@ export function BulkActionBar({
         }}
       >
         {t('bulk.setPrice')}
+      </button>
+      {/* Beside the price, because both are set in the same pass (2.8). */}
+      <button
+        type="button"
+        className="pp-btn pp-btn-secondary"
+        disabled={busy}
+        onClick={() => {
+          open('state');
+        }}
+      >
+        {t('request.set')}
       </button>
       <button
         type="button"
@@ -252,6 +263,15 @@ export function BulkActionBar({
         <BulkSpoolDialog
           count={count}
           onApply={(spoolId) => run({ action: 'assignSpool', spoolId })}
+          onClose={() => {
+            setDialog(null);
+          }}
+        />
+      )}
+      {dialog === 'state' && (
+        <BulkStateDialog
+          count={count}
+          onApply={(state) => run({ action: 'setRequestState', state })}
           onClose={() => {
             setDialog(null);
           }}

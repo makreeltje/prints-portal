@@ -542,6 +542,32 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     expect(removed.money).toMatchObject({ orderCount: 1, price: 11.89 });
   });
 
+  it('sets the request state in bulk, on the newest order, per print', async () => {
+    const box = await idOf('Babybox locks');
+    const keychain = await idOf('Keychain');
+    const send = (ids: string[], state: string | null) =>
+      t.as(editor, {
+        method: 'POST',
+        url: '/api/prints/bulk',
+        payload: { action: 'setRequestState', ids, state },
+      });
+
+    expect((await send([box, keychain], 'undecided')).json()).toEqual({
+      results: [
+        { id: box, ok: true },
+        { id: keychain, ok: true },
+      ],
+    });
+    expect((await firstOrder('Babybox locks')).requestState).toBe('undecided');
+    expect((await firstOrder('Keychain')).requestState).toBe('undecided');
+
+    // Clearing is as ordinary as setting: no confirmation, no special path.
+    expect((await send([box], null)).json()).toEqual({ results: [{ id: box, ok: true }] });
+    expect((await firstOrder('Babybox locks')).requestState).toBeNull();
+
+    expect((await send([box], 'nonsense')).statusCode).toBe(400);
+  });
+
   it('runs bulk actions with a result per print', async () => {
     const box = await idOf('Babybox locks');
     const keychain = await idOf('Keychain');

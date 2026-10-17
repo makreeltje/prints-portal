@@ -45,7 +45,8 @@ export type BulkAction =
   | { action: 'setPrice'; suggested: true }
   | { action: 'assignSpool'; spoolId: number | null }
   | { action: 'delete' }
-  | { action: 'addTags' | 'removeTags'; tagIds: string[] };
+  | { action: 'addTags' | 'removeTags'; tagIds: string[] }
+  | { action: 'setRequestState'; state: RequestState | null };
 
 export interface BulkResult {
   id: string;
