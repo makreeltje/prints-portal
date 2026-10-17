@@ -618,3 +618,62 @@ Two groups, both one sentence each, and neither is a new feature. The first fixe
 **`asset.sameName` is not a duplicate warning and its ink says so.** It is a `muted` `.pp-reason` line, no badge, no `warning`, drawn on **both** rows of a same-name pair, each naming its own `{map}` — the shortest folder form, relative to the print root, that differs between the two. `asset.duplicate` ("Mogelijk dubbel") and `asset.duplicateHint` are unchanged and keep their meaning: the same *content*, where "Gebruik liever Aantal keer geprint" is sound advice. For two distinct files that advice would lose one of them off the invoice, which is why this condition gets its own words. `asset.sameNameNoFolder` is the fallback where the app has no folder for an asset.
 
 **Changed in 2.7:** nothing. **No key was removed.**
+
+## Added in 2.9
+
+**The invoice exclusion lines (GAP-139, GAP-140, GAP-141).** One `excluded` list was rendered through one sentence in one tone, so a print quoted and refused was announced as having no sale price, in `warning` orange. Two conditions, two lines, two tones — see ScreenInvoiceExport.
+
+| key | text |
+|---|---|
+| invoice.omitted | {count, plural, one {# print zonder verkoopprijs is weggelaten} other {# prints zonder verkoopprijs zijn weggelaten}}: {names}. |
+| invoice.omittedDeclined | {count, plural, one {# print is niet doorgegaan en wordt niet gefactureerd} other {# prints zijn niet doorgegaan en worden niet gefactureerd}}: {names}. |
+| invoice.omittedMore | en {count} andere |
+
+**`invoice.omitted` is changed, not new.** It had no plural form, so "1 prints zonder verkoopprijs **zijn** weggelaten" renders today and n = 1 is the common case for that alert. Same key, same meaning, correct grammar. **`invoice.omittedMore`** caps both lists at five names; `do-dont.md` has required a cap on any list that grows since 2.2 and this alert was exempt by oversight. Neither line goes on the Concept PDF, the final invoice, the Overzicht or the share page: they are the operator's, and a customer needs no list of what they declined.
+
+**The request lifecycle, recorded as text (GAP-127, GAP-131, GAP-138).** These are **live in the app** — I verified the words, not the key names, so the names below are mine and the app's own names win if they differ. Tell me the real ones and the deck aligns to them; the text is what this deck is for.
+
+| key (provisional) | text |
+|---|---|
+| status.notDecided | Nog niet besloten |
+| status.inProgress | Mee bezig |
+| status.notProceeded | Niet doorgegaan |
+| status.notProceededOn | Niet doorgegaan op {date} |
+| status.wasPrice | was {amount} |
+| bulk.setStatus | Status instellen |
+| bulk.statusNone | Geen status |
+
+**`status.wasPrice` has no strikethrough** and that is the point: MoneyDisplay's `<s>` means *replaced by another price*, and this one was not replaced, it was refused. **`bulk.statusNone` is the fourth option of the status dialog, not a clear action** — the owner's decision, and his reason is the one worth keeping: a state must be able to go back, because a klant can change their mind about one print.
+
+**Changed in 2.9:** `invoice.omitted` (plural forms). **No key was removed.**
+
+## Added in 2.10
+
+**Wachtrij (GAP-124, GAP-143).** The queue page. Thirteen keys, all new; nothing changed and nothing removed.
+
+| key | text |
+|---|---|
+| nav.queue | Wachtrij |
+| queue.title | Wachtrij |
+| queue.add | Aanvraag toevoegen |
+| queue.group.notDecided | Nog niet besloten |
+| queue.group.inProgress | Mee bezig |
+| queue.groupMeta | {count, plural, one {# aanvraag} other {# aanvragen}} |
+| queue.ofWhichWithoutFiles | waarvan {count} zonder bestanden |
+| queue.waiting | {count, plural, one {# dag} other {# dagen}} geleden gevraagd |
+| queue.noFiles | Nog geen bestanden |
+| queue.linkFiles | Bestanden koppelen |
+| queue.changeStatus | Status wijzigen |
+| queue.empty | Niets in de wachtrij |
+| queue.emptyBody | Nieuwe aanvragen komen hier te staan. |
+
+**`queue.group.*` repeat the words of `status.notDecided` and `status.inProgress` on purpose and are separate keys.** A group heading and a badge are different places with different room, and the badge may be shortened at 480px (StatusBadge) where a heading never is; tying them to one key would make that shortening a page-wide change. The *words* must stay identical — if one changes, both change.
+
+**`queue.noFiles` names the observation, not the inference.** "Nog geen bestanden", never "nog te ontwerpen": a print can lack files because nothing has been downloaded yet, not only because the owner must design it (`README.md` rule 6).
+
+**`queue.ofWhichWithoutFiles` has no plural form and that is deliberate** — it is only ever rendered when the count is one or more, "waarvan 1 zonder bestanden" is correct Dutch, and the group heading it hangs off carries the plural.
+
+**Reused, not duplicated:** ScreenOutstanding's "Toon alle {n} regels" caps the group's list at ten rows here too.
+
+**Changed in 2.10:** nothing. **No key was removed.**
+

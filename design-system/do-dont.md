@@ -91,3 +91,24 @@
 - Don't put a `transform`, `filter` or `backdrop-filter` on an ancestor of a trigger: it becomes the containing block of the fixed panel and clips it again.
 - Don't give one page two orders of blocks, one for the phone and one for the desktop.
 - Don't fetch the thing a picker picks between in order to label the picker.
+
+## Added in 2.8
+
+- **Do** name, in the README, the element a scoping class sits on and the descendants its rules require, whenever a class in `bundle.css` is written as a descendant selector (`.pp-allcust .pp-body`, `.pp-allcust .pp-custs`). **Don't** leave the host to be inferred from the preview: a scoping class on the wrong element does part of its job silently, with no error and no visual clue that the rest is missing (CustomerChips, GAP-130).
+- **Do** give a status its own group in StatusBadge when it is not about money owed. **Don't** put a request lifecycle in the payment group, and never show a price nobody agreed to pay in `unpaid` ink (StatusBadge, GAP-126).
+- **Do** show the date beside an **asserted** stage — one a person set, that nothing can re-check. **Don't** draw an undated stage board: observed facts refresh themselves, asserted ones go stale in silence (`README.md` rule 1).
+- **Do** read a record with no files as a line of text. **Don't** draw it as a PrintCard or borrow the "no preview" thumbnail for it: that glyph means *this print has no picture*, not *this job has no files* (`README.md` rule 2).
+- **Do** keep tags for properties — things a print **is**. **Don't** model a stage as a tag: the editor's checkboxes and the filter's AND make every invalid combination representable, which is the one thing a state machine is for (TagChip, GAP-121).
+- **Do** label a figure with where it came from: the files, or something a person typed. **Don't** reason from an absence in a dataset before establishing what that dataset holds — "84 orders, all number 1" came from a database with nothing hand-entered in it and nearly retired a live feature (`README.md` rule 6, `changelog.md` 2.8).
+- **Do** draw a direction between two files only from a fact that is observed or recorded. **Don't** read a version out of a file name and act on it — reordering, collapsing or marking one "current": the mark sits in the middle of a long name, which is the zone this system cannot read, and `v10` sorts before `v9` (`README.md` rule 5, AssetListItem, GAP-132/133).
+- **Do** state a sweep's ceiling as well as its floors when a rule grows a value: two floors do not bound a sweep, and a stem grown to `W - 1 - HEAD_FLOOR` plus an extension is longer than its own window. **Don't** leave an implementer to derive the bound (`README.md` *Typography*, ModelPicker, GAP-135).
+- **Do** say whether a figure is *as specified* or *as rendered*, and name the buckets a split actually has. **Don't** quote a count from a re-implementation of a rule as though the build produced it, and don't derive one bucket by subtracting another — `55 - 36 = 19` hid a third bucket and the measured answer was 16 (`README.md` rule 6, GAP-136).
+
+## Added in 2.9
+
+- **Do** treat a location another system owns as read-only in principle. **Don't** offer a control, empty state or help line that promises to put a file where the operator will look for it: `/prints` is Nextcloud-synced, and a folder written behind Nextcloud's back reaches no device at all (`README.md` rule 7, GAP-128/137).
+- **Do** make absence a **value** in a picker — "Geen spoel", "Geen kleur", "Geen status" as the last option — because a value must be able to go back: a klant can change their mind about one print (the owner's reason, and the load-bearing one). **Don't** add a separate clear or remove action: clearing is then a different kind of act from setting, the bulk report needs two shapes, and something destructive-looking is offered for an act that destroys nothing (BulkDialogs, GAP-138).
+- **Do** name what a document leaves out, with its reason, on **the surface where the operator creates or reviews it**. **Don't** satisfy "excluded from the total" by silence — silence is the one state the operator cannot verify — and **don't** put those exclusions on the customer's copy: not the Concept PDF, the invoice, the Overzicht or the share page (ScreenInvoiceExport, GAP-139, narrowed by GAP-142).
+- **Do** give each exclusion its own sentence and its own ink when the reasons differ: a missing input is a `warning` with something to do, a decision already taken is a `muted` `.pp-reason` line with nothing to do. **Don't** render two reasons through one sentence in one tone — a print quoted and refused was announced as having no sale price, in orange (ScreenInvoiceExport, GAP-140).
+- **Do** give every counted sentence an ICU plural and cap any name list it embeds: five names, then "en {count} andere". **Don't** ship "1 prints … zijn weggelaten" or a sentence that can list eighty-three names in a 560px dialog (GAP-141).
+

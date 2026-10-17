@@ -27,3 +27,22 @@ CustomerChips replaces the customer cards on phones: one horizontally scrolling 
 The chip's own ink changes from `muted` to `text`, so the name at 600 is `text-strong` on `surface-2` (14.74 light, 12.88 dark) and the numbers are `text` (10.89 / 9.38). A pressed chip keeps its `info` ink and `info-tint` ground and drops to weight 400, with the name at 600 in the same ink — hierarchy by weight and separator, **no new colour pair**, so nothing in the contrast report moves. A deleted chip keeps `muted` for the name as well.
 
 Why not a second colour for the numbers: `muted` on `info-tint` over `surface-2` is not an approved pair (contrast.md), and a chip is three words long — weight and a separator are enough.
+
+**2.8.** (2026-10-17) **The overview dialog's markup is named, because the spec never named it (GAP-130, resolved — this one was mine).** The app put `pp-allcust` on a `div` **inside** `.pp-body` instead of on the dialog, so `.pp-allcust .pp-body` never matched: no scroll, no 920px cap, and `.pp-custs` was missing altogether, which stacked eleven klanten in one column — 1498px of content in a 964px panel. The preview was right all along, and the implementer has the fix. **But the README could not have told them.** 1.9 says "a Dialog `pp-allcust`" and "the full CustomerCard grid", and the class `pp-custs` appears in no README in this system at all; it exists only in `bundle.css` and in the preview's markup. Reading the spec was not enough, so the spec is at fault too.
+
+**The markup, stated once (unchanged — this is what the preview has drawn since 1.9):**
+
+```html
+<div class="pp-dialog pp-allcust" role="dialog" aria-labelledby="…">
+  <header><h2 id="…">Alle klanten</h2><button …>Sluiten</button></header>
+  <div class="pp-body">
+    <div class="pp-custs">
+      <div class="pp-card pp-cust">…</div>   <!-- one CustomerCard per klant -->
+    </div>
+  </div>
+</div>
+```
+
+`pp-allcust` goes **on the same element as `pp-dialog`** and nowhere else: all three of its rules reach down from it (`max-width:920px` on itself, `.pp-allcust .pp-body` for the scroll cap, `.pp-allcust .pp-custs` for the 200px tile grid), so on any other element it silently does a third of its job. `pp-custs` is the grid wrapper **inside** `.pp-body` and is the only thing that makes the tiles a grid; without it the cards are block children and the dialog is one tall column. Nothing in `bundle.css` changed.
+
+The general rule this produced is in `do-dont.md`: a class whose rules use a descendant selector names its host element and its required descendants in the README, not only in the preview.
