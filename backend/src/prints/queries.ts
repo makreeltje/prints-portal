@@ -62,7 +62,17 @@ type PrintRecordRow = Selectable<Database['print_records']> & {
 
 /** Visibility rules shared by list, count and customers. */
 function applyScope(query: RecordQuery, scope: CustomerScope, filter: PrintFilter): RecordQuery {
-  let q = query;
+  /*
+    A request has no files yet, so it appears in the Wachtrij and nowhere else
+    (ScreenQueue 2.10, GAP-123): not in the grid or the list, not in
+    "{shown} van {total} prints", not in a klant's count, not in the search.
+    It joins all of them the moment it is linked to a folder, with no special
+    case — by then it is an ordinary indexed record.
+
+    This is the one place every print query passes through, which is why the
+    rule lives here rather than at each call site.
+  */
+  let q = query.where('print_records.origin', '=', 'indexed');
   const statuses: ('indexed' | 'archived' | 'deleted')[] = ['indexed'];
   if (filter.includeArchived === true) statuses.push('archived');
   if (filter.includeDeleted === true) statuses.push('deleted');

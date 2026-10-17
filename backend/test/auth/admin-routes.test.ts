@@ -14,6 +14,7 @@ async function addRecord(db: AppDatabase, customer: string, status = 'indexed' a
       customer_folder: customer,
       project_folder: 'Box',
       display_name: 'Box',
+      origin: 'indexed' as const,
       status,
       discovered_at: now,
       last_seen_at: now,

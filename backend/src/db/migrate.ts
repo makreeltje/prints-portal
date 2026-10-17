@@ -8,6 +8,7 @@ import * as m0005 from './migrations/0005_invoices.js';
 import * as m0006 from './migrations/0006_share_links.js';
 import * as m0007 from './migrations/0007_pay_link.js';
 import * as m0008 from './migrations/0008_request_state.js';
+import * as m0009 from './migrations/0009_request_records.js';
 
 /** Migrations are listed explicitly so the compiled app needs no directory scanning. */
 const MIGRATIONS: Record<string, Migration> = {
@@ -19,6 +20,7 @@ const MIGRATIONS: Record<string, Migration> = {
   '0006_share_links': m0006,
   '0007_pay_link': m0007,
   '0008_request_state': m0008,
+  '0009_request_records': m0009,
 };
 
 const provider: MigrationProvider = {

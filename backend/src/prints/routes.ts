@@ -6,7 +6,10 @@ import type { Role } from '../db/schema.js';
 import type { Indexer } from '../indexing/indexer.js';
 import type { LiveEvent, RealtimeHub } from '../realtime/hub.js';
 import type { ThumbnailService } from '../thumbnails/service.js';
+import { REQUEST_STATES, parseRequestState } from '../finance/state.js';
 import { sendPrintFile } from './files.js';
+import { queue } from './queue.js';
+import { createRequest, linkRequest, RequestError } from './requests.js';
 import {
   createTag,
   deleteCustomer,
@@ -330,6 +333,81 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
         broadcast('print:updated', id, folder);
       }
       return { restored: restored.length };
+    },
+  );
+
+  /** Wachtrij: work asked for and not finished (ScreenQueue 2.10). */
+  app.get('/api/queue', { config: { auth: MANAGE } }, async () => ({
+    groups: await queue(db, now().toISOString()),
+  }));
+
+  /**
+   * A request: a print asked for before any folder exists for it. The only
+   * place besides the indexer that creates a record, which is why it is
+   * marked `origin: 'request'` — see requests.ts.
+   */
+  app.post<{ Body: { customer: string; name: string; state?: string | null } }>(
+    '/api/requests',
+    {
+      config: { auth: MANAGE },
+      schema: {
+        body: {
+          type: 'object',
+          required: ['customer', 'name'],
+          properties: {
+            customer: { type: 'string', minLength: 1, maxLength: 200 },
+            name: { type: 'string', minLength: 1, maxLength: 200 },
+            state: { type: ['string', 'null'], enum: [...REQUEST_STATES, null] },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const made = await createRequest(
+          db,
+          {
+            customerFolder: request.body.customer,
+            name: request.body.name,
+            // A request with nothing said about it is "nog niet besloten":
+            // that is what asking for something means before an answer.
+            state: parseRequestState(request.body.state ?? null) ?? 'undecided',
+          },
+          now().toISOString(),
+        );
+        broadcast('print:updated', made.id, made.customer_folder);
+        return await reply.code(201).send({ id: made.id });
+      } catch (error) {
+        if (error instanceof RequestError) {
+          return reply.code(422).send({ error: error.message });
+        }
+        throw error;
+      }
+    },
+  );
+
+  /** "Bestanden koppelen": the folder has appeared; point the request at it. */
+  app.post<{ Params: { id: string }; Body: { printId: string } }>(
+    '/api/requests/:id/link',
+    {
+      config: { auth: MANAGE },
+      schema: {
+        params: idParams,
+        body: { type: 'object', required: ['printId'], properties: { printId: UUID_PARAM } },
+      },
+    },
+    async (request, reply) => {
+      try {
+        await linkRequest(db, request.params.id, request.body.printId, now().toISOString());
+      } catch (error) {
+        if (error instanceof RequestError) {
+          return reply.code(422).send({ error: error.message });
+        }
+        throw error;
+      }
+      await indexer.recalculateRecord(request.body.printId);
+      broadcast('print:updated', request.body.printId, '');
+      return reply.code(204).send();
     },
   );
 

@@ -145,7 +145,12 @@ export class Indexer {
     let query = this.options.db
       .selectFrom('print_records')
       .select(['customer_folder', 'project_folder'])
-      .where('status', '!=', 'deleted');
+      .where('status', '!=', 'deleted')
+      /*
+        A request has no folder, so the absent-sweep would archive it on the
+        next scan. It is not absent; it has not arrived yet.
+      */
+      .where('origin', '=', 'indexed');
     if (customerFolder !== undefined) query = query.where('customer_folder', '=', customerFolder);
     return (await query.execute()).map((row) => ({
       customerFolder: row.customer_folder,
@@ -319,6 +324,7 @@ function newRecord(id: string, key: string, ref: ProjectRef, now: string): Print
     project_folder: ref.projectFolder,
     display_name: ref.projectFolder ?? ref.customerFolder,
     status: 'indexed',
+    origin: 'indexed',
     discovered_at: now,
     last_seen_at: now,
     archived_at: null,

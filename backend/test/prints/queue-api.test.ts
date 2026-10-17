@@ -1,0 +1,156 @@
+import { rm } from 'node:fs/promises';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { startTestApp, type Session, type TestApp } from '../helpers/app.js';
+import { TEST_DATABASES } from '../helpers/databases.js';
+import { makePrintsTree } from '../helpers/prints-tree.js';
+
+describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
+  let t: TestApp;
+  let root: string;
+  let admin: Session;
+
+  beforeEach(async () => {
+    root = await makePrintsTree();
+    t = await startTestApp(url, { PRINTS_ROOT: root });
+    await t.app.services.indexer.indexAll();
+    await t.addUser('owner@example.org', 'Admin');
+    admin = await t.login('owner@example.org');
+  });
+
+  afterEach(async () => {
+    await t.close();
+    await rm(root, { recursive: true, force: true });
+  });
+
+  const queue = async () =>
+    (await t.as(admin, { url: '/api/queue' })).json<{
+      groups: {
+        state: string;
+        withoutFiles: number;
+        rows: { id: string; name: string; hasFiles: boolean; waitingDays: number }[];
+      }[];
+    }>();
+
+  const addRequest = async (customer: string, name: string, state?: string) =>
+    (
+      await t.as(admin, {
+        method: 'POST',
+        url: '/api/requests',
+        payload: { customer, name, ...(state === undefined ? {} : { state }) },
+      })
+    ).json<{ id: string }>().id;
+
+  it('a request lives in the queue and nowhere else', async () => {
+    const before = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
+      total: number;
+      items: unknown[];
+    }>();
+
+    const id = await addRequest('Joey', 'Lamp voor in de gang');
+
+    // The queue has it, as "Nog niet besloten": asking is not deciding.
+    const groups = (await queue()).groups;
+    expect(groups.map((g) => g.state)).toEqual(['undecided']);
+    expect(groups[0]?.rows.map((r) => r.name)).toEqual(['Lamp voor in de gang']);
+    expect(groups[0]?.rows[0]?.hasFiles).toBe(false);
+    expect(groups[0]?.withoutFiles).toBe(1);
+
+    // GAP-123: not in the list, not in the total, not in the klant's count.
+    const after = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
+      total: number;
+      items: { id: string }[];
+    }>();
+    expect(after.total).toBe(before.total);
+    expect(after.items.some((p) => p.id === id)).toBe(false);
+
+    const customers = (await t.as(admin, { url: '/api/customers' })).json<{
+      customers: { folder: string; printCount: number }[];
+    }>();
+    const joey = customers.customers.find((c) => c.folder === 'Joey');
+    const search = (await t.as(admin, { url: '/api/prints?q=Lamp' })).json<{ total: number }>();
+    expect(search.total).toBe(0);
+    expect(joey?.printCount).toBe(
+      (await t.as(admin, { url: '/api/prints?limit=100&customer=Joey' })).json<{
+        total: number;
+      }>().total,
+    );
+  });
+
+  it('re-indexing never archives a request for being absent', async () => {
+    const id = await addRequest('Joey', 'Nog te ontwerpen kastje');
+    await t.app.services.indexer.indexAll();
+    // It has no folder, so the absent-sweep would have taken it.
+    expect((await queue()).groups[0]?.rows.some((r) => r.id === id)).toBe(true);
+  });
+
+  it('groups by state, and inside a group the fileless rows come first', async () => {
+    await addRequest('Joey', 'Bezig zonder bestanden', 'inProgress');
+    // An existing print, given the same state, has files.
+    const withFiles = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
+      items: { id: string }[];
+    }>().items[0];
+    const detail = (await t.as(admin, { url: `/api/prints/${withFiles?.id ?? ''}` })).json<{
+      orders: { id: string }[];
+    }>();
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/orders/${detail.orders[0]?.id ?? ''}/state`,
+      payload: { state: 'inProgress' },
+    });
+
+    const group = (await queue()).groups.find((g) => g.state === 'inProgress');
+    expect(group?.rows.length).toBe(2);
+    expect(group?.rows[0]?.hasFiles).toBe(false);
+    expect(group?.withoutFiles).toBe(1);
+  });
+
+  it('links a request to the folder that appeared, and keeps the real print', async () => {
+    const id = await addRequest('Joey', 'Wordt Babybox locks');
+    const target = await (async () => {
+      const items = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
+        items: { id: string; name: string }[];
+      }>().items;
+      return items.find((p) => p.name === 'Babybox locks');
+    })();
+
+    // A price on the request moves across; the print itself is kept.
+    const requestOrder = (await t.as(admin, { url: `/api/prints/${id}` })).json<{
+      orders: { id: string }[];
+    }>().orders[0];
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/orders/${requestOrder?.id ?? ''}/sale-price`,
+      payload: { salePrice: 18.5 },
+    });
+
+    const linked = await t.as(admin, {
+      method: 'POST',
+      url: `/api/requests/${id}/link`,
+      payload: { printId: target?.id ?? '' },
+    });
+    expect(linked.statusCode).toBe(204);
+
+    // The request is gone and the print carries what it had.
+    expect((await t.as(admin, { url: `/api/prints/${id}` })).statusCode).toBe(404);
+    const after = (await t.as(admin, { url: `/api/prints/${target?.id ?? ''}` })).json<{
+      orders: { price: number | null; requestState: string | null }[];
+    }>();
+    expect(after.orders.at(-1)?.price).toBe(18.5);
+    expect(after.orders.at(-1)?.requestState).toBe('undecided');
+  });
+
+  it('refuses to link something that is not a request', async () => {
+    const items = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
+      items: { id: string }[];
+    }>().items;
+    const a = items[0]?.id ?? '';
+    const b = items[1]?.id ?? '';
+    const response = await t.as(admin, {
+      method: 'POST',
+      url: `/api/requests/${a}/link`,
+      payload: { printId: b },
+    });
+    expect(response.statusCode).toBe(422);
+    expect(response.json()).toEqual({ error: 'not_a_request' });
+  });
+});

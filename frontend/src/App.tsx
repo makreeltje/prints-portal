@@ -19,6 +19,7 @@ import { LiveProvider } from './prints/live';
 import { SettingsPage } from './finance/SettingsPage';
 import { PrintDetailPage } from './prints/PrintDetailPage';
 import { InvoicesPage } from './finance/InvoicesPage';
+import { QueuePage } from './prints/QueuePage';
 import { OutstandingPage } from './finance/OutstandingPage';
 import { TagsPage } from './prints/TagsPage';
 import { SharePage } from './sharing/SharePage';
@@ -39,6 +40,12 @@ const pages = (methods: AuthMethods): Partial<Record<string, ReactNode>> => ({
     <>
       <DocumentTitle title="nav.settings" />
       <SettingsPage />
+    </>
+  ),
+  '/wachtrij': (
+    <>
+      <DocumentTitle title="nav.queue" />
+      <QueuePage />
     </>
   ),
   '/openstaand': (

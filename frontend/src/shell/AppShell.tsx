@@ -40,8 +40,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const items = navItemsFor(user.role);
-  // Phone bottom bar: the first three main items, then "Meer" (AppShell spec).
-  const bottomItems = items.filter((item) => item.group === 'main').slice(0, 3);
+  /*
+    Phone bottom bar: Dashboard, Wachtrij, Openstaand, then "Meer" (AppShell
+    2.10). It stays at four — five at 360px is 72px apiece — so Wachtrij takes
+    Facturen's slot and Facturen moves into the drawer. The choice is about
+    frequency, not importance: the queue is a daily page, an invoice is
+    periodic. Facturen keeps its place on every other width.
+  */
+  const bottomItems = items
+    .filter((item) => item.group === 'main' && item.path !== '/facturen')
+    .slice(0, 3);
   const onLogout = () => void logout();
   const openDrawer = () => {
     setDrawerOpen(true);

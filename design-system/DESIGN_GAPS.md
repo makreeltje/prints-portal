@@ -1676,3 +1676,53 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Decision:** **Reused from ScreenOutstanding as a starting point and flagged as unmeasured:** neutral to 30 days, `warning` 31–90, `unpaid` over 90. Those were chosen for **money** ageing. A *request* sitting 30 days may already be bad — the owner says one can sit for weeks — so the escalation may be far too lenient here. The app picks the class, so the cut-offs move without a design change
 - **Status as published:** needs your measurement
 - **Design system version:** 2.10
+
+## GAP-148 [open] `outstanding.oldest` is two different strings in one copy deck
+- **Type:** conflict
+- **Found while:** implementing ScreenQueue (2.10) and looking for the summary badge's copy
+- **Where needed:** `design-system/copy-deck.md` lines 84 and 529; `frontend/src/finance/OutstandingPage.tsx`
+- **What is missing or wrong:** The copy deck lists `outstanding.oldest` twice with different values: "Oudste openstaande print" (line 84, the StatTile label) and "oudste {n} dagen" (line 529, the group summary badge). A key cannot be both. `nl.ts` imported the first, so the second has no key at all — the summary badge in `OutstandingPage` falls back to `status.daysOpen` and reads "118 dagen open" where ScreenOutstanding's own text and preview say "oudste 118 dagen".
+- **Proposal:** Split them — keep `outstanding.oldest` as the tile label and add `outstanding.oldestDays` for the badge, or rename the tile label. Either way one of the two entries changes.
+- **Blocked:** the group summary badge on both ScreenOutstanding and ScreenQueue.
+
+## GAP-149 [open] ScreenQueue's group summary shows an age badge with no key for it
+- **Type:** missing copy
+- **Found while:** implementing ScreenQueue (2.10)
+- **Where needed:** `design-system/components/ScreenQueue/preview.html`, the `<summary>` of each group
+- **What is missing or wrong:** The preview renders `oudste 118 dagen` as the summary's age badge, but the 2.10 copy deck's thirteen `queue.*` keys do not include it. Only the per-row badge (`queue.waiting`) has copy. Reusing `outstanding.oldest` is not possible — see GAP-148 — and reusing `status.daysOpen` would say "dagen open", which is about money, not about a wait.
+- **Proposal:** Add `queue.oldest` = "oudste {count, plural, one {# dag} other {# dagen}}", matching `queue.waiting`'s plural form. It is the same sentence the preview already shows.
+- **Blocked:** the age badge in each queue group's summary. The group count, the "waarvan {n} zonder bestanden" meta and every row render as specified; only the badge is left out.
+
+## GAP-150 [open] `queue.waiting` reads "0 dagen geleden gevraagd" on the day a request is made
+- **Type:** suspected design bug
+- **Found while:** implementing ScreenQueue (2.10) and adding a request in the running app
+- **Where needed:** `design-system/copy-deck.md` line 663, every queue row on its first day
+- **What is missing or wrong:** `queue.waiting` is "{count, plural, one {# dag} other {# dagen}} geleden gevraagd". Dutch plural rules send 0 to `other`, so a request entered this morning reads "0 dagen geleden gevraagd". It is the first thing the owner sees after using "Aanvraag toevoegen" — the one row he is certain about — and it reads like a bug. Most requests are entered on the day they arrive, so this is the common case, not an edge one.
+- **Proposal:** Add a `=0 {vandaag gevraagd}` arm: "{count, plural, =0 {vandaag gevraagd} one {# dag geleden gevraagd} other {# dagen geleden gevraagd}}". Same for `=1` if "gisteren" is wanted, though "1 dag geleden" is fine Dutch.
+- **Blocked:** nothing — the row renders exactly as specified. Flagged because what it says is wrong, not because it is missing.
+
+## GAP-151 [open] At 360px a queue row's badge starves the name to 90px
+- **Type:** suspected design bug
+- **Found while:** implementing ScreenQueue (2.10) and measuring the real page at a 360px viewport
+- **Where needed:** `.pp-line` at `@media (max-width:480px)` in `components/bundle.css`, every row of ScreenQueue
+- **What is missing or wrong:** The phone rule is `grid-template-columns: 1fr auto` with only `.acts` sent to its own row. Measured on the running page at 360px: the badge takes **192px** of the 326px row and the name column is left with **90px**, so "Nog te ontwerpen kastje" breaks over three lines beside a one-line badge. ScreenOutstanding survives the same rule only because its badge is shorter — measured 127px for "20 dagen open", leaving the name 155px. ScreenQueue's row copy is "{n} dagen geleden gevraagd", about 50% longer, against the same grid. The preview's phone frame does not show this: it is a container at desktop viewport width, so the 480px media query never fires in it.
+- **Proposal:** Send the badge to its own row below 480px, as `.acts` already is (`.pp-line .pp-badge { grid-column: 1/-1; justify-self: start }`), so the name keeps the full width. Alternatively shorten the row copy on phone the way StatusBadge already shortens, e.g. "118 dagen" — but that costs the word that makes it a wait rather than a debt.
+- **Blocked:** the phone layout of a queue row. Desktop and tablet are correct, and the row is readable on a phone — the name wraps, nothing is clipped or overlapping.
+
+## GAP-152 [open] A source link and a note on a print: "alleen printen" against "zelf maken"
+- **Type:** improvement idea (new feature, owner's request)
+- **Found while:** reviewing ScreenQueue 2.10 with the owner after step 2 shipped
+- **Where needed:** ScreenQueue rows, ScreenPrintDetail, ScreenShare, and the "Aanvraag toevoegen" dialog
+- **What is missing or wrong:** The queue can say a job has no files, but not what kind of job it is. "Geen bestanden" covers two jobs that are nothing alike: *I have not downloaded it yet* (five minutes) and *I have to model this from scratch* (an evening). The owner holds that difference in his head today. 2.10 deliberately avoided a fourth state for it (GAP-143) and read the difference from an observation instead — this proposes a second observation in the same spirit, not a state.
+- **Proposal:** Two fields on **every print record**, not on a request specially — a request is the same record without a folder, so it can fill them early exactly as it can already carry a price.
+  - **Bron (URL)** — where the model came from. Visible to the klant on the share page (owner's decision).
+  - **Notitie** — short free text, what still has to be made. **Internal**, never on the share page (owner's decision).
+
+  A queue row then reads itself: a URL and no files means "download and print"; a note and no files means "design this"; files mean what it means today.
+
+  **The `.url` files already on disk.** Measured in the owner's real tree: **15 of 84 project folders** hold a Windows `.url` shortcut, all of the same shape (an INI with a `URL=` line; makerworld, printables, thingiverse). One folder holds two; two sit one level below the project folder. `AssetType` already classifies `.url`, the indexer simply never reads inside one. So those 15 prints can carry a bron with nothing typed.
+
+  **Typed and observed sit side by side, as everywhere else in the app** — a typed price never overwrites the measured grams, and a typed bron never overwrites a `.url` in the folder. Both are true and both show; the folder's version follows the file when it changes. A folder with two `.url` files shows two. No precedence rule is needed because nothing is ever a single value.
+
+  What the design system is asked for: how a bron renders on a queue row, on ScreenPrintDetail and on ScreenShare; how a note renders where it is allowed; what a row with neither looks like; the Dutch copy; and the empty and multi-value cases.
+- **Blocked:** nothing is built yet — this is the design request for the next feature.

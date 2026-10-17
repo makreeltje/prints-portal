@@ -5,6 +5,7 @@ import { renderApp, signedIn } from '../test/render';
 
 const FULL_NAV = [
   'Dashboard',
+  'Wachtrij',
   'Openstaand',
   'Facturen',
   'Tags',
@@ -169,7 +170,7 @@ describe('theme switch', () => {
 });
 
 describe('phone bars and drawer', () => {
-  it('has a bottom bar with Dashboard, Openstaand, Facturen and Meer', () => {
+  it('has a bottom bar with Dashboard, Wachtrij, Openstaand and Meer', () => {
     renderAt('/facturen');
     const bar = document.querySelector('nav.pp-bottomnav');
     if (!(bar instanceof HTMLElement)) throw new Error('bottom bar missing');
@@ -177,11 +178,12 @@ describe('phone bars and drawer', () => {
       within(bar)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual(['Dashboard', 'Openstaand', 'Facturen']);
-    expect(within(bar).getByRole('link', { name: 'Facturen' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    ).toEqual(['Dashboard', 'Wachtrij', 'Openstaand']);
+    /*
+      Facturen is not on the bar at 360px (AppShell 2.10): the bar keeps four
+      items, Wachtrij takes its slot, and Facturen is reached from Meer.
+    */
+    expect(within(bar).queryByRole('link', { name: 'Facturen' })).toBeNull();
     expect(within(bar).getByRole('button', { name: 'Meer' })).toBeInTheDocument();
   });
 

@@ -13,7 +13,13 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
   });
 
   const now = '2026-10-05T12:00:00.000Z';
+  const withoutOrigin = (row: ReturnType<typeof record>) =>
+    Object.fromEntries(
+      Object.entries(row).filter(([key]) => key !== 'origin'),
+    ) as unknown as ReturnType<typeof record>;
+
   const record = (id: string, key: string, customer: string) => ({
+    origin: 'indexed' as const,
     id,
     record_key: key,
     customer_folder: customer,
@@ -67,7 +73,13 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
     // Written at the 0003 schema, before orders existed.
     await db
       .insertInto('print_records')
-      .values(record('r', 'Joey/Box', 'Joey'))
+      /*
+        Written at the 0003 schema, so a column a later migration adds must not
+        be sent: `origin` arrives in 0009 and does not exist yet here. The cast
+        is the point — the table type describes the newest schema, and this row
+        deliberately does not.
+      */
+      .values(withoutOrigin(record('r', 'Joey/Box', 'Joey')))
       .execute();
     await sqlInsert(db, 'r');
     await migrateToLatest(db);

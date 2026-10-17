@@ -27,11 +27,13 @@ describe('routing by sign-in state and role', () => {
 
   it.each([
     ['User', ['Dashboard', 'Openstaand', 'API-docs']],
-    ['Editor', ['Dashboard', 'Openstaand', 'Facturen', 'Tags', 'API-docs']],
+    // Wachtrij for Admin and Editor, not for a User (AppShell 2.10).
+    ['Editor', ['Dashboard', 'Wachtrij', 'Openstaand', 'Facturen', 'Tags', 'API-docs']],
     [
       'Admin',
       [
         'Dashboard',
+        'Wachtrij',
         'Openstaand',
         'Facturen',
         'Tags',

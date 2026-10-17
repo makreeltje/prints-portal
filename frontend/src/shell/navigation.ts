@@ -1,6 +1,7 @@
 import {
   BookOpen,
   Clock,
+  Inbox,
   LayoutDashboard,
   Link,
   Receipt,
@@ -32,6 +33,17 @@ const ADMIN: readonly Role[] = ['Admin'];
  */
 export const NAV_ITEMS: readonly NavItem[] = [
   { path: '/', label: 'nav.dashboard', icon: LayoutDashboard, group: 'main' },
+  // Between Dashboard and Openstaand: what is coming, what is here, what is
+  // owed (AppShell 2.10).
+  // Admin and Editor only (AppShell 2.10): a User sees the klanten they were
+  // granted, and the owner's own unstarted work is not one of those.
+  {
+    path: '/wachtrij',
+    label: 'nav.queue',
+    icon: Inbox,
+    group: 'main',
+    roles: ['Admin', 'Editor'],
+  },
   { path: '/openstaand', label: 'nav.outstanding', icon: Clock, group: 'main' },
   {
     path: '/facturen',

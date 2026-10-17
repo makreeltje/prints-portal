@@ -9,6 +9,13 @@ import type { AssetType } from '../core/files.js';
  */
 export type RecordStatus = 'indexed' | 'archived' | 'deleted';
 
+/**
+ * Where a record came from. `indexed`: a folder on disk, which the indexer
+ * owns. `request`: asked for before anything exists, which only the app
+ * creates and the indexer never touches.
+ */
+export type RecordOrigin = 'indexed' | 'request';
+
 /** One print: a (customer, project) pair on disk. */
 export interface PrintRecordTable {
   id: string;
@@ -18,6 +25,7 @@ export interface PrintRecordTable {
   project_folder: string | null;
   display_name: string;
   status: RecordStatus;
+  origin: RecordOrigin;
   discovered_at: string;
   last_seen_at: string;
   archived_at: string | null;

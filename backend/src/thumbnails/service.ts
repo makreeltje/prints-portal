@@ -257,9 +257,20 @@ export class ThumbnailService {
     const temporary = `${target}.${String(process.pid)}.tmp`;
     await writeFile(temporary, image.data);
     await rename(temporary, target);
-    // Older images of this print are no longer needed.
+    /*
+      Sweep only what this asset superseded — an older render of this same
+      model, or a leftover temporary file of its own — plus anything left from
+      before names carried their asset. Another model's image in this same
+      directory is current and must survive, and its temporary file must not be
+      removed between its write and its rename: that made the rename fail and
+      the request answer 404.
+    */
+    const current = path.basename(target);
     for (const name of await readdir(dir)) {
-      if (!name.startsWith(key)) await rm(path.join(dir, name), { force: true });
+      if (name === current) continue;
+      if (belongsToSameAsset(name, key) || isLegacyName(name)) {
+        await rm(path.join(dir, name), { force: true });
+      }
     }
   }
 
@@ -280,11 +291,34 @@ const EXTENSIONS: [string, Thumbnail['contentType']][] = [
   ['jpg', 'image/jpeg'],
 ];
 
+/**
+ * The cache file's name, as `<assetId>-<hash>`.
+ *
+ * The asset is in the name and not only in the hash because the sweep in
+ * `writeCache` has to tell one model's image from another's. Since per-model
+ * pictures (GAP-094) a print holds one image per model file in one directory,
+ * and a bare hash says nothing about which model it belongs to — so the sweep
+ * deleted every sibling, and a print could never keep more than one image.
+ */
 function cacheKey(candidate: Candidate): string {
-  return createHash('sha256')
+  const hash = createHash('sha256')
     .update(
       [RENDER_VERSION, candidate.assetId, candidate.sizeBytes, candidate.lastWriteUtc].join('|'),
     )
     .digest('hex')
     .slice(0, 32);
+  return `${candidate.assetId}-${hash}`;
 }
+
+/** Everything this asset has ever been cached as, current or not. */
+const belongsToSameAsset = (name: string, key: string): boolean => {
+  const assetId = key.slice(0, key.lastIndexOf('-'));
+  return assetId !== '' && name.startsWith(`${assetId}-`);
+};
+
+/**
+ * A file from before the name carried its asset (`<hash>.png`). It cannot be
+ * attributed to a model, so it is swept the first time anything is written for
+ * this print; the image it held is re-rendered on demand.
+ */
+const isLegacyName = (name: string): boolean => !name.includes('-');
