@@ -18,6 +18,7 @@ export function Dialog({
   describedBy,
   closeLabel,
   size,
+  panelClass,
   onSubmit,
 }: {
   open: boolean;
@@ -34,6 +35,12 @@ export function Dialog({
   closeLabel?: string;
   /** `sm`: the 380px panel for confirmations (pp-dialog sm); `lg`: 560px (pp-dialog lg). */
   size?: 'sm' | 'lg';
+  /**
+   * A dialog-wide class from the design system, e.g. `pp-allcust`. Those are
+   * written as descendant selectors (`.pp-allcust .pp-body`), so the class has
+   * to sit on the panel; on a child it matches nothing and fails silently.
+   */
+  panelClass?: string;
   /** Makes the panel a form, so Enter submits. */
   onSubmit?: () => void;
 }) {
@@ -71,7 +78,7 @@ export function Dialog({
       }}
     >
       {open && (
-        <Panel size={size} onSubmit={onSubmit}>
+        <Panel size={size} panelClass={panelClass} onSubmit={onSubmit}>
           <header>
             {icon}
             <h2 id={titleId}>{title}</h2>
@@ -97,15 +104,25 @@ export function Dialog({
 
 function Panel({
   size,
+  panelClass,
   onSubmit,
   children,
 }: {
   size?: 'sm' | 'lg';
+  /**
+   * A dialog-wide class from the design system, e.g. `pp-allcust`. It belongs
+   * on this element and nowhere else: those classes are written as descendant
+   * selectors (`.pp-allcust .pp-body`), so putting one on a child silently
+   * matches nothing.
+   */
+  panelClass?: string;
   onSubmit?: () => void;
   children: ReactNode;
 }) {
   // `sheet`: full width with top corners only at 480px and below (Dialog spec).
-  const className = size === undefined ? 'pp-dialog sheet' : `pp-dialog ${size} sheet`;
+  const className = ['pp-dialog', size ?? '', 'sheet', panelClass ?? '']
+    .filter((name) => name !== '')
+    .join(' ');
   if (onSubmit === undefined) return <div className={className}>{children}</div>;
   return (
     <form

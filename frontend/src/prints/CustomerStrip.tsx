@@ -44,16 +44,26 @@ export function CustomerStrip(props: CustomerStripProps) {
           setOverviewOpen(true);
         }}
       />
+      {/*
+        `pp-allcust` goes on the dialog, not inside it: the design system writes
+        it as `.pp-allcust .pp-body` and `.pp-allcust .pp-custs`, so a copy on a
+        child matched nothing and the body never scrolled — 1498px of cards in a
+        964px panel, 573px of it painted outside. `pp-custs` is the other half:
+        without it the tiles stack in one column instead of a 200px grid.
+
+        No `size`: `.pp-dialog.lg` is two classes and caps the panel at 560px,
+        which beats `.pp-allcust`'s 920px. This dialog's width is its own.
+      */}
       <Dialog
         open={overviewOpen}
         title={t('strip.dialog.title')}
-        size="lg"
+        panelClass="pp-allcust"
         footer={null}
         onClose={() => {
           setOverviewOpen(false);
         }}
       >
-        <div className="pp-allcust">
+        <div className="pp-custs">
           {customers.map((customer) => (
             <CustomerCard
               key={customer.folder}
