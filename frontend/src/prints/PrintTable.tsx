@@ -19,11 +19,17 @@ export function PrintTable({
   onFlashEnd,
   restore,
   selection,
+  showTags = true,
 }: {
   prints: readonly PrintSummary[];
   flashing: ReadonlySet<string>;
   onFlashEnd: (id: string) => void;
   restore?: (print: PrintSummary) => void;
+  /**
+   * Off for role User (GAP-166, README *Roles*): no tags anywhere, so the
+   * whole column goes rather than standing empty with a heading.
+   */
+  showTags?: boolean;
   selection?: {
     selected: ReadonlySet<string>;
     toggle: (id: string, on: boolean) => void;
@@ -73,7 +79,7 @@ export function PrintTable({
               </th>
             )}
             <th scope="col">{t('print.status')}</th>
-            <th scope="col">{t('tags.label')}</th>
+            {showTags && <th scope="col">{t('tags.label')}</th>}
           </tr>
         </thead>
         <tbody>
@@ -155,13 +161,15 @@ export function PrintTable({
                   {/* Under the badge, not beside it (GAP-090). */}
                   <LacksChip lacks={print.lacks} />
                 </td>
-                <td>
-                  <span className="pp-tags">
-                    {print.tags.map((tag) => (
-                      <TagChip key={tag.id} tag={tag} />
-                    ))}
-                  </span>
-                </td>
+                {showTags && (
+                  <td>
+                    <span className="pp-tags">
+                      {print.tags.map((tag) => (
+                        <TagChip key={tag.id} tag={tag} />
+                      ))}
+                    </span>
+                  </td>
+                )}
               </tr>
             );
           })}

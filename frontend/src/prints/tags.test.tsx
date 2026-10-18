@@ -125,6 +125,27 @@ describe('TagEditor', () => {
     await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
     expect(screen.queryByRole('button', { name: 'Tag toevoegen' })).toBeNull();
   });
+
+  /*
+    GAP-166, resolved in 2.15: role User sees no tags **anywhere**, not the
+    chips either. 2.14's two files disagreed about this one role and the app
+    kept 1.4's behaviour under the gap's number; the strict half won, on the
+    owner's own answer to GAP-129 that he does not use tags at all.
+  */
+  it('does not show a role User the chips either, only the operator', async () => {
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: { ...detail(), assets: null } }) });
+    renderDetail('User');
+    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    expect(document.querySelectorAll('.pp-tag')).toHaveLength(0);
+    expect(screen.queryByText('cadeau')).toBeNull();
+  });
+
+  it('still shows the operator the chips', async () => {
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: { ...detail(), assets: null } }) });
+    renderDetail('Editor');
+    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    expect(screen.getByText('cadeau')).toBeInTheDocument();
+  });
 });
 
 describe('TagsPage', () => {

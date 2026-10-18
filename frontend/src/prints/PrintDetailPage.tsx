@@ -87,8 +87,9 @@ const Viewer3D = lazy(() => import('./Viewer3D'));
  * ScreenPrintDetail: breadcrumb, name, payment and record badges, tags with
  * the TagEditor and Verwijderen (Admins and Editors), the archived and
  * deleted alerts. Admins and Editors get the viewer, files in no order and
- * one OrderSection per order, newest first (design system 1.4). Users see
- * name, the summed price and status, tags and the model only.
+ * one OrderSection per order, newest first (design system 1.4). Role User sees
+ * exactly what a visitor with a deel-link sees (2.15, GAP-166): name, the
+ * summed price and status, the model and the reduced card — and **no tags**.
  */
 export function PrintDetailPage() {
   const { id = '' } = useParams();
@@ -259,12 +260,16 @@ export function PrintDetailPage() {
           */}
           {canManage && <LacksChip lacks={detail.lacks} withText />}
           {/*
-            No tags in a session (ScreenShareSession). For a signed-in role
-            User the two 2.14 files disagree — ScreenPrintDetail says no tags,
-            ScreenShareSession publishes the same question as a proposal — so
-            1.4 stands for that role until it is answered: GAP-166.
+            No tags for role User either, since 2.15 (GAP-166 resolved). The
+            two 2.14 files disagreed — ScreenPrintDetail said no tags,
+            ScreenShareSession published the same question as a proposal naming
+            1.4 — and the strict half won on the owner's own answer to GAP-129:
+            he does not use tags at all, so there is no case in this library
+            where his filing word helps a klant. 1.4's "name, price, status,
+            thumbnail, 3D model **and tags** only" is superseded, and role
+            User's print page is now exactly a visitor's.
           */}
-          {!visitor &&
+          {canManage &&
             detail.tags.map((tag) => (
               <TagChip
                 key={tag.id}

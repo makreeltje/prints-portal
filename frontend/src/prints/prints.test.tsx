@@ -975,13 +975,15 @@ describe('PrintDetailPage', () => {
     expect(calls.some((c) => c.method === 'DELETE')).toBe(true);
   });
 
-  it('gives Users the summary only: no files, no delete, read-only tags', async () => {
+  it('gives Users the summary only: no files, no delete, no tags (GAP-166)', async () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ json: detail({ assets: null }) }) });
     renderDetail('User');
     await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
     expect(screen.queryByRole('region', { name: 'Bestanden' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Verwijderen' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'cadeau verwijderen' })).toBeNull();
+    // 2.15: not read-only tags either — none at all.
+    expect(document.querySelectorAll('.pp-tag')).toHaveLength(0);
   });
 
   /*
