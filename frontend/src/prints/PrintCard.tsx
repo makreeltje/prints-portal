@@ -21,6 +21,7 @@ export function PrintCard({
   onSelect,
   to,
   reduced = false,
+  showTags = true,
 }: {
   print: PrintSummary;
   flashing: boolean;
@@ -37,6 +38,14 @@ export function PrintCard({
    * no "Ontbreekt" chip, which is a fact about the owner's folder.
    */
   reduced?: boolean;
+  /**
+   * Off for role User (ScreenPrintDetail 2.15, GAP-166 and README *Roles*):
+   * **no tags, anywhere** — not in a print's header, not on a card, not as a
+   * filter. Separate from `reduced` on purpose: a signed-in User's card keeps
+   * its meta line, and whether a klant ever reads Materiaal and Gewicht is
+   * GAP-174, which the design system has deliberately left open.
+   */
+  showTags?: boolean;
 }) {
   const classes = ['pp-card', 'pp-print'];
   if (print.status === 'deleted') classes.push('is-deleted');
@@ -58,7 +67,7 @@ export function PrintCard({
           <span className="sub">{subLine(print)}</span>
         </div>
         {!reduced && <Meta print={print} />}
-        {!reduced && print.tags.length > 0 && (
+        {!reduced && showTags && print.tags.length > 0 && (
           <div className="pp-tags">
             {print.tags.map((tag) => (
               <TagChip key={tag.id} tag={tag} />

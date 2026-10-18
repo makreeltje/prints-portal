@@ -83,7 +83,16 @@ describe('a deel-linksessie (GAP-165)', () => {
     for (const gone of ['Thema', 'Uitloggen', 'API-docs', 'Openstaand', 'Wachtrij']) {
       expect(within(head).queryByText(gone)).toBeNull();
     }
-    expect(within(head).getByRole('button', { name: 'Sessie afsluiten' })).toBeInTheDocument();
+    const exit = within(head).getByRole('button', { name: 'Sessie afsluiten' });
+    expect(exit).toBeInTheDocument();
+    /*
+      GAP-172: at 480px and below the button is a `--pp-tap` square and the
+      words are *visually* hidden, so the accessible name has to come from a
+      `.lbl` span that is there at every width — not from an aria-label that
+      only exists on the phone.
+    */
+    expect(exit).toHaveClass('pp-guestexit');
+    expect(exit.querySelector('.lbl')?.textContent).toBe('Sessie afsluiten');
   });
 
   it('lands on the Overzicht, which keeps everything but its studio head', async () => {
@@ -118,7 +127,35 @@ describe('a deel-linksessie (GAP-165)', () => {
     expect(document.querySelectorAll('.pp-print .pp-meta')).toHaveLength(0);
     expect(document.querySelectorAll('.pp-lacks')).toHaveLength(0);
     // Kept: the price and the status badge.
-    expect(screen.getAllByText('€ 11,89')).toHaveLength(2);
+    expect(screen.getAllByText(/11,89/u)).toHaveLength(2);
+  });
+
+  /*
+    GAP-178, resolved in 2.15: no page boundary. The Overzicht one tap away
+    lists every print of this klant on one page, so a page size of 24 against
+    a klant with 36 made the two screens disagree about which print is the
+    last one.
+  */
+  it('renders the klant\'s whole list with no "Meer laden" and no count line', async () => {
+    const many = Array.from({ length: 36 }, (_, i) =>
+      print(`p${String(i + 1)}`, `Print ${String(i + 1)}`),
+    );
+    const calls = session({
+      'GET /api/prints': () => ({ json: { total: many.length, items: many } }),
+    });
+    render(`/share/${TOKEN}/prints`);
+    await screen.findByRole('heading', { level: 1, name: 'Prints' });
+    await waitFor(() => {
+      expect(document.querySelectorAll('.pp-print')).toHaveLength(36);
+    });
+    expect(screen.queryByRole('button', { name: 'Meer laden' })).toBeNull();
+    expect(screen.queryByText(/van 36 prints/u)).toBeNull();
+    expect(screen.queryByText('Alle prints geladen')).toBeNull();
+    expect(document.querySelector('.pp-more')).toBeNull();
+    // One request, asking for the server's whole ceiling rather than a page.
+    const lists = calls.filter((call) => call.path.startsWith('/api/prints?'));
+    expect(lists).toHaveLength(1);
+    expect(lists[0]?.path).toContain('limit=100');
   });
 
   it('closes the session on request, and says so on a page of its own', async () => {

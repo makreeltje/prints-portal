@@ -110,7 +110,7 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;min-height:var(--pp-tap);padding:0 var(--space-3);color:var(--muted);font:500 var(--text-base)/1 var(--font-sans);cursor:pointer}
 .pp-tab:hover{color:var(--text-strong)}
 .pp-tab[aria-selected=true]{color:var(--primary);border-bottom-color:var(--primary)}
-.pp-seg{display:inline-flex;padding:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-pill)}
+.pp-seg{display:inline-flex;padding:2px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius-pill)}
 .pp-seg button{appearance:none;border:0;background:none;display:inline-flex;align-items:center;gap:var(--space-1);min-height:calc(var(--pp-control-h) - 6px);padding:0 var(--space-3);border-radius:var(--radius-pill);color:var(--muted);font:500 var(--text-sm)/1 var(--font-sans);cursor:pointer}
 .pp-seg button[aria-pressed=true]{background:var(--surface);color:var(--text-strong);box-shadow:var(--shadow-sm)}
 .pp-more{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);color:var(--muted);font-size:var(--text-sm)}
@@ -282,6 +282,7 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-nav a{display:flex;align-items:center;gap:var(--space-3);min-height:40px;padding:0 var(--space-3);border-radius:var(--radius-md);color:var(--text);text-decoration:none;font-size:var(--text-base)}
 .pp-nav a:hover{background:var(--primary-tint-soft)}
 .pp-nav a[aria-current=page]{background:var(--primary-tint);color:var(--text-strong);font-weight:600}
+.pp-nav a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
 .pp-nav .grp{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted);padding:var(--space-4) var(--space-3) var(--space-1)}
 .pp-side .foot{margin-top:auto;display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-3)}
 .pp-main{--pp-pad:var(--space-6);padding:var(--pp-pad);display:flex;flex-direction:column;gap:var(--space-5);min-width:0}
@@ -294,6 +295,7 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-bottomnav{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--surface);border-top:1px solid var(--border)}
 .pp-bottomnav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;color:var(--muted);font-size:11px;line-height:14px;text-decoration:none}
 .pp-bottomnav a[aria-current=page]{color:var(--primary);font-weight:600}
+.pp-bottomnav a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
 .pp-stage.screens{flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:var(--space-6);padding:var(--space-5)}
 .pp-device.desk{width:980px;flex:none;min-height:640px}
 .pp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--space-4)}
@@ -753,10 +755,10 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-viewer.is-empty .pp-ico-24{margin:0;flex:none}
 /* GAP-086 model picker */
 .pp-models{display:flex;gap:var(--space-2);overflow-x:auto;padding:var(--space-1);max-width:560px;scrollbar-width:thin}
-.pp-modelbtn{appearance:none;flex:none;width:var(--pp-modelbtn-w);display:flex;flex-direction:column;gap:var(--space-1);align-items:stretch;padding:var(--space-1);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);color:var(--muted);font:inherit;font-size:var(--text-xs);line-height:var(--leading-xs);cursor:pointer;text-align:center}
+.pp-modelbtn{appearance:none;flex:none;width:var(--pp-modelbtn-w);display:flex;flex-direction:column;gap:var(--space-1);align-items:stretch;padding:var(--space-1);border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--surface);color:var(--muted);font:inherit;font-size:var(--text-xs);line-height:var(--leading-xs);cursor:pointer;text-align:center}
 .pp-modelbtn .pp-thumb{width:100%;aspect-ratio:1;border-radius:var(--radius-sm)}
 .pp-modelbtn .nm{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
-.pp-modelbtn:hover{border-color:var(--border-strong)}
+.pp-modelbtn:hover{background:var(--surface-2)}
 .pp-modelbtn[aria-pressed=true]{border-color:var(--primary);background:var(--primary-tint-soft);color:var(--text-strong)}
 .pp-modelbtn:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
 .pp-model-cap{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);max-width:560px;font-size:var(--text-sm);color:var(--muted)}
@@ -1051,7 +1053,7 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
    obeyed. If a trigger needs the anchor's *other* effect (sitting above a stretched
    card or row link), use `.pp-lift` on the trigger's wrapper; that is what the anchor
    was quietly doing, and losing it is what made the chip unhoverable for one build. */
-.pp-lift{position:relative;z-index:var(--z-raised)}
+.pp-lift{position:relative;z-index:var(--z-raised);min-width:0}
 
 /* GAP-114, fault 2: a popover gets the window-placed form the tooltip has.
    `.pp-pop` is absolute and the cards it opens inside clip (`.pp-flush`, `.pp-print`,
@@ -1294,21 +1296,54 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
    -- two destinations do not need a drawer at any width, and a 220px sidebar
    holding two links is an empty operator costume on a klant.
    ONE DOM at every size, as AppShell has since 1.0: the head wraps, and below
-   480px the nav drops to its own full-width line as two equal tabs. The phone
-   rule has its `.pp-device.phone` twin (2.11 rule), because a 360px frame is a
-   container and the media query cannot fire inside it. */
+   480px the nav drops to its own full-width line as two equal halves of its
+   track. Every phone rule has its `.pp-device.phone` twin (2.11 rule), because a
+   360px frame is a container and the media query cannot fire inside it. */
 .pp-app.guest{display:flex;flex-direction:column;flex:1}
 .pp-app.guest>.pp-main{width:100%;max-width:1080px;margin:0 auto}
 .pp-guesthead{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-4);padding:var(--space-3) var(--space-4);background:var(--surface);border-bottom:1px solid var(--border)}
 .pp-guesthead>.pp-brand{padding:0;margin-right:auto;min-width:0}
 .pp-guesthead .pp-logo{max-height:var(--space-6)}
-.pp-guestnav{display:flex;flex-wrap:wrap;gap:var(--space-1);min-width:0}
-.pp-guestnav a{display:flex;align-items:center;gap:var(--space-2);min-height:var(--pp-tap);padding:0 var(--space-3);border-radius:var(--radius-md);color:var(--text);text-decoration:none;font-size:var(--text-base)}
+/* GAP-169 THE NAV IS A TRACK, SO BOTH DESTINATIONS CARRY INK. 2.14 dressed only
+   the current item, with the pair `.pp-nav a[aria-current=page]` has used since
+   1.0. In a sidebar that is enough -- a column in a known place is self-evidently
+   navigation. In a two-item head bar it inverts: the item you are on holds all
+   the ink and the screen you have never seen holds none, with `:hover` as its
+   only resting cue on the phone a deel-link is opened on. The owner found that by
+   using it ("het is niet duidelijk genoeg dat je ook naar prints kan gaan").
+   So the two items sit in ONE bordered track, as SegmentedControl's do: the track
+   says "two views, pick one" and both items are visibly the same kind of thing.
+   The border is `border-strong` (3.75:1 dark / 4.29:1 light on `surface`),
+   because it is the only boundary that identifies the control -- `border` is
+   1.37:1 / 1.42:1 there and may never carry that job (2.15, README *Colour*).
+   LINKS, NEVER BUTTONS: `nav[aria-label] > a[aria-current=page]`. The look is
+   borrowed; `aria-pressed`, `role=group` and `role=tablist` are not. */
+.pp-guestnav{display:inline-flex;flex-wrap:nowrap;gap:2px;min-width:0;padding:2px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius-pill)}
+.pp-guestnav a{display:flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:var(--pp-tap);padding:0 var(--space-3);border-radius:var(--radius-pill);color:var(--text);text-decoration:none;font-size:var(--text-base)}
 .pp-guestnav a:hover{background:var(--primary-tint-soft)}
 .pp-guestnav a[aria-current=page]{background:var(--primary-tint);color:var(--text-strong);font-weight:600}
-@media (max-width:480px){.pp-guestnav{order:3;width:100%}.pp-guestnav a{flex:1 1 0;justify-content:center;min-width:0}}
+.pp-guestnav a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+/* GAP-172 THE HEAD IS ONE HEIGHT AT EVERY STUDIO NAME. Measured by the app at
+   360px: at 16 characters the head is 121px with the exit button beside the
+   brand; from 20 the brand's `margin-right:auto` takes the whole first line, the
+   button drops to a line of its own and the head is 153px; at 48 the brand wraps
+   too and it is 177px -- a fifth of a 844px phone before any content. So on the
+   phone the brand keeps ONE line (the full name stays in the DOM, so nothing is
+   lost to a screen reader) and the exit button is icon-only, named by its own
+   visually hidden `.lbl`, exactly as the icon rail names its footer buttons. */
+.pp-guestexit{flex:none}
+@media (max-width:480px){
+.pp-guestnav{order:3;width:100%}
+.pp-guestnav a{flex:1 1 0;min-width:0}
+.pp-guesthead>.pp-brand{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pp-guestexit{width:var(--pp-tap);min-width:var(--pp-tap);padding:0}
+.pp-guestexit .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+}
 .pp-device.phone .pp-guestnav{order:3;width:100%}
-.pp-device.phone .pp-guestnav a{flex:1 1 0;justify-content:center;min-width:0}
+.pp-device.phone .pp-guestnav a{flex:1 1 0;min-width:0}
+.pp-device.phone .pp-guesthead>.pp-brand{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pp-device.phone .pp-guestexit{width:var(--pp-tap);min-width:var(--pp-tap);padding:0}
+.pp-device.phone .pp-guestexit .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* GAP-163 THE TRIGGER'S 200px FLOOR IS A FLOOR FOR THE PANEL, NOT FOR A PHONE.
    Measured by the app at 360px: the trigger is 314px wide (`min-width` 200px,

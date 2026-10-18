@@ -29,7 +29,7 @@ import { useCurrentUser } from '../auth/context';
 import { useShareSession } from '../sharing/session';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useToast } from '../components/toast-context';
-import { formatDate, formatDuration, formatGrams } from '../i18n/format';
+import { formatDate, formatDuration, formatGrams, formatMoney } from '../i18n/format';
 import { isHttpUrl } from '../core/url';
 import { MAX_NOTE_LENGTH } from './notes';
 import { NoteBlock } from './PrintNote';
@@ -87,8 +87,9 @@ const Viewer3D = lazy(() => import('./Viewer3D'));
  * ScreenPrintDetail: breadcrumb, name, payment and record badges, tags with
  * the TagEditor and Verwijderen (Admins and Editors), the archived and
  * deleted alerts. Admins and Editors get the viewer, files in no order and
- * one OrderSection per order, newest first (design system 1.4). Users see
- * name, the summed price and status, tags and the model only.
+ * one OrderSection per order, newest first (design system 1.4). Role User sees
+ * exactly what a visitor with a deel-link sees (2.15, GAP-166): name, the
+ * summed price and status, the model and the reduced card — and **no tags**.
  */
 export function PrintDetailPage() {
   const { id = '' } = useParams();
@@ -174,7 +175,6 @@ export function PrintDetailPage() {
       notBilled={detail.noBilling}
       cost={order.cost?.totalCost ?? null}
       role={user.role}
-      visitor={visitor}
       actions={{
         setSalePrice: (price) => change(() => setSalePrice(order.id, price)),
         addPayment: (amount) => change(() => addPayment(order.id, amount)),
@@ -197,20 +197,6 @@ export function PrintDetailPage() {
       toast.error(t('error.saveFailed'));
     }
   };
-  // Users see one price and status: the sum over all orders (PrintCard rules).
-  const userOrder: Order | null =
-    detail.money === null
-      ? null
-      : {
-          id: detail.id,
-          number: 1,
-          // A synthetic order for the User view: no request state is shown there.
-          requestState: null,
-          createdAt: '',
-          date: '',
-          status: detail.money.status,
-          price: detail.money.price,
-        };
   const restore = async () => {
     try {
       await restorePrint(detail.id);
@@ -226,6 +212,26 @@ export function PrintDetailPage() {
         <span className="pp-crumb">{placeOf(detail)}</span>
         <div className="pp-ph">
           <h1>{detail.name}</h1>
+          {/*
+            GAP-170, 2.15: for role User and for a visitor the payment is one
+            line beside the `<h1>` and the "Betaling" card is gone. Measured at
+            390×844 on a visitor's print, the whole `pp-card pp-pay` sat at
+            873–971 against a fold at 844, with its badge 89px under it — while
+            the status was already on screen at y=201. A card that repeats a
+            visible fact and adds one number is not worth 98px below the fold.
+
+            The badge and the amount are wrapped **together** so they stay one
+            pair when `.pp-ph` wraps at 360px, and the pairing is the one the
+            Overzicht's own lines have used since 1.0.
+          */}
+          {!canManage && detail.money !== null && (
+            <span className="pp-row pp-gap-2">
+              <PaymentBadge status={detail.money.status} />
+              {detail.money.price !== null && (
+                <span className="pp-money pp-text-xl">{formatMoney(detail.money.price)}</span>
+              )}
+            </span>
+          )}
           {/* Rare and hard to undo, so it sits in the menu (OverflowMenu 1.9). */}
           {canManage && detail.status !== 'deleted' && (
             <OverflowMenu
@@ -243,37 +249,47 @@ export function PrintDetailPage() {
             />
           )}
         </div>
-        <div className="pp-tags">
-          {detail.money !== null && <PaymentBadge status={detail.money.status} />}
-          {/*
-            "Gearchiveerd" is a word about the owner's disk, not about the
-            klant's print (ScreenShareSession §5, where the same rule keeps
-            the badge off a visitor's list).
-          */}
-          {!visitor && <RecordBadge print={detail} />}
-          {/*
-            The same chip the card carries, in the header badge row (GAP-090)
-            — and never for a User or a visitor: "Ontbreekt: 3MF" is a fact
-            about the owner's folder and reads to a klant as if something is
-            wrong with their print (ScreenPrintDetail 2.14, GAP-158).
-          */}
-          {canManage && <LacksChip lacks={detail.lacks} withText />}
-          {/*
-            No tags in a session (ScreenShareSession). For a signed-in role
-            User the two 2.14 files disagree — ScreenPrintDetail says no tags,
-            ScreenShareSession publishes the same question as a proposal — so
-            1.4 stands for that role until it is answered: GAP-166.
-          */}
-          {!visitor &&
-            detail.tags.map((tag) => (
-              <TagChip
-                key={tag.id}
-                tag={tag}
-                onRemove={canManage ? () => void removeTag(tag.id) : undefined}
-              />
-            ))}
-          {canManage && <TagEditor printId={detail.id} current={detail.tags} />}
-        </div>
+        {/*
+          The badge row is the operator's now. For role User and for a visitor
+          the payment moved up into `.pp-ph` (GAP-170) and the tags are gone
+          (GAP-166), so the only thing left that can appear here is a signed-in
+          User's archive or delete badge — and when there is none the row is not
+          drawn at all, because an empty flex child still costs the column its
+          `space-2` gap, and this page is measured against a 844px fold.
+        */}
+        {(canManage || (!visitor && detail.status !== 'indexed')) && (
+          <div className="pp-tags">
+            {canManage && detail.money !== null && <PaymentBadge status={detail.money.status} />}
+            {/*
+              "Gearchiveerd" is a word about the owner's disk, not about the
+              klant's print (ScreenShareSession §5, where the same rule keeps
+              the badge off a visitor's list).
+            */}
+            {!visitor && <RecordBadge print={detail} />}
+            {/*
+              The same chip the card carries, in the badge row (GAP-090) — and
+              never for a User or a visitor: "Ontbreekt: 3MF" is a fact about
+              the owner's folder and reads to a klant as if something is wrong
+              with their print (ScreenPrintDetail 2.14, GAP-158).
+            */}
+            {canManage && <LacksChip lacks={detail.lacks} withText />}
+            {/*
+              No tags for role User either, since 2.15 (GAP-166 resolved). The
+              two 2.14 files disagreed — ScreenPrintDetail said no tags,
+              ScreenShareSession published the same question as a proposal
+              naming 1.4 — and the strict half won on the owner's own answer to
+              GAP-129: he does not use tags at all, so there is no case in this
+              library where his filing word helps a klant. 1.4's "name, price,
+              status, thumbnail, 3D model **and tags** only" is superseded, and
+              role User's print page is now exactly a visitor's.
+            */}
+            {canManage &&
+              detail.tags.map((tag) => (
+                <TagChip key={tag.id} tag={tag} onRemove={() => void removeTag(tag.id)} />
+              ))}
+            {canManage && <TagEditor printId={detail.id} current={detail.tags} />}
+          </div>
+        )}
       </div>
 
       {detail.status === 'archived' && (
@@ -321,24 +337,28 @@ export function PrintDetailPage() {
           change={change}
         />
       ) : (
-        <div className="pp-detail">
-          <div className="pp-col pp-gap-4">
-            <ModelView detail={detail} />
-            {/*
-              The reduced card, drawn by 2.14 (GAP-158) and now the main
-              screen of every klant who opens a deel-link: klant, project
-              when it differs, datum and bron, and nothing that belongs to an
-              order.
-            */}
-            <ThisPrint
-              detail={detail}
-              spoolmanOn={spoolmanOn}
-              quiet={quiet}
-              toast={toast}
-              canManage={false}
-            />
-          </div>
-          <div>{userOrder !== null && paymentFor(userOrder)}</div>
+        /*
+          `pp-pdtop`, the same media row the operator gets, and nothing after
+          it (ScreenPrintDetail 2.14 and ScreenShareSession's preview). Until
+          2.15 this was a `pp-detail` grid whose second column held the
+          "Betaling" card; GAP-170 removed that card for this role, so the row
+          is the viewer and the reduced card beside it, and "Deze print" is the
+          last thing on the page.
+        */
+        <div className="pp-pdtop">
+          <ModelView detail={detail} />
+          {/*
+            The reduced card, drawn by 2.14 (GAP-158) and now the main screen
+            of every klant who opens a deel-link: klant, project when it
+            differs, datum and bron, and nothing that belongs to an order.
+          */}
+          <ThisPrint
+            detail={detail}
+            spoolmanOn={spoolmanOn}
+            quiet={quiet}
+            toast={toast}
+            canManage={false}
+          />
         </div>
       )}
       {adjustingOrder !== null && (
@@ -425,17 +445,17 @@ function ThisPrint({
   );
   const facts: [string, ReactNode][] = [[t('filters.customer'), detail.customerFolder]];
   /*
-    The project only when it says something the name does not — part of the
-    reduced card's anatomy in 2.14, through GAP-072's rule, with the same
-    `squashName` comparison the breadcrumb and the share page's line use. The
-    operator's card is specified by GAP-095 and keeps the row unconditionally;
-    measured in this library, that row repeats the print's name on **84 of 84**
-    prints, which is a question for the design system and not ours to decide.
+    The project only when it says something the name does not — **one condition
+    for every role** since 2.15 (GAP-176), through GAP-072's rule and with the
+    same `squashName` comparison the breadcrumb has used since 1.9. GAP-095
+    specified the operator's card before GAP-072 existed, so it drew the row
+    unconditionally; measured in this library that repeated the `<h1>` above it
+    on **84 of 84** prints, and a fact identical to the heading is not a fact.
   */
   if (
     detail.projectFolder !== null &&
     detail.projectFolder !== '' &&
-    (canManage || squashName(detail.projectFolder) !== squashName(detail.name))
+    squashName(detail.projectFolder) !== squashName(detail.name)
   ) {
     facts.push([t('print.project'), detail.projectFolder]);
   }

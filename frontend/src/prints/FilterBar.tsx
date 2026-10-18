@@ -19,6 +19,14 @@ interface FilterBarProps {
   onChange: (filter: PrintFilter) => void;
   customers: readonly Customer[];
   tags: readonly TagWithCount[];
+  /**
+   * Off for role User (GAP-166, README *Roles*: "no tags"): the tag control is
+   * not drawn at all rather than drawn empty or disabled, because the rule is
+   * never to render a control a role cannot use. Separate from an empty `tags`
+   * list, which is an operator with no tags defined yet and keeps its disabled
+   * button.
+   */
+  showTags: boolean;
   view: ViewMode;
   onView: (view: ViewMode) => void;
   showDeletedOption: boolean;
@@ -56,7 +64,7 @@ export function FilterBar(props: FilterBarProps) {
           <CustomerSelect {...props} />
           <SortSelect {...props} />
           <StatusSelect {...props} />
-          <TagPicker {...props} />
+          {props.showTags && <TagPicker {...props} />}
           <SearchField filter={filter} onChange={onChange} />
           <ViewToggle view={props.view} onView={props.onView} />
           <RecordToggles {...props} />
@@ -132,10 +140,12 @@ export function FilterBar(props: FilterBarProps) {
         }
       >
         <CustomerSelect {...props} />
-        <fieldset className="pp-col app-fieldset">
-          <legend className="pp-label">{t('tags.label')}</legend>
-          <TagCheckboxes {...props} />
-        </fieldset>
+        {props.showTags && (
+          <fieldset className="pp-col app-fieldset">
+            <legend className="pp-label">{t('tags.label')}</legend>
+            <TagCheckboxes {...props} />
+          </fieldset>
+        )}
         <RecordToggles {...props} />
       </Dialog>
     </div>

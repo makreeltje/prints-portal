@@ -88,8 +88,19 @@ export function DashboardPage() {
   const [params, setParams] = useSearchParams();
   const filter = useMemo(() => {
     const read = readFilter(params);
-    return isAdmin ? read : { ...read, deleted: false };
-  }, [params, isAdmin]);
+    /*
+      What a role may not see is dropped from the URL, not only from the view:
+      `verwijderd=1` for anyone but an Admin, and since 2.15 `tag=` for anyone
+      but an operator (GAP-166 — role User sees no tags, "not as a filter").
+      Keeping it would leave a User with an invisible active filter and a count
+      line that cannot be explained by anything on screen.
+    */
+    return {
+      ...read,
+      ...(isAdmin ? {} : { deleted: false }),
+      ...(canManage ? {} : { tagIds: [] }),
+    };
+  }, [params, isAdmin, canManage]);
   const view: ViewMode = params.get('weergave') === 'lijst' ? 'list' : 'cards';
 
   const setFilter = (next: PrintFilter) => {
@@ -112,7 +123,8 @@ export function DashboardPage() {
     queryKey: keys.customers(filter.archived, filter.deleted),
     queryFn: () => fetchCustomers(filter.archived, filter.deleted),
   });
-  const tags = useQuery({ queryKey: keys.tags, queryFn: fetchTags });
+  // No tags for role User, so the list is not fetched for one either (GAP-166).
+  const tags = useQuery({ queryKey: keys.tags, queryFn: fetchTags, enabled: canManage });
   const health = useQuery({
     queryKey: ['healthz'],
     queryFn: () => api<{ checks: { printsRoot: { status: string } } }>('/healthz'),
@@ -251,6 +263,7 @@ export function DashboardPage() {
                     }
                   : undefined
               }
+              showTags={canManage}
               selected={selected.has(print.id)}
               onSelect={
                 canManage
@@ -275,6 +288,7 @@ export function DashboardPage() {
               flashing={live.flashing}
               onFlashEnd={live.doneFlashing}
               restore={restore}
+              showTags={canManage}
               selection={
                 canManage
                   ? {
@@ -325,6 +339,7 @@ export function DashboardPage() {
           onChange={setFilter}
           customers={customers.data?.customers ?? []}
           tags={tags.data?.tags ?? []}
+          showTags={canManage}
           view={view}
           onView={setView}
           showDeletedOption={isAdmin}

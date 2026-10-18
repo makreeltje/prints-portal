@@ -66,6 +66,17 @@ export function GuestShell({
             Overzicht. Prints keeps the dashboard's glyph on purpose: it is
             that screen.
           */}
+          {/*
+            A pill track since 2.15 (GAP-169, the owner's): `.pp-guestnav` draws
+            the `border-strong` boundary around **both** items and the current
+            one is a `primary-tint` pill inside it, because dressing only
+            `aria-current` left the screen he had never seen with no ink at all.
+            The look is borrowed from SegmentedControl and **the ARIA is not**:
+            these two change the URL, so they stay `<a>` elements with
+            `aria-current="page"` inside one `<nav aria-label>` — never
+            `aria-pressed`, `role="group"` or `role="tablist"` (AppShell 2.15,
+            ScreenShareSession 2.15, SegmentedControl 2.15, all three explicit).
+          */}
           <nav className="pp-guestnav" aria-label={t('nav.main')}>
             {/* NavLink sets aria-current="page", which is what the CSS reads. */}
             <NavLink to={session.base} end>
@@ -82,16 +93,24 @@ export function GuestShell({
             family group chats, and without this the only way to end a session
             is to clear the browser. It asks first, because the only way back
             is the link itself and the portal will not show it again.
+
+            `.pp-guestexit` and the `.lbl` span are the 2.15 markup obligation
+            (GAP-172): at 480px and below the class turns the button into a
+            `--pp-tap` square and hides the span, so the words are *visually*
+            hidden rather than dropped — the accessible name is the same at
+            every width, and the ConfirmDialog says the act in words before
+            anything happens. Above 480px the label is simply visible. The span
+            is required at both widths; the CSS, not the app, decides.
           */}
           <button
             type="button"
-            className="pp-btn pp-btn-ghost pp-btn-sm"
+            className="pp-btn pp-btn-ghost pp-btn-sm pp-guestexit"
             onClick={() => {
               setConfirming(true);
             }}
           >
             <LogOut className="pp-ico" aria-hidden="true" />
-            {t('session.exit')}
+            <span className="lbl">{t('session.exit')}</span>
           </button>
         </header>
         <main className="pp-main" id={MAIN_ID}>

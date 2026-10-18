@@ -89,14 +89,16 @@ export function SpoolPicker({
   useAnchoredPanel(panelRef, trigger, open, close);
   return (
     /*
-      `pp-minw-0` on the wrapper, which is the design system's own utility and
-      the reason GAP-163's fix reaches this trigger at all: its rules name
-      `.pp-asset .acts .pp-spoolbtn`, but the flex item in that band is this
-      `.pp-lift` wrapper (required since 2.13 for the window-placed panel), and
-      a flex item at its content width cannot let its child shrink. Measured at
-      360px: without it the trigger stays 28px outside the card.
+      Bare `pp-lift` again since 2.15 (GAP-168): `.pp-lift` now carries
+      `min-width: 0` itself, which is where the floor belonged. GAP-163's rules
+      name `.pp-asset .acts .pp-spoolbtn`, but the flex item in that band is
+      this wrapper (required since 2.13 for a window-placed panel), and a flex
+      item at its content width cannot let its child shrink — so the fix landed
+      nowhere and the trigger stayed 28px outside the card. Our `pp-minw-0`
+      here was the right fix with the wrong owner: every window-placed panel in
+      the system has a `.pp-lift` wrapper by rule 9, so they all had the floor.
     */
-    <span className="pp-lift pp-minw-0">
+    <span className="pp-lift">
       <button
         ref={trigger}
         type="button"

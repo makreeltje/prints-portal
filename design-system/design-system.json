@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-18T16:20:00Z",
+  "at": "2026-10-18T19:20:00Z",
   "via": "Claude Code",
-  "note": "2.14: GAP-165 resolved in five parts plus GAP-157, GAP-158, GAP-159, GAP-163 and GAP-164. A deel-link mints an anonymous read-only session: new shell variant .pp-app.guest (head bar, two destinations, Sessie afsluiten; no avatar, theme, Uitloggen or live dot), new components ScreenShareSession and AanvraagDialog, the reduced Deze print card for role User, a request ends in its own picker or is deleted, and the spool trigger gives back its 32px at 360px. New classes .pp-app.guest, .pp-guesthead, .pp-guestnav, .pp-fname.sans, .pp-spoolbtn > .nm. 28 new copy keys, none changed or removed. No token added, renamed or removed; no new colour pair."
+  "note": "Design system 2.15: thirteen gaps decided. GAP-169 (the owner's): the guest nav becomes a pill track so both destinations carry ink, and it stays links with aria-current, never aria-pressed. The --border question answered once and system-wide: border is a divider, border-strong is any boundary that carries meaning; .pp-seg's track and .pp-modelbtn's resting edge move, .pp-tabs' rail deliberately does not. GAP-168: .pp-lift takes min-width 0. GAP-167: ScreenQueue's 2.12 section restored verbatim. GAP-166: role User sees no tags. New: GAP-170 (the visitor's payment is a header line), GAP-171 rejected (no search field), GAP-172 (the guest head is one height at every studio name), GAP-176, GAP-177, GAP-178; GAP-173/174/175 numbered and left to the owner. No token, class or copy key removed or renamed; one new class, .pp-guestexit."
  },
  "layout": "files",
  "libraries": [],

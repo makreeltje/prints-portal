@@ -228,34 +228,32 @@
   (GAP-101, `copy-deck.md` *Added in 2.13*).
 
 
-## Added in 2.14
+## Added in 2.15
 
-- **Do** give a new audience the **same** screens in a smaller frame, and replace only the chrome:
-  a visitor with a deel-link walks ScreenDashboard and ScreenPrintDetail with a head bar instead of
-  the sidebar. **Don't** widen a sent-out page screen by screen until it is a second portal — two
-  implementations of "a print" disagree the first time one of them is changed (GAP-165,
-  ScreenShareSession).
-- **Do** drop a control a role has nothing to do with, including the ones that look harmless: no
-  theme cycle for a visitor whose preference cannot survive the next tap on the link, no live dot
-  for someone who is not working, no "Uitloggen" where there is no account. **Don't** render it
-  disabled or empty "for consistency" (GAP-165, AppShell).
-- **Do** say a fact where it changes what somebody does, **once**: the expiry notice and the
-  "Betalen" block stay on the overview, beside the totals they belong to. **Don't** promote a fact
-  the viewer can do nothing about into a bar on every screen — that is twelve betaallink help lines
-  again, in a session (GAP-101, GAP-165).
-- **Do** keep **one** page for every dead link — unknown, expired, revoked — and end a session at
-  the visitor's **next action**. **Don't** interrupt a page somebody is reading with a timer, and
-  don't let the wording distinguish the reasons: that distinction is the one thing the page exists
-  to hide (GAP-165, ScreenSharePage 1.6).
-- **Do** lift a minimum where it has stopped protecting anything: the spool trigger's 200px floor
-  goes at 480px and below and the name takes the middle cut. **Don't** leave a control wider than
-  its row and let an ancestor's `overflow: hidden` decide what the viewer loses — a clip nobody
-  declared takes the end of the name, which is where a spool's colour lives (GAP-163, SpoolPicker).
-- **Do** make a dialog's required fields the two a record cannot exist without, and let the rest be
-  optional: a request is a Naam and a Klant, with Bron and Notitie if he has them. **Don't** offer a
-  value at birth that would make the new record invisible — "Geen status" on a fileless request
-  leaves it in no list on any screen (GAP-157, GAP-159, AanvraagDialog).
-- **Do** write the ending of a thing somewhere it can be reached: a fileless request ends with
-  "Aanvraag verwijderen" **inside** the dialog it already has. **Don't** add a third button to a row
-  for an act that happens twice a month, and don't turn a value into an operation (GAP-138,
-  GAP-159, ScreenQueue).
+**Don't draw a control's boundary in `border`.** `border` is 1.37:1 on `surface` in dark and 1.42:1
+in light: it is a divider between content and content. The moment a line is the only thing that says
+where a control is, how far it reaches, or which state it is in, it is `border-strong` (3:1 or more
+on all three grounds, both themes). The test is what the line is doing, not what the element is
+called — `.pp-seg`'s track and `.pp-modelbtn`'s edge both read as "a box around a thing" and were
+carrying a control's identity (GAP-169).
+
+**Don't mark only the current item in a horizontal navigation of few items.** In a sidebar the
+column is the affordance and marking your position is enough. In a bar of two or three items the
+same pair leaves every destination you have not visited without any resting ink, and `:hover` is not
+a cue on a phone. Draw the **set** first — one track, items of the same kind — and the position
+second (GAP-169).
+
+**Don't borrow an ARIA pattern with a look.** A pill track, a tab rail and a row of chips are visual
+idioms; `aria-pressed`, `role="tablist"` and `aria-current="page"` are statements about what the
+thing *is*. Routes are links with `aria-current="page"`, whatever they look like; a view switch
+inside one page is `aria-pressed` buttons, whatever it looks like. If a look needs to move, move the
+CSS and leave the roles where they are (GAP-169).
+
+**Don't let a conditional decision fire on a maximum alone.** "If one klant has thirty prints, add
+the search field" was answered with 36 — and with eleven of twelve klanten at ten or fewer. A
+permanent control is paid for by every session, so the distribution decides it, not the worst case.
+Ask for the shape of the data when you write the condition (GAP-171).
+
+**Don't repeat a visible fact in a card below the fold.** A visitor's print page showed the status
+badge at y=201 and then a "Betaling" card at 873–971 on a 390×844 phone, whose only new information
+was the amount. Put the new fact beside the one already on screen (GAP-170).

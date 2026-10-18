@@ -975,13 +975,82 @@ describe('PrintDetailPage', () => {
     expect(calls.some((c) => c.method === 'DELETE')).toBe(true);
   });
 
-  it('gives Users the summary only: no files, no delete, read-only tags', async () => {
+  it('gives Users the summary only: no files, no delete, no tags (GAP-166)', async () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ json: detail({ assets: null }) }) });
     renderDetail('User');
     await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
     expect(screen.queryByRole('region', { name: 'Bestanden' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Verwijderen' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'cadeau verwijderen' })).toBeNull();
+    // 2.15: not read-only tags either — none at all.
+    expect(document.querySelectorAll('.pp-tag')).toHaveLength(0);
+  });
+
+  /*
+    GAP-170, resolved in 2.15: the payment is one line beside the `<h1>` and
+    the "Betaling" card is not rendered for this role. Measured at 390×844,
+    that card began 29px below the fold and its badge 89px below it, while the
+    status was already on screen in the header.
+  */
+  it('puts the payment in the header for a User and renders no pp-pay card', async () => {
+    stubFetch({
+      'GET /api/prints/p1': () => ({
+        json: detail({
+          assets: null,
+          money: {
+            status: 'open',
+            price: 24.5,
+            priceSuggested: false,
+            paid: 0,
+            writtenOff: 0,
+            remaining: 24.5,
+            orderCount: 1,
+            cost: null,
+          },
+        }),
+      }),
+    });
+    renderDetail('User');
+    const head = (await screen.findByRole('heading', { level: 1, name: 'Babybox locks' })).closest(
+      '.pp-ph',
+    );
+    if (!(head instanceof HTMLElement)) throw new Error('no header');
+    // Badge and amount wrapped together, so they stay a pair when .pp-ph wraps.
+    const pair = head.querySelector('.pp-row.pp-gap-2');
+    expect(pair).not.toBeNull();
+    expect(pair?.querySelector('.pp-badge')?.textContent).toContain('Open');
+    // formatMoney joins the sign and the figure with a non-breaking space.
+    expect(pair?.querySelector('.pp-money.pp-text-xl')?.textContent).toMatch(/^€\s24,50$/u);
+    expect(document.querySelector('.pp-pay')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Betaling' })).toBeNull();
+    // And the amount is said once: the card is gone, not duplicated.
+    expect(screen.getAllByText(/24,50/u)).toHaveLength(1);
+    // The media row is `pp-pdtop` and "Deze print" is the last card on it.
+    expect(document.querySelector('.pp-pdtop')).not.toBeNull();
+    expect(document.querySelector('.pp-detail')).toBeNull();
+  });
+
+  it('keeps the operator the PaymentPanel and its own badge row', async () => {
+    stubFetch({
+      'GET /api/prints/p1': () => ({
+        json: detail({
+          money: {
+            status: 'open',
+            price: 24.5,
+            priceSuggested: false,
+            paid: 0,
+            writtenOff: 0,
+            remaining: 24.5,
+            orderCount: 1,
+            cost: null,
+          },
+        }),
+      }),
+    });
+    renderDetail('Admin');
+    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    expect(document.querySelector('.pp-ph .pp-money')).toBeNull();
+    expect(document.querySelector('.pp-tags .pp-badge')).not.toBeNull();
   });
 
   /*
@@ -1037,6 +1106,30 @@ describe('PrintDetailPage', () => {
       'Project',
       'Datum',
     ]);
+  });
+
+  /*
+    GAP-176, resolved in 2.15: the same condition in every role. GAP-095
+    specified the operator's card before GAP-072's rule existed, so it drew
+    Project unconditionally and repeated the `<h1>` on 84 of 84 prints in this
+    library.
+  */
+  it('applies the same project condition to the operator, both ways', async () => {
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: detail() }) });
+    const same = renderDetail('Editor');
+    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    const rows = () =>
+      [...screen.getByRole('region', { name: 'Deze print' }).querySelectorAll('dt')].map(
+        (dt) => dt.textContent,
+      );
+    // projectFolder equals the print's name here, so it is not a row.
+    expect(rows()).not.toContain('Project');
+    same.unmount();
+
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: detail({ projectFolder: 'Kerst 2026' }) }) });
+    renderDetail('Editor');
+    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    expect(rows()).toContain('Project');
   });
 
   it('shows the 403 state for another customer', async () => {

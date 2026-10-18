@@ -39,7 +39,6 @@ export function PaymentPanel({
   notBilled,
   cost,
   role,
-  visitor = false,
   actions,
 }: {
   order: Order;
@@ -48,14 +47,14 @@ export function PaymentPanel({
   notBilled: boolean;
   /** Totaalkosten, for the niet-factureren note. */
   cost: number | null;
-  role: 'Admin' | 'Editor' | 'User';
   /**
-   * A visitor in a deel-linksessie (PaymentPanel 2.14): the same badge and
-   * amount, without `pay.userNote`. "Je ziet alleen prijs en status" tells a
-   * klant that something is being withheld from them, which is true and none
-   * of their business; the share page has never said it.
+   * Admin and Editor only in practice. Role User reached this component until
+   * 2.15; GAP-170 took the whole `pp-pay` card off that role's page and put
+   * the badge and the amount in the header instead, so there is no longer a
+   * User branch here. The type keeps `'User'` because `role` is the signed-in
+   * user's role and the caller does not narrow it.
    */
-  visitor?: boolean;
+  role: 'Admin' | 'Editor' | 'User';
   actions: PaymentActions;
 }) {
   const titleId = useId();
@@ -71,18 +70,6 @@ export function PaymentPanel({
           <span className="pp-muted">{t('money.cost')}</span>
           {cost === null ? null : <Money amount={cost} />}
         </div>
-      </section>
-    );
-  }
-  if (role === 'User') {
-    return (
-      <section className="pp-card pp-pay" aria-labelledby={titleId}>
-        <h3 id={titleId}>{t('pay.title')}</h3>
-        <div className="pp-row pp-between">
-          <PaymentBadge status={order.status} />
-          {order.price === null ? null : <Money amount={order.price} />}
-        </div>
-        {!visitor && <div className="pp-muted pp-text-sm">{t('pay.userNote')}</div>}
       </section>
     );
   }

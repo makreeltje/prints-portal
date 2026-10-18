@@ -1,9 +1,9 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { FolderOpen } from 'lucide-react';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
 import { t } from '../i18n/nl';
 import { useDocumentTitle } from '../pages/useDocumentTitle';
-import { fetchPrints, keys } from '../prints/api';
+import { fetchAllPrints, keys } from '../prints/api';
 import { PrintCard } from '../prints/PrintCard';
 import { EMPTY_FILTER, type PrintSummary } from '../prints/types';
 import { printHref, useShareSession } from './session';
@@ -23,21 +23,24 @@ import { printHref, useShareSession } from './session';
  * Order: newest first, the same order as the Overzicht's list, so the two
  * screens never disagree about which print is the last one. The backend
  * scopes the list to this link's klant, so this page asks for no customer.
+ *
+ * **And it is not paged (2.15, GAP-178).** It inherited the dashboard's page
+ * size of 24 with "Meer laden" and "{shown} van {total} prints", while the
+ * Overzicht one tap away has listed every print of this klant on one page
+ * since 1.0 — so on the largest klant (36 prints) the two screens disagreed
+ * about which print is the last one, which is exactly what the rule above
+ * forbids. One klant's prints are a bounded set, so the whole list is
+ * rendered. The operator's dashboard keeps LoadMore and its count line: 84
+ * prints over 12 klanten is a different list with a different question.
  */
 export function SessionPrintsPage() {
   useDocumentTitle('session.prints.title');
   const session = useShareSession();
-  const prints = useInfiniteQuery({
-    queryKey: keys.list(EMPTY_FILTER),
-    queryFn: ({ pageParam }) => fetchPrints(EMPTY_FILTER, pageParam),
-    initialPageParam: 0,
-    getNextPageParam: (last, pages) => {
-      const loaded = pages.reduce((sum, page) => sum + page.items.length, 0);
-      return loaded < last.total ? loaded : undefined;
-    },
+  const prints = useQuery({
+    queryKey: keys.listAll(EMPTY_FILTER),
+    queryFn: () => fetchAllPrints(EMPTY_FILTER),
   });
-  const items: PrintSummary[] = prints.data?.pages.flatMap((page) => page.items) ?? [];
-  const total = prints.data?.pages[0]?.total ?? null;
+  const items: PrintSummary[] = prints.data?.items ?? [];
 
   return (
     <>
@@ -76,27 +79,6 @@ export function SessionPrintsPage() {
             </li>
           ))}
         </ul>
-      )}
-      {total !== null && items.length > 0 && (
-        <div className="pp-more">
-          <span aria-live="polite">
-            {prints.hasNextPage
-              ? t('common.count', { shown: items.length, total })
-              : t('common.allLoaded')}
-          </span>
-          {prints.hasNextPage && (
-            <button
-              type="button"
-              className="pp-btn pp-btn-secondary"
-              disabled={prints.isFetchingNextPage}
-              aria-busy={prints.isFetchingNextPage}
-              onClick={() => void prints.fetchNextPage()}
-            >
-              {prints.isFetchingNextPage && <span className="pp-spin" aria-hidden="true" />}
-              {t('common.loadMore')}
-            </button>
-          )}
-        </div>
       )}
     </>
   );

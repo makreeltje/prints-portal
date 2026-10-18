@@ -13,7 +13,7 @@ Design system for **3D Prints Portal**, a self-hosted web app that indexes print
 
 - Default theme is `dark`; `light` is the second theme. Apply with `[data-theme]` on `html`, and fall back to `prefers-color-scheme` when no theme is stored. The consuming app must provide this fallback block; the generated `tokens.css` only has the `[data-theme]` blocks.
 - Put pages on `bg`, cards, tables, dialogs and inputs on `surface`, nested or hover grounds on `surface-2`. Body text is `text`, headings and money are `text-strong`, secondary text is `muted`.
-- Draw card edges and row dividers with `border`. Draw anything that identifies a control (input, checkbox, radio, toggle) with `border-strong`.
+- **A boundary that carries meaning is `border-strong`; a hairline between content and content is `border` (2.15).** `border` measures 1.37:1 on `surface` in dark and 1.42:1 in light, so it can be a card, dialog, popover or panel edge, a row or list divider, the rule under a card header, a media frame — and nothing that identifies a control, its extent or one of its states. Everything that does takes `border-strong` (3:1 or more on `bg`, `surface` and `surface-2` in both themes): inputs, checkboxes, radios, toggles, the secondary button, a segmented control's **track**, the guest head's nav track, a model strip button. The test is not what the element is but what the line is doing: if removing it would leave you unable to see where the control is or which state it is in, it is `border-strong`.
 - Use `primary` for the single main action per view, links and active navigation; text on a primary fill is `on-primary`. Use `primary-tint-soft` for row hover, `primary-tint` for selection and live-update flashes, `primary-tint-strong` for pressed states.
 - Status colours: `paid` (Betaald, check icon), `unpaid` (Open and Afgeschreven, clock or ban icon, also destructive actions), `warning` (missing spool, price or cost, triangle icon), `info` (notices, "voorgesteld"). Badge ground is the matching `*-tint`; badge text is the status colour. Pair `paid` and `unpaid` with an icon and a word every time; they differ in lightness, not only hue.
 - Focus: draw `2px solid var(--focus-ring)` with a 2px offset on every interactive element. Dialogs and sheets sit on `overlay`. Skeletons use `skeleton`.
@@ -161,7 +161,7 @@ Components are plain HTML plus `components/bundle.css` (classes prefixed `pp-`);
 
 ## Roles
 
-Admin sees everything, including Deel-links, Toegang, Gebruikers, Instellingen, Verwijderde prints with Herstellen, and the undo actions. Editor sees every klant (no grants needed, so Editor rows in Toegang are disabled and checked), Dashboard, Openstaand, Facturen, print detail with costs and payment, and can export and "Definitief maken", but cannot credit, delete users or change settings. User only sees the klanten an Admin granted. **A visitor with a deel-link is a User without an account (2.14):** a valid token mints an anonymous read-only session scoped to one klant, with the same screens and a head bar instead of the sidebar — no theme control, no "Uitloggen", no API-docs, and the URL as the only credential (ScreenShareSession, AppShell). User sees customer price and status only: no internal cost, breakdown, notes or file controls, and no Facturen page. Never render a control a role cannot use.
+Admin sees everything, including Deel-links, Toegang, Gebruikers, Instellingen, Verwijderde prints with Herstellen, and the undo actions. Editor sees every klant (no grants needed, so Editor rows in Toegang are disabled and checked), Dashboard, Openstaand, Facturen, print detail with costs and payment, and can export and "Definitief maken", but cannot credit, delete users or change settings. User only sees the klanten an Admin granted. **A visitor with a deel-link is a User without an account (2.14):** a valid token mints an anonymous read-only session scoped to one klant, with the same screens and a head bar instead of the sidebar — no theme control, no "Uitloggen", no API-docs, and the URL as the only credential (ScreenShareSession, AppShell). User sees customer price and status only: no internal cost, breakdown, notes or file controls, no Facturen page and **no tags (2.15, GAP-166 — a tag is the owner's own filing word, and he does not use them)**. Never render a control a role cannot use.
 
 ## Screens and documents
 
@@ -381,6 +381,29 @@ this system already specifies for anything identified at both ends. **When a min
 disagree, look for what is being thrown away where nobody declared it.** Details: SpoolPicker 2.14,
 GAP-163.
 
+## Two rules this round wrote down (2.15)
+
+**A state that marks only where you are marks nothing where you could go.** `aria-current`'s tint
+has been the whole of this system's navigation ink since 1.0, and it was right for a sidebar: a
+column of items in a fixed place is self-evidently navigation, so the one that is dressed is the one
+you are on. Lift the same pair into a bar of two items and the logic inverts — the current item
+holds all the ink and the destination the viewer has never seen holds none, with `:hover` as its only
+resting cue on the device it is opened from. The owner found that by using it, in the one screen
+whose user gets a single visit. **So a navigation of few items in a horizontal bar draws the set
+first and the position second:** one bordered track, both items visibly the same kind of thing, the
+current one filled. And the idiom is borrowed without its ARIA — routes stay links with
+`aria-current="page"`, never `aria-pressed` buttons. Details: ScreenShareSession 2.15, AppShell 2.15,
+SegmentedControl 2.15, GAP-169.
+
+**A measurement answers the question you asked; the distribution answers the one you should have
+asked.** 2.14 said that if the largest klant had thirty prints, a visitor's list would get a search
+field. It has 36 — and eleven of the twelve klanten have ten or fewer, which is the number that
+decides whether a permanent control is chrome. The field is refused and the **page boundary** goes
+instead, so the list matches the Overzicht beside it. When a decision is made conditional on a
+measurement, ask for the shape of the data and not only the value that triggers the condition; a
+maximum justifies a control on one screen in twelve, which is how chrome arrives. Details:
+ScreenDashboard 2.15, ScreenShareSession 2.15, GAP-171, GAP-178.
+
 ## Versie 2.14 (2026-10-18)
 
 **A deel-link stopped being a page and became a key, and the design system had to grow a second
@@ -401,3 +424,24 @@ are no files, never a third button on the row (GAP-159); the spool trigger's **3
 at phone width (GAP-163); and one sentence stops having two key names (GAP-164). Twenty-eight new
 copy keys, two new components, **no token added, renamed or removed**, no new colour pair, no
 breaking change. Details: `changelog.md`.
+
+## Versie 2.15 (2026-10-18)
+
+**The owner walked the session he asked for, passed everything, and stopped at the nav** — *"het is
+niet duidelijk genoeg dat je ook naar prints kan gaan"* — which was spec-conform, so the spec was
+wrong. The guest head's two destinations now sit in **one bordered track** with the current one
+filled (**GAP-169**), still links with `aria-current="page"`, and the pill idiom is lent without its
+ARIA. That decision carried a system-wide one with it: **`border` may not draw a boundary that
+carries meaning** (1.37:1 dark, 1.42:1 light on `surface`), so `.pp-seg`'s track and
+`.pp-modelbtn`'s resting edge move to `border-strong` — three selectors in all, listed in
+`changelog.md`, and the rule is now in *Colour* and in both tokens' `usage` rather than in an
+example list that let two controls slip through. Also: the guest head is **one height at every studio
+name** on the phone (**GAP-172**); a visitor's payment is a **line in the header** instead of a card
+below the fold (**GAP-170**); a session's Prints is **not paged** and gets **no search field**
+(**GAP-178**, **GAP-171**); **role User sees no tags**, which settles a contradiction this system
+published in two files at once (**GAP-166**); `.pp-lift` takes `min-width: 0`, which fixes a whole
+class of clipped trigger rather than one case (**GAP-168**); every nav link draws the focus ring in
+the token (**GAP-177**); the operator's "Deze print" stops repeating the print's name (**GAP-176**);
+and **ScreenQueue's 2.12 section is restored** after the 2.14 export dropped it (**GAP-167**). **No
+token added, renamed or removed; no copy key added, changed or removed; one new class
+(`.pp-guestexit`); no breaking change.** Details: `changelog.md`.

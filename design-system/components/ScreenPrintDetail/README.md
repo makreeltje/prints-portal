@@ -10,7 +10,7 @@ Print detail (`/prints/:id`) shows one print: identity and status, the 3D model,
 
 **Dutch copy.** Bestanden | Spoel voor de hele print | Bestanden en slots met een eigen spoel gaan hierboven voor. | Gearchiveerd. | Verwijderd op {datum}. | Kosten ontbreken. | Op factuur {nummer}. | Je ziet alleen prijs en status.
 
-**Orders (1.4).** Below the viewer the page lists the orders as OrderSection blocks, newest first ("Nabestelling 2 · 6 okt 2026", "Bestelling 1"); settled orders are closed. Each order has its own files with "Aantal keer geprint", CostBreakdown and PaymentPanel, so a print with one order looks like before (one open section). Files that are in no order appear in an `info` alert "{n} nieuw bestand(en) staan in geen bestelling. Voeg het toe aan een nabestelling." with the button "Nabestelling maken", which opens NabestellingDialog; the same button sits below the list. Deleting the print ("Verwijderen") still hides the whole print with all its orders. The role User sees none of this: name, price, status, thumbnail, 3D model and tags only; the price is the sum over all orders.
+**Orders (1.4).** Below the viewer the page lists the orders as OrderSection blocks, newest first ("Nabestelling 2 · 6 okt 2026", "Bestelling 1"); settled orders are closed. Each order has its own files with "Aantal keer geprint", CostBreakdown and PaymentPanel, so a print with one order looks like before (one open section). Files that are in no order appear in an `info` alert "{n} nieuw bestand(en) staan in geen bestelling. Voeg het toe aan een nabestelling." with the button "Nabestelling maken", which opens NabestellingDialog; the same button sits below the list. Deleting the print ("Verwijderen") still hides the whole print with all its orders. The role User sees none of this: name, price, status, thumbnail, 3D model and tags only *(the tags clause is superseded by 2.15, GAP-166: role User sees no tags)*; the price is the sum over all orders.
 
 **Placement (1.5)** *(superseded by 2.0)*. Order of the page with orders: header, Viewer3D (full width), the card "Spoel voor de hele print" (`pp-card pp-sec`, full width, with SpoolPicker and the help "Bestanden en slots met een eigen spoel gaan hierboven voor." — the spool belongs to the print, not to one order), the `info` alert for files in no order, the card **"Nog niet in een bestelling"** (AssetListItem rows with the badge "Niet in een bestelling"), then the OrderSections, newest first, and "Nabestelling maken". Files that never count (STL, video, PDF, links) have no order; they are listed in the Bestanden card of Bestelling 1 so they can still be downloaded. The date in an OrderSection header is the order date: the modification time of the newest counted G-code in that order, else the date the order was created; the invoice Datum and the Van / Tot en met filter use the same date.
 
@@ -107,3 +107,50 @@ which the 1.9 and 2.0 measurements are still waiting on.
 **Both themes, phone and desktop.** `pp-pdtop` is one column below 901px with the viewer first, exactly as for an operator; no new class and no new colour pair.
 
 **Proposed, needs the owner's confirmation (do not build).** **Materiaal** and **Gewicht** as two more `pp-kv` rows, and the same two facts as the card's meta line in a visitor's print card. The invoice already prints Gram, so this is defensible — and it is a decision about what a klant reads, which is his. **Tijd stays out either way**: machine time is the one input on that list a klant cannot check and the one that only means something next to a cost.
+
+**2.15.** (2026-10-18) **Three decisions about this page, one of them a contradiction of my own making.**
+
+**No tags for role User either (GAP-166, resolved).** 2.14's section above says "no tags" for role
+User *and* a visitor; ScreenShareSession 2.14 published the same question as a proposal and named
+1.4 as standing, so the export said two things at once and the app built only the half they agreed
+on. **The strict half wins: role User and a visitor see no tags, anywhere** — not in this header,
+not on a print card, not as a filter. The fact that settles it is the owner's own answer to GAP-129:
+**he does not use tags at all.** A tag is his filing word for his own reasons, the tag system stays
+in the app because he has not asked for it to go, and nothing in it is addressed to a klant. So the
+clause in *Orders (1.4)* — "name, price, status, thumbnail, 3D model **and tags** only" — is
+**superseded**, and role User's print page is now exactly the visitor's. That is the point: one
+reduced form, not two that drift.
+
+**The payment is a line in the header, and its card is gone for this role (GAP-170, resolved).**
+Measured by the app on a visitor's print at 390×844: the viewer ends at 506, the media strip at 686,
+"Deze print" at 853 (9px past the fold) and the **whole** `pp-card pp-pay` card sits at 873–971,
+with its badge 89px below the fold — while the status is *already* on screen at y=201, in the header
+badge row. A card that repeats a visible fact and adds one number is not worth 98px below the fold.
+
+So for **role User and a visitor**, the header badge row carries both: the status badge and the
+amount, as `<div class="pp-ph"><h1>…</h1><span class="pp-row pp-gap-2"><span class="pp-badge
+unpaid">…Open</span><span class="pp-money pp-text-xl">€ 24,50</span></span></div>` — the badge and
+the amount wrapped together so they stay one pair when `.pp-ph` wraps at 360px. **`pp-pay` is not
+rendered for this role at all:** no `<h3>` "Betaling", no second badge, no amount twice. Nothing
+else moves, so a visitor's print page is now header, `pp-pdtop` (viewer and media strip, the reduced
+card), and nothing after it — which also means "Deze print" is the last card on the page and 2.3's
+rule applies to it: *the last card on a page is as long as its content.*
+
+**The operator keeps PaymentPanel exactly as it is.** This is a reduction of a role's page, not a
+change to the payment panel: an order's Betaling section, its fields, history and write-off are
+untouched. And the pairing itself is not new to the klant — the Overzicht's own lines have shown
+`€ 24,50` beside a status badge (`pp-share-amt`) since 1.0, so the print page now says it the same
+way the screen they landed on says it.
+
+**The operator's "Deze print" stops repeating the print's name (GAP-176, resolved).** The app
+measured what GAP-158 implied and did not say: `squashName(project) !== squashName(name)` is **false
+for 84 of 84 prints** in the owner's library, so the reduced card was right to hide the row — and the
+**operator's** card still draws Project unconditionally, repeating the `<h1>` 84 times out of 84. The
+same comparison applies here: **Project is a row only when it differs from the print name, case and
+spaces ignored (GAP-072), for every role.** GAP-095 specified this card before GAP-072 existed; it is
+one condition, not a per-role rule, and a fact that is identical to the heading above it is not a
+fact. The breadcrumb's own rule is unchanged (it has had this comparison since 1.9).
+
+**Both themes, phone and desktop.** No new class, no new token, no new colour pair: `.pp-ph`,
+`.pp-row`, `.pp-gap-2`, `.pp-badge`, `.pp-money` and `.pp-text-xl` all exist, and `text-strong` on
+`bg` is in the report. **No copy key changes** — `pay.title` stays for the operator's panel.
