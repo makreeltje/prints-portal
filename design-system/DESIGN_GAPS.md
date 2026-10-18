@@ -2045,7 +2045,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.14
 
-## GAP-169 [open] A visitor's nav marks where he is and never that the other screen exists
+## GAP-169 [resolved in v2.15] A visitor's nav marks where he is and never that the other screen exists
 - **Type:** suspected design bug
 - **Found while:** the owner walking the merged deel-link session on the local stack, the first use by anyone who did not build it
 - **Where needed:** `components/ScreenShareSession/README.md` §2 and §6, `components/AppShell/README.md` 2.14 (the `guest` variant's head bar), `components/bundle.css` `.pp-guestnav`; `frontend/src/sharing/GuestShell.tsx`
@@ -2066,6 +2066,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Measured with the placeholder in place** (local stack, a real session, both themes): the items are 36px tall at 1400px and **44px** at 360px — unchanged, because `box-sizing: border-box` is global, so the hairline eats content width and not tap height. Head bar 61px at 1400px and 121px at 360px, both the same as before. The two tabs stay on one line (162px each at 360px) and nothing scrolls sideways. The current item keeps `--primary-tint` and now sits inside the same outline as the other one.
 - **Design system version:** 2.14
 
+- **Resolved in 2.15:** shape 1 with one change — `.pp-guestnav` is a pill track (`surface-2`, `radius-pill`, `1px solid var(--border-strong)`, 2px padding) holding both items, the current one a `primary-tint` pill, and **the links stay links**: `<nav aria-label>` with `<a aria-current="page">`, never `aria-pressed`, `role="group"` or `role="tablist"`. That blessing is explicit in AppShell 2.15, ScreenShareSession 2.15 and SegmentedControl 2.15. Our placeholder is gone: the `.pp-guestnav a` border rule and its `ds-gap: GAP-169` marker are out of `frontend/src/styles/app.css` and `grep -rn "ds-gap" frontend/src` is empty. The markup needed nothing: it was already a `<nav aria-label>` of two `NavLink`s. The design system also took the `--border` question system-wide and measured what we did not: a `border-strong` hairline around **each** item is **2.94:1** against the current item's own tint on the inside (3.50 light), which is why the track won.
 ## GAP-170 [resolved in v2.15] A visitor's whole payment card sits below the fold at 390×844
 - **Type:** suspected design bug
 - **Found while:** verifying the 2.14 import on a visitor's print page; numbered here by the design system in 2.15, which asked this register to carry its own decisions

@@ -66,6 +66,17 @@ export function GuestShell({
             Overzicht. Prints keeps the dashboard's glyph on purpose: it is
             that screen.
           */}
+          {/*
+            A pill track since 2.15 (GAP-169, the owner's): `.pp-guestnav` draws
+            the `border-strong` boundary around **both** items and the current
+            one is a `primary-tint` pill inside it, because dressing only
+            `aria-current` left the screen he had never seen with no ink at all.
+            The look is borrowed from SegmentedControl and **the ARIA is not**:
+            these two change the URL, so they stay `<a>` elements with
+            `aria-current="page"` inside one `<nav aria-label>` — never
+            `aria-pressed`, `role="group"` or `role="tablist"` (AppShell 2.15,
+            ScreenShareSession 2.15, SegmentedControl 2.15, all three explicit).
+          */}
           <nav className="pp-guestnav" aria-label={t('nav.main')}>
             {/* NavLink sets aria-current="page", which is what the CSS reads. */}
             <NavLink to={session.base} end>
