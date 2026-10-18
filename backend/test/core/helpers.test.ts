@@ -187,7 +187,7 @@ describe('weak secrets', () => {
 describe('tags', () => {
   it('normalises names and compares case-insensitively', () => {
     expect(normalizeTagName('  Bord   spellen ')).toBe('Bord spellen');
-    expect(tagKey('Gridfinity')).toBe(tagKey('GRIDFINITY '));
+    expect(tagKey('Muurbeugel')).toBe(tagKey('MUURBEUGEL '));
   });
 
   it('limits names to 64 characters', () => {

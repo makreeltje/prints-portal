@@ -1595,7 +1595,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Found while:** the request-lifecycle rounds, 2.8
 - **Where needed:** see 2.8 in `changelog.md`
 - **What is missing or wrong:** Making the model strip version-aware: v5 first, v1–v4 collapsed, one marked "huidige"
-- **Decision:** **No.** The direction would be inferred from the middle of a long file name — the exact zone 2.4–2.6 proved unreadable (`v10` sorts before `v9`; `Fidget Clicking Wheel 2.0` is a product name) — off a figure its own author calls a regex. Hiding four buttons on that basis is GAP-115's fault with a worse consequence: the operator cannot reach a file. The sort stays the file name and every button stays an equal
+- **Decision:** **No.** The direction would be inferred from the middle of a long file name — the exact zone 2.4–2.6 proved unreadable (`v10` sorts before `v9`; `Plantenbak klem met rand` is a product name) — off a figure its own author calls a regex. Hiding four buttons on that basis is GAP-115's fault with a worse consequence: the operator cannot reach a file. The sort stays the file name and every button stays an equal
 - **Status as published:** rejected (the direction would be inferred from the one zone of a name this system cannot read)
 - **Design system version:** 2.8
 
