@@ -173,36 +173,66 @@ export function DashboardPage() {
   } else if (prints.isError) {
     body = <ErrorState body={t('system.errorBody')} onRetry={() => void prints.refetch()} />;
   } else if (items.length === 0) {
-    body = isFiltered(filter) ? (
-      <EmptyState
-        kind="noResults"
-        action={
-          <button
-            type="button"
-            className="pp-btn pp-btn-secondary"
-            onClick={() => {
-              // Clearing keeps the chosen order: sorting is not a filter (1.9).
-              setFilter({ ...EMPTY_FILTER, sort: filter.sort });
-            }}
-          >
-            {t('common.clearFilters')}
-          </button>
-        }
-      />
-    ) : health.data?.checks.printsRoot.status === 'down' ? (
-      <EmptyState
-        kind="unreachable"
-        action={
-          <button type="button" className="pp-btn pp-btn-primary" onClick={() => void refresh()}>
-            <RotateCw className="pp-ico" aria-hidden="true" />
-            {t('common.retry')}
-          </button>
-        }
-      />
-    ) : (
-      // Nothing indexed and no filter: the first-run page explains the folders.
-      <FirstRunState onReindex={reindex} />
-    );
+    /*
+      A klant is a folder on disk, so a klant can exist with nothing in it —
+      the start state of every new klant. Its tile still filters, and the
+      filter lands here rather than on the library-wide "Geen resultaten"
+      (CustomerCard 2.13, GAP-162).
+    */
+    const emptyCustomer =
+      filter.customer !== null &&
+      customers.data?.customers.some(
+        (candidate) => candidate.folder === filter.customer && candidate.printCount === 0,
+      ) === true
+        ? filter.customer
+        : null;
+    body =
+      emptyCustomer !== null ? (
+        <EmptyState
+          kind="customerNoPrints"
+          customer={emptyCustomer}
+          action={
+            <button
+              type="button"
+              className="pp-btn pp-btn-secondary"
+              onClick={() => {
+                setFilter({ ...EMPTY_FILTER, sort: filter.sort });
+              }}
+            >
+              {t('common.clearFilters')}
+            </button>
+          }
+        />
+      ) : isFiltered(filter) ? (
+        <EmptyState
+          kind="noResults"
+          action={
+            <button
+              type="button"
+              className="pp-btn pp-btn-secondary"
+              onClick={() => {
+                // Clearing keeps the chosen order: sorting is not a filter (1.9).
+                setFilter({ ...EMPTY_FILTER, sort: filter.sort });
+              }}
+            >
+              {t('common.clearFilters')}
+            </button>
+          }
+        />
+      ) : health.data?.checks.printsRoot.status === 'down' ? (
+        <EmptyState
+          kind="unreachable"
+          action={
+            <button type="button" className="pp-btn pp-btn-primary" onClick={() => void refresh()}>
+              <RotateCw className="pp-ico" aria-hidden="true" />
+              {t('common.retry')}
+            </button>
+          }
+        />
+      ) : (
+        // Nothing indexed and no filter: the first-run page explains the folders.
+        <FirstRunState onReindex={reindex} />
+      );
   } else {
     const cards = (
       <ul className="pp-grid app-plain-list">

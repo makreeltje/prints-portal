@@ -12,7 +12,7 @@ import {
   Play,
   TriangleAlert,
 } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { SpoolPicker } from '../finance/SpoolPicker';
 import { formatDuration, formatFileSize, formatGrams } from '../i18n/format';
 import { t } from '../i18n/nl';
@@ -134,18 +134,35 @@ function AssetRow({
   const plates = asset.type === '3mf' ? asset.lines : [];
   const own = asset.type === '3mf' ? undefined : asset.lines[0];
   const excluded = own?.excluded === true;
+  /*
+    `.acts` has two forms and the row says which, because CSS cannot see what
+    a band holds (AssetListItem 2.13, GAP-111). Icon buttons only — the
+    print's own "Bestanden" card — keep the row's third column. Value
+    controls (the count, the exclude toggle, a spool trigger) take
+    `.pp-asset.band`: a line of their own under the name block, so the name
+    gets the row's full width instead of its 240px floor while the band
+    reserves a single-line width it then wraps out of anyway.
+  */
+  const band = own !== undefined && controls !== undefined;
   return (
     <li>
       <div
         className={[
           'pp-asset',
+          band ? 'band' : '',
           excluded ? 'is-excluded' : '',
           controls?.locked === true ? 'is-locked' : '',
         ]
           .filter((name) => name !== '')
           .join(' ')}
       >
-        <span className="pp-muted">
+        {/*
+          `.lead` is a box one line tall with its content centred in it, so a
+          20px type icon sits on the first line of a name block of any height
+          (2.13). Before it had no class at all, and `align-items: center`
+          floated the glyph 44px below the name it belongs to.
+        */}
+        <span className="lead">
           <Icon className="pp-ico pp-ico-20" aria-hidden="true" />
         </span>
         <div className="body">
@@ -183,30 +200,40 @@ function AssetRow({
           )}
           {own !== undefined && <ExclusionReason line={own} />}
         </div>
-        <div className="pp-row acts">
-          {own !== undefined && controls !== undefined && (
-            <LineControls line={own} controls={controls} />
-          )}
-          {asset.type === 'video' && (
-            <button
-              type="button"
+        <div className="acts">
+          {band && <LineControls line={own} controls={controls} />}
+          {/*
+            In a band the trailing icon buttons are pinned to the row's right
+            edge by `.end`, so they end at one x in every row (2.13). With the
+            count and the toggle carrying fixed words at the front, the spool
+            trigger is the only control whose width is data and it is the last
+            one that starts at a fixed x — which is what makes rows line up
+            without fixing any width or truncating a spool name. A row with
+            icon buttons only has nothing to line up and keeps them as the
+            direct children the preview draws.
+          */}
+          <Trailing wrap={band}>
+            {asset.type === 'video' && (
+              <button
+                type="button"
+                className="pp-btn pp-btn-ghost pp-btn-icon"
+                aria-label={t('video.play', { bestandsnaam: asset.fileName })}
+                onClick={() => {
+                  setPlaying(asset);
+                }}
+              >
+                <Play className="pp-ico" aria-hidden="true" />
+              </button>
+            )}
+            <a
               className="pp-btn pp-btn-ghost pp-btn-icon"
-              aria-label={t('video.play', { bestandsnaam: asset.fileName })}
-              onClick={() => {
-                setPlaying(asset);
-              }}
+              href={downloadUrl(asset.id)}
+              download
+              aria-label={`${t('common.download')}: ${asset.fileName}`}
             >
-              <Play className="pp-ico" aria-hidden="true" />
-            </button>
-          )}
-          <a
-            className="pp-btn pp-btn-ghost pp-btn-icon"
-            href={downloadUrl(asset.id)}
-            download
-            aria-label={`${t('common.download')}: ${asset.fileName}`}
-          >
-            <Download className="pp-ico" aria-hidden="true" />
-          </a>
+              <Download className="pp-ico" aria-hidden="true" />
+            </a>
+          </Trailing>
         </div>
       </div>
       {playing !== null && (
@@ -226,13 +253,14 @@ function AssetRow({
               <div
                 className={[
                   'pp-asset child',
+                  controls === undefined ? '' : 'band',
                   plate.excluded ? 'is-excluded' : '',
                   controls?.locked === true ? 'is-locked' : '',
                 ]
                   .filter((name) => name !== '')
                   .join(' ')}
               >
-                <span className="pp-muted">
+                <span className="lead">
                   <Layers className="pp-ico pp-ico-20" aria-hidden="true" />
                 </span>
                 <div className="body">
@@ -247,7 +275,7 @@ function AssetRow({
                   <ExclusionReason line={plate} />
                 </div>
                 {controls !== undefined && (
-                  <div className="pp-row acts">
+                  <div className="acts">
                     <LineControls line={plate} controls={controls} />
                   </div>
                 )}
@@ -259,6 +287,11 @@ function AssetRow({
       )}
     </li>
   );
+}
+
+/** `<span class="end">` in a band, nothing at all in a row of icon buttons. */
+function Trailing({ wrap, children }: { wrap: boolean; children: ReactNode }) {
+  return wrap ? <span className="end">{children}</span> : <>{children}</>;
 }
 
 function NotInOrderBadge() {
@@ -350,7 +383,14 @@ function Slots({ line, controls }: { line: Line; controls?: RowControls }) {
   );
 }
 
-/** "Aantal keer geprint", the file's own spool (one slot) and "Telt niet mee in kosten". */
+/**
+ * The band, in the order that makes rows agree: the count, the exclude
+ * toggle, then the spool trigger (AssetListItem 2.13, GAP-111). The first two
+ * carry fixed words and start at one x in every row; the trigger grows with
+ * the spool's name but still *starts* at one x. Before this the trigger sat
+ * in the middle of a right-aligned flex, so "Aantal keer geprint" landed
+ * somewhere different in every row as soon as two spool names differed.
+ */
 function LineControls({ line, controls }: { line: Line; controls: RowControls }) {
   const setSpool = controls.setSpool;
   const locked = controls.locked === true;
@@ -365,16 +405,6 @@ function LineControls({ line, controls }: { line: Line; controls: RowControls })
         ) : (
           <TimesPrinted line={line} onSave={controls.setTimesPrinted} />
         ))}
-      {setSpool !== undefined && line.slots.length <= 1 && (
-        <SpoolPicker
-          value={line.spool ?? line.slots[0]?.spool ?? null}
-          inherited={controls.printSpool ?? null}
-          label={t('asset.pickSpool')}
-          disabled={locked}
-          describedBy={controls.lockedHelp}
-          onChange={(spoolId) => setSpool(line, 0, spoolId)}
-        />
-      )}
       <label className="pp-opt sm">
         <input
           type="checkbox"
@@ -387,6 +417,16 @@ function LineControls({ line, controls }: { line: Line; controls: RowControls })
         />
         {t('asset.excluded')}
       </label>
+      {setSpool !== undefined && line.slots.length <= 1 && (
+        <SpoolPicker
+          value={line.spool ?? line.slots[0]?.spool ?? null}
+          inherited={controls.printSpool ?? null}
+          label={t('asset.pickSpool')}
+          disabled={locked}
+          describedBy={controls.lockedHelp}
+          onChange={(spoolId) => setSpool(line, 0, spoolId)}
+        />
+      )}
     </>
   );
 }

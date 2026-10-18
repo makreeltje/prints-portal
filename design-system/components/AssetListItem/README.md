@@ -94,3 +94,60 @@ This row now knows three relations between two files of one print, and they are 
 - Supersession is an **asserted** fact in the sense of `README.md` rule 1: that v5 replaced v1, and above all **which version the customer actually received**, is something only the owner knows. Nothing can re-check it, so it carries a date and an author or it is not shown.
 
 Until it is recorded, the row is **unchanged** and that is deliberate: a superseded file is a normal file, with its real name, its real size and its real place in an order. No dimming, no strike-through (that is exclusion, which changes money), no "oud" badge, no grouping, no reordering. **No new class, token, copy key or colour pair.** What is settled is only what the system may *claim*; nothing is claimed yet.
+
+**2.13.** (2026-10-18) **The row's three bands, measured again, and all three faults have one cause
+(GAP-111, reopened and resolved).** 2.2 gave the name column a floor and that half still holds. What
+it did not touch is that **the controls column takes the width of a single-line layout it never
+draws.** Measured in the app on an order with four G-code files, at a 917px row: tracks
+`20px / 240px / 608.656px`, `align-items: center`, the type icon's middle at **y=946** and the file
+name's at **y=902** — the 20px glyph sits **44px below the name it belongs to** — the duplicate
+warning's triangle centred on three wrapped lines beside the middle one, `.acts` sized at
+**max-content 609px** and then **wrapping to two lines anyway**, and the name clipped to its 240px
+floor to pay for it.
+
+**1. The slot that had no name is the slot that was misaligned.** `.body` and `.acts` were named and
+placed; the first cell — the type icon, or a plate's 40px thumbnail — had no class at all, so no
+rule could reach it and `align-items: center` centred a 20px glyph against a 171px block. The row is
+now **`align-items: start`** and the first cell is **`.lead`**: a box one `--leading-base` tall with
+its content centred *in that box*, so the glyph sits on the first line at any row height and a plate
+thumbnail still centres on itself. **`.pp-reason` becomes `align-items: flex-start`** for the same
+reason — an icon that labels a block of text belongs on the block's first line, which is where the
+duplicate triangle now is.
+
+**2. The band leaves the third column when it carries value controls.** `.acts` has two forms and
+the row says which, because CSS cannot see what a band holds:
+
+- **icon buttons only** — the print's "Bestanden" card (Downloaden, Afspelen): unchanged, the row's
+  third column, 36 to 80px beside a long name.
+- **value controls** — an order's "In deze bestelling" (the count, the exclude toggle, a spool
+  trigger): the row takes **`.pp-asset.band`** and `.acts` gets **a line of its own** under the name
+  block, left-aligned, starting at the name's left edge.
+
+At the measured container of 794px that turns `20 + 240 + 609` into a name block of about **738px**
+and a band of 738px holding 609px of controls **on one line**. The name stops being clipped and the
+controls stop wrapping — the row that wraps today gets *shorter*, not taller. **The cost is at the
+wide end:** at container 961 (a 2000px window) the controls fit beside the name today, so there the
+row grows by one control line, about **44px** per row. Measure the print detail's height at 1400px
+and 2000px before and after; the trade is the owner's to see. `--pp-name-min` stays at 240px and
+still floors the rows that keep three columns.
+
+**3. Rows agree when at most one control's width is data, and it is the last one.** `.acts` was a
+right-aligned flex, so only the right edge was fixed and "Aantal keer geprint" landed at a different
+x in every row — invisible in a library where the spool names happen to be the same length, which is
+why it took the owner's screenshot. The band's order is **count · exclude toggle · spool trigger ·
+`.end`**: the first two carry fixed words and start at the same x in every row, the trigger grows
+with the spool's name but *starts* at a fixed x, and `.end` (the icon buttons) is pinned to the
+row's right edge, so it *ends* at a fixed x. That is the general rule, and it is cheaper than giving
+each control a fixed width — which would have meant truncating spool names to make a toggle line up.
+
+**Slot rows are unchanged, and that is consistent rather than an omission.** `.pp-slot` pushes its
+trigger to the row's right edge with `margin-left: auto`, so slot triggers already *end* at one x;
+nothing in a slot row has been measured as misaligned.
+
+**Markup the app changes (four small things, no renames).** `class="lead"` on the row's first cell;
+`band` on the rows of an order's file list; the band's children in the order above; the trailing
+icon buttons wrapped in `<span class="end">`. The print-level list changes nothing. **Drawn in the
+preview:** the banded row at 900px and 760px containers, the duplicate row with its triangle on the
+first line, and the locked and excluded rows in band form.
+
+**Both themes, no new token, no new colour pair.**

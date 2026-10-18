@@ -251,9 +251,16 @@ export function Thumbnail({ print, small = false }: { print: PrintSummary; small
 /** EmptyState variants from the copy deck. */
 export function EmptyState({
   kind,
+  customer,
   action,
 }: {
-  kind: 'noPrints' | 'noResults' | 'unreachable';
+  kind: 'noPrints' | 'noResults' | 'unreachable' | 'customerNoPrints';
+  /**
+   * The klant the filter landed on, for `customerNoPrints`: a klant is a
+   * folder on disk, so one can exist with nothing in it, and its tile still
+   * filters (CustomerCard 2.13, GAP-162).
+   */
+  customer?: string;
   action?: ReactNode;
 }) {
   const Icon = kind === 'noResults' ? SearchX : kind === 'unreachable' ? TriangleAlert : FolderOpen;
@@ -262,7 +269,7 @@ export function EmptyState({
       <div className="pp-illus" aria-hidden="true">
         <Icon className="pp-ico pp-ico-24" />
       </div>
-      <h3>{t(`empty.${kind}.title`)}</h3>
+      <h3>{t(`empty.${kind}.title`, { klant: customer ?? '' })}</h3>
       <p>{t(`empty.${kind}.body`)}</p>
       {action}
     </div>

@@ -1,3 +1,290 @@
+# Changelog 2.13
+
+**Two screens gave a column its max-content and left the rest to starve, and in both the starved
+part was the thing the screen is for.** That is the app's own sentence and it is the round. The
+owner said two things in four days of use — *"instellingen is echt walgelijk, dit heeft een
+redesign nodig"* and *"dit geeft nog steeds een raar beeld in uitlijning"* — and they are one fault
+in two places. Instellingen does it with sections: `align-items: start` in one grid, so a 1580px
+Printers card put **1402px of nothing** beside a 194px Algemeen, in a layout that also made **three**
+columns where 2.0's own prose says never three. AssetListItem does it with a row's three bands: the
+controls reserved **609px** at max-content for a single-line shape they never draw, because they
+wrap, while the file name was clipped to its **240px** floor to pay for it — and `align-items:
+center` floated a 20px type icon **44px** below the file name it belongs to. Both are fixed by the
+same move: **the part whose size is the owner's data stops sharing a track with the part that has to
+be read.** Three smaller gaps are decided with them, one of them the rule behind three separate
+patches. Version 2.12 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-101 | Instellingen: three columns against its own prose, and one grid row shared by a 194px card and a 1580px one | **Reopened, because 2.0's answer was wrong about the row.** Three columns are now impossible **by construction** — a track is `max(320px, 50% - space-2)`, at least 320px *and* at least half the row — and everything below 992px is unchanged. The row rule: a section that **lists records** takes the whole row (`Printers`, `Klanten`), the four fixed sections are **paired by what they are** (Algemeen · Spoolman / Prijzen · Bedrijfsgegevens), and the two lists sit last, longest last. The betaallink help line moves to the section, **once**. `column-count`, two app-filled column stacks and `align-items: stretch` are all **rejected** below. 2.0.1's four Betaallink strings are keyed at last | **resolved** |
+| GAP-111 | The file row: a 20px icon 44px below its name, a controls band that reserves 609px and then wraps, and nothing lining up between rows | **Reopened; the 240px name floor stays and the fight it refereed is removed.** `.pp-asset` is `align-items: start`; the row's first cell is named **`.lead`** and is one line tall, so the icon sits on the first line (and `.pp-reason` aligns its icon to the first line too). An `.acts` that carries **value controls** takes **`.pp-asset.band`**: a line of its own under the name, left-aligned — so the name gets the row's full width and the band gets 738px for its 609px. Rows agree because the band is ordered **count · toggle · spool trigger · `.end`**: at most one control's width is data and it is the last one | **resolved** |
+| GAP-146 | A panel inside `.pp-lift` paints under a later sibling; three components have taken the same placeholder one at a time | **The general rule, and it is the portal, not the z-index.** A window-placed panel is rendered as a child of the **nearest open `<dialog>`, else `<body>`** — never inside its trigger's wrapper (`README.md` *Floating panels* rule 9). `.pp-lift` keeps its `z-index` and joins the list of things that confine a panel. **Dropping `.pp-lift`'s z-index is rejected** below, and so is portalling to the body (measured: 0 of 11 menus clear). The cost is stated: Tab order cannot carry a portalled panel, so an `.at` panel is focus-managed. The three placeholders are now the specified behaviour and their markers can go | **resolved** |
+| GAP-147 | A modal says Esc closes it and nothing about clicking outside | **By kind, not by state.** A dialog that holds nothing the viewer has typed closes on a backdrop click; one with a form does not; a **ConfirmDialog never does**, destructive or not. A dialog that refuses does nothing visible. "Close it while the form is untouched" is **rejected**: a dialog that sometimes closes teaches nothing. What the app built matches, so the marker can go | **resolved** |
+| GAP-153 | `--pp-tap` and `--pp-control-h` are 36px inside a `.pp-device.phone` frame, where the app draws 44px | **The token twin you measured, carried.** `.pp-device.phone` sets both tokens to 44px, and the 16px input font gets its twin as well; `.pp-device.phone .pp-btn-sm` stops writing 44px as a literal and reads `--pp-tap`. `.pp-dialog.sheet` and `.pp-pop.at` stay untwinned **and always will be** — both are `position: fixed` against the window, and a 360px container is not a window | **resolved** |
+| GAP-160 | `.pp-line > .pp-badge` does not reach Openstaand's badges; the band is right by auto-placement | **Name the wrapper, as you proposed.** New class **`.pp-badges`**, placed by the same declaration as `.pp-badge` in the phone rule and in its `.pp-device.phone` twin. One attribute changes on one screen and nothing moves on screen — the point is that the layout stops being an accident. **`:has()` is rejected**: it needs no markup and hides the dependency, which is the thing being reported | **resolved** |
+| GAP-161 | May a *state* use `pp-hintchip`, and does the 200px trigger still hold? | **(a) Yes — the chip's definition was too narrow, not the use.** A `pp-hintchip` qualifies the value it sits on: where it came from, **or whether it is still current**. Bounds written down: never something that needs doing, never something that changes money, never the only carrier, and it travels to the trigger with the value. **(b) The 200px floor holds and nothing is capped** — it is a floor, the widest trigger in this library is 216px, and the band of GAP-111 removes the pressure that would have forced a cap. `spool.remaining` gets a zero arm: an empty spool reads **"leeg"**, not "0 g over". The reported ellipsis on a trigger is **not** produced by anything in `bundle.css`; measure where it comes from | **resolved** |
+| GAP-162 | A klant with an empty folder renders "0 prints" and offers acts with no object | **The count says the word and the acts go.** `customers.printCount` gains `=0 {Nog geen prints}` — one key keeps the fact. No "Factuur", no "Factuur maken", **and no "Klant verwijderen"**: delete hides a klant *and its prints*, and with no prints the only object left is the **folder**, which the portal reads and never writes (rule 7). With both items gone the "⋯" is not rendered. **Rejected:** a `pp-hintchip` "nog geen prints" and sorting empty klanten last. The tile still filters, and the filter lands on `empty.customerNoPrints` | **resolved** |
+
+## New and changed
+
+- **Tokens:** none. `tokens.json` `version` is **2.13**. No token added, renamed, changed or
+  removed. `--pp-tap` and `--pp-control-h` are unchanged; 2.13 only makes a preview frame read the
+  values the phone query already sets.
+- **New classes** `.pp-badges`, `.pp-setrow.cust`, `.pp-asset.band`, `.pp-asset > .lead`, `.pp-asset .acts > .end`.
+  `.pp-badges` is a line's second band when it carries more than one badge; `.pp-setrow.cust` is a
+  klant's row in Instellingen (name and toggle on one line, the Betaallink field across the row
+  beneath); `.pp-asset.band` is a file row whose `.acts` carries value controls; `.lead` is the
+  row's first cell (type icon or plate thumbnail); `.acts > .end` holds the trailing icon buttons,
+  pinned to the row's right edge.
+- **Changed classes**, all in `components/bundle.css`: `.pp-settings`, `.pp-asset`, `.pp-reason`, `.pp-line > .pp-badge`, `.pp-device.phone`, `.pp-device.phone .pp-input`, `.pp-device.phone .pp-select`, `.pp-device.phone .pp-btn-sm`.
+  `.pp-settings` gets the track function that cannot fit a third column; `.pp-asset` takes
+  `align-items: start`; `.pp-reason` takes `align-items: flex-start`; the `.pp-line > .pp-badge`
+  phone rule and its `.pp-device.phone` twin now also name `.pp-line > .pp-badges`;
+  `.pp-device.phone` sets `--pp-tap` and `--pp-control-h` to 44px; the input and select twins take
+  the 16px phone font; `.pp-device.phone .pp-btn-sm` reads `var(--pp-tap)` instead of the literal
+  44px. **Nine selectors.** Nothing is removed and no existing declaration is deleted.
+- **Copy** `settings.payLink`, `settings.payLink.help`, `settings.payLink.added`, `settings.payLink.noIban`, `spool.remaining`, `spool.archived`, `spool.archived.title`, `empty.customerNoPrints.title`, `empty.customerNoPrints.body`, `customers.printCount`.
+  The first nine are **new**, all in `copy-deck.md` under *Added in 2.13*; `customers.printCount` is
+  **changed** (same key, same call sites, a `=0 {Nog geen prints}` arm).
+- **Components changed:** ScreenSettings (README, preview), AssetListItem (README, preview),
+  SpoolPicker (README, preview), CustomerCard (README, preview), OutstandingGroup (README,
+  preview), Popover (README), OverflowMenu (README), Dialog (README).
+- **Screens changed:** Instellingen — section order is now Algemeen · Spoolman / Prijzen ·
+  Bedrijfsgegevens / Printers (span-2) / Klanten (span-2), Klanten draws the Betaallink field and
+  the help line once, and the klant rows use `.pp-setrow.cust`.
+- **Pages changed:** `README.md` (*Floating panels* rule 9, *Three rules this round wrote down
+  (2.13)*, *Versie 2.13*), `changelog.md`, `copy-deck.md`, `do-dont.md`, `contrast.md`,
+  `tokens.json`.
+- **Contrast report:** **one new ground pair**, in `contrast.md` *Added in 2.13*: the chip's dashed
+  `border-strong` edge inside a picker option, over `primary-tint-soft` and `primary-tint` — 3.83
+  and 3.49 light, 3.31 and **2.95** dark. The one value under 3:1 is recorded rather than rounded
+  up and nothing is changed for it; the same edge is 3.32 against the chip's own `surface-2`, which
+  is the contour that makes it a chip, and the chip's text is `muted` on `surface-2` (5.18 / 6.06).
+  No information lives in that hairline.
+- **Breaking changes: none.** Five markup obligations are added and nothing is withdrawn: `.lead`
+  on a file row's first cell; `band` on the file rows of an order; the band's children in the order
+  *count, toggle, spool trigger,* then `<span class="end">` around the icon buttons; `.pp-badges`
+  instead of `span.pp-row.pp-gap-1` on an Openstaand line that carries two badges; and
+  `.pp-setrow.cust` plus one help line moved in Instellingen's Klanten section. Every one is an
+  attribute or an order, not a rename.
+- **What this costs in page height, which the owner is shown and decides:** an order's file rows
+  gain a control line (about **44px**) at container widths where the band used to fit beside the
+  name — and *lose* height at the measured 794px, where the band wraps to two lines today.
+  Instellingen should get **shorter**, because Klanten at 532px and at 1080px is not the 2018px it
+  is at 349px and twelve help lines leave the page. Both are measurements I do not have; see *What
+  I need measured*.
+
+## GAP-101: the column count was the smaller half
+
+2.0 wrote *"One column up to 800px of content, two above it, never three — a settings field is read,
+not scanned"* and shipped `repeat(auto-fit, minmax(320px, 1fr))` capped at 1080px. Three tracks of
+320 with two 16px gaps is 992, which fits under 1080, so `auto-fit` made three. **The prose and the
+CSS disagreed for thirteen versions and the CSS won every time.** That is the part I am least proud
+of: a sentence in a README is not a rule, it is a hope. The fix is a track that cannot be a third of
+a row — `max(320px, 50% - var(--space-2))` — and below 992px every width behaves exactly as it did.
+
+**The hole was the real complaint, and three answers were available.**
+
+- **`column-count: 2`, rejected.** It flows sections independently, which is what the app asked
+  for, and it costs two things: the reading order becomes down-then-across (a settings page has an
+  order, and ours is grouped by meaning), and the browser balances the columns, so where a section
+  lands depends on how many printers the owner has today. A page whose structure moves with its
+  data is the fault one level up.
+- **Two explicit `1fr` stacks the app fills, rejected** for the second of those reasons alone: the
+  app would have to decide the assignment, and the only honest way to decide it is by height.
+- **`align-items: stretch`, rejected.** It makes the hole disappear by inflating a 194px card to
+  1580px of empty `surface`. The emptiness was never the problem; a card of air is worse than air.
+
+**Taken: the long sections stop sharing a row.** `span-2` was written in 2.0 as a permission ("any
+section may take `span-2` when its content needs the width") and is now a **rule with a test**: a
+section that draws **one card or row per thing the owner has** takes the whole row. Printers and
+Klanten do; the other four hold a fixed set of fields. Prijzen's Materiaalprijzen table is the near
+case and stays paired — a studio has a handful of filament types where Klanten has one row per
+customer, for ever. And the four fixed sections are **paired by what they are**, which is also how
+their heights pair: Algemeen with Spoolman (the system itself), Prijzen with Bedrijfsgegevens (the
+studio). At the heights you measured, the two holes fall from 1402px and 1146px to roughly 50px and
+170px.
+
+**The betaallink help moves, and the rule behind it is small and general: a label belongs to its
+control, an explanation belongs to the section.** Twelve copies of *"Een betaallink bevat vaak een
+vast bedrag en een vervaldatum…"* are not twelve facts; they are one fact and eleven obstacles
+between the owner and the next klant. The field's own label stays per klant, and so do
+`settings.payLink.added` and `settings.payLink.noIban`, because each of those is about that klant.
+
+**And a failure of mine that this round exposes.** ScreenSettings 2.0.1 specified the Betaallink in
+prose, gave it four strings, and put **none of them in `copy-deck.md` and none of them in the
+preview**. The app built the field from my prose — which is precisely what 2.12's rule was written
+against (*a string the deck does not carry is a string nobody proofreads*), and I wrote that rule
+for the app. The four keys are in the deck now and the field is drawn in the preview.
+
+## GAP-111: the slot that had no name, and a band that lied about its width
+
+Three faults, one cause, and the cause is that the row was described by two of its three cells.
+
+**1. `.body` and `.acts` were named; the first cell was not.** No class means no rule, and
+`align-items: center` centred a 20px glyph against a block 171px tall: the icon's middle at y=946
+against the name's at y=902. The row is `align-items: start` now and the cell is `.lead`, a box one
+`--leading-base` tall with its content centred *inside the box* — so a 20px icon sits on the first
+line and a 40px plate thumbnail still centres on itself, with no magic number and no per-row
+exception. `.pp-reason` gets `align-items: flex-start` for the same reason, which is where the
+duplicate warning's triangle now sits: on the first of its three lines, not beside the middle one.
+
+**2. The controls reserved the width of a layout they never drew.** `minmax(0, auto)` lets a track
+take max-content, and `.acts` is `flex-wrap: wrap`: at the measured container of 794px the band
+*insisted on* 609px and then wrapped to two lines anyway, while the name column sat on its 240px
+floor. So the row paid 609px for a single-line shape and did not get one. **`.acts` has two forms
+and the row says which**, because CSS cannot see what a band holds: icon buttons only (the print's
+"Bestanden" card) keep the third column, and value controls (an order's "In deze bestelling") take
+`.pp-asset.band` — a line of its own under the name block. At 794 that is a name block of about
+738px and a band of 738px holding 609px **on one line**.
+
+**3. Rows disagreed because the band was right-aligned.** Only the right edge was fixed, so "Aantal
+keer geprint" landed at a different x in every row as soon as two spool names differed in length —
+invisible in a library where they happen to match, which is why this needed the owner's screenshot.
+The band's order is now **count · exclude toggle · spool trigger · `.end`**, and the general rule is
+the one worth keeping: **a band lines up across rows when at most one control's width is data, and
+it is the last one.** The first two carry fixed words, so they start at one x; the trigger starts at
+one x and only its end moves; `.end` ends at one x. **Fixed widths for every control are rejected**
+— the only data-width control is the spool trigger, and pinning it would mean truncating spool names
+so that a toggle could line up. The cheaper rule is an ordering rule.
+
+**Slot rows are deliberately untouched.** `.pp-slot` pushes its trigger to the row's right edge, so
+slot triggers already end at one x, and nothing in a slot row has been measured as misaligned. One
+rule per measured fault.
+
+## GAP-146: a portal, not a z-index
+
+The app's own account is the best part of this gap: *"A fixed box escapes clipping, not its
+ancestors' stacking contexts — and `.pp-lift` is `position: relative; z-index: var(--z-raised)`, so
+it traps a panel exactly as `.pp-anchor` does."* That sentence is now rule 9 and the three patches
+become one specification.
+
+**Dropping `z-index` from `.pp-lift` is the other available answer and I am rejecting it.** It does
+work — with no stacking context the panel's `z-popover` competes globally — and it is one line
+against a portal in three components. Two reasons:
+
+1. **That z-index is what `.pp-lift` is for.** It puts a trigger above a stretched card or row link
+   (`.pp-cust-name::after`, inset 0). Without it, whether the trigger is above the hit area depends
+   on the DOM order of the trigger and the link, which differs per component and fails **silently**:
+   the control still looks right and a press filters the dashboard instead. That is a worse bug than
+   the one being fixed, and harder to see.
+2. **It fixes only the wrapper we own.** A card with `overflow: hidden`, a `transform`, a `filter`
+   or a `mask` above the trigger puts the panel back under or inside something, and the system has
+   already met all four. A panel's placement is the panel's problem — the rule taken in 2.2 for the
+   window and in 2.3 for clipping, extended once more.
+
+**Portalling to the body is rejected by measurement, not by taste:** a modal `<dialog>` paints in
+the top layer, so a panel outside it lands beneath the entire modal — 0 of 11 menus clear, against
+11 of 11 for the nearest open `<dialog>`. The rule names the dialog because the grid of 575 points
+per menu named it.
+
+**The cost, said plainly:** a portalled panel is not next to its trigger in the DOM, so Tab order
+cannot carry it, and Popover's old sentence ("put the panel right after its trigger") is impossible
+in the `.at` form. An `.at` panel is therefore **focus-managed**: focus moves in on open and back on
+close, Esc closes, focus leaving closes, and `aria-controls` + `aria-expanded` tie the two together.
+OverflowMenu already worked this way; now every `.at` panel must.
+
+## GAP-161: what a chip is for, now that it carries a state
+
+The honest version of (a) is that the chip's **definition** was too narrow, not its use. I called it
+provenance because its first three jobs were provenance. What it has always been is *quiet words
+attached to a value, with no ink, no icon and nothing to do* — and "archief" is exactly that. The
+boundary is what makes this safe to generalise: a chip may not carry **something that needs doing**
+(a `warning` badge with a reason line), may not carry **something that changes money** (a value
+belongs in a cell), is **never the only carrier** (the word is real text, the archived spools sort
+last, the search finds them), and **travels with the value into the trigger**, as "van de print"
+does. What is in force is shown with its qualification attached, or the row is lying by omission.
+
+**"0 g over" → "leeg".** The owner noticed, and the deck has had the rule since 2.11: where zero
+means a state rather than a measurement, say the word. Dutch sends 0 to `other`, so the arm is
+explicit.
+
+**(b) 200px holds, and nothing is capped.** `pp-minw-200` is a floor; a trigger grows with its
+content and the widest in this library measured 216px. The longer option line lives in the 320px
+panel and never reaches the trigger, and GAP-111's band removes the only thing that was squeezing
+it. **On the clipped "Creality Skin Hype…": nothing in `bundle.css` truncates a trigger** —
+`.pp-btn` is `white-space: nowrap` with no `overflow` and no `text-overflow`. Measure which element
+clips (`scrollWidth` against `clientWidth`, and which ancestor carries the `overflow`). If it is an
+app-side cap, remove it; if it is mine, log it and I will decide it with the markup in front of me.
+If a trigger ever must truncate, the cut is in the **middle** — brand and material at the front,
+colour at the end — but nothing in this export truncates one.
+
+## GAP-162: an act with no object, and the one that looked harmless
+
+"0 prints" is the zero arm, and that half is easy. The interesting half is **"Klant verwijderen"**,
+which the app called harmless because it deletes zero prints. It is not offered, and the reason is
+not tidiness:
+
+- Delete in this app hides a klant **and its prints** and offers Herstellen. With no prints there is
+  nothing in the portal to hide.
+- The only object left is the **folder**, and the portal reads `/prints` and writes to it never
+  (`README.md` rule 7 — the tree is Nextcloud's). A portal that hid the klant in its own database
+  anyway would disagree with the disk at the next index, and GAP-162 exists precisely because the
+  disk is the record.
+- So the answer to "how do I get rid of this klant?" is *remove the folder*, which your own
+  measurement already shows working: 12 klanten back to 11, print totals unmoved.
+
+With both items gone the menu would be empty, so the "⋯" is not rendered: an overflow menu with
+nothing in it is itself a control with no object. **Marking or sorting an empty klant is rejected.**
+A `pp-hintchip` "nog geen prints" would say in a second device what the count already says (and the
+chip qualifies a *value*, where here the count *is* the statement); sorting empty klanten last would
+hide the klant the owner just made, which is the one he is looking for.
+
+## What I rejected, in one list
+
+- `column-count` and app-filled column stacks for Instellingen; `align-items: stretch` (GAP-101).
+- Fixed widths for every control in a file row's band, which would truncate spool names so a toggle
+  could line up (GAP-111).
+- Dropping `z-index` from `.pp-lift`; portalling a panel to the body (GAP-146).
+- A backdrop-click rule keyed on a form's state rather than the dialog's kind (GAP-147).
+- `:has()` instead of naming the badge wrapper (GAP-160).
+- A `pp-hintchip` "nog geen prints" on an empty klant tile, and sorting empty klanten apart
+  (GAP-162).
+
+## What I need measured
+
+None of these blocks anything in this export; each decides whether the next round has work.
+
+1. **Instellingen at 1400px after the import:** the computed number of columns (it must be 2 — the
+   track function uses `max()` with a percentage, which I cannot render), the page height against
+   today's 4040px, and the two remaining holes.
+2. **A print detail's height at 1400px and 2000px, before and after the band**, per list: the order
+   list should get shorter at container 794 and about 44px per row taller at 961.
+3. **Where the spool trigger's ellipsis comes from** (GAP-161): `scrollWidth`/`clientWidth` on the
+   trigger and the ancestor that carries the `overflow`.
+4. **The phone frames after the token twin** (GAP-153): the frames get taller and `.pp-btn-icon`,
+   `.pp-opt` and the palette buttons get wider. If a frame now clips or scrolls sideways, that is a
+   preview to fix, not a reason to withdraw the twin.
+
+## Not decided this round, and why
+
+**GAP-158 and GAP-159 wait on the owner** and I have not pre-empted him; **GAP-129, GAP-144 and
+GAP-145** need a measurement or a decision that is not mine; **GAP-152** is complete except for the
+role User, which is GAP-158; **GAP-157** ("Aanvraag toevoegen" has no anatomy) is mine and is not in
+this export — it is a screen, not a paragraph, and I would rather give it a round than a corner of
+one. It stays open and the marker stays.
+
+## Where I was unsure
+
+- **The `.pp-settings` track function.** `repeat(auto-fit, minmax(max(320px, 50% - var(--space-2)),
+  1fr))` is valid CSS and the arithmetic is exact (two tracks fill the row to the pixel), but I
+  render nothing: if a browser treats the percentage differently than I expect, the grid falls back
+  to today's behaviour — three columns — which is a graceful failure but not the fix. **Check the
+  computed column count.**
+- **Whether `.pp-asset.band` should have been decided by content rather than by a class.** It
+  cannot be: CSS cannot see what a band holds, and the alternative (`:has(.pp-qty, .pp-opt,
+  .pp-spoolbtn)`) hides the dependency exactly as `:has()` would in GAP-160, where I rejected it.
+  A class it is, and the app has to set it on the right list.
+- **The 44px cost per order row at wide containers.** I believe the trade is right — a readable file
+  name and rows that line up, against one line of height on a page that is already long and whose
+  file list is the last block. If the owner looks at it and disagrees, the band is one class and can
+  be made conditional on the context rather than universal.
+- **GAP-147's ConfirmDialog arm.** Never closing a confirmation on a backdrop click is the safe
+  reading, and it is also the one that will annoy somebody who meant to dismiss a question. Esc and
+  Annuleren are both there; if the owner finds it irritating in use, say so and I will look at it
+  again rather than defend it.
+"""
+
 # Changelog 2.12
 
 Three gaps, all on the phone, all in `bundle.css` and one markup slot — and the round's own lesson

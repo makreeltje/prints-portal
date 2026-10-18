@@ -62,3 +62,21 @@ difference between the two screens' rows is now one of content, not of layout.
 **Nothing here changes Openstaand's layout.** Its `.amt` was always money, its eleven group
 summaries were measured clear at 360px, and the two CSS changes above only narrow a pill and wrap
 two buttons.
+
+**2.13.** (2026-10-18) **A line's second band is one element, and it has a name (GAP-160,
+resolved).** 2.11's phone rule places the age badge with a **child** selector,
+`.pp-line > .pp-badge`. On Wachtrij the badge is a direct child and the rule applies; here it is
+not — since 1.9 it shares a wrapper with the *Gearchiveerd* StatusBadge, because a line can carry
+both. The app measured all 40 lines at 360px: every wrapper computes `grid-column-start: auto`,
+`justify-self: auto` — the rule never reached it — and the band is right anyway, by grid
+**auto-placement**. Correct, and resting on nothing that is written down.
+
+**The wrapper is named: `.pp-badges`**, and the phone rule places `.pp-line > .pp-badge` and
+`.pp-line > .pp-badges` in the same declaration, in the media query and in the `.pp-device.phone`
+twin. One attribute changes on the one screen that has the wrapper (`span.pp-row.pp-gap-1` becomes
+`span.pp-badges`); nothing moves on screen, which is the point — the layout stops being an accident.
+**`:has()` is rejected**: it would need no markup and would hide the dependency again, and hiding
+the dependency is the thing being reported. A line's second band is **one** element: a badge, or a
+`.pp-badges` group of them.
+
+**Both themes, no new token, no new colour pair** — `.pp-badges` is a flex row with a gap.

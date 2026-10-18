@@ -401,7 +401,7 @@ function CreateDialog({
             <span>
               {t('shareLinks.noIban')}{' '}
               {choices.find((c) => c.folder === customer)?.payLink != null && (
-                <>{t('shareLinks.hasPayLink')} </>
+                <>{t('settings.payLink.noIban')} </>
               )}
               <Link className="pp-link" to="/instellingen">
                 {t('shareLinks.noIban.link')}

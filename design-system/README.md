@@ -76,6 +76,8 @@ Everything that floats beside a trigger — Popover, SpoolPicker, TagEditor, Ove
 7. **A window-placed panel resets the edges it does not use, and never sits inside a `.pp-anchor` (2.3).** An anchor is an offset parent; a window-placed panel has no offset parent. The one that leaked cost a real bug: `bottom` survived from the anchored rule into `.pp-tip.at`, and a fixed box with both edges set is sized between them — the bubble collapsed to 8px. If a trigger needs the anchor's *other* quiet effect, sitting above a stretched card or row link, use **`.pp-lift`**.
 8. **Nothing above a trigger carries a `transform`, `filter`, `backdrop-filter` or `mask` (2.4 adds the mask).** Each of the first three makes that element the containing block of a fixed box, which re-clips the panel the `.at` form exists to free; a mask creates a stacking context, so a fixed panel painted inside it is masked along with everything else — `.pp-models.is-overflow` fades its edge with a `mask-image`, and a bubble on a model button would fade with it. So the panel is a **sibling** of the masked element, never a child. (`.pp-art`'s filter is on the picture itself, which never has a panel inside it.)
 
+9. **A window-placed panel leaves its wrapper: it is rendered as a child of the nearest open `<dialog>`, else of `<body>` (2.13).** `.at` escapes **clipping**; it does not escape a **stacking context**, and `.pp-lift` is one by construction (`position: relative; z-index: var(--z-raised)`). Three components found that out one at a time — the klant tile's menu (2.7), the tooltip, and the spool picker, where two later triggers of 200 x 32 painted over an open panel and it lost every probe. Measured over a grid of 575 points per menu: anchored **1 of 11** clear, portalled to the body **0 of 11** (a modal `<dialog>` paints in the top layer, so a panel outside it lands beneath the whole modal), portalled to the nearest open `<dialog>` **11 of 11**. So rule 8's list of things that confine a panel now reads: a clipping or scrolling `overflow`, a `transform`, a `filter`, a `backdrop-filter`, a `mask` — **and any stacking context, `.pp-lift` included**. Dropping `.pp-lift`'s `z-index` instead is rejected: that z-index is what `.pp-lift` is *for* (a trigger above a stretched card or row link), and without it the trigger's place in the stack depends on DOM order, which differs per component and fails silently. The cost is that Tab order cannot carry a portalled panel, so an `.at` panel is **focus-managed**: focus in on open, back to the trigger on close, Esc closes, focus leaving closes, `aria-controls` and `aria-expanded` tie the two together. Details: Popover, GAP-146.
+
 A tooltip appears **at once** on hover and on focus — no delay. Details and the name-or-description rule: Tooltip's README.
 
 ## Three rules this round wrote down (2.3)
@@ -120,6 +122,36 @@ Wherever a screen shows an asserted stage it shows **when it was asserted**, in 
 **7. Where another system owns a location, the design treats it as read-only in principle (added 2.9).** `/prints` is mounted read-only, and that had been described as a safety property — the app cannot damage 2.6 GB of real files. The real reason is **ownership**: the tree is a **Nextcloud-synced folder**, Nextcloud indexes it, and anything written behind its back is invisible to the person it was written for. A safety property can be weighed against a benefit; ownership cannot, because writing there does not produce a worse outcome, it produces **no** outcome. So **no control, empty state or help line may tell the operator that the app will put a file where they will look for it** — no "create folder", no "save to the prints folder", no "export here", no empty state offering to make a home for their files. The portal reads that tree and writes to it never. The tempting places are the ones a designer reaches for first, which is why this is a rule and not a note. Generalise it: a design that assumes a mount could be made writable later has assumed the wrong thing about who the location belongs to. Details: `changelog.md` 2.9, GAP-128 and GAP-137.
 
 **6. A figure out of a database with nothing in it is not a measurement.** This project has decided things on real numbers since 2.3, and that only works while the numbers are labelled. This library yields **two classes** and they behave differently: figures derived from **the files themselves** — file names, the 3MF/STL split, the thumbnails, 84 prints, 215 slots, the 2 prints with no model files — are real, and every rule from 2.3 to 2.7 rests on them; figures derived from **anything a person typed** — prices, payments, spool assignments, invoices, tags, order numbers — are zero in the local build and mean nothing about the library. The failure is not noticing the difference: a 2.8 measurement request reasoned from "84 orders, all number 1" towards retiring OrderSection's multi-order apparatus, and repeat orders turned out to be a thing the owner does regularly. Before reasoning from what a dataset lacks, establish what it contains; and ask for a production figure from the person who has production. **A third provenance matters just as much: a figure counted by a re-implementation of a rule is "as specified", never "as rendered".** The label-rule counts in *Typography* come from a script that re-implements this system's split, not from the shipped function, and the two disagreed three times on the residue — which is how the missing ceiling was found. They may be quoted as what the rule does and not as what the screen shows. **And never take a sum from a subset of the buckets:** `55 - 36 = 19` looked like the separated count and was wrong, because a third bucket sat inside it. Details: `changelog.md` 2.8, the amendment at the top.
+
+## Three rules this round wrote down (2.13)
+
+**A column takes its max-content and the rest starves — in a page's sections as in a row's bands.**
+Instellingen and AssetListItem had the same fault twice: one grid cell sized to the longest thing it
+could hold, and the thing the screen is *for* paid for it. A settings page with `align-items: start`
+put 1402px of nothing beside a 194px card because a 1580px card shared its row; a file row reserved
+609px for a controls layout it never drew, because the controls wrap, and clipped the file name to
+its 240px floor to pay for it. The answer in both places is the same shape: **the part whose size is
+the owner's data stops sharing a track with the part that has to be read.** A section that lists
+records takes the whole row (`span-2`); a band of value controls takes a line of its own under the
+name. The alternative — balancing heights, or stretching the short card — treats the symptom and
+makes the layout depend on today's data.
+
+**Rows line up when at most one control's width is data, and it is the last one.** A right-aligned
+band fixes only its right edge, so every control in it moves when a spool's name is longer; in a
+library where the names happen to be the same length, nothing looks wrong until a customer's
+screenshot arrives. Put the controls whose words are fixed first, the one that grows with data
+after them, and the icon buttons in an `.end` group pinned to the row's right edge: then the first
+two start at one x, the third starts at one x, and the last ends at one x — with no fixed widths
+and nothing truncated. Details: AssetListItem, GAP-111.
+
+**A hint chip qualifies a value: where it came from, or whether it is still current.** `pp-hintchip`
+was described as *provenance* because its first three uses were provenance ("uit de map", "slicer",
+"van de print"). "archief" on a spool is a **state**, and it belongs on the same device, because
+what the chip actually is — quiet words attached to a value, with no ink, no icon and nothing to do
+— fits it exactly. The boundary is what matters: a chip **may not** carry something that needs doing
+(that is a `warning` badge with a reason line), it **may not** carry something that changes money (a
+value is a value, in a cell of its own), it is **never** the only carrier of the fact, and when the
+value moves into a trigger the chip moves with it. Details: SpoolPicker, GAP-161.
 
 ## Components
 
@@ -289,3 +321,31 @@ never gave a key, is **added** with its plurals, because a string the deck does 
 string nobody proofreads; and `share.expiresIn` is **removed**, measured dead (GAP-154). One new
 copy key, one changed, one row removed, no token added, renamed or removed, three changed CSS
 declarations and no new class. Details: `changelog.md`.
+
+## Versie 2.13 (2026-10-18)
+
+**Two screens that gave a column its max-content, and the owner's two words for it.** Instellingen
+was *"walgelijk"*: three columns where 2.0's own prose says never three — its `auto-fit` made three
+from 992px up and nobody had read the CSS against the sentence — and, worse, one grid row shared by
+a 194px card and a 1580px one, so the page carried **1402px** of nothing beside Algemeen. A third
+column is now impossible by construction (a track is at least 320px **and** at least half the row),
+the two sections that list records take the whole row, and the four fixed ones are paired by what
+they are. The betaallink's explanation is written once under the heading instead of twelve times
+under twelve klanten — **a label belongs to its control, an explanation belongs to the section** —
+and the four strings 2.0.1 specified and never keyed are in the deck at last. The file row gave
+*"een raar beeld in uitlijning"*: `align-items: center` floated a 20px type icon **44px** below its
+own file name, the slot that was misaligned turned out to be the only one with no class, and the
+controls band reserved 609px for a single-line shape it never drew while the name was clipped to
+240px. The band now takes a line of its own when it carries value controls, the name gets the row's
+full width, and rows line up because only one control's width is data and it is the last one. Three
+smaller things: a window-placed panel **leaves its wrapper** and is rendered in the nearest open
+`<dialog>`, which is the one sentence behind three patches (`.pp-lift` is a stacking context, and
+`.at` escapes clipping, not stacking); `pp-hintchip` may carry a state as well as a provenance, so
+an archived spool reads "archief" and an empty one reads "leeg" rather than "0 g over"; and a klant
+with no prints reads **"Nog geen prints"** and is offered neither Factuur nor Klant verwijderen —
+the folder is where that klant was made and where it is unmade, because the portal reads `/prints`
+and writes to it never. A backdrop click now has a rule by dialog kind, `.pp-badges` names the
+wrapper that a phone rule was missing, and the phone frames finally get the 44px tap floor as a
+token twin. One new class (`.pp-badges`), two new row modifiers (`.pp-asset.band`, `.pp-setrow.cust`) and two
+named slots (`.lead`, `.acts > .end`); no token added, renamed or removed.
+Details: `changelog.md`.

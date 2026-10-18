@@ -1171,7 +1171,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
 
-## GAP-101 [resolved in v2.0.1] Instellingen and Tags leave most of their width empty
+## GAP-101 [resolved in v2.0.1, reopened, resolved again in v2.13] Instellingen and Tags leave most of their width empty
 - **Type:** improvement idea
 - **Found while:** the owner's walkthrough of v1.9 (2026-10-07)
 - **Where needed:** ScreenSettings and ScreenTags
@@ -1181,6 +1181,13 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** Nothing.
 - **Temporary placeholder approved:** no
 - **Design system version:** 1.9
+
+**Reopened by the design system in 2.13, under this id rather than a new one, and resolved again.** 2.0.1 answered the *width* and its answer held; what it got wrong was the **row**, and the owner said so in four days of use (*"instellingen is echt walgelijk, dit heeft een redesign nodig"*). Two faults: 2.0's prose said "never three" while its own `repeat(auto-fit, minmax(320px,1fr))` made three from 992px up, and in one grid with `align-items: start` a section whose height is the owner's data reserved that height beside the short sections. 2.13 makes a track `max(320px, 50% - var(--space-2))`, so a third column cannot fit at any width, and turns `span-2` from a permission into a rule: a section that draws one card or row per thing the owner has takes the whole row. The log keeps one id for one subject rather than minting GAP-16x for the same page; the heading says so instead of pretending this was closed all along.
+
+- **Built in 2.13:** DOM order Algemeen · Spoolman / Prijzen · Bedrijfsgegevens / Printers (`span-2`) / Klanten (`span-2`); `.pp-setrow.cust` on a klant row; the betaallink explanation written once under the Klanten heading; the four `settings.payLink*` keys read from the deck for the first time, `settings.payLink.noIban` drawn at all for the first time.
+- **Measured at 1400px on the owner's library (12 klanten), 2.12's grid against 2.13's in one page:** columns **3 → 2** (`349.328px 349.328px 349.344px` → `532px 532px`, so the `max()` percentage does what the design system could not render); page height **4433px → 4029px**; Klanten **349×2411 → 1080×1675**; empty space in the grid falls from three holes of **256px, 1791px and 2267px** to two of **102px (under Spoolman) and 138px (under Prijzen)**. The design system predicted "about 50px and 170px" with Spoolman at 144px and Bedrijfsgegevens at 620px; this library draws them at 92px and 572px, so the holes land on the other member of each pair.
+- **One number does not match the design system's question.** It asked for the new height against "today's 4040px". The page measures **4029px** now, 11px less — but 4040 was last round's figure and this round's own before-arm measures **4433px** on the same data, because the twelve betaallink help lines cost about 400px at a 349px column width. Against the page as it actually stood this morning the saving is **404px**; against the recorded 4040 it is 11px. Both numbers are in `docs/design-feedback/implementation.md`; the recorded one is the one to distrust.
+- **Design system version:** 2.13
 
 ## GAP-102 [resolved in v2.0] API-docs still reads as a box inside a box
 - **Type:** suspected design bug
@@ -1282,7 +1289,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-08). `app-tip` places the bubble from tokens only, and it appears at once. Marked `ds-gap: GAP-110`.
 - **Design system version:** 2.1
 
-## GAP-111 [resolved in v2.2] The file row's name column collapses to 75px and its badge overflows onto the controls
+## GAP-111 [resolved in v2.2, reopened, resolved again in v2.13] The file row's name column collapses to 75px and its badge overflows onto the controls
 - **Type:** suspected design bug
 - **Found while:** the owner's third walkthrough, with screenshots of three different prints (2026-10-08)
 - **Where needed:** AssetListItem, `.pp-asset`
@@ -1297,6 +1304,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing is being built on it; the rows render, and at most widths they are correct.
 - **Temporary placeholder approved:** yes (2026-10-08, the owner sees it daily). `grid-template-columns: auto minmax(min-content,1fr) minmax(0,auto)` as an app override, marked `ds-gap: GAP-111`, inventing no value and needing no breakpoint — below the system's own breakpoint the controls span columns 2 to -1, so the third track collapses to zero and the narrow layout is untouched. **Letting the controls shrink was not enough on its own:** nothing forces them to while the free space still covers them, so the name track needs the `min-content` floor as well. Re-swept: no collision at any of 760, 820, 900, 920, 960, 1000, 1400, 1700 or 2000px, and the row height at the two broken widths fell from 247px to 139px.
 - **Design system version:** 2.1
+
+**Reopened by the design system in 2.13, under this id rather than a new one, and resolved again.** 2.2's `--pp-name-min` floor stays and still does its job; what it never touched is that the controls track took the max-content of a single-line layout it then wrapped out of, so the row paid 609px for a shape it never drew and clipped the name to pay. The owner's words this round were *"dit geeft nog steeds een raar beeld in uitlijning"*, and the screenshot held three faults with one cause: `align-items: center` floated a 20px type icon 44px below its own file name, the band reserved width it did not use, and nothing lined up between rows because the band was right-aligned flex.
+
+- **Built in 2.13:** `.lead` on every file row's first cell; `band` on the rows of an order's file list (plate rows included); the band ordered count · exclude toggle · spool trigger · `<span class="end">`; the icon-button-only rows (the print's own "Bestanden" card, a sliced 3MF's parent row) left in the third column, as the preview draws them.
+- **Measured at container 961px (a 2000px window) on an order of 9 files, with and without the `band` class in the same page:** the name cell `.fn` goes from **242px to 905px**, the type icon's middle sits exactly on the file name's middle line (delta **0px**, was 44px), and the list grows by **396px = 44px × 9 rows**, exactly the figure the design system predicted. On a 13-row order the same A/B shows **both arms of the prediction in one list**: ten rows whose band fitted on one line gain **+44px** each, and three rows whose band already wrapped to two lines *lose* **12px** each (139px → 127px), for +404px net.
+- **Rows agree, measured rather than argued.** Over the 9 banded rows of one order: the count starts at one x (289), the toggle at one x (492), the spool trigger at one x (692) and `.end` ends at one x (1194) — one value each, no spread.
+- **At 1400px the band changes nothing, and that contradicts the round's expectation.** The design system expected the list to get *shorter* at container 794. In this app an order's file list is **628px** wide at a 1400px window on every print measured, below the 760px container query at which a third column exists at all, so `.pp-asset.band` is inert there and the before/after page heights are identical (6170/6170, 4507/4507, 7248/7248). There was nothing to recover at that width; the cost and the gain both live at 2000px.
+- **Design system version:** 2.13
 
 ## GAP-112 [resolved in v2.2] A popover near the bottom of the window opens downwards and falls off the screen
 - **Type:** missing state
@@ -1411,7 +1426,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
   yet. Those numbers are theirs. Mine continue after them.
 -->
 
-## GAP-146 [open] One bundle.css rule makes the klant tile's menu paint under its own Factuur button
+## GAP-146 [resolved in v2.13] One bundle.css rule makes the klant tile's menu paint under its own Factuur button
 - **Type:** suspected design bug
 - **Found while:** the owner's walkthrough of the klant overview dialog (2026-10-17)
 - **Where needed:** CustomerCard, OverflowMenu on the "Alle klanten" dialog and the dashboard tiles
@@ -1433,7 +1448,15 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes (2026-10-17, the owner reported it as a bug and asked for it fixed). OverflowMenu uses `.pp-pop.at` and portals the panel into the nearest open `<dialog>`, else the body, marked `ds-gap: GAP-146`.
 - **Design system version:** 2.7
 
-## GAP-147 [open] A modal says Esc closes it and nothing about clicking outside
+**Resolved in 2.13, as the general rule and not as a third patch.** README *Floating panels* rule 9: a window-placed panel is rendered as a child of the **nearest open `<dialog>`, else `<body>`** — never inside its trigger's wrapper. `.pp-lift` keeps its `z-index` and joins rule 8's list of things that confine a panel; dropping that z-index and portalling to the body are both rejected in Popover 2.13, the second by the same 575-point grid this entry records. The cost is stated in the spec: an `.at` panel is focus-managed rather than DOM-ordered.
+
+- **The export claims the app already matched the rule in three places. It matched in two.** `frontend/src/components/Portal.tsx` targets `from.current?.closest('dialog') ?? document.body`, and OverflowMenu and SpoolPicker use it — but **Tooltip did not**: its `.pp-tip.at` was still a child of the `.pp-lift` wrapper, which is the exact stacking context the rule is about. It portals now. Its position is unchanged by construction, because `.pp-tip.at` is `position: fixed` at the trigger's measured viewport rect.
+- **Verified in the running app.** A print card's bubble: `parentElement` is `body`, `closest('.pp-lift')` and `closest('.pp-anchor')` are both null, `position: fixed`, `z-index: 40`. A klant tile's menu inside the Klantenoverzicht dialog: `parentElement` is `dialog`, `closest('dialog')` non-null, **16 of 16** sampled points inside the panel answer the panel.
+- **A measurement of mine that was wrong, and how.** My first probe called the bubble covered — `elementFromPoint` at its centre returned `a.app-card-link` — and the conclusion was an artefact: `bundle.css` line 1012 sets `:where(.pp-anchor)>.pp-tip,.pp-tip.at{pointer-events:none}`, so a bubble never answers a hit test and the probe was measuring hit order, not paint order. Re-measured by pixels: of the bubble's own rect, **75–76% is exactly `--text-strong`** (`rgb(232,236,255)` dark, `rgb(20,26,51)` light) over three bubbles in both themes, the remainder being its text. It paints on top.
+- **Markers removed:** `ds-gap: GAP-146` in `OverflowMenu.tsx` and `SpoolPicker.tsx`. `grep -rn "ds-gap" frontend/src` holds only GAP-157, GAP-158 and GAP-159.
+- **Design system version:** 2.13
+
+## GAP-147 [resolved in v2.13] A modal says Esc closes it and nothing about clicking outside
 - **Type:** missing state
 - **Found while:** the same walkthrough (2026-10-17)
 - **Where needed:** Dialog, and every dialog built on it
@@ -1451,6 +1474,12 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
   happened with 146 and 147. Each entry says what it was about and how it was
   decided; the reasoning lives in the changelog of the version named.
 -->
+
+**Resolved in 2.13, by kind and not by state.** Dialog 2.13: a dialog that holds nothing the viewer has typed closes on a backdrop click; one with a form does not; a **ConfirmDialog never does, destructive or not**; a dialog that refuses does nothing visible. "Close it while the form is untouched" is rejected — a dialog that sometimes closes teaches nothing.
+
+- **The export says "what the app built matches". It did not, in three places.** The placeholder keyed on the `alertdialog` role (`!busy && onSubmit === undefined && !alert`), and `ConfirmDialog` sets that role only when `destructive` or `alert` is passed. Three confirmations pass neither — **"Alles betaald markeren?"** (`OutstandingPage`), the bulk **"Betaald markeren"** (`BulkActionBar`) and **"Factuur definitief maken"** (`InvoiceExportDialog`) — so a backdrop click answered all three. Dialog now takes a `confirmation` prop that only ConfirmDialog sets, and `frontend/src/components/dialog.test.tsx` covers the non-destructive case that was wrong.
+- **Marker removed:** `ds-gap: GAP-147` in `Dialog.tsx` and in its test.
+- **Design system version:** 2.13
 
 ## GAP-121 [resolved in v2.8] Do the tags earn their place, now that the five production tags look like a state machine?
 - **Type:** raised by the design system (v2.8)
@@ -1524,7 +1553,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Status as published:** resolved
 - **Design system version:** 2.10
 
-## GAP-129 [open] Whether a tag set really does hold two stages at once in the real library
+## GAP-129 [resolved by the owner's answer] Whether a tag set really does hold two stages at once in the real library
 - **Type:** raised by the design system (v2.8)
 - **Found while:** the request-lifecycle rounds, 2.8
 - **Where needed:** see 2.8 in `changelog.md`
@@ -1532,6 +1561,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Decision:** My central argument in GAP-121 is mechanical and I have not seen it happen. If **no** print carries two of the four stage tags, the argument is sound but theoretical, and I want that on the record rather than implied. **Production only** — the local build has 0 tags, so this is the owner's to answer, not the implementer's
 - **Status as published:** needs your measurement
 - **Design system version:** 2.8
+- **Answered 2026-10-18, by the owner:** he does not use the tags. So no print carries two stage tags, because no print carries one — GAP-121's argument stays mechanically true and entirely theoretical, which is what 2.8 asked to have on the record rather than implied. Corroborated on the local build the same day and deliberately not offered as proof: five tags exist and all 84 prints carry none, but those names are left over from earlier local testing, and this gap says "production only". **The tag system stays in the app** — asked whether to keep it, the owner said he has not decided.
 
 ## GAP-130 [resolved in v2.8] `pp-allcust` on the wrong element in the app — and the spec that could not have told them
 - **Type:** raised by the design system (v2.8)
@@ -1715,7 +1745,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** the phone layout of a queue row. Desktop and tablet are correct, and the row is readable on a phone — the name wraps, nothing is clipped or overlapping.
 - **Resolved in 2.11 and built; it arrives with the import, since it is a `bundle.css` change.** `.pp-line` at 480px and below is three bands: `>:first-child` spans both columns, `.pp-badge` takes column 1 row 2 and `.pp-right` column 2 row 2, `.acts` spans. Re-measured in the running app at a 360px viewport, which is where the 90px was measured: the name block is now **294px** on both screens, the badge sits on its own band at 144px ("vandaag gevraagd") to 176px ("1 dag geleden gevraagd"), and neither page scrolls sideways (`scrollWidth` 360 = `clientWidth` 360). ScreenOutstanding folds the same way; its badge shares a wrapper with the archived StatusBadge, so `.pp-line > .pp-badge` does not match there and the wrapper is placed by auto-flow instead — measured into the same cell (column 1, row 2), but by the algorithm rather than by the selector.
 
-## GAP-152 [open] A source link and a note on a print: "alleen printen" against "zelf maken"
+## GAP-152 [resolved in v2.11] A source link and a note on a print: "alleen printen" against "zelf maken"
 - **Type:** improvement idea (new feature, owner's request)
 - **Found while:** reviewing ScreenQueue 2.10 with the owner after step 2 shipped
 - **Where needed:** ScreenQueue rows, ScreenPrintDetail, ScreenShare, and the "Aanvraag toevoegen" dialog
@@ -1733,8 +1763,9 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
   What the design system is asked for: how a bron renders on a queue row, on ScreenPrintDetail and on ScreenShare; how a note renders where it is allowed; what a row with neither looks like; the Dutch copy; and the empty and multi-value cases.
 - **Blocked:** nothing is built yet — this is the design request for the next feature.
 - **Specified in 2.11, not yet built, so this stays `[open]`.** 2.11 resolves the design question: two fields on every print record, two new components (PrintSource, PrintNote), four new classes and thirteen copy keys, all present in the import and checked by `scripts/check-design-export.mjs`. **Nothing of it is implemented** — no fields, no components, no `.url` reading — because the owner split this round in two and asked for the copy and the phone fix first. The heading flips to `[resolved in v2.11]` when the code exists, not when the spec does. **One measurement 2.11 asks for is still owed with it:** how many of the 15 `.url` files parse to a URL the app can show.
+- **Closed 2026-10-18:** built on every surface the spec names. Admin and Editor see and edit both fields; a queue row shows the bron on a fileless row and the note on any row; the share page shows the bron once per print and never the note; and role User now sees the bron read-only in the reduced "Deze print" card. That card was the last missing surface and is its own gap (GAP-158), because what a User's page is for is still undesigned.
 
-## GAP-153 [open] Eleven phone rules had no preview twin; four still have none
+## GAP-153 [resolved in v2.13] Eleven phone rules had no preview twin; four still have none
 - **Type:** raised by the design system (v2.11)
 - **Found while:** resolving GAP-151, which could not be seen in the frame that specified it (2.11)
 - **Where needed:** every `@media (max-width:480px)` rule in `components/bundle.css`; the phone frames of OrderSection, ScreenPrintDetail, AssetListItem, ScreenSettings, ScreenTags, ScreenQueue and ScreenOutstanding
@@ -1746,6 +1777,13 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.11
 - **Re-measured at the 2.12 import (2026-10-18), because 2.12 adds three more twins.** Rendering every published phone frame at 1400px: `.pp-btn-sm` is **44px** in all of them (the twin writes the literal), `.pp-line .acts` is `flex-wrap: wrap` and a two-action queue row stacks into two 44px lines inside the frame as it does in the app, `.pp-ogrp > summary .age` is `justify-self: start` and each badge is the width of its own words (128px to 141px, no 223px pill), and ScreenQueue's six summaries all draw an empty `.amt`. **Nothing clips in ScreenQueue's or OutstandingGroup's frames.** But the gap's own subject is unchanged and the export says so itself: measured inside a `.pp-device.phone` frame, `--pp-tap` and `--pp-control-h` are still **36px**, their desktop values, because `:root`'s media query cannot fire inside a container. So a phone frame still draws 36px icon buttons and palette buttons where the app draws 44px. 2.12 proposes twinning the two tokens for 2.13 and declines to do it blind; we agree, and the gap stays open for that.
+
+**Resolved in 2.13.** `.pp-device.phone` sets `--pp-tap` and `--pp-control-h` to 44px, the 16px input font gets its twin, and `.pp-device.phone .pp-btn-sm` stops writing 44px as a literal and reads `var(--pp-tap)`. `.pp-dialog.sheet` and `.pp-pop.at` stay untwinned and always will: both are `position: fixed` against the window, and a 360px container is not a window.
+
+- **Nothing in the app changes.** `grep -rn "pp-device" frontend/src` is empty — grepped for the identifier, not for a pattern that assumes the syntax around it — so this is preview-only, as it has been since 2.11.
+- **Measured over every published preview with a phone frame, with the two tokens at 44px and then forced back to 36px in the same page: 53 frames, 28 get taller**, the largest by **+165px** (ScreenSettings), and `.pp-btn-icon` goes **36×36 → 44×44**, `.pp-opt` **36 → 44** high, `.pp-pal button` **36×36 → 44×44** (ScreenTags). Every frame's input and select measures **16px**. **No frame scrolls sideways** — `scrollWidth` is 358 against `clientWidth` 358 in all 53.
+- **One new clip, and it is a preview to fix rather than a reason to withdraw the twin**, which is how the export itself classified this case in advance: in **ScreenSettings**'s phone frame a narrow `.pp-input` now measures `clientWidth` 62 against `scrollWidth` **64** — 2px — where it did not before. Everything else that overflows in those frames overflows identically in both arms, so the twin adds exactly that one.
+- **Design system version:** 2.13
 
 ## GAP-154 [resolved in v2.12] Three more day-count strings with no plural, and one that may be dead
 - **Type:** raised by the design system (v2.11)
@@ -1838,7 +1876,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Design system version:** 2.11
 - **The owner decided 2026-10-18:** keep three stored states and give the act its own word where it is performed. Built: the queue row gains a third action **"Uit de wachtrij halen"** which writes the same null the detail page's "Geen status" writes, marked `ds-gap: GAP-159`. No new state, no migration. The gap stays open for two things that are the design system's: a third action on a row it drew with two (which costs height on a phone, where 2.12 just made them wrap), and whether `check` is the right glyph for an act that is not a confirmation.
 
-## GAP-160 [open] `.pp-line > .pp-badge` does not match on Openstaand's lines; the band is right by accident
+## GAP-160 [resolved in v2.13] `.pp-line > .pp-badge` does not match on Openstaand's lines; the band is right by accident
 - **Type:** suspected design bug
 - **Found while:** the 2.12 import — the design system asked for this one in writing ("Log it as its own gap and I will decide it with the markup in front of me", `changelog.md` 2.12, *Where I was unsure*)
 - **Where needed:** `.pp-line > .pp-badge` at `@media (max-width:480px)` and its `.pp-device.phone` twin in `components/bundle.css`; OutstandingGroup's line anatomy; `frontend/src/finance/OutstandingPage.tsx:232`
@@ -1851,7 +1889,13 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.12
 
-## GAP-161 [open] SpoolPicker shows neither what is left on a spool nor that it is archived
+**Resolved in 2.13, as proposed: the wrapper is named.** New class `.pp-badges`, placed by the same declaration as `.pp-badge` in the phone rule and in its `.pp-device.phone` twin; `:has()` is rejected for the reason this entry gave. One attribute changed on one screen: `span.pp-row.pp-gap-1` became `span.pp-badges` in `frontend/src/finance/OutstandingPage.tsx`.
+
+- **Measured at 360px with all groups open, over all 41 lines:** every `.pp-line > .pp-badges` computes `grid-column-start: 1`, `grid-row-start: 2`, `justify-self: start` — one value, 41 times, where the same probe last round read `auto / auto / auto`. The 41 remaining `.pp-line > .pp-row.pp-gap-1` elements are all `.acts`, which is a different band; no old badge wrapper is left.
+- **Nothing moves on screen, which is the point.** The layout was right by auto-placement and is now right by a rule.
+- **Design system version:** 2.13
+
+## GAP-161 [resolved in v2.13] SpoolPicker shows neither what is left on a spool nor that it is archived
 - **Type:** missing state
 - **Found while:** making archived Spoolman spools choosable again (the owner's request)
 - **Where needed:** SpoolPicker's listbox option; `frontend/src/finance/SpoolPicker.tsx:283`
@@ -1866,7 +1910,14 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes — the owner asked for both ("altijd zichtbaar onderaan, en zet het gewicht erbij"), 2026-10-18
 - **Design system version:** 2.12
 
-## GAP-162 [open] A klant with nothing in their folder has no designed tile, and its menu offers acts that have no object
+**Resolved in 2.13, both questions answered.** (a) **Yes**, a state may use `pp-hintchip`: the chip qualifies the value it sits on — where it came from, *or whether it is still current* — with four bounds written down (never something that needs doing, never something that changes money, never the only carrier, and it travels with the value into the trigger). (b) **The 200px floor holds and nothing is capped.** `spool.remaining` gains a zero arm, so an empty spool reads **"leeg"**, not "0 g over".
+
+- **Built in 2.13:** the zero arm in `spool.remaining`; `spool.archivedAria` renamed to the deck's `spool.archived.title`; and the chip now **travels to the trigger** when the archived spool is the one in force, which 2.3's rule required and the placeholder did not do.
+- **Markers removed:** the three `ds-gap: GAP-161` comments in `SpoolPicker.tsx` and `nl.ts`.
+- **The ellipsis is measured, and it is neither an app-side cap nor a `text-overflow`.** The design system asked for `scrollWidth` against `clientWidth` and for the ancestor that carries the `overflow`. With the longest name in this Spoolman assigned through the real UI ("Creality Rainbow Wild Blossom Hyper", 35 characters): the trigger is **not** clipped at any width — `scrollWidth` 312 against `clientWidth` 312 at 360px, 1400px and 2000px — it grows from its 200px floor to **314px**, with `white-space: nowrap`, `overflow: visible`, `text-overflow: clip`, and nothing in `frontend/src` caps it. The only element with an `overflow` above it is **`section.pp-card.pp-assetlist.pp-flush`, `overflow: hidden`**, and at 360px that card has `clientWidth` 326 against `scrollWidth` **358**: the trigger's right edge is at x=375 and the card's at x=343, so the last **32px** of the spool name is cut off at the card's edge. A hard clip, not an ellipsis, which is what "Creality Skin Hype…" was. The page itself does not scroll sideways (360/360), because the card absorbs it. That is a `bundle.css` matter and it is logged as **GAP-163**, as the export asked.
+- **Design system version:** 2.13
+
+## GAP-162 [resolved in v2.13] A klant with nothing in their folder has no designed tile, and its menu offers acts that have no object
 - **Type:** missing state
 - **Found while:** making a klant with no projects selectable (the owner's request)
 - **Where needed:** CustomerCard, CustomerChips, ScreenDashboard's klant strip; `frontend/src/prints/CustomerStrip.tsx:162`
@@ -1881,3 +1932,42 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing. No placeholder was built: the tile renders a klant with 0 prints without any new markup, so there is nothing marked `ds-gap`. The question is whether what it renders is right.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.12
+
+**Resolved in 2.13: the count says the word and the acts go.** `customers.printCount` gains `=0 {Nog geen prints}`; no "Factuur", no "Factuur maken" and **no "Klant verwijderen"** — delete hides a klant *and its prints*, and with none the only object left is the folder, which the portal reads and never writes (README rule 7) — so the menu is empty and the "⋯" is not rendered. `.amt` and `.acts` keep their elements and stay empty, there is no "Alles betaald" where nothing was ever owed, and a `pp-hintchip` and a separate sort order are both rejected. The tile still filters, onto the new `empty.customerNoPrints.*`.
+
+- **Built in 2.13:** the zero arm; the two items and the tile's Factuur button dropped on a klant with no prints, in the tile, in the phone toolbar and in the chip row; `.amt`/`.acts` kept as empty elements; `empty.customerNoPrints` as a fourth `EmptyState` kind, with the klant's name in the title.
+- **Verified in the running app on the one klant whose folder is empty (12 klanten, 1 empty), in both themes at 1400px and 360px:** the tile and the chip read "Nog geen prints"; the tile has no `aria-haspopup="menu"` control and no "Factuur" button; `.amt` and `.acts` are present and empty; the phone toolbar offers no acts at all; and the filter lands on **"Nog geen prints voor &lt;klant&gt;"** with "Prints verschijnen hier zodra er bestanden in de map van deze klant staan." `@axe-core/playwright` against WCAG 2.1 A and AA: **0 violations in 8 runs** over that tile and that empty state.
+- **Design system version:** 2.13
+
+## GAP-163 [open] At 360px a file row's spool trigger is cut off 32px short by the card's own `overflow: hidden`
+- **Type:** suspected design bug
+- **Found while:** the 2.13 import — the design system asked for this one in writing ("Tell me which element clips … if this system is doing it somewhere I have not found, log it as its own gap and I will decide it with the markup in front of me", `changelog.md` 2.13, GAP-161)
+- **Where needed:** `.pp-card.pp-flush` and `.pp-asset`/`.pp-spoolbtn` in `components/bundle.css`; AssetListItem's phone frame; SpoolPicker's trigger; `frontend/src/prints/AssetList.tsx` renders the row
+- **What is missing or wrong:** the reported "Creality Skin Hype…" is **not** a `text-overflow`, and nothing truncates the trigger. Measured at 360px on a print whose order row carries the longest name in the owner's Spoolman, "Creality Rainbow Wild Blossom Hyper" (35 characters), assigned through the real UI:
+
+  - the trigger itself is **not clipped**: `scrollWidth` 312 against `clientWidth` 312, at 360px, 1400px and 2000px alike, with `white-space: nowrap`, `overflow: visible`, `text-overflow: clip` and `min-width: 200px`. It grows from its floor to **314px**, which is what SpoolPicker 2.13 says it should do.
+  - the only ancestor with an `overflow` is **`section.pp-card.pp-assetlist.pp-flush`, `overflow: hidden`**: `clientWidth` **326**, `scrollWidth` **358**.
+  - inside it, `.pp-asset` is 326px wide with `padding: 12px`, so 302px of content; `.acts` measures `clientWidth` 270 against `scrollWidth` 314; and the trigger's wrapper runs from x=61 to **x=375** while the card ends at **x=343**. **The last 32px of the spool name is painted outside the card and clipped away.**
+  - the page itself does not scroll sideways (`scrollWidth` 360 = `clientWidth` 360), because the card absorbs the overflow — which is why it reads as a truncated name rather than as a broken layout.
+- **Why it matters:** at phone width the control says the wrong spool. "Creality Rainbow Wild Bloss" and "Creality Rainbow Spring Lake Hyper" are two different spools in this library whose names differ after the 27th character, so a cut at 32px-from-the-end can show two spools under one word — and the trigger is what states which spool a line is costed with. It is also the system's own rule being broken in its own stylesheet: *the page body must never scroll horizontally* is satisfied, but only by hiding information.
+- **Not caused by 2.13.** Below the 760px container query `.acts` has spanned columns 2 to -1 since before this round, so `.pp-asset.band` is inert at 360px and the same clip is present with and without it. 2.13's own words ("the band of GAP-111 removes the pressure that would have forced a cap") are true at 961px and have no effect at 326px.
+- **Proposal:** this is a decision for the design system, and there are three shapes for it, none of which we will invent:
+  1. **Let the trigger shrink below its floor on the phone** — `min-width: 0` (or a smaller floor) inside `@media (max-width:480px)` plus the middle truncation SpoolPicker 2.13 already specifies as *the* rule for a cut trigger ("brand and material at the front, colour at the end"). That is the only option that keeps both ends of the name, which is what identifies it.
+  2. **Let the trigger wrap to two lines** at phone width, which costs a line of height on the longest list in the app.
+  3. **Say the card may scroll its rows horizontally** at phone width, which the system has so far allowed only for tables, diagrams and code.
+- **Blocked:** nothing; the row renders and no placeholder is in the code, so there is no `ds-gap` marker. The trigger is correct per SpoolPicker 2.13 and the card is correct per its own rule; the two together lose 32px of a name.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.13
+
+## GAP-164 [open] Two READMEs give the same Betaallink sentence two different copy keys
+- **Type:** conflict
+- **Found while:** the 2.13 import, keying the four `settings.payLink*` strings the deck carries for the first time
+- **Where needed:** `copy-deck.md` *Added in 2.13*; `components/ScreenSettings/README.md` 2.0.1 and 2.13; `components/ScreenSharePage/README.md`
+- **What is missing or wrong:** the sentence **"Deze klant heeft wel een betaallink."** is specified twice under two names.
+  - `copy-deck.md` keys it `settings.payLink.noIban`, and ScreenSettings 2.13 names that key explicitly as one of the two that stay per klant.
+  - ScreenSharePage names the same sentence, in the same place ("The Instellingen warning about a missing IBAN then changes to …"), as **`settings.customer.payLink.only`** — a key that exists in no deck, in no other README, and nowhere in this app.
+- **Why it matters:** small, but it is the exact failure 2.12 wrote its rule against and 2.13 apologised for under GAP-101: a string with two names has no owner, and the next round can key the other one and ship the sentence twice. It also means ScreenSharePage's paragraph cannot be implemented as written.
+- **Proposal:** `settings.payLink.noIban` wins, because the deck carries it and the deck is the register; ScreenSharePage's reference is corrected to that key. We have built it that way: the app reads `settings.payLink.noIban` at both of its call sites (Instellingen's klant row, which 2.0.1 specified and nothing drew until now, and the Deel-link dialog, which is ours). If the design system would rather keep `settings.customer.payLink.only`, say so and the deck row and our two call sites follow.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.13

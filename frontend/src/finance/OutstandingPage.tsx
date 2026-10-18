@@ -257,7 +257,14 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
                 {line.project === null ? group.customer : `${group.customer} · ${line.project}`}
               </div>
             </div>
-            <span className="pp-row pp-gap-1">
+            {/*
+              A line's second band is one element: `.pp-badge`, or `.pp-badges`
+              when the line can carry two (OutstandingGroup 2.13, GAP-160). The
+              phone rule places both by name; before this the wrapper had no
+              class the rule named and landed in the right cell only because
+              grid auto-placement filled that cell next.
+            */}
+            <span className="pp-badges">
               <span className={`pp-badge ${ageTone(line.daysOpen)}`}>
                 <AgeIcon days={line.daysOpen} />
                 {t('status.daysOpen', { days: line.daysOpen })}

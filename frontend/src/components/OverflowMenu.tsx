@@ -47,7 +47,9 @@ export function OverflowMenu({ items, label }: { items: MenuItem[]; label?: stri
   };
 
   /*
-    Window-placed and portalled to the body (`ds-gap: GAP-146`).
+    Window-placed and portalled out of the card: a `.at` panel is a child of
+    the nearest open `<dialog>`, else of `<body>` (README *Floating panels*
+    rule 9, 2.13; GAP-146 resolved).
 
     The card's own rule
     `.pp-cust .acts .pp-btn,.pp-cust .end .pp-anchor{position:relative;z-index:1}`

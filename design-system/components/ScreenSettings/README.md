@@ -52,3 +52,70 @@ No validator can measure point 1 for an arbitrary file, so the app does not refu
 
 **Dutch copy (new).** Betaallink (optioneel) | Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert. | Toegevoegd op {datum} | Deze klant heeft wel een betaallink.
 
+**2.13.** (2026-10-18) **The page the owner called *walgelijk* (GAP-101, reopened and resolved).**
+2.0 wrote "One column up to 800px of content, two above it, **never three**" and then shipped
+`repeat(auto-fit, minmax(320px, 1fr))` capped at 1080px, which makes **three** from 992px up. The
+prose and the CSS disagreed and the CSS won. Measured in the app at 1400px, against the owner's own
+library: three columns of 349px, a page **3714px** tall, Algemeen **194px** with **1402px** of
+nothing under it, Prijzen 450 with 1146 under it, Printers 1580, Klanten 2018.
+
+**The column count was the smaller half.** The fault is the **row**: in one grid with
+`align-items: start`, the next row begins where the tallest card of this row ends, so every section
+that grows with the owner's data punches a hole beside the short ones. Three answers, and the first
+two are rejected:
+
+- **Rejected: `column-count`, or two explicit column stacks the app fills.** Both ask the layout to
+  balance heights. `column-count` also reads down-then-across and may split a card; two stacks make
+  the app decide which section goes where, which means the page's order depends on today's data.
+  A settings page has a reading order and it should not change with the number of printers.
+- **Rejected: `align-items: stretch`.** It removes the *hole* by inflating a 194px card to 1580px of
+  empty `surface`. A tall card of air is worse than air.
+- **Taken: the grid keeps one row rule, and the long sections stop sharing a row.**
+
+**1. Three columns are now impossible by construction.** A track is `max(320px, 50% - space-2)`: at
+least 320px *and* at least half the row, so two tracks fill it exactly and a third cannot fit at any
+width. Below 656px the 320px floor still wins and the grid is one column, exactly as before — this
+changes one thing only, the third column.
+
+**2. A section whose height is set by the owner's data takes the whole row.** `span-2` stops being
+an exception ("Any section may take `span-2` when its content needs the width") and becomes the
+rule for the two sections that hold **a list of records**: **Printers** (one card per printer) and
+**Klanten** (one row per klant, and that number grows with the business). The test for a future
+section: does it draw one card or row per thing the owner has? Prijzen's Materiaalprijzen table is
+the near case and stays paired — a studio has a handful of filament types, where Klanten is one row
+per customer, for ever.
+
+**3. The four fixed sections are paired by what they are, which is also how their heights pair.**
+DOM order is now **Algemeen · Spoolman / Prijzen · Bedrijfsgegevens / Printers (span-2) / Klanten
+(span-2)**: the two that are about the system itself, then the two that are about the studio, then
+the two lists, longest last — a long card costs nothing when nothing follows it (`README.md`, 2.3).
+At the measured heights the holes fall from **1402px and 1146px to about 50px and 170px**, and the
+page should get shorter, because Klanten at 532px (and at 1080px) is not the 2018px it is at 349px.
+**Measure the new page height and the two holes at 1400px**; I am giving the construction, not the
+number.
+
+**The betaallink help moves to the section (your question, and the answer is yes).** *"Een
+betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag
+verandert."* is written **once**, directly under the Klanten heading, beside the existing
+niet-factureren help. **A label belongs to its control; an explanation belongs to the section.**
+Twelve copies of one sentence are not twelve facts. What stays **per klant**: the field's own label
+"Betaallink (optioneel)", `settings.payLink.added` ("Toegevoegd op {datum}") and
+`settings.payLink.noIban` ("Deze klant heeft wel een betaallink.") — each of those is about that
+klant.
+
+**The klant row has a shape now: `.pp-setrow.cust`.** Name and print count on the left, the "Niet
+factureren" toggle on the right, and the Betaallink field on a second line across the full row
+(`pp-w-420`, because a URL field as wide as a 1080px card is a thousand pixels for sixty
+characters). The row is the same at 360px and at 1080px, so there is nothing to reflow. A klant
+flagged **Niet factureren** has no field, as 2.0.1 says. A klant with **no prints** appears here
+like any other, with "Nog geen prints" as its count (GAP-162, CustomerCard).
+
+**Three things 2.0.1 specified and never delivered, which is my fault and is fixed in this
+export:** the Betaallink is not drawn in this preview, its four strings were never in
+`copy-deck.md`, and the app built them from this README's prose. They are keyed now —
+`settings.payLink`, `settings.payLink.help`, `settings.payLink.added`, `settings.payLink.noIban` —
+and the preview draws the field, the "Toegevoegd op" line and the no-IBAN line. *A string the deck
+does not carry is a string nobody proofreads* (2.12) applies to the design system too.
+
+**Both themes, no new pair, no new token.** Nothing here has ink: a grid track, a row shape and a
+sentence that moved.

@@ -102,7 +102,14 @@ type WithAsk = CustomerStripProps & {
   onOpenOverview?: () => void;
 };
 
-/** The tile's rare actions (OverflowMenu 1.9): Factuur maken, Klant verwijderen. */
+/**
+ * The tile's rare actions (OverflowMenu 1.9): Factuur maken, Klant
+ * verwijderen. On a klant with no prints both have no object and neither is
+ * offered (CustomerCard 2.13, GAP-162): there is nothing to bill, and delete
+ * hides a klant *and its prints* — with none, the only object left is the
+ * folder, which the portal reads and never writes. OverflowMenu renders
+ * nothing for an empty list, so the "⋯" goes with them.
+ */
 function CustomerMenu({
   customer,
   onAskDelete,
@@ -115,7 +122,8 @@ function CustomerMenu({
   onInvoice?: (folder: string) => void;
 }) {
   const items = [];
-  if (!customer.deleted && !customer.noBilling && onInvoice !== undefined) {
+  const hasPrints = customer.printCount > 0;
+  if (hasPrints && !customer.deleted && !customer.noBilling && onInvoice !== undefined) {
     items.push({
       key: 'invoice',
       label: t('menu.invoice'),
@@ -135,7 +143,7 @@ function CustomerMenu({
       },
     });
   }
-  if (!customer.deleted && onAskDelete !== undefined) {
+  if (hasPrints && !customer.deleted && onAskDelete !== undefined) {
     items.push({
       key: 'delete',
       label: t('customers.delete'),
@@ -205,18 +213,26 @@ function CustomerCard({
         </span>
       </div>
       {!customer.deleted && <CustomerMoney customer={customer} />}
+      {/*
+        No "Factuur" on a klant with no prints: there is nothing to bill
+        (CustomerCard 2.13, GAP-162). The `.acts` element stays — a slot that
+        may be empty keeps its element (2.12) — so the tile keeps its shape
+        beside the ones that have a button.
+      */}
       {!customer.deleted && !customer.noBilling && onInvoice !== undefined && (
         <div className="acts">
-          <button
-            type="button"
-            className="pp-btn pp-btn-secondary pp-btn-sm"
-            onClick={() => {
-              onInvoice(customer.folder);
-            }}
-          >
-            <Receipt className="pp-ico" aria-hidden="true" />
-            {t('invoice.button')}
-          </button>
+          {customer.printCount > 0 && (
+            <button
+              type="button"
+              className="pp-btn pp-btn-secondary pp-btn-sm"
+              onClick={() => {
+                onInvoice(customer.folder);
+              }}
+            >
+              <Receipt className="pp-ico" aria-hidden="true" />
+              {t('invoice.button')}
+            </button>
+          )}
         </div>
       )}
       {customer.deleted && (
@@ -256,6 +272,13 @@ function CustomerMoney({ customer }: { customer: Customer }) {
     );
   }
   if (customer.openAmount === null) return null;
+  /*
+    A klant with no prints never owed anything, and a sentence in the present
+    tense may only be rendered where it is true (2.7): no "Alles betaald". The
+    `.amt` slot keeps its element and stays empty (CustomerCard 2.13,
+    GAP-162).
+  */
+  if (customer.printCount === 0) return <span className="amt" />;
   if (customer.openAmount === 0) return <span className="cnt">{t('customers.allPaid')}</span>;
   return (
     <span className="amt">
@@ -342,7 +365,15 @@ function CustomerChips({
               {/* The name leads; the count and the amount follow at 400 with
                   the separator the chip draws itself (GAP-092). */}
               <span className="nm">{customer.folder}</span>
-              <span className="n">{customer.printCount}</span>
+              {/*
+                A chip for a klant with no prints says the word rather than a
+                bare 0, exactly as the tile does (CustomerCard 2.13, GAP-162).
+              */}
+              <span className="n">
+                {customer.printCount === 0
+                  ? t('customers.printCount', { count: 0 })
+                  : customer.printCount}
+              </span>
               {customer.openAmount !== null && customer.openAmount > 0 && (
                 <span className="amt">{formatMoney(customer.openAmount)}</span>
               )}
@@ -383,7 +414,8 @@ function CustomerChips({
           )}
           {current !== undefined && !current.deleted && (
             <span className="pp-row pp-gap-2">
-              {!current.noBilling && onInvoice !== undefined && (
+              {/* Neither act has an object on a klant with no prints (GAP-162). */}
+              {current.printCount > 0 && !current.noBilling && onInvoice !== undefined && (
                 <button
                   type="button"
                   className="pp-btn pp-btn-secondary pp-btn-sm"
@@ -395,7 +427,7 @@ function CustomerChips({
                   {t('invoice.button')}
                 </button>
               )}
-              {onAskDelete !== undefined && (
+              {current.printCount > 0 && onAskDelete !== undefined && (
                 <button
                   type="button"
                   className="pp-btn pp-btn-ghost pp-btn-sm"

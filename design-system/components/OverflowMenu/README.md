@@ -13,3 +13,16 @@ OverflowMenu holds the actions that are rare or hard to undo, so they do not com
 **Contrast.** `unpaid` on `surface` and on `primary-tint-soft` (hover) are in `contrast.md` (rows "OverflowMenu").
 
 **Where the panel goes (2.2, GAP-112).** The menu is a Popover and takes Popover's placement rule in full: side chosen per axis, `--pp-pop-max` capping the height, the sheet form under 240px of room. A capped `.pp-menu` scrolls itself (it is its own panel, with no inner region), and its items keep their `--pp-tap` height while scrolling. A menu is usually short enough that only the side matters; the column menu in Toegang is the one that is not.
+
+**2.13.** (2026-10-18) **Where the panel lives in the DOM (GAP-146, resolved).** The menu on a klant
+tile sits inside `.pp-lift`, which is a stacking context, so the panel was compared only against its
+own wrapper and the next tile's Factuur button painted over it. The general rule is in Popover's
+2.13 note and in `README.md` rule 9: a `.at` panel is rendered as a child of the **nearest open
+`<dialog>`, else `<body>`**, and it is focus-managed rather than DOM-ordered — which this component
+already was (focus to the first item on open, back to the trigger on close, Esc closes, Tab closes
+and moves on). The `ds-gap: GAP-146` marker can go; what the app built is what the system now
+specifies.
+
+**A menu that would hold nothing is not rendered.** On a klant with no prints both items have no
+object, so there is no "⋯" at all — an empty overflow menu is itself a control with no object
+(GAP-162, CustomerCard).

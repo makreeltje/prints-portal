@@ -9,11 +9,15 @@ import type { Spool } from '../prints/types';
 import { fetchSpools, financeKeys, refreshSpoolman } from './api';
 import { SpoolSwatch } from './money';
 
-/** "294 g over", or nothing when Spoolman does not say (ds-gap: GAP-161). */
+/**
+ * "294 g over", "leeg" at zero, or nothing when Spoolman does not say
+ * (SpoolPicker 2.13, GAP-161). The weight is what tells two otherwise
+ * identical spools apart, and it is what you choose on.
+ */
 function remainingLabel(spool: Spool): string | null {
   const grams = spool.remainingWeight;
   if (grams === null || grams === undefined) return null;
-  return t('spool.remaining', { grams: String(Math.round(grams)) });
+  return t('spool.remaining', { grams: Math.round(grams) });
 }
 
 /**
@@ -96,11 +100,22 @@ export function SpoolPicker({
         {busy ? <span className="pp-spin" aria-hidden="true" /> : <SpoolSwatch spool={shown} />}
         {shown?.name ?? t('spool.choose')}
         {/*
-          The chip sits on the trigger, not in the cell beside it: provenance
-          belongs on the control that can override the value (2.3).
+          The chip sits on the trigger, not in the cell beside it: a hint chip
+          qualifies the value it sits on, so it belongs on the control that can
+          override that value (2.3, and the bounds written down in 2.13).
         */}
         {shown !== null && value === null && (
           <span className="pp-hintchip">{t('asset.spoolFromPrint')}</span>
+        )}
+        {/*
+          A qualification travels with the value into the trigger, or the row
+          is lying by omission (SpoolPicker 2.13, GAP-161): an archived spool
+          that is the one in force says so here too, not only in the list.
+        */}
+        {shown?.archived === true && (
+          <span className="pp-hintchip" title={t('spool.archived.title')}>
+            {t('spool.archived')}
+          </span>
         )}
         <span className="end">
           <ChevronDown className="pp-ico" aria-hidden="true" />
@@ -108,7 +123,9 @@ export function SpoolPicker({
       </button>
       {open && (
         /*
-          The panel leaves `.pp-lift` entirely (ds-gap: GAP-146). `.pp-lift`
+          The panel leaves `.pp-lift` entirely: a window-placed panel is a
+          child of the nearest open `<dialog>`, else of `<body>` (README
+          *Floating panels* rule 9, 2.13; GAP-146 resolved). `.pp-lift`
           is `z-index: 1`, so the panel's own z-index 30 is compared only
           inside that wrapper — and every later row's trigger, at the same
           level, wins on DOM order and paints over the open list. Measured on
@@ -290,13 +307,15 @@ export function SpoolPopover({
             <span>
               <b>{spool?.name ?? t('spool.none')}</b>
               {/*
-                What is left on the spool, and the archive. Two physical
-                spools of the same filament are one name and one colour in
-                Spoolman, so the grams are the only thing that tells them
-                apart — and they are what you choose on anyway: a small print
-                goes on the spool that is nearly empty. SpoolPicker specifies
-                neither (ds-gap: GAP-161), so both reuse the meta line and the
-                hint chip this list already has rather than inventing a shape.
+                The option's meta line is three parts, "{materiaal} ·
+                {leverancier} · {rest}" (SpoolPicker 2.13, GAP-161). Two
+                physical spools of the same filament are one name and one
+                colour in Spoolman, so the grams are the only thing that tells
+                them apart — and they are what you choose on anyway: a small
+                print goes on the spool that is nearly empty. "archief" is a
+                hint chip: a qualification of the value, with nothing to do
+                about it, and never the only carrier — the word is real text,
+                the archived spools sort last, and typing it finds them.
               */}
               {spool !== null && (
                 <small>
@@ -309,7 +328,7 @@ export function SpoolPopover({
                       .filter((part) => part !== null && part !== '')
                       .join(' · ')}
                     {spool.archived === true && (
-                      <span className="pp-hintchip" title={t('spool.archivedAria')}>
+                      <span className="pp-hintchip" title={t('spool.archived.title')}>
                         {t('spool.archived')}
                       </span>
                     )}

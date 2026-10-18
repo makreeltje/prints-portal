@@ -145,9 +145,10 @@ export const nl = {
   'spool.forPrintHelp': 'Bestanden en slots met een eigen spoel gaan hierboven voor.', // component copy: ScreenPrintDetail
   'spool.searchLabel': 'Zoeken', // component copy: SpoolPicker preview (aria-label)
   'spool.unreachable': 'Niet bereikbaar', // component copy: ScreenSettings
-  'spool.remaining': '{grams} g over', // ds-gap: GAP-161
-  'spool.archived': 'archief', // ds-gap: GAP-161
-  'spool.archivedAria': 'Gearchiveerd in Spoolman', // ds-gap: GAP-161
+  // Zero is a state, not a measurement: an empty spool reads "leeg" (2.13, GAP-161).
+  'spool.remaining': '{grams, plural, =0 {leeg} other {# g over}}',
+  'spool.archived': 'archief',
+  'spool.archived.title': 'Gearchiveerd in Spoolman',
 
   'cost.title': 'Totaalkosten',
   'cost.titleNotBilled': 'Kosten', // component copy: CostBreakdown (niet factureren)
@@ -341,7 +342,8 @@ export const nl = {
   'records.deletedOn': 'Verwijderd op {date}.',
   'records.archivedNote': 'Gearchiveerd. De bestanden staan niet meer op schijf.',
 
-  'customers.printCount': '{count, plural, one {# print} other {# prints}}',
+  // Dutch sends 0 to `other`, so the empty klant needs its own arm (2.13, GAP-162).
+  'customers.printCount': '{count, plural, =0 {Nog geen prints} one {# print} other {# prints}}',
   'customers.delete': 'Klant verwijderen',
   'customers.allPaid': 'Alles betaald',
   'customers.label': 'Klanten', // component copy: CustomerChips (aria-label)
@@ -402,6 +404,9 @@ export const nl = {
   'live.reconnecting': 'Verbinding verbroken — opnieuw verbinden…',
   'system.reconnected': 'Verbonden',
 
+  'empty.customerNoPrints.title': 'Nog geen prints voor {klant}',
+  'empty.customerNoPrints.body':
+    'Prints verschijnen hier zodra er bestanden in de map van deze klant staan.',
   'empty.noPrints.title': 'Nog geen prints',
   'empty.noPrints.body': 'Zet je bestanden in klant/project-mappen en start een index.',
   'empty.noResults.title': 'Geen resultaten',
@@ -458,11 +463,11 @@ export const nl = {
   'shareLinks.noIban':
     'Deze klant ziet geen betaalinstructie: er is nog geen IBAN ingevuld bij Bedrijfsgegevens.',
   'shareLinks.noIban.link': 'Naar Bedrijfsgegevens',
-  'shareLinks.hasPayLink': 'Deze klant heeft wel een betaallink.',
-  'customers.payLink': 'Betaallink (optioneel)',
-  'customers.payLinkHelp':
+  'settings.payLink': 'Betaallink (optioneel)',
+  'settings.payLink.help':
     'Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert.',
-  'customers.payLinkAdded': 'Toegevoegd op {datum}',
+  'settings.payLink.added': 'Toegevoegd op {datum}',
+  'settings.payLink.noIban': 'Deze klant heeft wel een betaallink.',
   'customers.notBilled': 'Niet factureren',
   'customers.notBilledHelp':
     'Voor een klant die niet wordt gefactureerd (bijvoorbeeld je eigen prints) zie je alleen de kosten.',

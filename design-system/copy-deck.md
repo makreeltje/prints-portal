@@ -322,7 +322,7 @@ Removed in 1.2: `share.noShareLink`, `share.notBilled`, `access.adminAlways` (re
 |---|---|
 | viewer.fullscreen | Volledig scherm |
 | viewer.exitFullscreen | Volledig scherm sluiten |
-| customers.printCount | {count, plural, one {# print} other {# prints}} |
+| customers.printCount | {count, plural, =0 {Nog geen prints} one {# print} other {# prints}} |
 | customers.delete | Klant verwijderen |
 | customers.allPaid | Alles betaald |
 | confirm.deleteCustomer | Klant '{name}' verwijderen? |
@@ -805,3 +805,58 @@ only drift from it. Openstaand needs `outstanding.groupLabel` because its summar
 amount and 1.9 fixed the order of that name. If the app does set an `aria-label` on a Wachtrij
 summary, it must spell those same words in that same order; preferring no `aria-label` is simpler
 and cannot go stale.
+
+## Added in 2.13
+
+**Four strings 2.0.1 specified and never keyed, three for the spool list, two for an empty klant's
+filter — and one key that gains a zero arm (GAP-101, GAP-161, GAP-162).** Nine new keys, one changed
+value, none removed.
+
+| key | text |
+|---|---|
+| settings.payLink | Betaallink (optioneel) |
+| settings.payLink.help | Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert. |
+| settings.payLink.added | Toegevoegd op {datum} |
+| settings.payLink.noIban | Deze klant heeft wel een betaallink. |
+| spool.remaining | {grams, plural, =0 {leeg} other {# g over}} |
+| spool.archived | archief |
+| spool.archived.title | Gearchiveerd in Spoolman |
+| empty.customerNoPrints.title | Nog geen prints voor {klant} |
+| empty.customerNoPrints.body | Prints verschijnen hier zodra er bestanden in de map van deze klant staan. |
+
+**The four `settings.payLink` keys are late, and the lateness is mine.** ScreenSettings 2.0.1
+specified the per-klant Betaallink in prose, gave it four strings, and put none of them in this deck
+and none of them in its preview. The app built them from the README's prose — which is exactly the
+failure 2.12 wrote the rule against: *a string the deck does not carry is a string nobody
+proofreads*. The rule applies to the design system too, and this is what it looks like when it is
+broken on our side. **`settings.payLink.help` now has one call site**: once under the Klanten
+heading, not once per klant (GAP-101). **`settings.payLink.added`** and **`settings.payLink.noIban`**
+stay per klant, because each is about that klant.
+
+**`spool.remaining` carries a zero arm, and the word is "leeg".** An empty spool read "0 g over",
+which is accurate and reads like a measurement where a state is meant; the owner noticed. Dutch
+sends 0 to `other`, so the arm is explicit, as it is in `outstanding.oldestDays` and
+`queue.waiting`. The grams themselves are an observed figure from Spoolman and need no date
+(`README.md` rule 1).
+
+**`spool.archived` is a `pp-hintchip`, not a badge.** It needs nothing done about it: an archived
+spool is a correct choice for an old print, which is why it is in the list at all.
+`spool.archived.title` is the chip's `title`, an aid and never the carrier — the word is real text
+in the option, the archived spools sort last, and typing "archief" finds exactly them.
+
+**`empty.customerNoPrints.*` is where a klant with no prints lands** when their tile sets the
+filter. The body says **when** prints appear; it does not promise that the app will put a file
+anywhere, because `/prints` is Nextcloud's (`README.md` rule 7). It sits beside the deck's existing
+`empty.noPrints.*`, which is the library-wide case.
+
+**Changed in 2.13** (same key, same call sites):
+
+- **`customers.printCount`** — was "{count, plural, one {# print} other {# prints}}", is now
+  "{count, plural, **=0 {Nog geen prints}** one {# print} other {# prints}}". Since a klant is a
+  folder on disk, a klant with nothing in it is an ordinary sight — the start state of every new
+  klant — and Dutch sent that 0 to the `other` arm, so the tile read "0 prints". One key still owns
+  the count; a second key for the empty case would be two strings that must agree about one number
+  (GAP-162).
+
+**No key is removed and nothing is renamed.** `asset.pickSpool`, `spool.choose` and the rest of the
+picker's vocabulary are unchanged.

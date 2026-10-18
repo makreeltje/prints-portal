@@ -180,3 +180,50 @@
   because `min-height` cannot push a frame sideways. **Don't** twin the two tokens on the frame
   until the phone frames have been re-rendered and measured — it widens `.pp-btn-icon` and the
   palette buttons in every one of them (proposed for 2.13).
+
+## Added in 2.13
+
+- **Do** give the part of a layout whose size is the owner's **data** a row or a line of its own: a
+  section that lists records takes `span-2`, a band of value controls takes a line under the name.
+  **Don't** let it share a track with the part that has to be read — a 1580px Printers card beside a
+  194px Algemeen left 1402px of nothing, and a 609px controls band clipped a file name to 240px for
+  a single-line shape it never drew (GAP-101, GAP-111).
+- **Do** make a layout rule impossible to break in the CSS when you can: a track of
+  `max(320px, 50% - var(--space-2))` cannot produce a third column, at any width. **Don't** write
+  "never three" in a README above an `auto-fit` that makes three from 992px up — prose does not
+  bind, and the CSS wins every time (GAP-101).
+- **Do** name every cell a grid places, the first one included: `.lead` beside `.body` and `.acts`.
+  **Don't** leave one unnamed — the slot with no class was the slot no rule could place, and it was
+  the one that drew a 20px icon 44px below its own file name (GAP-111).
+- **Do** order a band so that **at most one control's width is data, and it is the last one**, with
+  the icon buttons in an `.end` group pinned to the row's right edge. **Don't** right-align a band
+  and expect rows to agree: only the right edge is fixed then, and in a library whose spool names
+  happen to be the same length it looks correct until a customer's screenshot arrives (GAP-111).
+- **Do** render a window-placed panel as a child of the **nearest open `<dialog>`, else `<body>`**,
+  and manage its focus instead of relying on DOM order. **Don't** trust `z-index` inside a
+  `.pp-lift` — it is a stacking context, so `z-popover` is compared only with its own siblings — and
+  **don't** portal to the body from inside a modal: a `<dialog>` paints in the top layer, measured
+  at 0 of 11 menus clear (GAP-146, Popover rule 9).
+- **Do** let a `pp-hintchip` qualify the value it sits on: where it came from, or whether it is
+  still current ("archief"). **Don't** give it something that needs doing — that is a `warning`
+  badge with a reason line — or something that changes money, which is a value in a cell of its own;
+  and never let the chip be the only carrier of the fact (GAP-161, SpoolPicker).
+- **Do** give a count a zero arm that says the word, in the key that already owns the count:
+  `customers.printCount` reads "Nog geen prints" at 0. **Don't** add a second key for the empty
+  case — two strings that must agree about one number are two strings that will disagree (GAP-162).
+- **Do** drop a control whose act has no object, and drop the menu with it when nothing is left: a
+  klant with no prints is offered neither Factuur nor Klant verwijderen. **Don't** keep a
+  destructive-looking item because "it deletes zero prints anyway" — here it would also disagree
+  with the folder on disk, which is the record (GAP-162, `README.md` rule 7).
+- **Do** put a label beside its control and the **explanation** in the section, once. **Don't**
+  repeat a two-sentence help line under every row of a list: twelve copies of one sentence are not
+  twelve facts, and they were 384px of a settings page (GAP-101).
+- **Do** decide a dialog's backdrop click **by kind** — shows-only closes, a form does not, a
+  ConfirmDialog never does — and do nothing visible when it is refused. **Don't** key it on state
+  ("the form is still untouched"): a dialog that sometimes closes on a backdrop click teaches
+  nothing (GAP-147, Dialog).
+- **Do** key every string **this design system** invents, in the same round that invents it: 2.0.1
+  specified four Betaallink strings in prose, put none in `copy-deck.md` and none in its preview,
+  and the app built them from the README. **Don't** assume the rule from 2.12 is about the app
+  (GAP-101, `copy-deck.md` *Added in 2.13*).
+

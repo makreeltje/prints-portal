@@ -39,7 +39,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:400 var(--text-base)/v
    .pp-device.phone twin writes 44px as a literal because no media query fires inside a preview
    frame, so --pp-tap is still its 36px desktop value there (README, *Responsive*). */
 @media (max-width:480px){.pp-btn-sm{min-height:var(--pp-tap)}}
-.pp-device.phone .pp-btn-sm{min-height:44px}
+.pp-device.phone .pp-btn-sm{min-height:var(--pp-tap)}
 .pp-btn-icon{width:var(--pp-tap);min-width:var(--pp-tap);padding:0}
 .pp-btn:disabled,.pp-btn[aria-disabled=true]{opacity:var(--opacity-disabled);cursor:not-allowed}
 .pp-btn[aria-busy=true]{cursor:progress}
@@ -187,7 +187,7 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 @media (max-width:480px){.pp-bulk{bottom:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0}}
 /* asset item, cost, payment */
 .pp-assetlist{container-type:inline-size}
-.pp-asset{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--space-2) var(--space-3);align-items:center;padding:var(--space-3);border-bottom:1px solid var(--border)}
+.pp-asset{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--space-2) var(--space-3);align-items:start;padding:var(--space-3);border-bottom:1px solid var(--border)}
 .pp-asset .acts{grid-column:2/-1;justify-content:flex-start}
 @container (min-width:760px){.pp-asset{grid-template-columns:auto minmax(0,1fr) auto}.pp-asset .acts{grid-column:auto;justify-content:flex-end}}
 .pp-asset .fn{font-family:var(--font-mono);font-size:13px;color:var(--text-strong);display:flex;min-width:0}
@@ -229,10 +229,10 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
    preview markup turned that off with `pp-nowrap`, which this rule overrides on the phone (and the
    previews no longer set it on `.acts`). Two 44px buttons then stack, which is what ScreenQueue's
    *Phone* note has always described. */
-@media (max-width:480px){.pp-line{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-2)}.pp-line>:first-child{grid-column:1/-1}.pp-line>.pp-badge{grid-column:1;grid-row:2;justify-self:start}.pp-line>.pp-right{grid-column:2;grid-row:2;justify-self:end}.pp-line .acts{grid-column:1/-1;flex-wrap:wrap}}
+@media (max-width:480px){.pp-line{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-2)}.pp-line>:first-child{grid-column:1/-1}.pp-line>.pp-badge,.pp-line>.pp-badges{grid-column:1;grid-row:2;justify-self:start}.pp-line>.pp-right{grid-column:2;grid-row:2;justify-self:end}.pp-line .acts{grid-column:1/-1;flex-wrap:wrap}}
 .pp-device.phone .pp-line{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-2)}
 .pp-device.phone .pp-line>:first-child{grid-column:1/-1}
-.pp-device.phone .pp-line>.pp-badge{grid-column:1;grid-row:2;justify-self:start}
+.pp-device.phone .pp-line>.pp-badge,.pp-device.phone .pp-line>.pp-badges{grid-column:1;grid-row:2;justify-self:start}
 .pp-device.phone .pp-line>.pp-right{grid-column:2;grid-row:2;justify-self:end}
 .pp-device.phone .pp-line .acts{grid-column:1/-1;flex-wrap:wrap}
 /* share link, token */
@@ -268,7 +268,7 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-asset.child{padding-left:var(--space-8);background:var(--surface-2)}
 .pp-qty{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);color:var(--muted)}
 .pp-qty .pp-input{width:64px;min-height:32px;text-align:right}
-.pp-reason{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted);display:flex;gap:var(--space-1);align-items:center}
+.pp-reason{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted);display:flex;gap:var(--space-1);align-items:flex-start}
 @media (max-width:480px){.pp-slot{padding-left:var(--space-5)}.pp-asset.child{padding-left:var(--space-5)}}
 .pp-remaining{white-space:nowrap;font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--unpaid);font-weight:500;font-variant-numeric:tabular-nums}
 /* app shell */
@@ -945,7 +945,13 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-chip.is-deleted .nm{color:var(--muted)}
 
 /* GAP-101 a page of short rows or short fields lays out in columns up to a 1080px measure. */
-.pp-settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--space-4);align-items:start;max-width:1080px}
+/* GAP-101 (2.13): a track is at least 320px AND at least half the row, so a THIRD column cannot
+   fit at any width -- 2.0's prose said "never three" while its own auto-fit made three from 992px
+   up (3x320 + 2x16 = 992 <= 1080). Below 656px the 320px floor still wins and the grid is one
+   column, exactly as before: only the third column is gone. The other half of the fix is the row,
+   and it is markup: a section whose height grows with the owner's data takes `.span-2`, and the
+   fixed-height sections are paired by what they are (ScreenSettings 2.13). */
+.pp-settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(max(320px,50% - var(--space-2)),1fr));gap:var(--space-4);align-items:start;max-width:1080px}
 .pp-settings>.span-2{grid-column:1/-1}
 @media (max-width:480px){.pp-settings{grid-template-columns:minmax(0,1fr)}}
 .pp-device.phone .pp-settings{grid-template-columns:minmax(0,1fr)}
@@ -1219,3 +1225,59 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-reason.one>span,.pp-reason.one>.pp-link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .pp-reason.one>.n{flex:none;overflow:visible}
 
+
+/* ===== 2.13 ===== */
+
+/* GAP-101: a klant's row in Instellingen carries three things now -- the name, the "Niet
+   factureren" toggle and, since 2.0.1, an optional Betaallink. `.pp-setrow.cust` keeps the name and
+   the toggle on the first line and gives the field the row's full width underneath, at every width,
+   so the row never reflows between a phone and a 1080px section. The field carries `pp-w-420`: a URL
+   field as wide as the card would be a 1000px input for a 60-character value. The sentence that
+   explains what a betaallink is belongs to the SECTION and is written once above the list -- a label
+   belongs to its control, an explanation belongs to the section. */
+.pp-setrow.cust{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--space-2) var(--space-4);padding:var(--space-3) 0}
+.pp-setrow.cust>.pp-field{grid-column:1/-1}
+
+/* GAP-111 (reopened): THE SLOT THAT HAD NO NAME IS THE SLOT THAT WAS MISALIGNED. The row's first
+   cell -- the 20px type icon, or a plate's thumbnail -- had no class, so no rule could place it, and
+   `align-items: center` floated a 20px glyph 44px below the name it belongs to on a row whose name
+   block is 171px tall. `.pp-asset` is now `align-items: start` and `.lead` is a box exactly one line
+   of `--leading-base` tall, with the icon centred IN THAT BOX: the glyph sits on the first line at
+   any row height, and a 40px plate thumbnail still centres on itself because the box grows. */
+.pp-asset>.lead{display:flex;align-items:center;min-height:var(--leading-base);color:var(--muted)}
+
+/* THE BAND. `.acts` has two forms and the row says which, because CSS cannot see what a band holds.
+   An `.acts` of icon buttons only (the print's "Bestanden" card: Downloaden, Afspelen) stays the
+   row's third column -- 36 to 80px beside a long name is right. An `.acts` that carries VALUE
+   controls (an order's "In deze bestelling": the count, the exclude toggle, a spool trigger) takes
+   `.pp-asset.band`: a line of its own under the name block, left-aligned, starting at the name's
+   left edge. Measured by the app at the real container width (794px): those controls want 609px at
+   max-content, the grid reserved all of it, the controls WRAPPED anyway, and the file name was
+   clipped to its 240px floor to pay for a single-line shape that was never drawn. In the band the
+   name gets the row's full width (about 738px at 794) and the controls get 609 on one line.
+   `--pp-name-min` stays: it still floors the name column of the rows that keep three columns. */
+@container (min-width:760px){.pp-asset.band{grid-template-columns:auto minmax(0,1fr)}.pp-asset.band .acts{grid-column:2/-1;justify-content:flex-start}}
+
+/* ROWS AGREE WHEN AT MOST ONE CONTROL'S WIDTH IS DATA, AND IT IS THE LAST ONE. The band is ordered
+   count, exclude toggle, spool trigger, then `.end` with the icon buttons pinned to the row's right
+   edge. The first two carry fixed words, so they start at the same x in every row; the trigger grows
+   with the spool's name but starts at a fixed x; the icon buttons end at a fixed x. Before this the
+   band was right-aligned flex, so "Aantal keer geprint" landed somewhere different in every row. */
+.pp-asset .acts>.end{display:flex;align-items:center;gap:var(--space-2);margin-left:auto}
+
+/* GAP-160: a line's second band is ONE element -- `.pp-badge`, or `.pp-badges` when the line can
+   carry two (Openstaand's age badge beside Gearchiveerd). Both are named by the phone rule now.
+   Before this the wrapper had no class the rule names, so nothing placed it and it landed in the
+   right cell only because grid auto-placement happened to fill that cell next. */
+.pp-badges{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1);min-width:0}
+
+/* GAP-153: the last two twins that can exist. `:root`'s phone query cannot fire inside a 360px
+   CONTAINER, so a phone frame drew 36px tap targets and 15px inputs where the app draws 44px and
+   16px; the app measured 36px inside every published frame. Setting the two tokens on the frame
+   itself makes every rule that reads them -- `.pp-btn`, `.pp-btn-icon`, `.pp-opt`, `.pp-chip`,
+   `.pp-pal button`, the menu items -- draw the phone's size in the frame. The frames get taller;
+   that is the fault being shown, not a regression. `.pp-dialog.sheet` and `.pp-pop.at` still have no
+   twin and cannot have one: both are `position: fixed` against the window, and a 360px container is
+   not a window. A preview can only show those by being a 360px-wide page. */
+.pp-device.phone{--pp-control-h:44px;--pp-tap:44px}
+.pp-device.phone .pp-input,.pp-device.phone .pp-select{font-size:var(--text-md)}

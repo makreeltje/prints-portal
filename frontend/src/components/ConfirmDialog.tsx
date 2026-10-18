@@ -62,6 +62,8 @@ export function ConfirmDialog({
       busy={busy}
       size="sm"
       alert={destructive || alert}
+      // A confirmation never closes on a backdrop click (Dialog 2.13, GAP-147).
+      confirmation
       describedBy={body === undefined ? undefined : bodyId}
       icon={
         destructive ? (

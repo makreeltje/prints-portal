@@ -20,6 +20,7 @@ export function Dialog({
   size,
   panelClass,
   onSubmit,
+  confirmation = false,
 }: {
   open: boolean;
   title: string;
@@ -43,6 +44,12 @@ export function Dialog({
   panelClass?: string;
   /** Makes the panel a form, so Enter submits. */
   onSubmit?: () => void;
+  /**
+   * This is a ConfirmDialog, so a backdrop click never closes it (Dialog
+   * 2.13, GAP-147). Set by ConfirmDialog and by nothing else: the rule is by
+   * kind, and `alert` is a role, which a confirmation does not always carry.
+   */
+  confirmation?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -77,15 +84,16 @@ export function Dialog({
         if (!busy) onClose();
       }}
       /*
-        A click beside the panel closes a dialog that has nothing to lose
-        (`ds-gap: GAP-147`). Not one with a form or a destructive confirmation:
-        there a stray click would discard work or answer a question nobody
-        meant to answer. The target test is how a native dialog reports a
-        backdrop click — the event lands on the dialog element itself, never on
-        anything inside the panel.
+        A click beside the panel, by kind and not by state (Dialog 2.13,
+        GAP-147): a dialog that only shows something closes, a dialog with a
+        form does not, and a ConfirmDialog never does, destructive or not. A
+        dialog that refuses does nothing visible — no flash and no shake; Esc,
+        the close button and Annuleren are the two visible ways out. The target
+        test is how a native dialog reports a backdrop click: the event lands
+        on the dialog element itself, never on anything inside the panel.
       */
       onClick={(event) => {
-        if (busy || onSubmit !== undefined || alert) return;
+        if (busy || onSubmit !== undefined || confirmation) return;
         if (event.target === ref.current) onClose();
       }}
     >

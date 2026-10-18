@@ -3,7 +3,11 @@ import type { ReactNode, RefObject } from 'react';
 
 /**
  * Renders children outside the stacking contexts between `from` and the page,
- * while staying inside whatever modal `from` sits in.
+ * while staying inside whatever modal `from` sits in. This is the design
+ * system's rule for every window-placed panel, written down in 2.13
+ * (README *Floating panels* rule 9, Popover and OverflowMenu 2.13, GAP-146):
+ * a `.pp-pop.at` or `.pp-tip.at` is a child of the nearest open `<dialog>`,
+ * else of `<body>`, and never of its trigger's wrapper.
  *
  * A window-placed panel (`.pp-pop.at`, `.pp-tip.at`) escapes clipping because
  * it is `position: fixed`, but a fixed box is still painted inside its

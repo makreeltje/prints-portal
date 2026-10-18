@@ -8,7 +8,6 @@ describe('t', () => {
 
   it('picks ICU plural forms', () => {
     expect(t('customers.printCount', { count: 1 })).toBe('1 print');
-    expect(t('customers.printCount', { count: 0 })).toBe('0 prints');
     expect(t('customers.printCount', { count: 12 })).toBe('12 prints');
     expect(t('confirm.deleteCustomerBody', { count: 1 })).toBe(
       'De print van deze klant wordt verborgen. De financiële gegevens blijven bewaard en een beheerder kan de klant herstellen.',
@@ -35,6 +34,19 @@ describe('t', () => {
     expect(t('outstanding.oldestDays', { days: 0 })).toBe('alles van vandaag');
     expect(t('outstanding.oldestDays', { days: 1 })).toBe('oudste 1 dag');
     expect(t('outstanding.oldestDays', { days: 741 })).toBe('oudste 741 dagen');
+  });
+
+  /*
+    Two more zero arms, both because zero is a state and not a measurement
+    (2.13): a klant with an empty folder is the start state of every new
+    klant, and a spool with nothing on it is "leeg", not "0 g over"
+    (GAP-161, GAP-162).
+  */
+  it('says the word where zero means a state', () => {
+    expect(t('customers.printCount', { count: 0 })).toBe('Nog geen prints');
+    expect(t('spool.remaining', { grams: 0 })).toBe('leeg');
+    expect(t('spool.remaining', { grams: 1 })).toBe('1 g over');
+    expect(t('spool.remaining', { grams: 544 })).toBe('544 g over');
   });
 
   /*

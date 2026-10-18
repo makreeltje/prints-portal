@@ -234,3 +234,35 @@ Added in 1.1: neutral badge, remaining-amount line, duplicate hint, and the thre
 **What 2.0 did and 2.3 withdrew.** 2.0 baked `#6f7a96` — the *light* `border-strong` value — into the server-rendered PNG, which measured 3.69:1 on light `surface-2` and 3.53:1 on dark. Both pass, but one ink for two grounds passes by luck: nothing in the system guarantees that a value chosen for one theme clears the other, and a baked value cannot be changed without re-encoding the library. The two rows above are the token's own values, which is what this report is for.
 
 **The chip inside the trigger (GAP-115).** `pp-hintchip` keeps its own `surface-2` ground and `muted` text (4.5:1 or more on `surface-2`, in the tables above) when it moves inside a `.pp-btn-secondary` trigger; the trigger's ground is `surface`, so the chip's dashed `border-strong` edge is measured against `surface` instead of `surface-2`. Both values are above, and both pass.
+
+## Added in 2.13
+
+**One new ground pair, and it is a chip in a list row (GAP-161).** `pp-hintchip` now also marks an
+archived spool, so the chip appears inside a **listbox option**, whose ground is `surface` at rest,
+`primary-tint-soft` on the keyboard-active row and `primary-tint` on the selected one. The chip
+keeps its own opaque `surface-2` ground and `muted` text, so its **text** is unchanged and already
+in the tables above (5.18 light, 6.06 dark on `surface-2`). What is new is its dashed
+`border-strong` edge against the tinted row behind it.
+
+| Theme | Use | Pair | Ground | Ratio | Needed | Result |
+|---|---|---|---|---|---|---|
+| light | chip border | `border-strong` dashed edge of `pp-hintchip` in a picker option | `primary-tint-soft` over `surface` | 3.83 | 3 | pass |
+| light | chip border | `border-strong` dashed edge of `pp-hintchip` in a picker option | `primary-tint` over `surface` | 3.49 | 3 | pass |
+| dark | chip border | `border-strong` dashed edge of `pp-hintchip` in a picker option | `primary-tint-soft` over `surface` | 3.31 | 3 | pass |
+| dark | chip border | `border-strong` dashed edge of `pp-hintchip` in a picker option | `primary-tint` over `surface` | **2.95** | 3 | **under** |
+| light | chip border | `border-strong` dashed edge of `pp-hintchip` against its own ground | `surface-2` | 3.69 | 3 | pass |
+| dark | chip border | `border-strong` dashed edge of `pp-hintchip` against its own ground | `surface-2` | 3.32 | 3 | pass |
+
+**The one value under 3:1 is recorded, not rounded up, and nothing is changed for it.** On a
+*selected* option in the *dark* theme the chip's outer edge measures 2.95 against the row's tint.
+The same hairline measures **3.32** against the chip's own `surface-2` ground, which is the contour
+that makes the chip read as a chip, and the chip's **text** — the thing that carries the fact — is
+`muted` on `surface-2` at 6.06. No information lives in that border: the word "archief" is real
+text, the archived options sort last, and the search word finds them. Raising the chip's border to
+clear 2.95 would mean a stronger ink on every chip in the system for a state nobody has to detect
+from a dashed line, and tinting the chip's ground would make it the only chip whose ground follows
+its row. So: measured, named, and deliberately left.
+
+**Nothing else this round has ink.** A grid track, a row shape, a named wrapper, a slot that moved
+and a sentence written once instead of twelve times: no new colour, no new token, no changed value.
+

@@ -374,6 +374,34 @@ describe('DashboardPage', () => {
     });
   });
 
+  /*
+    A klant is a folder on disk, so one can exist with nothing in it — the
+    start state of every new klant. The count says the word, neither act has
+    an object, so the "⋯" is not rendered at all, and the tile still filters
+    onto a state that says something (CustomerCard 2.13, GAP-162).
+  */
+  it('renders a klant with no prints with no acts and filters onto its own empty state', async () => {
+    stubFetch({
+      'GET /api/prints': () => ({ json: { items: [], total: 0 } }),
+      'GET /api/customers': () => ({
+        json: { customers: [{ folder: 'Anouk', printCount: 0, deleted: false }] },
+      }),
+      'GET /api/tags': () => ({ json: tags }),
+      'GET /healthz': () => ({ json: { checks: { printsRoot: { status: 'up' } } } }),
+    });
+    renderDashboard('/?klant=Anouk');
+    await userEvent.click(await screen.findByRole('button', { name: /Klantenoverzicht/ }));
+    const tile = within(screen.getByRole('dialog'));
+    expect(tile.getByText('Nog geen prints')).toBeInTheDocument();
+    expect(tile.queryByRole('button', { name: 'Meer acties' })).not.toBeInTheDocument();
+    expect(tile.queryByRole('button', { name: 'Factuur' })).not.toBeInTheDocument();
+    expect(tile.queryByText('Alles betaald')).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    expect(
+      await screen.findByRole('heading', { name: 'Nog geen prints voor Anouk' }),
+    ).toBeInTheDocument();
+  });
+
   it('subscribes to live updates, refetches and flashes the changed card', async () => {
     let version = 'v1';
     stubFetch({

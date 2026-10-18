@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-18T00:55:00Z",
+  "at": "2026-10-18T13:40:00Z",
   "via": "Claude Code",
-  "note": "2.12: GAP-154, GAP-155, GAP-156 all resolved. The queue summary's \"waarvan n zonder bestanden\" moves out of .amt into .ttl (.amt stays, empty); .age gets justify-self:start; .pp-btn-sm takes the 44px tap floor on the phone and .pp-line .acts wraps. outstanding.groupMeta is the count alone, outstanding.groupLabel is new with plurals, share.expiresIn removed. No token added, renamed or removed; no new class. README.md and changelog.md were four rounds stale on the artifact and are restored from the 2.11 export with 2.12 on top."
+  "note": "2.13: GAP-101 and GAP-111 reopened and resolved, plus GAP-146, GAP-147, GAP-153, GAP-160, GAP-161, GAP-162. .pp-settings can no longer make a third column and the sections that list records take the whole row; a file row is align-items:start with a named .lead cell and an .acts band on its own line when it carries value controls. A window-placed panel is rendered in the nearest open <dialog>. New classes .pp-badges, .pp-setrow.cust, .pp-asset.band, .lead, .acts > .end. Nine new copy keys, customers.printCount gains a zero arm. No token added, renamed or removed."
  },
  "layout": "files",
  "libraries": [],

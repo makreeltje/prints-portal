@@ -36,3 +36,56 @@ Max width is unchanged (`min(360px, 100vw - space-7)`), so the horizontal axis w
 **Rejected: "a card must not clip an open panel."** It is the cheaper rule exactly once — in the card where the bug was found — and after that it is an obligation on every card in the system, including the ones that clip on purpose: `.pp-flush` exists so a full-bleed table keeps the card's rounded corners. It also fails the moment a panel is taller than its card, which is the ordinary case for a 302px picker in a file row. A panel's placement is the panel's problem. The placeholder (the card stops clipping while a panel is open) can go when `.at` lands.
 
 **Drawn:** the picker as `.pp-pop.at` escaping a clipping `pp-card pp-flush`, in the preview.
+
+**2.13.** (2026-10-18) **A window-placed panel leaves its wrapper, and this is the rule for all of
+them (GAP-146, resolved).** Three components have taken the same placeholder one at a time — the
+klant tile's OverflowMenu (2.7), the Tooltip, and this week the SpoolPicker, where the owner saw an
+open spool list with the rows' own buttons drawn across it. Measured before the fix, on a print with
+four files: opening row 2's picker left **two triggers painting over the panel, 200 × 32 each**, and
+the panel lost every probe; rows 3 and 4 the same. The cause is one sentence: **`.pp-lift` is
+`position: relative; z-index: var(--z-raised)`, so it is a stacking context, and a panel inside it
+is compared only against its siblings *inside that wrapper*.** `z-popover` (30) never meets the
+later rows at all; whichever lifted element comes last in the DOM wins.
+
+**The rule, as rule 9 of *Floating panels* in `README.md`:** a panel in the `.at` form is rendered
+**as a child of the nearest open `<dialog>`, else of `<body>`** — never inside its trigger's
+wrapper. Nothing else may be its parent.
+
+- **`.at` alone is not enough, and the app proved it by building it.** A fixed box escapes
+  **clipping**, not its ancestors' **stacking contexts**. Those are two different failures with one
+  symptom, and 2.3 only named the first.
+- **Portalling all the way to the body is also wrong.** A modal `<dialog>` paints in the top layer,
+  so a panel outside it lands beneath the whole modal. Measured over a grid of 575 points per menu:
+  anchored **1 of 11** menus clear, portalled to the body **0 of 11**, portalled to the nearest open
+  `<dialog>` **11 of 11**. The rule names the dialog because the measurement does.
+- **Rejected: taking the `z-index` off `.pp-lift`.** It would fix this case — with no stacking
+  context the panel's 30 competes globally — and it is the cheaper line of CSS. It is rejected
+  because `.pp-lift` exists *for* that z-index: it puts a trigger above a stretched card or row link
+  (`.pp-cust-name::after`, inset 0). Without it, whether the trigger is above the hit area depends
+  on DOM order between the two, which differs per component and fails silently — a worse version of
+  the bug being fixed. And it would fix only the wrapper we own: a card with `overflow: hidden`, a
+  `transform`, a `filter` or a `mask` above the trigger brings the panel back under or inside
+  something. **A panel's placement is the panel's problem**, which is the rule this system has
+  already taken twice (2.2 for the window, 2.3 for clipping).
+- **`.pp-lift` is unchanged**, and it joins the list of things in rule 8 that confine a panel. The
+  list is now: `overflow` that clips or scrolls, `transform`, `filter`, `backdrop-filter`, `mask` —
+  and **any stacking context, `.pp-lift` included**. A trigger inside one of those takes `.at`; a
+  trigger in plain page flow keeps the anchored form, which is what the previews draw.
+- **The trade this rule makes, said out loud: a portalled panel is not next to its trigger in the
+  DOM, so Tab order cannot carry it.** The Accessibility paragraph above says "put the panel right
+  after its trigger"; for an `.at` panel that is impossible. So an `.at` panel is **focus-managed
+  instead of DOM-ordered**: focus moves into the panel on open and back to the trigger on close, Esc
+  closes, and focus leaving the panel closes it — the same contract OverflowMenu already states for
+  its items. Its `aria-controls`/`aria-expanded` pair is what ties the two together for a screen
+  reader, and it is no longer optional.
+- **This is checkable, which matters more than the prose:** `.pp-pop` or `.pp-tip` without `.at`
+  inside a `.pp-lift` or a `.pp-anchor` inside a `.pp-lift` is a violation a grep can find, and the
+  three placeholders in the app are already the specified behaviour, so their `ds-gap` markers can
+  go.
+
+**A fault that needs a particular scroll position to appear is one verification keeps missing** —
+the app's own note, and the argument for a rule rather than a fourth patch. The picker opened
+*upward* on every screen it was tested on.
+
+**No new class, no new token, no CSS change.** `.pp-pop.at` and `.pp-tip.at` are unchanged; what
+changes is where the app puts them.

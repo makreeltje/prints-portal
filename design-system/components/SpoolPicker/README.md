@@ -56,3 +56,61 @@ If a file-level spool ever governs its own slots, the same chip applies with "va
 **Both themes, no new pair.** `pp-help` is `muted` on `surface` in both themes and is already in the contrast report; nothing visual changes.
 
 **Drawn in the preview:** all four cells, each with the trigger state that goes with it, and the n = 1 singular.
+
+**2.13.** (2026-10-18) **What is left on a spool, and what is not in stock any more (GAP-161,
+resolved).** Measured against the owner's Spoolman: **31 spools, 29 active, 24 distinct names**;
+three names cover several physical spools and two of those are identical in every field Spoolman
+has. The list drew them as two identical rows and the owner read them as duplicates.
+
+**The option's meta line is now three parts: "{materiaal} · {leverancier} · {rest}".** The remaining
+weight is what tells two identical spools apart, and it is also **what you choose on** — a small
+print goes on the spool that is nearly empty. It is an observed figure from Spoolman, so it needs no
+date (`README.md` rule 1). `spool.remaining` carries a **zero arm**: an empty spool reads **"leeg"**,
+not "0 g over". The owner noticed the odd reading and he is right — "0 g over" is a figure where a
+word is meant, which is the rule this deck has followed since 2.11 ("sinds vandaag open", "alles van
+vandaag"). The price per kg keeps its own right-aligned cell.
+
+**(a) May a state use `pp-hintchip`? Yes, and the chip's definition was too narrow, not the use.**
+The chip has carried "uit de map", "slicer" and "van de print", and I described it as *provenance*.
+What it has always been is **a qualification of the value it sits on, in words, with no ink, no icon
+and nothing to do**: where the value came from is one qualification, whether it is still in stock is
+another. So **"archief" takes the chip**, and the boundary is written down instead of the examples:
+
+- **It may not carry something that needs doing.** That is a `warning` badge with a reason line. An
+  archived spool needs nothing: choosing it is correct for an old print, which is why the archive is
+  in the list at all.
+- **It may not carry something that changes money.** A value is a value; the weight and the price
+  are cells of their own, not chips.
+- **It is never the only carrier of the fact.** "archief" is real text inside the option, the
+  archived spools sort last, and typing "archief" finds exactly them — all three already built.
+- **It goes with the value.** When an archived spool is the one in force, the chip travels to the
+  **trigger**, beside the name, exactly as "van de print" does (2.3). What is in force is shown with
+  its qualification attached, or the row is lying by omission.
+
+`title="Gearchiveerd in Spoolman"` stays as the app built it; it is an aid, never the carrier.
+
+**(b) Does `pp-minw-200` still hold? Yes, and nothing is capped.** 200px is a **floor**, not a width:
+a trigger grows with its content and the widest one in this library measured **216px** (2.2). The
+longer *option* line lives in the 320px panel and never reaches the trigger. The pressure that would
+have forced a cap was the row's third column, and AssetListItem's 2.13 band removes it — the trigger
+now sits in a band of about 738px. **So the trigger does not truncate, and no spool name is cut.**
+
+**On "Creality Skin Hype…", which I cannot explain: measure it.** Nothing in `bundle.css` truncates
+a trigger — `.pp-btn` is `white-space: nowrap` with no `overflow` and no `text-overflow`, and
+`.pp-spoolbtn` only sets a `min-width`. Tell me which element clips (`scrollWidth` against
+`clientWidth`, and which ancestor has the `overflow`): if it is an app-side cap, remove it; if this
+system is doing it somewhere I have not found, log it as its own gap and I will decide it with the
+markup in front of me. **If a trigger ever does have to truncate, the cut is in the middle** — a
+spool name is brand and material at the front and colour at the end, so both ends identify it, like
+a file name and unlike a URL (`README.md`, *Typography*, 2.4). That is the rule, not a built form:
+nothing in the export truncates a trigger today.
+
+**Both themes.** No new token and no new class. One new ground pair is measured and in
+`contrast.md`: the chip's dashed `border-strong` edge against a **hovered** (`primary-tint-soft`)
+and a **selected** (`primary-tint`) option row — 3.83 and 3.49 light, 3.31 and **2.95** dark. The
+one value under 3:1 is the chip's outer edge on a selected row in the dark theme; the same edge
+measures **3.32** against the chip's own opaque `surface-2` ground, which is the contour that makes
+the chip a chip, and the chip's text is `muted` on `surface-2` at 4.5:1 or better in both themes.
+Nothing depends on that hairline, and it is recorded rather than rounded up.
+
+**Dutch copy (new).** archief | Gearchiveerd in Spoolman | {grams, plural, =0 {leeg} other {# g over}}

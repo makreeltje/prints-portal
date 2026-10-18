@@ -97,9 +97,21 @@ export function SettingsPage() {
           setLeaveTo(null);
         }}
       />
-      {/* Columns of at least 320px up to a 1080px measure (GAP-101). */}
+      {/*
+        Two columns up to a 1080px measure, never three: the track is
+        `max(320px, 50% - space-2)`, so a third cannot fit at any width
+        (ScreenSettings 2.13, GAP-101). The other half of the fix is this
+        order. A section that lists records — one card or row per thing the
+        owner has — takes the whole row, because `align-items: start` makes
+        the next row begin where the tallest card of this one ends, and a
+        1580px Printers put 1402px of nothing beside a 194px Algemeen. The
+        four fixed sections are paired by what they are: Algemeen with
+        Spoolman (the system), Prijzen with Bedrijfsgegevens (the studio),
+        then the two lists, longest last.
+      */}
       <div className="pp-settings">
         <GeneralSection />
+        <SpoolmanSection />
         {settings.isPending ? (
           <LoadingRows rows={3} />
         ) : settings.isError ? (
@@ -107,12 +119,13 @@ export function SettingsPage() {
         ) : (
           <>
             <PricingSection pricing={settings.data.pricing} />
-            <PrintersSection printers={settings.data.printers} />
             <CompanySection company={settings.data.company} report={report} />
+            <PrintersSection printers={settings.data.printers} />
           </>
         )}
-        <CustomersSection />
-        <SpoolmanSection />
+        <CustomersSection
+          noIban={settings.data !== undefined && settings.data.company.iban.trim() === ''}
+        />
       </div>
     </>
   );
@@ -122,15 +135,22 @@ function Section({
   title,
   children,
   dirty = false,
+  wide = false,
 }: {
   title: string;
   children: ReactNode;
   /** Shows the "Niet opgeslagen" badge (ScreenSettings 1.9, GAP-083). */
   dirty?: boolean;
+  /**
+   * `span-2`: a section that draws one card or row per thing the owner has
+   * takes the whole row, so its height does not reserve empty space beside
+   * the short sections (ScreenSettings 2.13, GAP-101).
+   */
+  wide?: boolean;
 }) {
   const id = useId();
   return (
-    <section className="pp-card pp-sec" aria-labelledby={id}>
+    <section className={wide ? 'pp-card pp-sec span-2' : 'pp-card pp-sec'} aria-labelledby={id}>
       <div className="pp-row pp-items-center pp-gap-2">
         <h2 id={id}>{title}</h2>
         {dirty && (
@@ -343,7 +363,8 @@ function CompanySection({
   );
 }
 
-function CustomersSection() {
+function CustomersSection({ noIban }: { noIban: boolean }) {
+  const fieldId = useId();
   const toast = useToast();
   const queryClient = useQueryClient();
   const customers = useQuery({
@@ -376,13 +397,20 @@ function CustomersSection() {
     }
   };
   return (
-    <Section title={t('settings.customers')}>
+    <Section title={t('settings.customers')} wide>
       <span className="pp-help">{t('customers.notBilledHelp')}</span>
+      {/*
+        Written once under the heading, not once per klant: a label belongs to
+        its control, an explanation belongs to the section (ScreenSettings
+        2.13, GAP-101). Twelve copies of one sentence are one fact and eleven
+        obstacles between the owner and the next klant.
+      */}
+      <span className="pp-help">{t('settings.payLink.help')}</span>
       {customers.isPending && <LoadingRows rows={2} />}
       {customers.isSuccess && (
         <ul className="pp-plain">
           {customers.data.customers.map((customer) => (
-            <li key={customer.folder} className="pp-row pp-setrow">
+            <li key={customer.folder} className="pp-setrow cust">
               <span>
                 <b className="pp-strong">{customer.folder}</b>{' '}
                 <span className="pp-muted pp-text-sm">
@@ -406,9 +434,10 @@ function CustomersSection() {
                 not billed: they see no amounts at all.
               */}
               {!customer.noBilling && (
-                <label className="pp-field pp-w-320">
-                  <span className="pp-label">{t('customers.payLink')}</span>
+                <div className="pp-field pp-w-420">
+                  <label htmlFor={`${fieldId}-${customer.folder}`}>{t('settings.payLink')}</label>
                   <input
+                    id={`${fieldId}-${customer.folder}`}
                     type="url"
                     className="pp-input"
                     inputMode="url"
@@ -417,20 +446,27 @@ function CustomersSection() {
                     disabled={saving === customer.folder}
                     onBlur={(event) => void saveLink(customer.folder, event.target.value)}
                   />
-                  <span className="pp-help">{t('customers.payLinkHelp')}</span>
                   {/* An old link is then visibly old, without the app guessing
                       at an expiry it cannot read (GAP-103). */}
                   {/* A truthy check, not `!== null`: a role that may not see
                       the link gets no field at all, and an older payload has
                       neither. */}
                   {customer.payLink != null && customer.payLinkAddedAt != null && (
-                    <span className="pp-muted pp-text-xs">
-                      {t('customers.payLinkAdded', {
+                    <span className="pp-help">
+                      {t('settings.payLink.added', {
                         datum: formatDate(customer.payLinkAddedAt),
                       })}
                     </span>
                   )}
-                </label>
+                  {/*
+                    The missing-IBAN warning in Bedrijfsgegevens is not read as
+                    "this klant cannot pay" when this klant has a link of its
+                    own (ScreenSettings 2.0.1, keyed at last in 2.13).
+                  */}
+                  {noIban && customer.payLink != null && (
+                    <span className="pp-help">{t('settings.payLink.noIban')}</span>
+                  )}
+                </div>
               )}
             </li>
           ))}

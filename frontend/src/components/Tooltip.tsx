@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { Portal } from './Portal';
 import { placeTip } from './tipPlacement';
 
 /**
@@ -8,6 +9,14 @@ import { placeTip } from './tipPlacement';
  * lives inside `.pp-print`, which is `overflow: hidden`. The app passes the
  * trigger's measured rect as `--pp-tip-x`/`--pp-tip-y` and picks the side per
  * axis; every length stays in `bundle.css` (design system 2.2, Floating panels).
+ *
+ * The bubble leaves the wrapper: a window-placed panel is rendered in the
+ * nearest open `<dialog>`, else in `<body>`, and never inside its trigger's
+ * wrapper (README *Floating panels* rule 9, 2.13). `.pp-lift` is
+ * `position: relative; z-index: var(--z-raised)`, so a bubble left inside it
+ * is compared only against that wrapper's own siblings. Its place on screen
+ * does not move: `.pp-tip.at` is `position: fixed` at the trigger's measured
+ * viewport rect, which is the same number wherever the element lives.
  *
  * The bubble is `aria-hidden` because its text *is* the trigger's accessible
  * name rather than an addition to it, so there is deliberately no
@@ -58,9 +67,11 @@ export function Tooltip({ label, children }: { label: string; children: ReactNod
     >
       {children}
       {open && (
-        <span ref={bubble} className="pp-tip at" role="tooltip" aria-hidden="true">
-          {label}
-        </span>
+        <Portal from={anchor}>
+          <span ref={bubble} className="pp-tip at" role="tooltip" aria-hidden="true">
+            {label}
+          </span>
+        </Portal>
       )}
     </span>
   );

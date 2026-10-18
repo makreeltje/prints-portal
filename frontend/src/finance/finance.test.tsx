@@ -405,7 +405,9 @@ describe('SpoolPicker', () => {
     expect(await screen.findByRole('option', { name: /1000 g over/ })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: /294 g over/ })).toBeInTheDocument();
     const archived = screen.getByRole('option', { name: /archief/ });
-    expect(archived).toHaveTextContent('0 g over');
+    // Zero is a state, not a measurement: "leeg", never "0 g over" (2.13, GAP-161).
+    expect(archived).toHaveTextContent('leeg');
+    expect(archived).not.toHaveTextContent('0 g over');
     // It is choosable: that is the whole point of asking for the archive.
     await userEvent.click(archived);
     expect(onChange).toHaveBeenCalledWith(4);
