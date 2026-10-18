@@ -40,7 +40,7 @@ References like §6 point to the original build brief; A1–H6 and C1–C3 to th
 | Times printed | Per G-code/plate count, default 1, multiplies grams, time and cost. |
 | Duplicates | Same project + same size + identical slicer metadata → "Mogelijk dubbel" warning, also for existing copies. Existing copies still count once each. |
 | Auto-exclude | Duplicate-3MF rule above; files under configurable subfolder names (`Nog te printen`, `Test`). User can always flip. |
-| Subfolders | Everything below `customer/project/` belongs to that project's record; the subfolder path is shown. `Board Games/Spirit Island` is project "Board Games". |
+| Subfolders | Everything below `customer/project/` belongs to that project's record; the subfolder path is shown. `Deurstop v2/Spirit Island` is project "Deurstop v2". |
 | Ignored | Dot files and dot folders (`.thumbs`, `.thumbnails`, `.DS_Store`, `._*`), `__MACOSX`, `Thumbs.db`, `desktop.ini`, `*.part`, `~$*`, Nextcloud temporary-upload files. Configurable. |
 | Asset types | §2.2, case-insensitive extensions. `.step` and `.cxprj` are Other; a `.cxprj` plate image is the last-resort thumbnail. |
 | Thumbnail order | Embedded G-code PNG → 3MF plate image → server-rendered STL → `.cxprj` image → none. |

@@ -36,6 +36,6 @@ describe('placeOf', () => {
   });
 
   it('does not collapse two different names to the same squash', () => {
-    expect(squashName('Azul')).not.toBe(squashName('Azul 2'));
+    expect(squashName('Wiel')).not.toBe(squashName('Wiel 2'));
   });
 });

@@ -74,8 +74,8 @@ describe('locatePrintFile', () => {
       subFolders: ['Nog te printen'],
       fileName: 'lock.gcode',
     });
-    expect(locatePrintFile('Veerle/Board Games/Spirit Island/tray.stl')).toMatchObject({
-      projectFolder: 'Board Games',
+    expect(locatePrintFile('Veerle/Deurstop v2/Spirit Island/tray.stl')).toMatchObject({
+      projectFolder: 'Deurstop v2',
       subFolders: ['Spirit Island'],
     });
   });
@@ -131,7 +131,7 @@ describe('parseGcodeFileName', () => {
   });
 
   it.each([
-    ['Water Dragon_PLA_5h17m_2.gcode', 'Water Dragon', 19_020],
+    ['Haakjes lang_PLA_5h17m_2.gcode', 'Haakjes lang', 19_020],
     ['puzzle_tray_PLA_2h38m copy.gcode', 'puzzle_tray', 9480],
     ['puzzle_tray_PLA_2h38m copy 2.gcode', 'puzzle_tray', 9480],
     ['IkeaAlexSewing_PLA_2h9m-2.gcode', 'IkeaAlexSewing', 7740],
@@ -143,7 +143,7 @@ describe('parseGcodeFileName', () => {
       'Koker klein 158mm one side cut v7',
       5580,
     ],
-    ['Laptop Tablet Foldable Stand_PLA_2h39m 2.gcode', 'Laptop Tablet Foldable Stand', 9540],
+    ['Lampvoet ring met twee gaten_PLA_2h39m 2.gcode', 'Lampvoet ring met twee gaten', 9540],
     ['c_x4_k1max_v3_vents_ABS_58m54s_4.gcode', 'c_x4_k1max_v3_vents', 3534],
   ])('accepts the copy suffix in %s', (name, partName, seconds) => {
     expect(parseGcodeFileName(name)).toMatchObject({ partName, printTimeSeconds: seconds });
