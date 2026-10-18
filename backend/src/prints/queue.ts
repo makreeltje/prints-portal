@@ -81,7 +81,34 @@ export async function queue(db: Kysely<Database>, now: string): Promise<QueueGro
   }
 
   const asked = Date.parse(now);
-  const rows: QueueRow[] = records.flatMap((row) => {
+  /*
+    One row per print, however many of its orders carry a state. The join is
+    on the orders, so a print with two of them in a queue state arrived here
+    twice — the same job drawn twice, with the same key. A nabestelling starts
+    without a state, so this needs the owner to set one on both; he can, from
+    each order's own control on the print page.
+
+    When two orders disagree, the least settled wins, which is the order the
+    groups are already in: what is undecided comes before what is under way.
+  */
+  const PRECEDENCE: readonly RequestState[] = ['undecided', 'inProgress'];
+  const oneEach = new Map<string, (typeof records)[number]>();
+  for (const row of records) {
+    const seen = oneEach.get(row.id);
+    // Anything outside the two queue states loses: `indexOf` would rank a
+    // declined or stateless order at -1 and win with it, and the print would
+    // then be dropped by the filter below although one of its orders belongs
+    // in the queue.
+    const rank = (value: string | null) => {
+      const at = PRECEDENCE.indexOf(parseRequestState(value) as RequestState);
+      return at === -1 ? Number.POSITIVE_INFINITY : at;
+    };
+    if (seen === undefined || rank(row.request_state) < rank(seen.request_state)) {
+      oneEach.set(row.id, row);
+    }
+  }
+
+  const rows: QueueRow[] = [...oneEach.values()].flatMap((row) => {
     const state = parseRequestState(row.request_state);
     if (state === null || state === 'declined') return [];
     const orders = money.get(row.id) ?? [];

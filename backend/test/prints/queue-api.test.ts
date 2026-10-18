@@ -31,6 +31,7 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
           id: string;
           name: string;
           hasFiles: boolean;
+          requestState: string;
           waitingDays: number;
           source: { url: string; label: string } | null;
           sourceCount: number;
@@ -110,6 +111,63 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
     expect(group?.rows.length).toBe(2);
     expect(group?.rows[0]?.hasFiles).toBe(false);
     expect(group?.withoutFiles).toBe(1);
+  });
+
+  it('shows a print once, however many of its orders carry a state', async () => {
+    const print = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
+      items: { id: string }[];
+    }>().items[0];
+    const id = print?.id ?? '';
+    const detail = async () =>
+      (await t.as(admin, { url: `/api/prints/${id}` })).json<{
+        orders: { id: string }[];
+        assets: { lines: { id: string }[] }[];
+      }>();
+    const first = await detail();
+    // A nabestelling of the same print: a second order on one record.
+    await t.as(admin, {
+      method: 'POST',
+      url: `/api/prints/${id}/orders`,
+      payload: {
+        items: [{ lineId: first.assets[0]?.lines[0]?.id ?? '', timesPrinted: 1 }],
+      },
+    });
+    const both = (await detail()).orders;
+    expect(both.length).toBe(2);
+    // Both set to the same queue state, which the owner can do per order.
+    for (const order of both) {
+      await t.as(admin, {
+        method: 'PUT',
+        url: `/api/orders/${order.id}/state`,
+        payload: { state: 'undecided' },
+      });
+    }
+    const rows = (await queue()).groups.flatMap((group) => group.rows);
+    // One print, one row: the Wachtrij lists work, and this is one job.
+    expect(rows.filter((row) => row.id === id).length).toBe(1);
+    expect(new Set(rows.map((row) => row.id)).size).toBe(rows.length);
+
+    // Disagreeing orders: the least settled decides, and the print stays.
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/orders/${both[0]?.id ?? ''}/state`,
+      payload: { state: 'inProgress' },
+    });
+    const mixed = await queue();
+    expect(mixed.groups.find((g) => g.state === 'undecided')?.rows.some((r) => r.id === id)).toBe(
+      true,
+    );
+    expect(mixed.groups.flatMap((g) => g.rows).filter((r) => r.id === id).length).toBe(1);
+
+    // And an order outside the queue states never speaks for the print.
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/orders/${both[1]?.id ?? ''}/state`,
+      payload: { state: 'declined' },
+    });
+    const after = (await queue()).groups.flatMap((g) => g.rows).filter((r) => r.id === id);
+    expect(after.length).toBe(1);
+    expect(after[0]?.requestState).toBe('inProgress');
   });
 
   it('links a request to the folder that appeared, and keeps the real print', async () => {
