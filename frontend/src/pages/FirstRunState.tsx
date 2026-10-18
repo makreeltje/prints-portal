@@ -25,15 +25,15 @@ export function FirstRunState({ onReindex }: { onReindex?: () => void }) {
         <div className="pp-mono pp-tree">
           prints/
           <div className="pp-indent-1">
-            └─ <b>Joey</b>/ <span className="pp-hintchip">{t('system.folderCustomer')}</span>
+            └─ <b>Koen</b>/ <span className="pp-hintchip">{t('system.folderCustomer')}</span>
           </div>
           <div className="pp-indent-3">
-            └─ <b>Babybox locks</b>/{' '}
+            └─ <b>Bloembak clips</b>/{' '}
             <span className="pp-hintchip">{t('system.folderProject')}</span>
           </div>
-          <div className="pp-indent-4">├─ Babybox_locks.gcode</div>
-          <div className="pp-indent-4">├─ Babybox_locks.3mf</div>
-          <div className="pp-indent-4">└─ Babybox_locks.stl</div>
+          <div className="pp-indent-4">├─ Bloembak_clips.gcode</div>
+          <div className="pp-indent-4">├─ Bloembak_clips.3mf</div>
+          <div className="pp-indent-4">└─ Bloembak_clips.stl</div>
         </div>
       </div>
       {onReindex !== undefined && (

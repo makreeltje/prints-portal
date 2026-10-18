@@ -169,7 +169,7 @@ describe.each(TEST_DATABASES)('users and access on $name', ({ url }) => {
     await t.as(admin, {
       method: 'PATCH',
       url: '/api/access',
-      payload: { changes: [{ userId: ids.helper, customerFolder: 'Joey', granted: true }] },
+      payload: { changes: [{ userId: ids.helper, customerFolder: 'Koen', granted: true }] },
     });
     expect(
       (await t.as(admin, { method: 'DELETE', url: `/api/users/${ids.helper}` })).statusCode,
@@ -182,25 +182,25 @@ describe.each(TEST_DATABASES)('users and access on $name', ({ url }) => {
   });
 
   it('returns the access matrix: customers from the index, grants for Users, all for others', async () => {
-    await addRecord(t.db, 'Wouter');
-    await addRecord(t.db, 'Joey');
-    await addRecord(t.db, 'Joey');
+    await addRecord(t.db, 'Veerle');
+    await addRecord(t.db, 'Koen');
+    await addRecord(t.db, 'Koen');
     await addRecord(t.db, 'Gone', 'deleted' as never);
     await t.as(admin, {
       method: 'PATCH',
       url: '/api/access',
-      payload: { changes: [{ userId: ids.helper, customerFolder: 'Joey', granted: true }] },
+      payload: { changes: [{ userId: ids.helper, customerFolder: 'Koen', granted: true }] },
     });
     const response = await t.as(admin, { url: '/api/access' });
     const body = response.json<{
       customers: string[];
       users: { login: string; customers: string[] }[];
     }>();
-    expect(body.customers).toEqual(['Joey', 'Wouter']);
+    expect(body.customers).toEqual(['Koen', 'Veerle']);
     expect(body.users.map((u) => [u.login, u.customers])).toEqual([
-      ['editor@example.org', ['Joey', 'Wouter']],
-      ['helper@example.org', ['Joey']],
-      ['owner@example.org', ['Joey', 'Wouter']],
+      ['editor@example.org', ['Koen', 'Veerle']],
+      ['helper@example.org', ['Koen']],
+      ['owner@example.org', ['Koen', 'Veerle']],
     ]);
   });
 
@@ -213,25 +213,25 @@ describe.each(TEST_DATABASES)('users and access on $name', ({ url }) => {
     const patch = (changes: ReturnType<typeof change>[]) =>
       t.as(admin, { method: 'PATCH', url: '/api/access', payload: { changes } });
     expect(
-      (await patch([change('Joey', true), change('Joey', true), change('Wouter', true)]))
+      (await patch([change('Koen', true), change('Koen', true), change('Veerle', true)]))
         .statusCode,
     ).toBe(204);
-    await patch([change('Wouter', false)]);
+    await patch([change('Veerle', false)]);
     const scope = await customerScope(t.db, { id: ids.helper, role: 'User' });
-    expect(scope).toEqual({ kind: 'some', customerFolders: new Set(['Joey']) });
+    expect(scope).toEqual({ kind: 'some', customerFolders: new Set(['Koen']) });
   });
 
   it('refuses grants for Editors and Admins and for unknown users', async () => {
     const forEditor = await t.as(admin, {
       method: 'PATCH',
       url: '/api/access',
-      payload: { changes: [{ userId: ids.editor, customerFolder: 'Joey', granted: true }] },
+      payload: { changes: [{ userId: ids.editor, customerFolder: 'Koen', granted: true }] },
     });
     expect(forEditor.statusCode).toBe(400);
     const unknown = await t.as(admin, {
       method: 'PATCH',
       url: '/api/access',
-      payload: { changes: [{ userId: 'nobody', customerFolder: 'Joey', granted: true }] },
+      payload: { changes: [{ userId: 'nobody', customerFolder: 'Koen', granted: true }] },
     });
     expect(unknown.statusCode).toBe(404);
   });
@@ -240,14 +240,14 @@ describe.each(TEST_DATABASES)('users and access on $name', ({ url }) => {
     await t.as(admin, {
       method: 'PATCH',
       url: '/api/access',
-      payload: { changes: [{ userId: ids.helper, customerFolder: 'Joey', granted: true }] },
+      payload: { changes: [{ userId: ids.helper, customerFolder: 'Koen', granted: true }] },
     });
     const helper = { id: ids.helper, role: 'User' as const };
-    expect(await canAccessCustomer(t.db, helper, 'Joey')).toBe(true);
-    expect(await canAccessCustomer(t.db, helper, 'joey')).toBe(false);
-    expect(await canAccessCustomer(t.db, helper, 'Denise')).toBe(false);
-    expect(await canAccessCustomer(t.db, { id: ids.editor, role: 'Editor' }, 'Denise')).toBe(true);
-    expect(await canAccessCustomer(t.db, { id: ids.admin, role: 'Admin' }, 'Denise')).toBe(true);
+    expect(await canAccessCustomer(t.db, helper, 'Koen')).toBe(true);
+    expect(await canAccessCustomer(t.db, helper, 'koen')).toBe(false);
+    expect(await canAccessCustomer(t.db, helper, 'Esmee')).toBe(false);
+    expect(await canAccessCustomer(t.db, { id: ids.editor, role: 'Editor' }, 'Esmee')).toBe(true);
+    expect(await canAccessCustomer(t.db, { id: ids.admin, role: 'Admin' }, 'Esmee')).toBe(true);
   });
 });
 

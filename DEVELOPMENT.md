@@ -66,8 +66,8 @@ The parsers can be run on any file or folder, which prints one JSON object per f
 the app reads from it (name, slicer comments, slots, plates, thumbnails):
 
 ```bash
-npm run inspect -- "/path/to/3D prints/Joey/Babybox locks"
-docker exec prints-portal node backend/dist/cli/inspect.js "/prints/Joey/Babybox locks"
+npm run inspect -- "/path/to/3D prints/Koen/Bloembak clips"
+docker exec prints-portal node backend/dist/cli/inspect.js "/prints/Koen/Bloembak clips"
 ```
 
 Folders are walked with the same ignore rules as the indexer.

@@ -68,21 +68,21 @@ describe('ignore rules', () => {
 
 describe('locatePrintFile', () => {
   it('splits customer, project, subfolders and file', () => {
-    expect(locatePrintFile('Joey/Babybox locks/Nog te printen/lock.gcode')).toEqual({
-      customerFolder: 'Joey',
-      projectFolder: 'Babybox locks',
+    expect(locatePrintFile('Koen/Bloembak clips/Nog te printen/lock.gcode')).toEqual({
+      customerFolder: 'Koen',
+      projectFolder: 'Bloembak clips',
       subFolders: ['Nog te printen'],
       fileName: 'lock.gcode',
     });
-    expect(locatePrintFile('Wouter/Board Games/Spirit Island/tray.stl')).toMatchObject({
+    expect(locatePrintFile('Veerle/Board Games/Spirit Island/tray.stl')).toMatchObject({
       projectFolder: 'Board Games',
       subFolders: ['Spirit Island'],
     });
   });
 
   it('puts files directly under a customer in a print without project', () => {
-    expect(locatePrintFile('Joey/loose-part.stl')).toEqual({
-      customerFolder: 'Joey',
+    expect(locatePrintFile('Koen/loose-part.stl')).toEqual({
+      customerFolder: 'Koen',
       projectFolder: null,
       subFolders: [],
       fileName: 'loose-part.stl',
@@ -95,7 +95,7 @@ describe('locatePrintFile', () => {
   });
 
   it('accepts backslashes and duplicate separators', () => {
-    expect(locatePrintFile('Joey\\Box//a.stl')?.projectFolder).toBe('Box');
+    expect(locatePrintFile('Koen\\Box//a.stl')?.projectFolder).toBe('Box');
   });
 });
 
@@ -116,8 +116,8 @@ describe('parseGcodeFileName', () => {
     ['cableclip-30mm_PLA_31m55s.gcode', 'cableclip-30mm', 'PLA', 1915],
     ['dopper stabilizer v2_+2.5%_PLA_1h17m.gcode', 'dopper stabilizer v2_+2.5%', 'PLA', 4620],
     [
-      'Babybox lock corner 20-23 inner width_PLA-CF_3h4m.gcode',
-      'Babybox lock corner 20-23 inner width',
+      'Bloembak clip corner 20-23 inner width_PLA-CF_3h4m.gcode',
+      'Bloembak clip corner 20-23 inner width',
       'PLA-CF',
       11_040,
     ],

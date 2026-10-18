@@ -21,9 +21,9 @@ function detail(): PrintDetail {
     sources: [],
     note: null,
     id: 'p1',
-    name: 'Babybox locks',
-    customerFolder: 'Joey',
-    projectFolder: 'Babybox locks',
+    name: 'Bloembak clips',
+    customerFolder: 'Koen',
+    projectFolder: 'Bloembak clips',
     material: 'PLA',
     printSeconds: 4800,
     grams: 87,
@@ -122,7 +122,7 @@ describe('TagEditor', () => {
   it('is not offered to Users', async () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ json: { ...detail(), assets: null } }) });
     renderDetail('User');
-    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
     expect(screen.queryByRole('button', { name: 'Tag toevoegen' })).toBeNull();
   });
 
@@ -135,7 +135,7 @@ describe('TagEditor', () => {
   it('does not show a role User the chips either, only the operator', async () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ json: { ...detail(), assets: null } }) });
     renderDetail('User');
-    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
     expect(document.querySelectorAll('.pp-tag')).toHaveLength(0);
     expect(screen.queryByText('cadeau')).toBeNull();
   });
@@ -143,7 +143,7 @@ describe('TagEditor', () => {
   it('still shows the operator the chips', async () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ json: { ...detail(), assets: null } }) });
     renderDetail('Editor');
-    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
     expect(screen.getByText('cadeau')).toBeInTheDocument();
   });
 });

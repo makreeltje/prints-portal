@@ -151,5 +151,11 @@ wants to ask for a round explicitly; the section carries the standing state.
 
 `.local/` holds the owner's real prints. Real customer and folder names must
 never reach git, a commit message, a pull request or an issue. Fixtures use
-Joey, Denise, Wouter, Anouk, Bas and "Babybox locks"; never use "Rick". A real
-name once reached a gap entry — sweep what you write before committing.
+Koen, Esmee, Veerle, Anouk, Bas and "Bloembak clips"; never use "Rick".
+
+**Check every new fixture name against `.local/prints` before you use it.** The
+set that stood here before these four was never checked, and three klant names
+and one print name in it turned out to be folders in the owner’s own library —
+on a public repo, in some eighty files. `ls .local/prints`, and a `find` over
+its project folders, is the whole check: a name that appears there is not a
+fixture, whatever it looks like. Sweep what you write before committing.

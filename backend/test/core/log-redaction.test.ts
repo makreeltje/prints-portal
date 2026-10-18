@@ -25,8 +25,8 @@ describe('log redaction', () => {
   });
 
   it('leaves ordinary paths and their parameters alone', () => {
-    expect(redactUrl('/api/prints?limit=100&customer=Joey')).toBe(
-      '/api/prints?limit=100&customer=Joey',
+    expect(redactUrl('/api/prints?limit=100&customer=Koen')).toBe(
+      '/api/prints?limit=100&customer=Koen',
     );
     expect(redactUrl('/api/share-links')).toBe('/api/share-links');
     expect(redactUrl('/healthz')).toBe('/healthz');

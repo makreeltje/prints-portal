@@ -13,36 +13,36 @@ describe('targetFor', () => {
   it.each([
     [
       'add',
-      p('Joey', 'Box', 'a.gcode'),
-      { kind: 'project', ref: { customerFolder: 'Joey', projectFolder: 'Box' } },
+      p('Koen', 'Box', 'a.gcode'),
+      { kind: 'project', ref: { customerFolder: 'Koen', projectFolder: 'Box' } },
     ],
     [
       'change',
-      p('Joey', 'Box', 'Test', 'a.gcode'),
-      { kind: 'project', ref: { customerFolder: 'Joey', projectFolder: 'Box' } },
+      p('Koen', 'Box', 'Test', 'a.gcode'),
+      { kind: 'project', ref: { customerFolder: 'Koen', projectFolder: 'Box' } },
     ],
     [
       'addDir',
-      p('Joey', 'Box'),
-      { kind: 'project', ref: { customerFolder: 'Joey', projectFolder: 'Box' } },
+      p('Koen', 'Box'),
+      { kind: 'project', ref: { customerFolder: 'Koen', projectFolder: 'Box' } },
     ],
     [
       'unlinkDir',
-      p('Joey', 'Box'),
-      { kind: 'project', ref: { customerFolder: 'Joey', projectFolder: 'Box' } },
+      p('Koen', 'Box'),
+      { kind: 'project', ref: { customerFolder: 'Koen', projectFolder: 'Box' } },
     ],
     [
       'add',
-      p('Joey', 'loose.stl'),
-      { kind: 'project', ref: { customerFolder: 'Joey', projectFolder: null } },
+      p('Koen', 'loose.stl'),
+      { kind: 'project', ref: { customerFolder: 'Koen', projectFolder: null } },
     ],
     [
       'unlink',
-      p('Joey', 'loose.stl'),
-      { kind: 'project', ref: { customerFolder: 'Joey', projectFolder: null } },
+      p('Koen', 'loose.stl'),
+      { kind: 'project', ref: { customerFolder: 'Koen', projectFolder: null } },
     ],
-    ['addDir', 'Joey', { kind: 'customer', customerFolder: 'Joey' }],
-    ['unlinkDir', 'Joey', { kind: 'customer', customerFolder: 'Joey' }],
+    ['addDir', 'Koen', { kind: 'customer', customerFolder: 'Koen' }],
+    ['unlinkDir', 'Koen', { kind: 'customer', customerFolder: 'Koen' }],
   ])('%s %s', (event, relative, target) => {
     expect(targetFor(event, relative)).toEqual(target);
   });
@@ -104,25 +104,25 @@ describe('PrintsWatcher', () => {
   }
 
   it('indexes a new project folder', async () => {
-    await put(root, 'Wouter/Lamp/shade_PLA_1h.gcode', 'orca-single-slot.gcode');
-    await eventually(async () => (await status('Wouter/Lamp')) === 'indexed');
-    expect(runs).toContain('print:created Wouter/Lamp');
+    await put(root, 'Veerle/Lamp/shade_PLA_1h.gcode', 'orca-single-slot.gcode');
+    await eventually(async () => (await status('Veerle/Lamp')) === 'indexed');
+    expect(runs).toContain('print:created Veerle/Lamp');
   });
 
   it('archives a project whose folder is removed', async () => {
-    await rm(path.join(root, 'Denise', 'Board game'), { recursive: true });
-    await eventually(async () => (await status('Denise/Board game')) === 'archived');
+    await rm(path.join(root, 'Esmee', 'Board game'), { recursive: true });
+    await eventually(async () => (await status('Esmee/Board game')) === 'archived');
   });
 
   it('indexes a burst of changes in one project once', async () => {
     for (let i = 0; i < 5; i++) {
-      await putText(root, `Denise/Keychain/note-${String(i)}.pdf`, '%PDF');
+      await putText(root, `Esmee/Keychain/note-${String(i)}.pdf`, '%PDF');
     }
-    await eventually(() => Promise.resolve(runs.some((r) => r.endsWith('Denise/Keychain'))));
+    await eventually(() => Promise.resolve(runs.some((r) => r.endsWith('Esmee/Keychain'))));
     await new Promise((resolve) => setTimeout(resolve, 400));
     await indexer.idle();
-    expect(runs.filter((r) => r.endsWith('Denise/Keychain'))).toEqual([
-      'print:updated Denise/Keychain',
+    expect(runs.filter((r) => r.endsWith('Esmee/Keychain'))).toEqual([
+      'print:updated Esmee/Keychain',
     ]);
   });
 
@@ -133,7 +133,7 @@ describe('PrintsWatcher', () => {
   });
 
   it('ignores changes in hidden folders', async () => {
-    await putText(root, 'Joey/Babybox locks/.thumbs/new.png', 'x');
+    await putText(root, 'Koen/Bloembak clips/.thumbs/new.png', 'x');
     await new Promise((resolve) => setTimeout(resolve, 500));
     await indexer.idle();
     expect(runs).toEqual([]);

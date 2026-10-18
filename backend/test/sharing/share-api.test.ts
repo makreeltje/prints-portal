@@ -96,11 +96,11 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
   it('creates a link once with its token, lists it without and lets only Admins manage', async () => {
     await start();
-    const created = await create('Joey');
+    const created = await create('Koen');
     expect(created.token).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(created.url).toBe(`http://localhost:80/share/${created.token}`);
     expect(created.link).toMatchObject({
-      customer: 'Joey',
+      customer: 'Koen',
       label: 'Q4 overzicht',
       status: 'active',
       expiresAt: '2026-11-04T10:00:00.000Z',
@@ -117,7 +117,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
       const denied = await t.as(session, {
         method: 'POST',
         url: '/api/share-links',
-        payload: { customer: 'Joey', label: 'x', expiresInDays: 7 },
+        payload: { customer: 'Koen', label: 'x', expiresInDays: 7 },
       });
       expect(denied.statusCode).toBe(403);
     }
@@ -131,13 +131,13 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     const blank = await t.as(admin, {
       method: 'POST',
       url: '/api/share-links',
-      payload: { customer: 'Joey', label: '   ', expiresInDays: 7 },
+      payload: { customer: 'Koen', label: '   ', expiresInDays: 7 },
     });
     expect(blank.statusCode).toBe(400);
     const odd = await t.as(admin, {
       method: 'POST',
       url: '/api/share-links',
-      payload: { customer: 'Joey', label: 'x', expiresInDays: 14 },
+      payload: { customer: 'Koen', label: 'x', expiresInDays: 14 },
     });
     expect(odd.statusCode).toBe(400);
   });
@@ -157,7 +157,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
     it('lets the visitor use the portal, scoped to that klant and read-only', async () => {
       await start();
-      const { token } = await create('Joey');
+      const { token } = await create('Koen');
       const visitor = await enter(token);
       if (visitor === null) throw new Error('no session');
 
@@ -166,12 +166,12 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
         items: PrintSummary[];
       }>();
       expect(list.items.length).toBeGreaterThan(0);
-      expect(new Set(list.items.map((item) => item.customerFolder))).toEqual(new Set(['Joey']));
+      expect(new Set(list.items.map((item) => item.customerFolder))).toEqual(new Set(['Koen']));
       // Only their own klant, and nothing of anyone else's.
       const customers = (await t.as(visitor, { url: '/api/customers' })).json<{
         customers: { folder: string }[];
       }>();
-      expect(customers.customers.map((one) => one.folder)).toEqual(['Joey']);
+      expect(customers.customers.map((one) => one.folder)).toEqual(['Koen']);
 
       // The viewer yes, the file no: the owner's decision, and `MANAGE` already.
       const print = list.items[0];
@@ -198,14 +198,14 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
     it('sees another klant neither in a list nor by id', async () => {
       await start();
-      const { token } = await create('Joey');
+      const { token } = await create('Koen');
       const visitor = await enter(token);
       if (visitor === null) throw new Error('no session');
       const others = (await t.as(admin, { url: '/api/prints?limit=100' }))
         .json<{
           items: PrintSummary[];
         }>()
-        .items.filter((item) => item.customerFolder !== 'Joey');
+        .items.filter((item) => item.customerFolder !== 'Koen');
       expect(others.length).toBeGreaterThan(0);
       expect((await t.as(visitor, { url: `/api/prints/${others[0]?.id ?? ''}` })).statusCode).toBe(
         403,
@@ -219,14 +219,14 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
       expect(
         (await t.as(null, { method: 'POST', url: '/api/share/nope/session' })).statusCode,
       ).toBe(404);
-      const dead = await create('Joey');
+      const dead = await create('Koen');
       await t.as(admin, { method: 'POST', url: `/api/share-links/${dead.link.id}/revoke` });
       expect(await enter(dead.token)).toBeNull();
     });
 
     it('ends the moment the link is revoked, with the visitor already inside', async () => {
       await start();
-      const { token, link } = await create('Joey');
+      const { token, link } = await create('Koen');
       const visitor = await enter(token);
       if (visitor === null) throw new Error('no session');
       expect((await t.as(visitor, { url: '/api/prints?limit=100' })).statusCode).toBe(200);
@@ -237,7 +237,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
     it('needs the CSRF header for a write, like any other session', async () => {
       await start();
-      const { token } = await create('Joey');
+      const { token } = await create('Koen');
       const visitor = await enter(token);
       if (visitor === null) throw new Error('no session');
       const id =
@@ -270,7 +270,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     */
     it('ends when the visitor closes it, and the link still works afterwards', async () => {
       await start();
-      const { token } = await create('Joey');
+      const { token } = await create('Koen');
       const visitor = await enter(token);
       if (visitor === null) throw new Error('no session');
       expect((await t.as(visitor, { url: '/api/prints?limit=100' })).statusCode).toBe(200);
@@ -291,7 +291,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     */
     it('keeps the Overzicht PDF working for a visitor who is inside', async () => {
       await start();
-      const { token } = await create('Joey');
+      const { token } = await create('Koen');
       const visitor = await enter(token);
       if (visitor === null) throw new Error('no session');
       const pdf = await t.as(visitor, { url: `/api/share/${token}/overview.pdf` });
@@ -302,7 +302,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
   it('shows one line per order with the customer price only, never cost', async () => {
     await start();
-    const box = await orderOf('Babybox locks');
+    const box = await orderOf('Bloembak clips');
     await t.as(editor, {
       method: 'PUT',
       url: `/api/orders/${box.orderId}/sale-price`,
@@ -313,26 +313,26 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
       url: `/api/orders/${box.orderId}/payments`,
       payload: { amount: 5 },
     });
-    const { token } = await create('Joey');
+    const { token } = await create('Koen');
     const response = await t.as(null, { url: `/api/share/${token}` });
     expect(response.statusCode).toBe(200);
     expect(response.headers['cache-control']).toBe('private, no-store');
     const data = response.json<ShareView>();
     expect(data).toMatchObject({
       billed: true,
-      customer: 'Joey',
+      customer: 'Koen',
       studio: { name: 'Voorbeeld 3D', hasLogo: false },
     });
     // The label is internal: it never reaches the klant (ScreenSharePage 1.9).
     expect(response.body).not.toContain('Q4 overzicht');
     if (!data.billed) throw new Error('billed view expected');
-    expect(data.lines.map((line) => line.description)).toEqual(['Babybox locks', 'Joey']);
+    expect(data.lines.map((line) => line.description)).toEqual(['Bloembak clips', 'Koen']);
     expect(data.lines[0]).toMatchObject({
       price: 20,
       paid: 5,
       remaining: 15,
       status: 'partial',
-      project: 'Babybox locks',
+      project: 'Bloembak clips',
     });
     // No internal values in the response at all.
     for (const word of ['cost', 'gram', 'markup', 'margin', 'note', 'gcode', 'fileName', 'spool']) {
@@ -346,38 +346,38 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     // "Alleen openstaand", and extra invoice-style parameters are ignored.
     await t.as(editor, {
       method: 'POST',
-      url: `/api/orders/${(await orderOf('Joey')).orderId}/payments`,
+      url: `/api/orders/${(await orderOf('Koen')).orderId}/payments`,
       payload: { amount: data.lines[1]?.remaining ?? 0 },
     });
-    const open = await view(token, '?onlyOpen=true&from=2000-01-01&customer=Denise&markup=1');
-    expect(open.customer).toBe('Joey');
-    expect(open.lines.map((line) => line.description)).toEqual(['Babybox locks']);
+    const open = await view(token, '?onlyOpen=true&from=2000-01-01&customer=Esmee&markup=1');
+    expect(open.customer).toBe('Koen');
+    expect(open.lines.map((line) => line.description)).toEqual(['Bloembak clips']);
   });
 
   it('hides written-off orders and deleted prints, keeps archived ones, and says Prijs volgt', async () => {
     await start();
-    const box = await orderOf('Babybox locks');
+    const box = await orderOf('Bloembak clips');
     await t.as(editor, {
       method: 'POST',
       url: `/api/orders/${box.orderId}/write-off`,
       payload: {},
     });
-    const { token } = await create('Joey');
-    expect((await view(token)).lines.map((line) => line.description)).toEqual(['Joey']);
+    const { token } = await create('Koen');
+    expect((await view(token)).lines.map((line) => line.description)).toEqual(['Koen']);
 
-    const loose = await orderOf('Joey');
-    await rm(`${root}/Joey/loose_PLA_31m55s.gcode`);
+    const loose = await orderOf('Koen');
+    await rm(`${root}/Koen/loose_PLA_31m55s.gcode`);
     await t.app.services.indexer.indexAll();
     const archived = await view(token);
-    expect(archived.lines.map((line) => line.description)).toEqual(['Joey']);
+    expect(archived.lines.map((line) => line.description)).toEqual(['Koen']);
     await t.as(editor, { method: 'DELETE', url: `/api/prints/${loose.printId}` });
     expect((await view(token)).lines).toEqual([]);
     // Once every print of the klant is deleted, the link answers like an unknown one.
     await t.as(editor, { method: 'DELETE', url: `/api/prints/${box.printId}` });
     expect((await t.as(null, { url: `/api/share/${token}` })).statusCode).toBe(404);
 
-    const wouter = await create('Wouter');
-    const plain = await view(wouter.token);
+    const veerle = await create('Veerle');
+    const plain = await view(veerle.token);
     if (!plain.billed) throw new Error('billed view expected');
     expect(plain.lines).toEqual([
       expect.objectContaining({ description: 'Empty', price: null, status: 'noPrice' }),
@@ -387,9 +387,9 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
   it('answers unknown, malformed, expired and revoked tokens the same way', async () => {
     await start();
-    const week = await create('Joey', 7);
-    const never = await create('Joey', null, 'Altijd');
-    const revoked = await create('Denise', 90);
+    const week = await create('Koen', 7);
+    const never = await create('Koen', null, 'Altijd');
+    const revoked = await create('Esmee', 90);
     const revoke = await t.as(admin, {
       method: 'POST',
       url: `/api/share-links/${revoked.link.id}/revoke`,
@@ -422,15 +422,15 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
       .links.map((link) => [link.customer, link.label, link.status])
       .sort();
     expect(statuses).toEqual([
-      ['Denise', 'Q4 overzicht', 'revoked'],
-      ['Joey', 'Altijd', 'active'],
-      ['Joey', 'Q4 overzicht', 'expired'],
+      ['Esmee', 'Q4 overzicht', 'revoked'],
+      ['Koen', 'Altijd', 'active'],
+      ['Koen', 'Q4 overzicht', 'expired'],
     ]);
   });
 
   it("shows a print's bron once, and never a note", async () => {
     await start();
-    const print = (await t.as(admin, { url: '/api/prints?limit=100&customer=Joey' })).json<{
+    const print = (await t.as(admin, { url: '/api/prints?limit=100&customer=Koen' })).json<{
       items: { id: string; name: string }[];
     }>().items[0];
     const id = print?.id ?? '';
@@ -459,7 +459,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
       payload: { items: printLines.map((line) => ({ lineId: line.id, timesPrinted: 1 })) },
     });
 
-    const { token } = await create('Joey');
+    const { token } = await create('Koen');
     const response = await t.as(null, { url: `/api/share/${token}` });
     const lines = response.json<{ lines: { printId: string; source: unknown }[] }>().lines;
     const mine = lines.filter((line) => line.printId === id);
@@ -480,10 +480,10 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     await start();
     await t.as(admin, {
       method: 'PUT',
-      url: '/api/customers/Denise/billing',
+      url: '/api/customers/Esmee/billing',
       payload: { noBilling: true },
     });
-    const { token } = await create('Denise');
+    const { token } = await create('Esmee');
     const response = await t.as(null, { url: `/api/share/${token}?onlyOpen=true` });
     const data = response.json<ShareView>();
     expect(data.billed).toBe(false);
@@ -508,42 +508,42 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
   it('renders the Overzicht PDF with Geldig tot, and without it for Nooit', async () => {
     await start();
-    const { token } = await create('Joey', 30, 'Q4 overzicht');
+    const { token } = await create('Koen', 30, 'Q4 overzicht');
     const response = await t.as(null, { url: `/api/share/${token}/overview.pdf` });
     expect(response.statusCode).toBe(200);
     expect(response.headers['content-type']).toBe('application/pdf');
     expect(response.headers['content-disposition']).toBe(
-      'attachment; filename="Overzicht-Joey-2026-10-05.pdf"',
+      'attachment; filename="Overzicht-Koen-2026-10-05.pdf"',
     );
     const text = pdfPlainText(response.rawPayload);
     for (const part of [
       'Overzicht',
       'Geldig tot',
       '4 nov 2026',
-      'Babybox locks',
+      'Bloembak clips',
       'Dit is een overzicht, geen factuur.',
-      'onder vermelding van Joey.',
+      'onder vermelding van Koen.',
     ]) {
       expect(text).toContain(part);
     }
     expect(text).not.toMatch(/kosten|marge|gcode/i);
 
-    const never = await create('Joey', null, 'Altijd');
+    const never = await create('Koen', null, 'Altijd');
     const noExpiry = pdfPlainText(
       (await t.as(null, { url: `/api/share/${never.token}/overview.pdf` })).rawPayload,
     );
     expect(noExpiry).not.toContain('Geldig tot');
 
-    const wouter = await create('Wouter');
+    const veerle = await create('Veerle');
     const pending = pdfPlainText(
-      (await t.as(null, { url: `/api/share/${wouter.token}/overview.pdf` })).rawPayload,
+      (await t.as(null, { url: `/api/share/${veerle.token}/overview.pdf` })).rawPayload,
     );
     expect(pending).toContain('Prijs volgt');
   });
 
   it('renders the Overzicht PDF on a fresh install, before Bedrijfsgegevens is filled in', async () => {
     await start({}, { company: false });
-    const { token } = await create('Joey');
+    const { token } = await create('Koen');
     const response = await t.as(null, { url: `/api/share/${token}/overview.pdf` });
     expect(response.statusCode).toBe(200);
     const text = pdfPlainText(response.rawPayload);
@@ -555,8 +555,8 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
   it('leaves the totals block out of the PDF while no print has a price', async () => {
     await start();
-    // Wouter's print has no files, so no price at all.
-    const { token } = await create('Wouter');
+    // Veerle's print has no files, so no price at all.
+    const { token } = await create('Veerle');
     const text = pdfPlainText(
       (await t.as(null, { url: `/api/share/${token}/overview.pdf` })).rawPayload,
     );
@@ -569,7 +569,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
   it('serves the logo through a working link only', async () => {
     await start();
-    const { token } = await create('Joey');
+    const { token } = await create('Koen');
     expect((await t.as(null, { url: `/api/share/${token}/logo` })).statusCode).toBe(404);
     await t.as(admin, {
       method: 'PUT',
@@ -585,7 +585,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
   it('gives the payment details only while something is open and an IBAN is set', async () => {
     await start();
-    const { token } = await create('Joey');
+    const { token } = await create('Koen');
 
     // Without an IBAN there is nothing to pay into: no block, no empty frame.
     await t.as(admin, {
@@ -622,7 +622,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
       name: 'Voorbeeld 3D',
       // The amount is the open total, and the reference is the klant.
       amount: withIban.totals.open,
-      reference: 'Joey',
+      reference: 'Koen',
       email: 'hallo@voorbeeld.nl',
       phone: null,
     });
@@ -644,7 +644,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
   it("serves a line thumbnail only for a print of this link's klant", async () => {
     await start();
-    const { token } = await create('Joey');
+    const { token } = await create('Koen');
     const mine = await view(token);
     const printId = mine.lines[0]?.printId;
     expect(printId).toBeTypeOf('string');
@@ -653,7 +653,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     const others = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
       items: PrintSummary[];
     }>();
-    const foreign = others.items.find((print) => print.customerFolder !== 'Joey');
+    const foreign = others.items.find((print) => print.customerFolder !== 'Koen');
     expect(foreign).toBeDefined();
     const refused = await t.as(null, {
       url: `/api/share/${token}/prints/${foreign?.id ?? ''}/thumbnail`,
@@ -670,7 +670,7 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
 
   it('rate-limits the public endpoints per address', async () => {
     await start({ RATE_LIMIT_SHARE: '3' });
-    const { token } = await create('Joey');
+    const { token } = await create('Koen');
     const codes: number[] = [];
     for (let index = 0; index < 4; index += 1) {
       codes.push((await t.as(null, { url: `/api/share/${token}` })).statusCode);

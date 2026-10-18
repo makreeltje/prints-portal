@@ -12,9 +12,9 @@ import type { PrintDetail, PrintSummary } from './types';
 function summary(overrides: Partial<PrintSummary> = {}): PrintSummary {
   return {
     id: 'p1',
-    name: 'Babybox locks',
-    customerFolder: 'Joey',
-    projectFolder: 'Babybox locks',
+    name: 'Bloembak clips',
+    customerFolder: 'Koen',
+    projectFolder: 'Bloembak clips',
     material: 'PLA',
     printSeconds: 4800,
     grams: 87,
@@ -32,7 +32,7 @@ function summary(overrides: Partial<PrintSummary> = {}): PrintSummary {
   };
 }
 
-const customers = { customers: [{ folder: 'Joey', printCount: 1, deleted: false }] };
+const customers = { customers: [{ folder: 'Koen', printCount: 1, deleted: false }] };
 const tags = {
   tags: [{ id: 't1', name: 'cadeau', colour: 'lilac', ink: null, printCount: 1 }],
 };
@@ -54,9 +54,9 @@ describe('DashboardPage', () => {
       'GET /api/tags': () => ({ json: tags }),
     });
     renderDashboard();
-    const card = (await screen.findByRole('link', { name: 'Babybox locks' })).closest('article');
+    const card = (await screen.findByRole('link', { name: 'Bloembak clips' })).closest('article');
     if (card === null) throw new Error('no card');
-    expect(within(card).getByText('Joey')).toBeInTheDocument();
+    expect(within(card).getByText('Koen')).toBeInTheDocument();
     expect(within(card).getByText('1 u 20 min')).toBeInTheDocument();
     expect(within(card).getByText('87 g')).toBeInTheDocument();
     expect(within(card).getByText('cadeau')).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe('DashboardPage', () => {
       'src',
       '/api/prints/p1/thumbnail?v=v1',
     );
-    expect(screen.getByRole('link', { name: 'Babybox locks' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Bloembak clips' })).toHaveAttribute(
       'href',
       '/prints/p1',
     );
@@ -78,10 +78,10 @@ describe('DashboardPage', () => {
       'GET /api/customers': () => ({ json: customers }),
       'GET /api/tags': () => ({ json: tags }),
     });
-    renderDashboard('/?klant=Joey&tag=t1&gearchiveerd=1');
-    await screen.findByRole('link', { name: 'Babybox locks' });
+    renderDashboard('/?klant=Koen&tag=t1&gearchiveerd=1');
+    await screen.findByRole('link', { name: 'Bloembak clips' });
     const query = calls.find((c) => c.path.startsWith('/api/prints?'))?.path ?? '';
-    expect(query).toContain('customer=Joey');
+    expect(query).toContain('customer=Koen');
     expect(query).toContain('tag=t1');
     expect(query).toContain('archived=true');
     // Active tag chips with the AND hint.
@@ -97,7 +97,7 @@ describe('DashboardPage', () => {
       'GET /api/tags': () => ({ json: tags }),
     });
     renderDashboard('/', 'Editor');
-    await screen.findByText('Babybox locks');
+    await screen.findByText('Bloembak clips');
     expect(screen.queryByLabelText('Toon verwijderde')).toBeNull();
     expect(screen.getAllByLabelText('Gearchiveerd tonen').length).toBeGreaterThan(0);
   });
@@ -196,7 +196,7 @@ describe('DashboardPage', () => {
       'GET /api/tags': () => ({ json: tags }),
     });
     renderDashboard();
-    const card = (await screen.findByRole('link', { name: 'Babybox locks' })).closest('article');
+    const card = (await screen.findByRole('link', { name: 'Bloembak clips' })).closest('article');
     if (card === null) throw new Error('no card');
     expect(within(card).getByText('cadeau')).toHaveAttribute('data-c', 'lilac');
     expect(within(card).getByText('oud')).toHaveStyle({ '--tag': '#e11d48' });
@@ -218,7 +218,7 @@ describe('DashboardPage', () => {
       'GET /api/tags': () => ({ json: tags }),
     });
     const view = renderDashboard('/?verwijderd=1');
-    await screen.findAllByRole('link', { name: 'Babybox locks' });
+    await screen.findAllByRole('link', { name: 'Bloembak clips' });
     const cards = view.container.querySelectorAll('article.pp-print');
     expect(cards[0]).toHaveClass('is-deleted');
     expect(cards[1]).toHaveClass('is-archived');
@@ -238,7 +238,7 @@ describe('DashboardPage', () => {
       'GET /api/customers': () => ({
         json: {
           customers: [
-            { folder: 'Joey', printCount: 12, deleted: false },
+            { folder: 'Koen', printCount: 12, deleted: false },
             { folder: 'Anouk', printCount: 1, deleted: false },
           ],
         },
@@ -248,17 +248,17 @@ describe('DashboardPage', () => {
     renderDashboard('/', 'User');
     const chipsGroup = await screen.findByRole('group', { name: 'Klanten' });
     // CustomerChips 1.9: one row on every width, the cards behind "Overzicht".
-    expect(within(chipsGroup).getByRole('button', { name: /^Joey/ })).toBeInTheDocument();
+    expect(within(chipsGroup).getByRole('button', { name: /^Koen/ })).toBeInTheDocument();
     expect(within(chipsGroup).getByRole('button', { name: /^Anouk/ })).toBeInTheDocument();
     // Users cannot delete customers.
     expect(screen.queryByRole('menuitem', { name: 'Klant verwijderen' })).toBeNull();
 
-    await userEvent.click(within(chipsGroup).getByRole('button', { name: /^Joey/ }));
+    await userEvent.click(within(chipsGroup).getByRole('button', { name: /^Koen/ }));
     await waitFor(() => {
-      expect(calls.some((c) => c.path.includes('customer=Joey'))).toBe(true);
+      expect(calls.some((c) => c.path.includes('customer=Koen'))).toBe(true);
     });
     const chips = screen.getByRole('group', { name: 'Klanten' });
-    expect(within(chips).getByRole('button', { name: /^Joey/ })).toHaveAttribute(
+    expect(within(chips).getByRole('button', { name: /^Koen/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -273,25 +273,25 @@ describe('DashboardPage', () => {
     const calls = stubFetch({
       'GET /api/prints': () => ({ json: { items: [summary()], total: 12 } }),
       'GET /api/customers': () => ({
-        json: { customers: [{ folder: 'Joey', printCount: 12, deleted: false }] },
+        json: { customers: [{ folder: 'Koen', printCount: 12, deleted: false }] },
       }),
       'GET /api/tags': () => ({ json: tags }),
-      'DELETE /api/customers/Joey': () => ({ status: 204, json: { deleted: 12 } }),
+      'DELETE /api/customers/Koen': () => ({ status: 204, json: { deleted: 12 } }),
     });
-    renderDashboard('/?klant=Joey', 'Editor');
+    renderDashboard('/?klant=Koen', 'Editor');
     // Delete lives in the tile's menu now (OverflowMenu 1.9), inside "Overzicht".
     await userEvent.click(await screen.findByRole('button', { name: /Klantenoverzicht/ }));
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Meer acties' }),
     );
     await userEvent.click(screen.getByRole('menuitem', { name: 'Klant verwijderen' }));
-    const dialog = screen.getByRole('alertdialog', { name: "Klant 'Joey' verwijderen?" });
+    const dialog = screen.getByRole('alertdialog', { name: "Klant 'Koen' verwijderen?" });
     expect(dialog).toHaveAccessibleDescription(
       'Alle 12 prints van deze klant worden verborgen. De financiële gegevens blijven bewaard en een beheerder kan de klant herstellen.',
     );
     await userEvent.click(within(dialog).getByRole('button', { name: 'Verwijderen' }));
     await waitFor(() => {
-      expect(calls.some((c) => c.method === 'DELETE' && c.path === '/api/customers/Joey')).toBe(
+      expect(calls.some((c) => c.method === 'DELETE' && c.path === '/api/customers/Koen')).toBe(
         true,
       );
     });
@@ -303,8 +303,8 @@ describe('DashboardPage', () => {
       'GET /api/customers': () => ({
         json: {
           customers: [
-            { folder: 'Joey', printCount: 12, deleted: false },
-            { folder: 'Denise', printCount: 4, deleted: false },
+            { folder: 'Koen', printCount: 12, deleted: false },
+            { folder: 'Esmee', printCount: 4, deleted: false },
           ],
         },
       }),
@@ -329,10 +329,10 @@ describe('DashboardPage', () => {
     stubFetch({
       'GET /api/prints': () => ({ json: { items: [summary()], total: 12 } }),
       'GET /api/customers': () => ({
-        json: { customers: [{ folder: 'Joey', printCount: 12, deleted: false }] },
+        json: { customers: [{ folder: 'Koen', printCount: 12, deleted: false }] },
       }),
       'GET /api/tags': () => ({ json: tags }),
-      'GET /api/customers/Joey/invoice/preview': () => ({
+      'GET /api/customers/Koen/invoice/preview': () => ({
         json: {
           lines: [],
           total: 0,
@@ -346,10 +346,10 @@ describe('DashboardPage', () => {
         },
       }),
     });
-    renderDashboard('/?klant=Joey', 'Editor');
+    renderDashboard('/?klant=Koen', 'Editor');
     // The toolbar keeps its own Factuur button; the tile's moved into the menu.
     await userEvent.click(await screen.findByRole('button', { name: 'Factuur' }));
-    expect(screen.getByRole('dialog', { name: 'Factuur maken voor Joey' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Factuur maken voor Koen' })).toBeInTheDocument();
   });
 
   it('lets Admins restore a deleted klant from the tile menu', async () => {
@@ -410,7 +410,7 @@ describe('DashboardPage', () => {
       'GET /api/tags': () => ({ json: tags }),
     });
     renderDashboard();
-    await screen.findByRole('link', { name: 'Babybox locks' });
+    await screen.findByRole('link', { name: 'Bloembak clips' });
     const socket = FakeWebSocket.last;
     if (socket === undefined) throw new Error('no socket');
     expect(socket.url).toMatch(/\/api\/live$/);
@@ -423,7 +423,7 @@ describe('DashboardPage', () => {
     });
     version = 'v2';
     act(() => {
-      socket.receive({ type: 'print:updated', printId: 'p1', customerFolder: 'Joey' });
+      socket.receive({ type: 'print:updated', printId: 'p1', customerFolder: 'Koen' });
     });
     await waitFor(() => {
       expect(document.querySelector('article.pp-print.flash')).not.toBeNull();
@@ -603,7 +603,7 @@ function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
     assets: [
       {
         id: 'a1',
-        fileName: 'Babybox_locks_v3_plate1_1h20m.gcode',
+        fileName: 'Bloembak_clips_v3_plate1_1h20m.gcode',
         subPath: '',
         type: 'gcode',
         sizeBytes: 2_400_000,
@@ -709,7 +709,7 @@ describe('one target per row (GAP-091, GAP-093)', () => {
       return found;
     });
     // The grid and the list behave the same: one real link, stretched.
-    expect(link).toHaveTextContent('Babybox locks');
+    expect(link).toHaveTextContent('Bloembak clips');
     const row = link.closest('tr');
     expect(row).not.toBeNull();
     // Every other control sits above that link rather than under it.
@@ -726,7 +726,7 @@ describe('missing-files chip (GAP-090)', () => {
       'GET /api/tags': () => ({ json: tags }),
     });
     renderDashboard();
-    await screen.findByRole('link', { name: 'Babybox locks' });
+    await screen.findByRole('link', { name: 'Bloembak clips' });
     expect(document.querySelector('.pp-lacks')).toBeNull();
   });
 
@@ -739,7 +739,7 @@ describe('missing-files chip (GAP-090)', () => {
       'GET /api/tags': () => ({ json: tags }),
     });
     renderDashboard();
-    await screen.findByRole('link', { name: 'Babybox locks' });
+    await screen.findByRole('link', { name: 'Bloembak clips' });
     const chip = document.querySelector('.pp-lacks');
     expect(chip).not.toBeNull();
     // The backend sends the fixed order; the chip renders what it is given.
@@ -760,7 +760,7 @@ describe('missing-files chip (GAP-090)', () => {
       'GET /api/tags': () => ({ json: tags }),
     });
     renderDashboard();
-    await screen.findByRole('link', { name: 'Babybox locks' });
+    await screen.findByRole('link', { name: 'Bloembak clips' });
     const chip = document.querySelector('.pp-lacks');
     if (chip === null) throw new Error('no chip');
     expect(screen.queryByRole('tooltip', { hidden: true })).toBeNull();
@@ -784,7 +784,7 @@ describe('missing-files chip (GAP-090)', () => {
       'GET /api/tags': () => ({ json: tags }),
     });
     renderDashboard();
-    await screen.findByRole('link', { name: 'Babybox locks' });
+    await screen.findByRole('link', { name: 'Bloembak clips' });
     const one = document.querySelector('.pp-lacks');
     expect(one?.querySelectorAll('svg').length).toBe(1);
     expect(screen.getByLabelText('Deze print heeft geen G-code-bestand.')).toBeInTheDocument();
@@ -796,11 +796,11 @@ describe('PrintDetailPage', () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ json: detail() }) });
     renderDetail('Editor');
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Babybox locks' }),
+      await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' }),
     ).toBeInTheDocument();
-    // "Joey" is both the breadcrumb and the Klant row of "Deze print" (GAP-095).
-    expect(document.querySelector('.pp-crumb')).toHaveTextContent('Joey');
-    expect(screen.getByRole('region', { name: 'Deze print' })).toHaveTextContent('Joey');
+    // "Koen" is both the breadcrumb and the Klant row of "Deze print" (GAP-095).
+    expect(document.querySelector('.pp-crumb')).toHaveTextContent('Koen');
+    expect(screen.getByRole('region', { name: 'Deze print' })).toHaveTextContent('Koen');
     const files = screen.getByRole('region', { name: 'Bestanden' });
     expect(within(files).getByText('2 bestanden')).toBeInTheDocument();
     expect(within(files).getByText('× 2')).toBeInTheDocument();
@@ -813,7 +813,7 @@ describe('PrintDetailPage', () => {
     expect(within(files).getAllByText('slicer')).toHaveLength(2);
     expect(within(files).getByText('geen gewicht of tijd')).toBeInTheDocument();
     expect(
-      within(files).getByRole('link', { name: 'Downloaden: Babybox_locks_v3_plate1_1h20m.gcode' }),
+      within(files).getByRole('link', { name: 'Downloaden: Bloembak_clips_v3_plate1_1h20m.gcode' }),
     ).toHaveAttribute('href', '/api/assets/a1/download');
     expect(screen.getByText('Geen 3D-model beschikbaar')).toBeInTheDocument();
   });
@@ -892,7 +892,7 @@ describe('PrintDetailPage', () => {
       'DELETE /api/orders/o2': () => ({ status: 204 }),
     });
     const view = renderDetail('Editor');
-    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
     const sections = view.container.querySelectorAll('details.pp-order');
     expect([...sections].map((s) => s.querySelector('.ttl b')?.textContent)).toEqual([
       'Nabestelling 2',
@@ -918,16 +918,16 @@ describe('PrintDetailPage', () => {
     const dialog = screen.getByRole('dialog', { name: 'Nabestelling maken' });
     expect(within(dialog).getByRole('checkbox', { name: 'spare.gcode' })).toBeChecked();
     expect(
-      within(dialog).getByRole('checkbox', { name: 'Babybox_locks_v3_plate1_1h20m.gcode' }),
+      within(dialog).getByRole('checkbox', { name: 'Bloembak_clips_v3_plate1_1h20m.gcode' }),
     ).not.toBeChecked();
     await userEvent.click(within(dialog).getByRole('checkbox', { name: 'spare.gcode' }));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Nabestelling maken' }));
     expect(within(dialog).getByRole('alert')).toHaveTextContent('Kies minstens één bestand.');
     await userEvent.click(
-      within(dialog).getByRole('checkbox', { name: 'Babybox_locks_v3_plate1_1h20m.gcode' }),
+      within(dialog).getByRole('checkbox', { name: 'Bloembak_clips_v3_plate1_1h20m.gcode' }),
     );
     const qty = within(dialog).getByRole('textbox', {
-      name: 'Aantal keer geprint: Babybox_locks_v3_plate1_1h20m.gcode',
+      name: 'Aantal keer geprint: Bloembak_clips_v3_plate1_1h20m.gcode',
     });
     // Starts at the count of its latest order.
     expect(qty).toHaveValue('3');
@@ -966,7 +966,7 @@ describe('PrintDetailPage', () => {
     renderDetail('Editor');
     await userEvent.click(await screen.findByRole('button', { name: 'Meer acties' }));
     await userEvent.click(screen.getByRole('menuitem', { name: 'Verwijderen' }));
-    const dialog = screen.getByRole('alertdialog', { name: "Print 'Babybox locks' verwijderen?" });
+    const dialog = screen.getByRole('alertdialog', { name: "Print 'Bloembak clips' verwijderen?" });
     expect(dialog).toHaveAccessibleDescription(
       'Verwijderen verbergt de print, maar bewaart de financiële gegevens.',
     );
@@ -978,7 +978,7 @@ describe('PrintDetailPage', () => {
   it('gives Users the summary only: no files, no delete, no tags (GAP-166)', async () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ json: detail({ assets: null }) }) });
     renderDetail('User');
-    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
     expect(screen.queryByRole('region', { name: 'Bestanden' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Verwijderen' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'cadeau verwijderen' })).toBeNull();
@@ -1011,7 +1011,7 @@ describe('PrintDetailPage', () => {
       }),
     });
     renderDetail('User');
-    const head = (await screen.findByRole('heading', { level: 1, name: 'Babybox locks' })).closest(
+    const head = (await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' })).closest(
       '.pp-ph',
     );
     if (!(head instanceof HTMLElement)) throw new Error('no header');
@@ -1048,7 +1048,7 @@ describe('PrintDetailPage', () => {
       }),
     });
     renderDetail('Admin');
-    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
     expect(document.querySelector('.pp-ph .pp-money')).toBeNull();
     expect(document.querySelector('.pp-tags .pp-badge')).not.toBeNull();
   });
@@ -1117,7 +1117,7 @@ describe('PrintDetailPage', () => {
   it('applies the same project condition to the operator, both ways', async () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ json: detail() }) });
     const same = renderDetail('Editor');
-    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
     const rows = () =>
       [...screen.getByRole('region', { name: 'Deze print' }).querySelectorAll('dt')].map(
         (dt) => dt.textContent,
@@ -1128,7 +1128,7 @@ describe('PrintDetailPage', () => {
 
     stubFetch({ 'GET /api/prints/p1': () => ({ json: detail({ projectFolder: 'Kerst 2026' }) }) });
     renderDetail('Editor');
-    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
     expect(rows()).toContain('Project');
   });
 

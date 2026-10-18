@@ -1,4 +1,4 @@
-/** Two initials from a display name or e-mail address ("admin@local" → "AL", "Joey" → "JO"). */
+/** Two initials from a display name or e-mail address ("admin@local" → "AL", "Koen" → "JO"). */
 export function initials(name: string): string {
   const parts = name.split(/[\s@._-]+/).filter((part) => part !== '');
   const [first = '', second] = parts;

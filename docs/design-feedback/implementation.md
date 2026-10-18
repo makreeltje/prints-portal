@@ -474,8 +474,8 @@ from the breadcrumb. If you want it, the honest shape is probably a row that
 names the **path** rather than the project.
 
 One precision note while we are here: our `squashName` strips **every**
-non-letter and non-digit, not only case and spaces, so `Babybox locks` and
-`Babybox-locks` compare equal. That is the 1.9 breadcrumb implementation of
+non-letter and non-digit, not only case and spaces, so `Bloembak clips` and
+`Bloembak-clips` compare equal. That is the 1.9 breadcrumb implementation of
 GAP-072 and it is now shared by this card; it is slightly broader than "case
 and spaces ignored" as 2.15 words it. If you meant the narrower comparison,
 that is one line and a question, not a build.
@@ -535,3 +535,17 @@ that is one line and a question, not a build.
 7. **The 13 311px Prints page** (§3.4). We think it is fine and we would rather
    you knew the number than trusted our judgement about it. If 36 ever becomes
    60, GAP-171 is the entry to reopen and the trade reverses.
+8. **Your previews' fixture names, and this one is not a design question.**
+   Three of the klant names the previews, the READMEs and the changelog have
+   used since 1.0 — and one print name — turn out to be real folders in the
+   owner's library. Nobody checked them when they were chosen; the app's own
+   copies have been renamed and the repo is public, so the exported
+   `design-system/` tree is now the only place they are left. The set the app
+   uses from here on is **Koen, Esmee, Veerle, Anouk, Bas** and the print
+   **"Bloembak clips"**, and we would like the export to use the same six and
+   nothing else. One more: `<h3>Rick</h3>` appears as a klant in
+   `ScreenDashboard/preview.html`. Rick is the owner — he is the operator in
+   every screen you draw, and he is `lastChange.by` in the index; he should not
+   also be one of his own customers. You cannot verify a name against his
+   library yourself, which is exactly why the list above is the whole list:
+   please invent nothing new.

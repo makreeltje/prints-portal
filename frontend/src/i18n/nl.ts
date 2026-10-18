@@ -240,7 +240,7 @@ export const nl = {
   // opens. Its title is `queue.add`, the button that opens it; only the
   // strings the dialog itself invents are keyed here.
   'queue.add.name': 'Naam',
-  'queue.add.namePlaceholder': 'Bijvoorbeeld: Babybox locks',
+  'queue.add.namePlaceholder': 'Bijvoorbeeld: Bloembak clips',
   'queue.add.nameError': 'Vul een naam in.',
   'queue.add.customer': 'Klant',
   'queue.add.customerPlaceholder': 'Zoek of typ een klant',

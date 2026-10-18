@@ -15,7 +15,7 @@ describe('file labels in a row', () => {
   });
 
   it('keeps the extension and three stem characters', () => {
-    expect(splitName('Babybox_deksel_links.stl', 3).tail).toBe('nks.stl');
+    expect(splitName('Bloembak_deksel_links.stl', 3).tail).toBe('nks.stl');
   });
 
   it('separates an enumerated family through the tail', () => {
@@ -36,8 +36,8 @@ describe('file labels in a row', () => {
   it('gives up honestly where the difference is in the blind zone', () => {
     // The number sits at index 20 of 38: no tail reaches it and no head does.
     const names = [
-      'Babybox lock corner 20 inner width.stl',
-      'Babybox lock corner 21 inner width.stl',
+      'Bloembak clip corner 20 inner width.stl',
+      'Bloembak clip corner 21 inner width.stl',
     ];
     const stem = stemForRow(names);
     expect(stem).toBe(3); // the default, not a wild search
@@ -45,13 +45,13 @@ describe('file labels in a row', () => {
   });
 
   it('does not pretend two identical names differ', () => {
-    const names = ['Babybox lock corner 2.stl', 'Babybox lock corner 2.stl'];
+    const names = ['Bloembak clip corner 2.stl', 'Bloembak clip corner 2.stl'];
     expect(stemForRow(names)).toBe(3);
   });
 
   it('never cuts into the extension and never starves the head', () => {
     for (const stem of [0, 3, 8, 12]) {
-      const { head, tail } = splitName('Babybox lock corner 20 inner width.stl', stem);
+      const { head, tail } = splitName('Bloembak clip corner 20 inner width.stl', stem);
       expect(tail.endsWith('.stl')).toBe(true);
       expect(head.length).toBeGreaterThanOrEqual(2);
     }

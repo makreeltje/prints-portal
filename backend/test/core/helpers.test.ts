@@ -90,12 +90,12 @@ describe('path containment', () => {
     // and resolveExistingWithinRoot returns the canonical path.
     tmp = await realpath(await mkdtemp(path.join(os.tmpdir(), 'pp-paths-')));
     root = path.join(tmp, 'prints');
-    await mkdir(path.join(root, 'Joey', 'Babybox locks'), { recursive: true });
-    await writeFile(path.join(root, 'Joey', 'Babybox locks', 'lock.gcode'), 'G1');
+    await mkdir(path.join(root, 'Koen', 'Bloembak clips'), { recursive: true });
+    await writeFile(path.join(root, 'Koen', 'Bloembak clips', 'lock.gcode'), 'G1');
     await mkdir(path.join(tmp, 'prints-other'));
     await writeFile(path.join(tmp, 'prints-other', 'secret.txt'), 'x');
     await writeFile(path.join(tmp, 'outside.txt'), 'x');
-    await symlink(path.join(tmp, 'outside.txt'), path.join(root, 'Joey', 'link.txt'));
+    await symlink(path.join(tmp, 'outside.txt'), path.join(root, 'Koen', 'link.txt'));
   });
 
   afterAll(async () => {
@@ -103,21 +103,21 @@ describe('path containment', () => {
   });
 
   it('resolves normal relative paths', () => {
-    expect(resolveWithinRoot(root, 'Joey/Babybox locks/lock.gcode')).toBe(
-      path.join(root, 'Joey', 'Babybox locks', 'lock.gcode'),
+    expect(resolveWithinRoot(root, 'Koen/Bloembak clips/lock.gcode')).toBe(
+      path.join(root, 'Koen', 'Bloembak clips', 'lock.gcode'),
     );
-    expect(resolveWithinRoot(root, 'Joey/./x/../lock.gcode')).toBe(
-      path.join(root, 'Joey', 'lock.gcode'),
+    expect(resolveWithinRoot(root, 'Koen/./x/../lock.gcode')).toBe(
+      path.join(root, 'Koen', 'lock.gcode'),
     );
   });
 
   it.each([
     '../outside.txt',
-    'Joey/../../outside.txt',
+    'Koen/../../outside.txt',
     '../prints-other/secret.txt',
     '/etc/passwd',
     'C:\\Windows\\win.ini',
-    'Joey/\0lock.gcode',
+    'Koen/\0lock.gcode',
   ])('refuses %j', (relative) => {
     expect(() => resolveWithinRoot(root, relative)).toThrow(PathEscapeError);
   });
@@ -129,10 +129,10 @@ describe('path containment', () => {
   });
 
   it('follows symlinks and refuses targets outside the root', async () => {
-    await expect(resolveExistingWithinRoot(root, 'Joey/Babybox locks/lock.gcode')).resolves.toBe(
-      path.join(root, 'Joey', 'Babybox locks', 'lock.gcode'),
+    await expect(resolveExistingWithinRoot(root, 'Koen/Bloembak clips/lock.gcode')).resolves.toBe(
+      path.join(root, 'Koen', 'Bloembak clips', 'lock.gcode'),
     );
-    await expect(resolveExistingWithinRoot(root, 'Joey/link.txt')).rejects.toBeInstanceOf(
+    await expect(resolveExistingWithinRoot(root, 'Koen/link.txt')).rejects.toBeInstanceOf(
       PathEscapeError,
     );
   });

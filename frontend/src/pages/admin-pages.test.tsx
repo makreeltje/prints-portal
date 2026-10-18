@@ -202,11 +202,11 @@ describe('UsersPage dialogs', () => {
 
 describe('AccessPage', () => {
   const matrix = {
-    customers: ['Denise', 'Joey'],
+    customers: ['Esmee', 'Koen'],
     users: [
-      { ...helper, customers: ['Joey'] },
-      { ...editor, customers: ['Denise', 'Joey'] },
-      { ...owner, customers: ['Denise', 'Joey'] },
+      { ...helper, customers: ['Koen'] },
+      { ...editor, customers: ['Esmee', 'Koen'] },
+      { ...owner, customers: ['Esmee', 'Koen'] },
     ],
   };
 
@@ -214,9 +214,9 @@ describe('AccessPage', () => {
     stubFetch({ 'GET /api/access': () => ({ json: matrix }) });
     renderWithAuth(<AccessPage />);
     const table = await waitFor(desktopTable);
-    expect(table.getByRole('checkbox', { name: 'helper: Joey' })).toBeChecked();
-    expect(table.getByRole('checkbox', { name: 'helper: Denise' })).not.toBeChecked();
-    for (const name of ['owner@example.org: Denise', 'Renate: Denise']) {
+    expect(table.getByRole('checkbox', { name: 'helper: Koen' })).toBeChecked();
+    expect(table.getByRole('checkbox', { name: 'helper: Esmee' })).not.toBeChecked();
+    for (const name of ['owner@example.org: Esmee', 'Renate: Esmee']) {
       const cell = table.getByRole('checkbox', { name });
       expect(cell).toBeChecked();
       expect(cell).toBeDisabled();
@@ -230,7 +230,7 @@ describe('AccessPage', () => {
   it('says there is nobody to grant access to when no account has the role User', async () => {
     stubFetch({
       'GET /api/access': () => ({
-        json: { customers: ['Denise', 'Joey'], users: [{ ...editor, customers: [] }] },
+        json: { customers: ['Esmee', 'Koen'], users: [{ ...editor, customers: [] }] },
       }),
     });
     renderWithAuth(<AccessPage />);
@@ -254,12 +254,12 @@ describe('AccessPage', () => {
     });
     renderWithAuth(<AccessPage />);
     const cell = await waitFor(() =>
-      desktopTable().getByRole('checkbox', { name: 'helper: Denise' }),
+      desktopTable().getByRole('checkbox', { name: 'helper: Esmee' }),
     );
     await userEvent.click(cell);
     expect(cell).toBeChecked();
     expect(calls.at(-1)?.body).toEqual({
-      changes: [{ userId: 'u-helper', customerFolder: 'Denise', granted: true }],
+      changes: [{ userId: 'u-helper', customerFolder: 'Esmee', granted: true }],
     });
   });
 
@@ -270,7 +270,7 @@ describe('AccessPage', () => {
     });
     renderWithAuth(<AccessPage />);
     const cell = await waitFor(() =>
-      desktopTable().getByRole('checkbox', { name: 'helper: Joey' }),
+      desktopTable().getByRole('checkbox', { name: 'helper: Koen' }),
     );
     await userEvent.click(cell);
     expect(await screen.findByRole('alert')).toHaveTextContent('Opslaan mislukt');
@@ -286,7 +286,7 @@ describe('AccessPage', () => {
     // The column menu is named per klant since 2.0, so two menus on one screen
     // are told apart (GAP-098).
     const menu = await waitFor(() =>
-      desktopTable().getByRole('button', { name: 'Kolomacties voor Denise' }),
+      desktopTable().getByRole('button', { name: 'Kolomacties voor Esmee' }),
     );
     await userEvent.click(menu);
     // The cell carries has-pop while the menu is open, or the sticky first
@@ -296,7 +296,7 @@ describe('AccessPage', () => {
     expect(select).toHaveFocus();
     await userEvent.click(select);
     expect(calls.at(-1)?.body).toEqual({
-      changes: [{ userId: 'u-helper', customerFolder: 'Denise', granted: true }],
+      changes: [{ userId: 'u-helper', customerFolder: 'Esmee', granted: true }],
     });
   });
 
@@ -304,11 +304,11 @@ describe('AccessPage', () => {
     stubFetch({ 'GET /api/access': () => ({ json: matrix }) });
     renderWithAuth(<AccessPage />);
     const first = await waitFor(() =>
-      desktopTable().getByRole('checkbox', { name: 'helper: Denise' }),
+      desktopTable().getByRole('checkbox', { name: 'helper: Esmee' }),
     );
     first.focus();
     await userEvent.keyboard('{ArrowRight}');
-    expect(desktopTable().getByRole('checkbox', { name: 'helper: Joey' })).toHaveFocus();
+    expect(desktopTable().getByRole('checkbox', { name: 'helper: Koen' })).toHaveFocus();
   });
 });
 
@@ -345,10 +345,10 @@ describe('phone cards', () => {
     const calls = stubFetch({
       'GET /api/access': () => ({
         json: {
-          customers: ['Denise', 'Joey'],
+          customers: ['Esmee', 'Koen'],
           users: [
-            { ...helper, customers: ['Joey'] },
-            { ...editor, customers: ['Denise', 'Joey'] },
+            { ...helper, customers: ['Koen'] },
+            { ...editor, customers: ['Esmee', 'Koen'] },
           ],
         },
       }),
@@ -357,11 +357,11 @@ describe('phone cards', () => {
     renderWithAuth(<AccessPage />);
     await waitFor(desktopTable);
     const phone = layout('phone');
-    expect(phone.getByRole('checkbox', { name: 'Renate: Denise' })).toBeDisabled();
-    const cell = phone.getByRole('checkbox', { name: 'helper: Denise' });
+    expect(phone.getByRole('checkbox', { name: 'Renate: Esmee' })).toBeDisabled();
+    const cell = phone.getByRole('checkbox', { name: 'helper: Esmee' });
     await userEvent.click(cell);
     expect(calls.at(-1)?.body).toEqual({
-      changes: [{ userId: 'u-helper', customerFolder: 'Denise', granted: true }],
+      changes: [{ userId: 'u-helper', customerFolder: 'Esmee', granted: true }],
     });
     expect(phone.getByText('Admin en Editor hebben altijd toegang.')).toBeInTheDocument();
   });

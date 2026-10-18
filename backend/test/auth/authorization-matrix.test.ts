@@ -79,7 +79,7 @@ const ENDPOINTS: {
     request: (ids) => ({
       method: 'PATCH',
       url: '/api/access',
-      payload: { changes: [{ userId: ids.target ?? '', customerFolder: 'Joey', granted: true }] },
+      payload: { changes: [{ userId: ids.target ?? '', customerFolder: 'Koen', granted: true }] },
     }),
     allowed: ['Admin'],
   },

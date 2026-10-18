@@ -30,7 +30,7 @@ const TOKEN = 'q2Hk9-2vX7rTnP4aBd8sLw3eYcQ2Hk9-2vX7rTnP4aB';
 const links: ShareLink[] = [
   {
     id: 'l1',
-    customer: 'Joey',
+    customer: 'Koen',
     label: 'Q2 overzicht',
     createdAt: '2026-10-05T10:00:00.000Z',
     expiresAt: inDays(30),
@@ -39,7 +39,7 @@ const links: ShareLink[] = [
   },
   {
     id: 'l2',
-    customer: 'Joey',
+    customer: 'Koen',
     label: 'Kerst 2025',
     createdAt: '2025-12-01T10:00:00.000Z',
     expiresAt: inDays(-3),
@@ -57,7 +57,7 @@ const links: ShareLink[] = [
   },
   {
     id: 'l4',
-    customer: 'Denise',
+    customer: 'Esmee',
     label: 'Oude link',
     createdAt: '2026-05-02T10:00:00.000Z',
     expiresAt: inDays(1),
@@ -67,7 +67,7 @@ const links: ShareLink[] = [
 ];
 
 const customers = [
-  { folder: 'Joey', printCount: 3, deleted: false, noBilling: false, openAmount: 10 },
+  { folder: 'Koen', printCount: 3, deleted: false, noBilling: false, openAmount: 10 },
   { folder: 'Bas', printCount: 1, deleted: false, noBilling: true, openAmount: null },
 ];
 
@@ -79,29 +79,29 @@ describe('ShareLinksPage', () => {
   it('groups the links per klant with their expiry and status', async () => {
     stubFetch({ 'GET /api/share-links': () => ({ json: { links } }) });
     renderWithAuth(<ShareLinksPage />, { state: signedIn('Admin') });
-    await screen.findByRole('region', { name: 'Joey' });
+    await screen.findByRole('region', { name: 'Koen' });
     // ScreenShareLinks 1.9: the page opens on Actief, so a klant whose links
     // are all dead is not listed until "Alle".
     expect(
       screen.getAllByRole('region').map((region) => region.getAttribute('aria-label')),
-    ).toEqual(['Bas', 'Joey']);
+    ).toEqual(['Bas', 'Koen']);
     await userEvent.click(screen.getByRole('button', { name: /^Alle/ }));
     expect(
       screen.getAllByRole('region').map((region) => region.getAttribute('aria-label')),
-    ).toEqual(['Bas', 'Denise', 'Joey']);
-    const joey = screen.getByRole('region', { name: 'Joey' });
-    const rows = within(joey).getAllByRole('listitem');
+    ).toEqual(['Bas', 'Esmee', 'Koen']);
+    const koen = screen.getByRole('region', { name: 'Koen' });
+    const rows = within(koen).getAllByRole('listitem');
     expect(within(rows[0] as HTMLElement).getByText('Over 30 dagen')).toBeInTheDocument();
-    expect(within(joey).queryByText('Over 1 dagen')).toBeNull();
+    expect(within(koen).queryByText('Over 1 dagen')).toBeNull();
     expect(within(rows[0] as HTMLElement).getByText('Actief')).toBeInTheDocument();
     expect(within(rows[1] as HTMLElement).getByText('3 dagen geleden')).toBeInTheDocument();
     expect(within(rows[1] as HTMLElement).getByText('Verlopen')).toBeInTheDocument();
     expect(within(rows[1] as HTMLElement).queryByRole('button')).toBeNull();
     const bas = screen.getByRole('region', { name: 'Bas' });
     expect(within(bas).getByText('Verloopt niet')).toHaveClass('never');
-    const denise = screen.getByRole('region', { name: 'Denise' });
-    expect(within(denise).getAllByText('Ingetrokken')).toHaveLength(2);
-    expect(within(denise).queryByRole('button', { name: 'Intrekken' })).toBeNull();
+    const esmee = screen.getByRole('region', { name: 'Esmee' });
+    expect(within(esmee).getAllByText('Ingetrokken')).toHaveLength(2);
+    expect(within(esmee).queryByRole('button', { name: 'Intrekken' })).toBeNull();
   });
 
   it('revokes a link after confirming with its label', async () => {
@@ -110,8 +110,8 @@ describe('ShareLinksPage', () => {
       'POST /api/share-links/l1/revoke': () => ({ status: 204 }),
     });
     renderWithAuth(<ShareLinksPage />, { state: signedIn('Admin') });
-    const joey = await screen.findByRole('region', { name: 'Joey' });
-    await userEvent.click(within(joey).getByRole('button', { name: 'Intrekken' }));
+    const koen = await screen.findByRole('region', { name: 'Koen' });
+    await userEvent.click(within(koen).getByRole('button', { name: 'Intrekken' }));
     const dialog = screen.getByRole('alertdialog', { name: "Deel-link 'Q2 overzicht' intrekken?" });
     /*
       The link is a key now, so Intrekken ends a visit as well as a page
@@ -149,7 +149,7 @@ describe('ShareLinksPage', () => {
     const dialog = screen.getByRole('dialog', { name: 'Deel-link maken' });
     const klant = within(dialog).getByLabelText('Klant');
     await waitFor(() => {
-      expect(klant).toHaveValue('Joey');
+      expect(klant).toHaveValue('Koen');
     });
     await userEvent.selectOptions(klant, 'Bas');
     expect(klant).toHaveAccessibleDescription(
@@ -190,13 +190,13 @@ describe('ShareLinksPage', () => {
 const billed: ShareView = {
   billed: true,
   studio: { name: 'Voorbeeld 3D', hasLogo: false },
-  customer: 'Joey',
+  customer: 'Koen',
   expiresAt: inDays(30),
   lines: [
     {
       id: 'o1',
-      description: 'Babybox locks',
-      project: 'Babybox locks',
+      description: 'Bloembak clips',
+      project: 'Bloembak clips',
       date: '2026-09-12',
       price: 11.89,
       paid: 5,
@@ -244,7 +244,7 @@ describe('SharePage', () => {
     });
     renderShare();
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Overzicht voor Joey' }),
+      await screen.findByRole('heading', { level: 1, name: 'Overzicht voor Koen' }),
     ).toBeInTheDocument();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByText('Voorbeeld 3D')).toBeInTheDocument();

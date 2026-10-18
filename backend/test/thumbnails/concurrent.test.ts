@@ -19,7 +19,7 @@ describe('two models of one print, rendered at once', () => {
 
   beforeEach(async () => {
     root = await makePrintsTree();
-    dir = path.join(root, 'Wouter', 'Twee modellen tegelijk');
+    dir = path.join(root, 'Veerle', 'Twee modellen tegelijk');
     await mkdir(dir, { recursive: true });
     await writeFile(path.join(dir, 'cube.stl'), asciiCube());
     await writeFile(path.join(dir, 'cube_two.stl'), asciiCube());

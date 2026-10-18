@@ -13,7 +13,7 @@ const groups: QueueGroup[] = [
       {
         id: 'r1',
         name: 'Vitrinekast inzet',
-        customerFolder: 'Wouter',
+        customerFolder: 'Veerle',
         projectFolder: null,
         hasFiles: false,
         waitingDays: 118,
@@ -47,9 +47,9 @@ const groups: QueueGroup[] = [
     rows: [
       {
         id: 'r3',
-        name: 'Babybox locks',
-        customerFolder: 'Joey',
-        projectFolder: 'Babybox locks',
+        name: 'Bloembak clips',
+        customerFolder: 'Koen',
+        projectFolder: 'Bloembak clips',
         hasFiles: true,
         waitingDays: 3,
         price: null,
@@ -68,13 +68,13 @@ const render = (body: { groups: QueueGroup[] }) => {
     'GET /api/customers': () => ({
       json: {
         customers: [
-          { folder: 'Joey', printCount: 2 },
-          { folder: 'Joey Bouwhuis', printCount: 0 },
+          { folder: 'Koen', printCount: 2 },
+          { folder: 'Koen Bouwhuis', printCount: 0 },
         ],
       },
     }),
     'GET /api/prints': () => ({
-      json: { total: 1, items: [{ id: 'p9', name: 'Babybox locks' }] },
+      json: { total: 1, items: [{ id: 'p9', name: 'Bloembak clips' }] },
     }),
     'POST /api/requests': () => ({ status: 201, json: { id: 'new' } }),
     'DELETE /api/requests/r1': () => ({ status: 204 }),
@@ -222,18 +222,18 @@ describe('Wachtrij', () => {
     );
     // The klant list says how many prints each one has, which is how two
     // klanten whose names start the same are told apart.
-    await userEvent.type(within(dialog).getByRole('combobox'), 'Joey');
-    expect(within(dialog).getByRole('option', { name: /Joey Bouwhuis/ })).toHaveTextContent(
+    await userEvent.type(within(dialog).getByRole('combobox'), 'Koen');
+    expect(within(dialog).getByRole('option', { name: /Koen Bouwhuis/ })).toHaveTextContent(
       'Nog geen prints',
     );
-    await userEvent.click(within(dialog).getByRole('option', { name: /^Joey2 prints$/ }));
+    await userEvent.click(within(dialog).getByRole('option', { name: /^Koen2 prints$/ }));
     await userEvent.click(within(dialog).getByRole('radio', { name: 'Mee bezig' }));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Toevoegen' }));
     await waitFor(() => {
       expect(stub.calls.some((call) => call.path === '/api/requests')).toBe(true);
     });
     expect(stub.calls.find((call) => call.path === '/api/requests')?.body).toEqual({
-      customer: 'Joey',
+      customer: 'Koen',
       name: 'Lamp voor in de gang',
       state: 'inProgress',
     });
@@ -244,9 +244,9 @@ describe('Wachtrij', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Aanvraag toevoegen' }));
     const dialog = screen.getByRole('dialog');
     await userEvent.type(within(dialog).getByRole('textbox', { name: 'Naam' }), 'Kastje');
-    await userEvent.type(within(dialog).getByRole('combobox'), 'Denise');
+    await userEvent.type(within(dialog).getByRole('combobox'), 'Esmee');
     const options = within(dialog).getAllByRole('option');
-    expect(options.at(-1)).toHaveTextContent('Nieuwe klant: Denise');
+    expect(options.at(-1)).toHaveTextContent('Nieuwe klant: Esmee');
     await userEvent.click(options.at(-1) as HTMLElement);
     await userEvent.click(within(dialog).getByRole('button', { name: 'Toevoegen' }));
     await waitFor(() => {
@@ -254,7 +254,7 @@ describe('Wachtrij', () => {
     });
     // Nothing creates a folder; the record keeps the typed name (rule 7).
     expect(stub.calls.find((call) => call.path === '/api/requests')?.body).toEqual({
-      customer: 'Denise',
+      customer: 'Esmee',
       name: 'Kastje',
       state: 'undecided',
     });
@@ -315,7 +315,7 @@ describe('Wachtrij', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Aanvraag toevoegen' }));
     const dialog = screen.getByRole('dialog');
     await userEvent.type(within(dialog).getByRole('textbox', { name: 'Naam' }), 'Lamp');
-    await userEvent.type(within(dialog).getByRole('combobox'), 'Joey');
+    await userEvent.type(within(dialog).getByRole('combobox'), 'Koen');
     await userEvent.keyboard('{Escape}');
     await userEvent.type(
       within(dialog).getByRole('textbox', { name: 'Bron' }),
@@ -344,7 +344,7 @@ describe('Wachtrij', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Aanvraag toevoegen' }));
     const dialog = screen.getByRole('dialog');
     await userEvent.type(within(dialog).getByRole('textbox', { name: 'Naam' }), 'Lamp');
-    await userEvent.type(within(dialog).getByRole('combobox'), 'Joey');
+    await userEvent.type(within(dialog).getByRole('combobox'), 'Koen');
     await userEvent.keyboard('{Escape}');
     await userEvent.type(
       within(dialog).getByRole('textbox', { name: 'Bron' }),

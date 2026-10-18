@@ -55,7 +55,7 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
       items: unknown[];
     }>();
 
-    const id = await addRequest('Joey', 'Lamp voor in de gang');
+    const id = await addRequest('Koen', 'Lamp voor in de gang');
 
     // The queue has it, as "Nog niet besloten": asking is not deciding.
     const groups = (await queue()).groups;
@@ -75,25 +75,25 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
     const customers = (await t.as(admin, { url: '/api/customers' })).json<{
       customers: { folder: string; printCount: number }[];
     }>();
-    const joey = customers.customers.find((c) => c.folder === 'Joey');
+    const koen = customers.customers.find((c) => c.folder === 'Koen');
     const search = (await t.as(admin, { url: '/api/prints?q=Lamp' })).json<{ total: number }>();
     expect(search.total).toBe(0);
-    expect(joey?.printCount).toBe(
-      (await t.as(admin, { url: '/api/prints?limit=100&customer=Joey' })).json<{
+    expect(koen?.printCount).toBe(
+      (await t.as(admin, { url: '/api/prints?limit=100&customer=Koen' })).json<{
         total: number;
       }>().total,
     );
   });
 
   it('re-indexing never archives a request for being absent', async () => {
-    const id = await addRequest('Joey', 'Nog te ontwerpen kastje');
+    const id = await addRequest('Koen', 'Nog te ontwerpen kastje');
     await t.app.services.indexer.indexAll();
     // It has no folder, so the absent-sweep would have taken it.
     expect((await queue()).groups[0]?.rows.some((r) => r.id === id)).toBe(true);
   });
 
   it('groups by state, and inside a group the fileless rows come first', async () => {
-    await addRequest('Joey', 'Bezig zonder bestanden', 'inProgress');
+    await addRequest('Koen', 'Bezig zonder bestanden', 'inProgress');
     // An existing print, given the same state, has files.
     const withFiles = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
       items: { id: string }[];
@@ -171,12 +171,12 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
   });
 
   it('links a request to the folder that appeared, and keeps the real print', async () => {
-    const id = await addRequest('Joey', 'Wordt Babybox locks');
+    const id = await addRequest('Koen', 'Wordt Bloembak clips');
     const target = await (async () => {
       const items = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
         items: { id: string; name: string }[];
       }>().items;
-      return items.find((p) => p.name === 'Babybox locks');
+      return items.find((p) => p.name === 'Bloembak clips');
     })();
 
     // A price on the request moves across; the print itself is kept.
@@ -206,7 +206,7 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
   });
 
   it('shows a bron only on a fileless row, and a note on any row', async () => {
-    const id = await addRequest('Joey', 'Lamp voor in de gang');
+    const id = await addRequest('Koen', 'Lamp voor in de gang');
     await t.as(admin, {
       method: 'PUT',
       url: `/api/prints/${id}/source`,
@@ -234,7 +234,7 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
       .json<{
         items: { id: string; name: string }[];
       }>()
-      .items.find((print) => print.name === 'Babybox locks');
+      .items.find((print) => print.name === 'Bloembak clips');
     await t.as(admin, {
       method: 'PUT',
       url: `/api/prints/${target?.id ?? ''}/note`,
@@ -269,7 +269,7 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
     states as a fact rather than as a claim in prose.
   */
   it('deletes a request, and only a request', async () => {
-    const id = await addRequest('Joey', 'Lamp voor in de gang');
+    const id = await addRequest('Koen', 'Lamp voor in de gang');
     const response = await t.as(admin, { method: 'DELETE', url: `/api/requests/${id}` });
     expect(response.statusCode).toBe(204);
 
@@ -291,7 +291,7 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
   });
 
   it('a cleared request state would strand the record, which is why it can be deleted', async () => {
-    const id = await addRequest('Joey', 'Kastje voor de meterkast');
+    const id = await addRequest('Koen', 'Kastje voor de meterkast');
     await t.as(admin, {
       method: 'POST',
       url: '/api/prints/bulk',

@@ -47,7 +47,7 @@ describe('state pages', () => {
     // The diagram names the two folder levels the indexer expects.
     expect(screen.getByText('klant')).toBeInTheDocument();
     expect(screen.getByText('project')).toBeInTheDocument();
-    expect(document.querySelector('.pp-tree')?.textContent).toContain('Babybox_locks.gcode');
+    expect(document.querySelector('.pp-tree')?.textContent).toContain('Bloembak_clips.gcode');
     await userEvent.click(screen.getByRole('button', { name: 'Opnieuw indexeren' }));
     expect(onReindex).toHaveBeenCalledOnce();
   });

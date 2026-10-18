@@ -38,28 +38,28 @@ export async function putText(root: string, relative: string, text: string): Pro
 /**
  * A small prints folder that exercises every indexing rule:
  *
- *   Joey/Babybox locks/lock_PLA_3h27m.gcode          counted (173.49 g, 12294 s)
- *   Joey/Babybox locks/lock.3mf                      sliced, excluded: G-code present
- *   Joey/Babybox locks/Nog te printen/next_PLA_11m.gcode   excluded: folder
- *   Joey/Babybox locks/render.png                    listed, no lines
- *   Joey/Babybox locks/.thumbs/cache.png             ignored
- *   Joey/loose_PLA_31m55s.gcode                      print without project (15.36 g)
- *   Denise/Keychain/key_PLA_11m.gcode (+ copy)       possible duplicates (2 × 3.03 g)
- *   Denise/Board game/parts.3mf                      sliced 3MF, no G-code: counted (224.39 g)
- *   Wouter/Empty/                                    print without files
+ *   Koen/Bloembak clips/lock_PLA_3h27m.gcode          counted (173.49 g, 12294 s)
+ *   Koen/Bloembak clips/lock.3mf                      sliced, excluded: G-code present
+ *   Koen/Bloembak clips/Nog te printen/next_PLA_11m.gcode   excluded: folder
+ *   Koen/Bloembak clips/render.png                    listed, no lines
+ *   Koen/Bloembak clips/.thumbs/cache.png             ignored
+ *   Koen/loose_PLA_31m55s.gcode                      print without project (15.36 g)
+ *   Esmee/Keychain/key_PLA_11m.gcode (+ copy)       possible duplicates (2 × 3.03 g)
+ *   Esmee/Board game/parts.3mf                      sliced 3MF, no G-code: counted (224.39 g)
+ *   Veerle/Empty/                                    print without files
  */
 export async function makePrintsTree(): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), 'pp-prints-'));
-  await put(root, 'Joey/Babybox locks/lock_PLA_3h27m.gcode', 'orca-single-slot.gcode');
-  await writeCreality3mf(path.join(root, 'Joey/Babybox locks/lock.3mf'));
-  await put(root, 'Joey/Babybox locks/Nog te printen/next_PLA_11m.gcode', 'orca-multi-slot.gcode');
-  await putText(root, 'Joey/Babybox locks/render.png', 'not really a png');
-  await putText(root, 'Joey/Babybox locks/.thumbs/cache.png', 'x');
-  await put(root, 'Joey/loose_PLA_31m55s.gcode', 'creality6-no-total.gcode');
-  await put(root, 'Denise/Keychain/key_PLA_11m.gcode', 'orca-multi-slot.gcode');
-  await put(root, 'Denise/Keychain/key_PLA_11m copy.gcode', 'orca-multi-slot.gcode');
-  await writeCreality3mf(path.join(root, 'Denise/Board game/parts.3mf'), 3);
-  await mkdir(path.join(root, 'Wouter/Empty'), { recursive: true });
+  await put(root, 'Koen/Bloembak clips/lock_PLA_3h27m.gcode', 'orca-single-slot.gcode');
+  await writeCreality3mf(path.join(root, 'Koen/Bloembak clips/lock.3mf'));
+  await put(root, 'Koen/Bloembak clips/Nog te printen/next_PLA_11m.gcode', 'orca-multi-slot.gcode');
+  await putText(root, 'Koen/Bloembak clips/render.png', 'not really a png');
+  await putText(root, 'Koen/Bloembak clips/.thumbs/cache.png', 'x');
+  await put(root, 'Koen/loose_PLA_31m55s.gcode', 'creality6-no-total.gcode');
+  await put(root, 'Esmee/Keychain/key_PLA_11m.gcode', 'orca-multi-slot.gcode');
+  await put(root, 'Esmee/Keychain/key_PLA_11m copy.gcode', 'orca-multi-slot.gcode');
+  await writeCreality3mf(path.join(root, 'Esmee/Board game/parts.3mf'), 3);
+  await mkdir(path.join(root, 'Veerle/Empty'), { recursive: true });
   await putText(root, '.DS_Store', 'x');
   return root;
 }

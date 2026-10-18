@@ -10,11 +10,11 @@ Het portaal leest één map en schrijft daar nooit in. De indeling bepaalt alles
 
 ```
 prints/
-└─ Joey/                        klant
-   └─ Babybox locks/            project; dit is één print
-      ├─ Babybox_locks.gcode
-      ├─ Babybox_locks.3mf
-      └─ Babybox_locks.stl
+└─ Koen/                        klant
+   └─ Bloembak clips/            project; dit is één print
+      ├─ Bloembak_clips.gcode
+      ├─ Bloembak_clips.3mf
+      └─ Bloembak_clips.stl
 ```
 
 - De **eerste map** is de klant, de **tweede** het project. Eén projectmap is
