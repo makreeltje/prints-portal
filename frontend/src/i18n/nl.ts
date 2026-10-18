@@ -239,7 +239,8 @@ export const nl = {
   'queue.linkIntro': 'Kies de print waarvan de bestanden bij deze aanvraag horen.',
   'queue.linkPick': 'Print',
   'outstanding.showAll': 'Toon alle {n} regels', // component copy: OutstandingGroup
-  'outstanding.groupLabel': '{customer}, {count} prints, oudste {days} dagen, {amount}',
+  'outstanding.groupLabel':
+    '{customer}, {count, plural, one {# print} other {# prints}}, {days, plural, =0 {alles van vandaag} one {oudste # dag} other {oudste # dagen}}, {amount}',
   'strip.overview': 'Overzicht', // component copy: CustomerChips
   'strip.overview.label': 'Klantenoverzicht ({n} klanten)',
   'strip.dialog.title': 'Alle klanten',
@@ -510,7 +511,7 @@ export const nl = {
   'outstanding.oldest': 'Oudste openstaande print',
   'outstanding.oldestDays':
     '{days, plural, =0 {alles van vandaag} one {oudste # dag} other {oudste # dagen}}',
-  'outstanding.groupMeta': '{count} prints · oudste {days} dagen open',
+  'outstanding.groupMeta': '{count, plural, one {# print} other {# prints}}',
   'outstanding.empty': 'Niets openstaand',
   'outstanding.emptyHint': 'Alle prints zijn betaald.',
   'pay.reminderPdf': 'Herinnering (PDF)',

@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-17T16:20:00Z",
+  "at": "2026-10-18T00:55:00Z",
   "via": "Claude Code",
-  "note": "2.11: four defects from the running Wachtrij and the owner's new feature. outstanding.oldest split (one key held two strings), queue.waiting gains \"vandaag gevraagd\", .pp-line folds into three bands on the phone, and every phone rule now has a .pp-device.phone twin. A print carries a bron and a notitie: PrintSource and PrintNote. First bundle.css change since 2.7. GAP-148 to 154."
+  "note": "2.12: GAP-154, GAP-155, GAP-156 all resolved. The queue summary's \"waarvan n zonder bestanden\" moves out of .amt into .ttl (.amt stays, empty); .age gets justify-self:start; .pp-btn-sm takes the 44px tap floor on the phone and .pp-line .acts wraps. outstanding.groupMeta is the count alone, outstanding.groupLabel is new with plurals, share.expiresIn removed. No token added, renamed or removed; no new class. README.md and changelog.md were four rounds stale on the artifact and are restored from the 2.11 export with 2.12 on top."
  },
  "layout": "files",
  "libraries": [],

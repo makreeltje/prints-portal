@@ -1,5 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, CircleCheck, Clock, FileText } from 'lucide-react';
+import {
+  ChevronDown,
+  CircleAlert,
+  CircleCheck,
+  Clock,
+  FileText,
+  TriangleAlert,
+} from 'lucide-react';
 import { useId, useState } from 'react';
 import { useCurrentUser } from '../auth/context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -34,6 +41,21 @@ const AGE_LATE_AFTER_DAYS = 90;
 
 const ageTone = (days: number): string =>
   days > AGE_LATE_AFTER_DAYS ? 'unpaid' : days > AGE_WARNING_AFTER_DAYS ? 'warning' : 'neutral';
+
+/*
+  The icon escalates with the step, so the badge never carries its age by
+  colour alone: clock, triangle-alert, circle-alert (ScreenOutstanding 1.9).
+  The page drew a clock at every step until now; the Wachtrij, built later,
+  had it right.
+*/
+const AgeIcon = ({ days }: { days: number }) =>
+  days > AGE_LATE_AFTER_DAYS ? (
+    <CircleAlert className="pp-ico" aria-hidden="true" />
+  ) : days > AGE_WARNING_AFTER_DAYS ? (
+    <TriangleAlert className="pp-ico" aria-hidden="true" />
+  ) : (
+    <Clock className="pp-ico" aria-hidden="true" />
+  );
 
 /** At most ten lines before "Toon alle {n} regels". */
 const LINES_BEFORE_MORE = 10;
@@ -173,8 +195,14 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
       >
         <span className="ttl">
           <h3 id={titleId}>{group.customer}</h3>
+          {/*
+            The count alone since 2.12: the age is the badge's, 20px away,
+            which has the icon, the three steps and the zero arm. Two strings
+            about one number, computed in two places, disagree the first time
+            a threshold changes (GAP-154).
+          */}
           <span className="pp-muted pp-text-sm">
-            {t('outstanding.groupMeta', { count: group.count, days: group.oldestDays })}
+            {t('outstanding.groupMeta', { count: group.count })}
           </span>
         </span>
         {/*
@@ -187,7 +215,7 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
           (GAP-148). 2.11 split the key.
         */}
         <span className={`age pp-badge ${ageTone(group.oldestDays)}`}>
-          <Clock className="pp-ico" aria-hidden="true" />
+          <AgeIcon days={group.oldestDays} />
           {t('outstanding.oldestDays', { days: group.oldestDays })}
         </span>
         <span className="amt pp-money pp-text-lg">{formatMoney(group.total)}</span>
@@ -231,7 +259,7 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
             </div>
             <span className="pp-row pp-gap-1">
               <span className={`pp-badge ${ageTone(line.daysOpen)}`}>
-                <Clock className="pp-ico" aria-hidden="true" />
+                <AgeIcon days={line.daysOpen} />
                 {t('status.daysOpen', { days: line.daysOpen })}
               </span>
               {line.archived && <StatusBadge kind="archived" />}
@@ -252,7 +280,7 @@ function Group({ group, canManage }: { group: OutstandingGroup; canManage: boole
               )}
             </span>
             {canManage && (
-              <div className="pp-row acts pp-gap-1 pp-nowrap">
+              <div className="pp-row acts pp-gap-1">
                 {busy === line.orderId && <span className="pp-spin" aria-hidden="true" />}
                 <button
                   type="button"

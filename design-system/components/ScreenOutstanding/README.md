@@ -33,3 +33,25 @@ open" measures 127px; ScreenQueue's badge is 192px of a 326px row and broke the 
 lines. The tiles are unchanged (two columns, the first spanning), and nothing changes above 480px.
 Each line keeps its partial-payment stack ("€ 6,89", "van € 11,89", "Nog € 6,89 open") — on the
 phone that stack is now the right-hand half of the second band.
+
+**2.12.** (2026-10-18) **The summary says the age once (GAP-154).** The group's meta line under the
+klant name is the count alone — `outstanding.groupMeta`, "{count, plural, one {# print} other {#
+prints}}" — instead of "{count} prints · oudste {days} dagen open". Two reasons, both measured in
+the app: the string had no plural on either count, so a klant with one line one day old read **"1
+prints · oudste 1 dagen open"**; and since 2.11 gave the `.age` badge beside it the words "oudste 1
+dag", the summary said the age twice in two vocabularies, 20px apart. The badge keeps the age — it
+has the icon, the three steps and the zero arm — and this page's layout does not change: the meta
+line is simply shorter. The eleven groups measured clear at 360px stay clear.
+
+**The summary's `aria-label` has a key: `outstanding.groupLabel`** — "{customer}, {count, plural,
+one {# print} other {# prints}}, {days, plural, =0 {alles van vandaag} one {oudste # dag} other
+{oudste # dagen}}, {amount}". 1.9 specified the sentence in prose and gave it no key, so the app
+wrote its own and a screen reader heard "1 prints, oudste 1 dagen". **The name keeps the age
+although the visible meta line drops it:** an accessible name names what is on screen, and the
+badge is on screen.
+
+**Two phone fixes that reach this page (GAP-155, GAP-156).** The summary's age badge is now as wide
+as its own words (`justify-self: start`, where "oudste 752 dagen" used to paint 124px of text in a
+223px pill), and a line's actions wrap at 480px and below with `.pp-btn-sm` at 44px, so "Markeer
+als betaald" and "Afschrijven" stack instead of overflowing their band. The tiles, the groups'
+order, the lines' content and everything above 480px are unchanged.

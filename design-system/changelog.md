@@ -1,3 +1,199 @@
+# Changelog 2.12
+
+Three gaps, all on the phone, all in `bundle.css` and one markup slot — and the round's own lesson
+is that **a slot has a type**. 2.10 put a sentence where a figure goes; a sentence sizes a column,
+a column is shared by the row above it, and nine months later a two-word heading had 109px. The
+badge that 2.11 added only made the collision visible: holding the badge back removed the
+overprint and left the squeeze, which is the measurement that decided this round. Version 2.11
+follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-154 | Four day-count strings with no plural, one of them possibly dead — and, measured, a fifth nobody had listed | **Per key, against the app's call-site measurement.** `outstanding.groupMeta` is the live bug and is now the **count alone**, pluralized: "{count, plural, one {# print} other {# prints}}" — the age belongs to the `.age` badge 20px away, which has the icon, the three steps and the zero arm, and which since 2.11 says it in better words. `outstanding.groupLabel` is **added to the deck** with plurals and with the age kept, because an accessible name names what is on screen. `share.expiresIn` is **removed** (measured dead: absent from `nl.ts`, zero call sites). `overview.expiryNotice` and `date.daysOne`/`date.daysOther` are **confirmed as built** — the app branches in code before a 1 can reach them. Pluralizing groupMeta's age clause instead is rejected below | **resolved** |
+| GAP-155 | The queue summary's age badge overprints "waarvan {n} zonder bestanden" by 10px at 360px, and the group's `h3` is squeezed to 109px | **Proposal 3, and only proposal 3: the sentence leaves `.amt`.** It becomes the second muted line of the `.ttl` block on ScreenQueue; `.amt` stays in the markup and stays **empty** there, so the summary keeps its four tracks and the chevron keeps its own. Plus the older half: `.pp-ogrp > summary .age` gets `justify-self: start`, which `.pp-line > .pp-badge` has had since 2.11 — the two rules described the same thing and disagreed. **Proposals 1 and 2 are rejected** below. Openstaand's markup does not change; the badge can ship again on ScreenQueue | **resolved** |
+| GAP-156 | A row's two actions need 308px of a 294px band at 360px, and `.pp-btn-sm` pins 32px where `do-dont` has called 44px a hard floor since 1.2 | **The floor wins, and the band wraps.** `.pp-btn-sm` takes `min-height: var(--pp-tap)` at 480px and below (44px there) and keeps 32px on the desktop: it is a **density** variant — smaller text and padding — never a smaller target. `.pp-line .acts` gets `flex-wrap: wrap` on the phone and the previews stop setting `pp-nowrap` on it. **An exemption for `.pp-btn-sm` is rejected**, and so is the proposed `max(32px, var(--pp-tap))`, which computes **36px on the desktop** and would have quietly abolished the small button everywhere | **resolved** |
+
+## New and changed
+
+- **Tokens:** none. `tokens.json` `version` is **2.12**. No token added, renamed, changed or
+  removed; `--pp-tap` already had its 44px phone value (`:root`, since 1.2) and this round only
+  makes one more rule read it.
+- **New classes:** none. **Changed classes** (all in `bundle.css`, each with its
+  `.pp-device.phone` twin, as 2.11 requires): `.pp-btn-sm` (phone `min-height`),
+  `.pp-line .acts` (`flex-wrap: wrap` on the phone), `.pp-ogrp > summary .age`
+  (`justify-self: start` on the phone). Three selectors, four declarations, seven lines including
+  the twins. No class is removed and no existing declaration is deleted.
+- **Copy** `outstanding.groupLabel` (**new**, in `copy-deck.md` under *Added in 2.12*),
+  `outstanding.groupMeta` (**changed** value, same key, same call site), `share.expiresIn`
+  (**row removed**, measured dead), `queue.ofWhichWithoutFiles` (**unchanged key, new slot** — the
+  `.ttl` block's second line instead of `.amt`).
+- **Components changed:** OutstandingGroup (README, preview), Button (README), ScreenQueue (README,
+  preview), ScreenOutstanding (README, preview).
+- **Screens changed:** ScreenQueue — the "waarvan" sentence moves into the title block in all six
+  group summaries, `.amt` is an empty slot, `pp-nowrap` is gone from the row actions, and the frame
+  labels say what they now show. ScreenOutstanding and OutstandingGroup — `pp-nowrap` gone from the
+  row actions; nothing else, because their `.ttl` has drawn the count alone since 1.9.
+- **Pages changed:** `changelog.md`, `copy-deck.md`, `do-dont.md`, `tokens.json`.
+- **Contrast report:** unchanged, **no new pair.** Nothing gains a colour: the moved sentence keeps
+  `muted` on the summary's `surface-2` ground (in the report at 4.5:1 or better in both themes,
+  light and dark), the badge keeps its three age steps, and a button's `min-height` carries no ink.
+- **Breaking changes: none.** Two obligations are added to the app — render
+  `queue.ofWhichWithoutFiles` inside `.ttl` with an empty `.amt` beside the badge, and import the
+  two copy changes — and one row leaves the deck that the app never imported. Nothing is renamed
+  and nothing that was built is withdrawn.
+
+## GAP-155: why proposal 3, now that the badge has been held back
+
+I wrote three proposals and the owner's measurement chose between them. **Removing the badge
+removed the overprint and left the squeeze**: "Nog niet besloten" still gets 109px and two lines,
+while "Mee bezig" — whose group carries no sentence — gets 274px on one. So two things were wrong
+and only one of them was the badge's:
+
+1. the collision, which needed the badge to exist, and
+2. the squeeze, which has been there since 2.10 and needs nothing but the sentence.
+
+`.amt` is one `auto` track for **both rows** of the phone grid. A 181px sentence in it is a 181px
+column, and the heading sits above that column. **Proposal 1 (three bands for the summary) was my
+own favourite and is rejected:** it gives the sentence a row of its own and so fixes the collision,
+but the sentence would still be the widest thing in a shared `auto` track at some other width, and
+a group would then fold into three bands *because one screen puts prose in a money slot*. That is
+a layout paying for a content mistake. **Proposal 2 is rejected as a fix** — 109px is still less
+than the badge's 130px — but half of it was right and is in this round anyway: `justify-self:
+start` on `.age` was missing, independently of everything else.
+
+What the sentence actually is: a fact about **what the group contains**, like the count above it.
+That is `.ttl`'s job. So `.ttl` carries the name and the facts, `.age` the age, `.amt` a figure —
+and `.amt` on Wachtrij is **empty**, kept in the markup as `.pp-right` is kept empty on a row with
+no price, so no CSS has to know which screen it is drawing. The heading gets 288px back at 360px,
+the badge needs no room it does not have, and the two screens fold identically for the first time.
+
+**The slot contract is written down in OutstandingGroup**, which is the component both screens
+borrow, because it is the thing that was never stated: `.amt` is a figure and never a sentence.
+
+## GAP-156: a size variant is not a target variant
+
+`do-dont` has said since 1.2: *don't shrink a touch target under 44px on phones*. `:root` raises
+`--pp-tap` to 44px at 480px. And `.pp-btn-sm` wrote `min-height: 32px` as a literal, so it was the
+one control in the system that ignored both — in nearly every row of the app, on the page the owner
+reaches *"van elke hoek, dus ook als ik bij iemand op bezoek ben, of als ik onderweg ben"*. It
+passes axe, because WCAG 2.2's target rule stops at 24px; no automated check was ever going to find
+it, which is exactly why it is written down once here rather than per screen.
+
+**The exemption is rejected.** If `.pp-btn-sm` may be 32px on a phone, the floor means nothing —
+every row action in this app is a `.pp-btn-sm`. What `pp-btn-sm` is *for* is density: `text-sm` and
+`space-3` padding in a dense table. Density is text and padding; a target is a target. So on the
+phone it keeps the small type and takes the ordinary tap height.
+
+**The implementer's `min-height: max(32px, var(--pp-tap))` is rejected, and it is worth saying
+why:** `--pp-tap` is **36px** outside the phone media query, so that expression is 36px on the
+desktop and the small button stops existing — in every table, every row, every popover. The two
+sizes are not a maximum; they are two states of one token, and the rule belongs where the token
+changes.
+
+The overflow is the same paragraph's other half: `.pp-row` wraps by default, the previews turned it
+off with `pp-nowrap`, and nobody had measured two actions against a 294px band. `flex-wrap: wrap`
+at 480px and below, and `pp-nowrap` off the row actions in all three previews that set it. A
+fileless queue row's two actions now stack into two 44px lines on the phone. **That is a cost, not
+a free fix** — a ten-row queue grows by about 48px per two-action row — and it is the right cost:
+an action you cannot hit is worth no pixels at all.
+
+## GAP-154: the age is the badge's, and a string with no key gets proofread by nobody
+
+`outstanding.groupMeta` was "{count} prints · oudste {days} dagen open", which is **two faults and
+a duplicate in six words**: no plural on either count, so one line one day old read "1 prints ·
+oudste 1 dagen open"; and since 2.11 the `.age` badge 20px away says "oudste 1 dag" — the same fact
+in a second vocabulary, on the busiest screen in the app.
+
+**Pluralizing the age clause is rejected.** It would have fixed the grammar and kept the
+duplication, and the duplication is the worse half: two strings that must agree about one number
+and are computed in two places will disagree the first time a threshold or a rounding changes.
+Only one of the two can own the age, and it is the badge — it has the clock, the warning and the
+alert icon, the three age steps, and the `=0 {alles van vandaag}` arm. The meta line keeps what the
+badge cannot say.
+
+This is also **the design catching up with its own preview**: OutstandingGroup has drawn
+"3 prints" in that slot since 1.9. The deck was the only place the age clause still lived.
+
+**`outstanding.groupLabel` is added rather than corrected**, because the deck never had it. 1.9
+specified the accessible name in prose — "Joey, 18 prints, oudste 741 dagen, € 640,12" — and gave
+it no key, so the app wrote the sentence itself, without plurals, and a screen reader heard "1
+prints, oudste 1 dagen" on the very component whose visible badge 2.11 had just fixed. **A string
+the deck does not carry is a string nobody proofreads**, and that is the rule this round adds to
+`do-dont`. Its day arms are `outstanding.oldestDays`' arms word for word; it **keeps** the age,
+although the visible meta line loses it, because the badge is on screen and an accessible name
+names what is on screen.
+
+**`share.expiresIn` is removed rather than pluralized.** Absent from `nl.ts`, zero call sites,
+measured key by key: the three strings that own those cases — `share.expiresToday`,
+`share.expiresTomorrow`, `overview.expiryNotice` — are unchanged and already correct, the last one
+because the app branches at two days. Giving a dead key a plural form would have made the deck
+look more correct and the app no better. **`overview.expiryNotice` and `date.daysOne` /
+`date.daysOther` are confirmed as built** and keep their 1.6 shape.
+
+**Wachtrij's summary gets no label key, deliberately.** Its accessible name is now its own visible
+text in DOM order — "Mee bezig, 6 aanvragen, waarvan 4 zonder bestanden, oudste 1 dag" — which is
+the sentence ScreenQueue's *Accessibility* paragraph already asks for. A key would be a second copy
+of a sentence the summary says out loud, and a second copy is a thing that drifts. Openstaand needs
+one because its summary also carries an amount and 1.9 fixed the order of that name.
+
+## What I rejected
+
+- **GAP-155 proposal 1**, three bands for `.pp-ogrp > summary`: it rearranges the layout to
+  accommodate prose in a figure slot, and leaves the sentence the widest thing in a shared track.
+- **GAP-155 proposal 2 as a fix**: `justify-self: start` plus a `minmax` stops the stretch and not
+  the collision (109px against 130px). Its missing-`justify-self` half ships anyway, on its own
+  merit.
+- **Pluralizing `outstanding.groupMeta`'s age clause** and keeping it: correct grammar, two sources
+  of one number.
+- **An exemption for `.pp-btn-sm` from the 44px floor**, and the `max(32px, var(--pp-tap))` form of
+  the fix, which is 36px on the desktop.
+- **Shortening "waarvan {n} zonder bestanden"** to fit the slot it was in. 2.11 refused to shorten
+  the row badge for the same reason: the words are the design, the slot was the mistake.
+
+## What I want measured
+
+1. **ScreenQueue's group summary at 360px with the badge back:** the `h3`'s width (I expect about
+   288px, where it was 109px), whether the `.ttl` block's three lines each stay on one line, and
+   the summary's rendered height. This is the whole of GAP-155 and I have computed it, not seen it.
+2. **A two-action queue row at 360px after the wrap:** the band's height and whether `scrollWidth`
+   still equals `clientWidth` on both screens. And the page height of a ten-row queue before and
+   after, so the owner can say whether 44px actions that stack are worth the scroll — if they are
+   not, the answer is fewer actions per row, not shorter buttons.
+3. **How often a Wachtrij group carries no "waarvan" line at all** (`0` fileless rows). The
+   `.ttl` block is then two lines and the summary is shorter; I have drawn both, but the
+   distribution decides which one is the normal sight.
+4. **Still owed from 2.11, unchanged:** whether design jobs dominate the queue (GAP-143's
+   overturning measurement, which probably needs part two shipped), and the age thresholds on a
+   queue row (GAP-145, still carrying 30/90 borrowed from money).
+
+## Where I was unsure
+
+- **Three lines in a collapsed summary.** `.ttl` is now `h3` + count + "waarvan …" on the groups
+  that have fileless rows, on the phone *and* the desktop (one block order — `do-dont`, 2.3). The
+  alternative was joining the two muted strings with " · " into one line, which is prettier at
+  980px and invents a separator the deck does not carry, and which wraps unpredictably at 360px. I
+  chose the stacked form; if the owner finds it heavy at desktop width, the joiner is a one-line
+  change in the app and in six preview summaries.
+- **The empty `.amt`.** Keeping an empty slot in the markup is the cheapest way to hold the four
+  tracks, and it matches `.pp-right` on a row with no price — but it is an element that exists for
+  the grid's sake. The alternative, pinning the chevron to the last track in CSS, leaves a 12px gap
+  where the empty track is. I took the markup.
+- **`.pp-device.phone` does not carry the phone's `--pp-tap`.** The frames are a 360px container at
+  desktop viewport width, so `:root`'s media query never fires inside them and **every** control in
+  a phone preview draws 36px where the app draws 44px. I twinned only `.pp-btn-sm`, with a literal
+  44px, because `min-height` cannot push a frame sideways. Twinning the two tokens on
+  `.pp-device.phone` would be the complete fix and would also widen `.pp-btn-icon` and the palette
+  buttons in every phone frame — **I propose it for 2.13 and I am not doing it blind.** It needs a
+  render check of the phone frames first, which is measurement 2's neighbour and not part of
+  GAP-156.
+- **`.pp-line > .pp-badge` still does not match on Openstaand's lines**, as `implementation.md`
+  reports: the badge shares a `span.pp-row.pp-gap-1` wrapper with the Gearchiveerd StatusBadge, and
+  the band is correct today only by auto-placement. I have **not** fixed it this round — it is not
+  one of the three gaps, and the fix is either a named wrapper class (new class, new markup on both
+  screens) or a `:has()` selector. **Log it as its own gap and I will decide it with the markup in
+  front of me.** It is my own 2.11 rule that is fragile, so I would rather it were numbered than
+  quietly patched.
+
 # Changelog 2.11
 
 Four defects out of the running queue page, the owner's new feature, and **the first change to

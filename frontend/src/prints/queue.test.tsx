@@ -86,7 +86,19 @@ describe('Wachtrij', () => {
     );
     if (!(undecided instanceof HTMLElement)) throw new Error('group missing');
     expect(within(undecided).getByText('2 aanvragen')).toBeInTheDocument();
-    expect(within(undecided).getByText('waarvan 1 zonder bestanden')).toBeInTheDocument();
+    const without = within(undecided).getByText('waarvan 1 zonder bestanden');
+    expect(without).toBeInTheDocument();
+    /*
+      Both muted lines belong to `.ttl`, not to `.amt`: a sentence in the
+      figure slot sized a column the heading shares and left it 109px on a
+      phone (GAP-155, 2.12). `.amt` stays, and stays empty.
+    */
+    expect(without.closest('.ttl')).not.toBeNull();
+    const amt = undecided.querySelector('summary .amt');
+    expect(amt).not.toBeNull();
+    expect(amt?.textContent).toBe('');
+    // The age badge is back on this screen, in the words Openstaand uses.
+    expect(within(undecided).getByText('oudste 118 dagen').closest('.age')).toBeInTheDocument();
 
     // The group with nothing missing says nothing about it.
     const inProgress = screen.getByRole('heading', { name: 'Mee bezig' }).closest('details');

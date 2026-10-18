@@ -141,6 +141,7 @@ export function QueuePage() {
 /** One state's group, in OutstandingGroup's form; both are open by default. */
 function Group({ group, onLink }: { group: QueueGroup; onLink: (row: QueueRow) => void }) {
   const titleId = useId();
+  const oldestDays = Math.max(...group.rows.map((row) => row.waitingDays));
   return (
     <details className="pp-card pp-group pp-ogrp" open>
       <summary>
@@ -149,28 +150,31 @@ function Group({ group, onLink }: { group: QueueGroup; onLink: (row: QueueRow) =
           <span className="pp-muted pp-text-sm">
             {t('queue.groupMeta', { count: group.rows.length })}
           </span>
+          {/*
+            "How much of my own labour is queued", answered without a second
+            state and without a second assertion (GAP-143). It is a fact about
+            what the group contains, like the count above it, so it is `.ttl`'s
+            second muted line — not `.amt`, where 2.10 put it: `.amt` is one
+            `auto` track for both rows of the phone grid, so a 181px sentence
+            in it left the heading 109px and two lines (GAP-155, 2.12).
+          */}
+          {group.withoutFiles > 0 && (
+            <span className="pp-muted pp-text-sm">
+              {t('queue.ofWhichWithoutFiles', { count: group.withoutFiles })}
+            </span>
+          )}
+        </span>
+        <span className={`age pp-badge ${ageTone(oldestDays)}`}>
+          <AgeIcon days={oldestDays} />
+          {t('outstanding.oldestDays', { days: oldestDays })}
         </span>
         {/*
-          The age badge belongs here — the preview has drawn it since 2.10 and
-          `outstanding.oldestDays` exists for it since 2.11 — but it is held
-          back on this screen until GAP-155 is settled, by the owner's
-          decision. `.pp-ogrp > summary`'s phone rule pairs `.age` with
-          `.amt`, which was written for Openstaand where `.amt` is money; here
-          it is a sentence, and at 360px the two overprint by 10px while the
-          group heading is squeezed onto two lines. The age is on every row
-          below, so nothing is lost by waiting. Openstaand renders the badge
-          today: there the slot is clear in all eleven groups.
+          Empty on this screen and kept in the markup, as `.pp-right` is kept
+          on a line with no price: it holds the summary's four tracks so the
+          chevron keeps its own and no CSS has to know which screen it draws
+          (OutstandingGroup, *The slots*).
         */}
-        <span className="age" />
-        {/*
-          The one figure that answers "how much of my own labour is queued",
-          without a second state and without a second assertion (GAP-143).
-        */}
-        <span className="amt pp-muted pp-text-sm">
-          {group.withoutFiles === 0
-            ? null
-            : t('queue.ofWhichWithoutFiles', { count: group.withoutFiles })}
-        </span>
+        <span className="amt" />
         <span className="chev">
           <ChevronDown className="pp-ico" aria-hidden="true" />
         </span>
@@ -233,7 +237,7 @@ function Row({ row, onLink }: { row: QueueRow; onLink: (row: QueueRow) => void }
       <span className="pp-right">
         {row.price === null ? null : <span className="pp-money">{formatMoney(row.price)}</span>}
       </span>
-      <div className="pp-row acts pp-gap-1 pp-nowrap">
+      <div className="pp-row acts pp-gap-1">
         {!row.hasFiles && (
           <button
             type="button"
@@ -317,7 +321,7 @@ function AddRequestDialog({ onClose, onDone }: { onClose: () => void; onDone: ()
           </span>
           <div className="pp-iwrap">
             <select
-              className="pp-input"
+              className="pp-input pp-select"
               aria-labelledby={`${id}-klant`}
               value={customer}
               onChange={(event) => {
@@ -331,6 +335,7 @@ function AddRequestDialog({ onClose, onDone }: { onClose: () => void; onDone: ()
                 </option>
               ))}
             </select>
+            <ChevronDown className="pp-ico r" aria-hidden="true" />
           </div>
         </label>
         <label className="pp-field">
@@ -477,7 +482,7 @@ function LinkFilesDialog({
           </span>
           <div className="pp-iwrap">
             <select
-              className="pp-input"
+              className="pp-input pp-select"
               aria-labelledby={`${id}-print`}
               data-autofocus
               value={printId}
@@ -492,6 +497,7 @@ function LinkFilesDialog({
                 </option>
               ))}
             </select>
+            <ChevronDown className="pp-ico r" aria-hidden="true" />
           </div>
         </label>
       </div>

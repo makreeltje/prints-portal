@@ -1,4 +1,4 @@
-Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 2.11 (see `changelog.md`).
+Design system for **3D Prints Portal**, a self-hosted web app that indexes print files, prices them, tracks payment and shares read-only pages with customers. The operator UI is a calm, precise workshop tool; the customer share page and the PDF invoice are the same brand, lighter and more spacious. All UI copy is Dutch (nl-NL). This is version 2.12 (see `changelog.md`).
 
 ## Principles
 
@@ -50,6 +50,18 @@ every phone rule in `bundle.css` is written twice: once in the media query, for 
 as `.pp-device.phone <selector>` with the same declarations, for the frame. The twin is preview
 markup only; the app still never sets `.phone`. When the two disagree, the media query is the
 truth and the twin is a bug in the preview.
+
+**A slot has a type, and the reason is that a track is shared (2.12).** In a grid whose rows share
+their columns — which every two-row phone layout in this system is — the widest thing in an `auto`
+track sets the width of everything above and below it. So a slot is not a free rectangle: `.ttl`
+takes the name and what the thing *is*, `.age` the age badge, `.amt` a **figure**, and a sentence
+in a figure slot is a layout bug waiting for a long screen. 2.10 put "waarvan {n} zonder bestanden"
+in `.amt` on ScreenQueue; at 360px it took 181px of the shared track and left the heading beside it
+**109px**, so a two-word heading wrapped to two lines while the group next to it had 274px on one.
+The badge 2.11 added into the other half of that row then overprinted the sentence by 10px — and
+holding the badge back removed the overprint and **left the squeeze**, which is how the cause was
+found. Name a slot's type in the component README, and when a fact does not fit a slot's type, move
+the fact, not the layout (GAP-155, OutstandingGroup).
 
 ## Floating panels (2.2)
 
@@ -252,3 +264,28 @@ feature:** a print carries a **bron** (the model's page, which the klant sees) a
 fileless job is a download or an evening of modelling — a second observation, deliberately not a
 fourth state (GAP-143 stands). Two new icons, thirteen new copy keys, three changed, no token
 added, renamed or removed. Details: `changelog.md`.
+
+## Versie 2.12 (2026-10-18)
+
+**Three gaps, all on the phone, and the round's lesson is that a slot has a type.** The queue's
+group summary stops putting a sentence where OutstandingGroup keeps a figure: "waarvan {n} zonder
+bestanden" becomes the second muted line of the title block, and `.amt` stays in the markup and
+stays empty there. That is the only one of my three proposals that answers **both** halves of what
+was measured — the owner held the badge back and the overprint went away while the **squeeze did
+not**, so `.amt` sizing a shared column had been starving the heading to 109px since 2.10,
+independently of the badge. Three bands for the summary is **rejected**: it rearranges a layout to
+accommodate prose in a money slot. The age badge also gets the `justify-self: start` that
+`.pp-line > .pp-badge` has had since 2.11 — two rules about the same kind of thing, one of which
+let 124px of text paint inside a 223px pill (GAP-155). **`.pp-btn-sm` takes the 44px tap floor on
+the phone** and keeps 32px on the desktop: a size variant is text and padding, never a smaller
+target, and it had pinned 32px as a literal in nearly every row of the app, where no automated
+check can see it — WCAG 2.2's target rule stops at 24px. An exemption is **rejected**, and so is the
+proposed `max(32px, var(--pp-tap))`, which computes **36px on the desktop** and would have
+abolished the small button everywhere. A row's two actions wrap instead of running 14px past their
+band (GAP-156). And the group summary stops saying the age twice: `outstanding.groupMeta` is the
+count alone, pluralized — which is what this component's preview has drawn since 1.9 — while the
+badge beside it keeps the age; `outstanding.groupLabel`, the `aria-label` 1.9 specified in prose and
+never gave a key, is **added** with its plurals, because a string the deck does not carry is a
+string nobody proofreads; and `share.expiresIn` is **removed**, measured dead (GAP-154). One new
+copy key, one changed, one row removed, no token added, renamed or removed, three changed CSS
+declarations and no new class. Details: `changelog.md`.

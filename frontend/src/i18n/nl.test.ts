@@ -38,6 +38,24 @@ describe('t', () => {
   });
 
   /*
+    A group summary says the count once and the age once, and both are
+    pluralized: before 2.12 the meta line read "1 prints · oudste 1 dagen
+    open" and the accessible name "1 prints, oudste 1 dagen" (GAP-154).
+  */
+  it('pluralizes the group count and leaves the age to the badge', () => {
+    expect(t('outstanding.groupMeta', { count: 1 })).toBe('1 print');
+    expect(t('outstanding.groupMeta', { count: 18 })).toBe('18 prints');
+    expect(t('outstanding.groupMeta', { count: 1 })).not.toContain('oudste');
+
+    const label = (count: number, days: number) =>
+      t('outstanding.groupLabel', { customer: 'Joey', count, days, amount: '€ 640,12' });
+    expect(label(1, 1)).toBe('Joey, 1 print, oudste 1 dag, € 640,12');
+    expect(label(18, 741)).toBe('Joey, 18 prints, oudste 741 dagen, € 640,12');
+    // The same zero arm as the badge it names.
+    expect(label(2, 0)).toBe('Joey, 2 prints, alles van vandaag, € 640,12');
+  });
+
+  /*
     `outstanding.oldest` is the StatTile label and nothing else; sharing it
     with the badge above is the fault GAP-148 was raised about.
   */

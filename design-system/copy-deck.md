@@ -98,11 +98,10 @@ gevraagd" is what the owner reads on the row he just added (GAP-150). Where a co
 | outstanding.total | Totaal openstaand |
 | outstanding.customers | Aantal klanten |
 | outstanding.oldest | Oudste openstaande print |
-| outstanding.groupMeta | {count} prints · oudste {days} dagen open |
+| outstanding.groupMeta | {count, plural, one {# print} other {# prints}} |
 | share.create | Deel-link maken |
 | share.label | Label |
 | share.expires | Verloopt |
-| share.expiresIn | Over {days} dagen |
 | share.revoke | Intrekken |
 | share.active | Actief |
 | share.expired | Verlopen |
@@ -755,3 +754,54 @@ still exists, once.
 cover the counts that would read wrong, and `outstanding.groupMeta` may be dead copy since 1.9
 split the summary into `.ttl` and `.age`. Which of them is imported, and which call site renders
 it, is a question for the app (GAP-154).
+
+**Answered in 2.12 (GAP-154), by the app's measurement of every call site.** `share.expiresIn` was
+dead — never imported, zero call sites — and its row is gone. `overview.expiryNotice` and
+`date.daysOne` / `date.daysOther` are reached only from two days up, or through a branch that
+handles 1 in code, so they stay as they are. `outstanding.groupMeta` was the opposite of the guess
+above: alive, rendered on every Openstaand group, and reading "1 prints · oudste 1 dagen open".
+It is changed in 2.12, and a fifth string nobody had listed, `outstanding.groupLabel`, is added
+there.
+
+## Added in 2.12
+
+**The group summary says the age once, and its accessible name gets its plurals (GAP-154).** One
+new key, one changed value, one row removed, one key reused in a new slot.
+
+| key | text |
+|---|---|
+| outstanding.groupLabel | {customer}, {count, plural, one {# print} other {# prints}}, {days, plural, =0 {alles van vandaag} one {oudste # dag} other {oudste # dagen}}, {amount} |
+
+**`outstanding.groupLabel` is the `aria-label` of an Openstaand group summary.** 1.9 specified that
+string in prose — "Joey, 18 prints, oudste 741 dagen, € 640,12" — and never gave it a key, so the
+app wrote its own without plurals and a screen reader heard "1 prints, oudste 1 dagen" on the one
+component whose visible badge 2.11 had just fixed. A string the deck does not carry is a string
+nobody proofreads. Its day arms are `outstanding.oldestDays`' arms word for word, because the
+accessible name should say what the badge says. **It keeps the age clause although the visible meta
+line loses it:** the name must name what is on screen, and the badge is on screen.
+
+**Changed in 2.12** (same key, same call site):
+
+- **`outstanding.groupMeta`** — was "{count} prints · oudste {days} dagen open", is now
+  "{count, plural, one {# print} other {# prints}}". Two faults and a duplicate in six words: no
+  plural on either count ("1 prints · oudste 1 dagen open"), and since 2.11 gave the `.age` badge
+  20px away the words "oudste 1 dag", the summary said the age twice in two vocabularies. The age
+  belongs to the badge — it has the icon, the three age steps and the zero arm — so the meta line
+  keeps only what the badge cannot say. **OutstandingGroup's own preview has drawn "3 prints" since
+  1.9**, so this aligns the key with the design rather than changing the design.
+
+**Reused, not duplicated:** `queue.ofWhichWithoutFiles` now renders as the **second muted line of
+the `.ttl` block** on Wachtrij instead of in the `.amt` slot (GAP-155). Same key, same words, same
+call site — a different slot. `queue.groupMeta` is the line above it.
+
+**Removed row:** `share.expiresIn` "Over {days} dagen". Measured dead — not in `nl.ts`, zero call
+sites — and the three keys that do own the cases it would have covered (`share.expiresToday`,
+`share.expiresTomorrow`, `overview.expiryNotice`) are unchanged. Nothing to migrate.
+
+**No label key for Wachtrij's group summary, deliberately.** Its accessible name is its own visible
+text in DOM order — heading, count, "waarvan n zonder bestanden", age badge — which is exactly the
+sentence ScreenQueue's *Accessibility* paragraph asks for, so a second copy of it in a key could
+only drift from it. Openstaand needs `outstanding.groupLabel` because its summary also carries an
+amount and 1.9 fixed the order of that name. If the app does set an `aria-label` on a Wachtrij
+summary, it must spell those same words in that same order; preferring no `aria-label` is simpler
+and cannot go stale.

@@ -1,6 +1,6 @@
 Button triggers an action; use one primary button per view.
 
-**Anatomy.** Optional leading icon (16px), label, optional trailing icon. Variants `pp-btn-primary`, `pp-btn-secondary`, `pp-btn-ghost`, `pp-btn-danger` (outlined) and `pp-btn-danger-solid` (confirm step only). Sizes: default (36px, 44px at 480px and below) and `pp-btn-sm` (32px, desktop tables only). Icon-only uses `pp-btn-icon` and needs an `aria-label`.
+**Anatomy.** Optional leading icon (16px), label, optional trailing icon. Variants `pp-btn-primary`, `pp-btn-secondary`, `pp-btn-ghost`, `pp-btn-danger` (outlined) and `pp-btn-danger-solid` (confirm step only). Sizes: default (36px, 44px at 480px and below) and `pp-btn-sm` (32px on the desktop, **44px at 480px and below**). **The 44px tap floor has no exemption** (2.12, GAP-156): `pp-btn-sm` is a *density* variant — smaller text and padding for a dense desktop table or row — not a smaller target, and it had pinned `min-height: 32px` as a literal, so every row action in the app was a 32px target on a phone while `do-dont` has called 44px a hard floor since 1.2. On the phone it takes `--pp-tap` like every other control; only its text size and padding stay small. Icon-only uses `pp-btn-icon` and needs an `aria-label`.
 
 **Tokens.** `primary`/`primary-hover`/`on-primary`, `surface`, `surface-2`, `border-strong`, `unpaid`/`unpaid-tint`, `primary-tint*`, `radius-md`, `motion-fast`.
 

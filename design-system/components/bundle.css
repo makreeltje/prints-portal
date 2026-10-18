@@ -31,6 +31,15 @@ body{margin:0;background:var(--bg);color:var(--text);font:400 var(--text-base)/v
 .pp-btn-danger:hover,.pp-btn-danger.is-hover{background:var(--unpaid-tint)}
 .pp-btn-danger-solid{background:var(--unpaid);color:var(--on-primary)}
 .pp-btn-sm{min-height:32px;padding:0 var(--space-3);font-size:var(--text-sm)}
+/* GAP-156 (2.12): THE TAP FLOOR APPLIES TO .pp-btn-sm TOO. `do-dont` has called 44px a hard floor
+   on a phone since 1.2 and ScreenQueue's *Phone* note says "at 44px", but this rule pinned 32px as
+   a literal, so every row action in the app was a 32px target at a 360px viewport (measured, both
+   screens). 32px stays the DESKTOP size -- a dense table row is a pointer target, not a thumb one;
+   only the phone gets the floor, through the same token the default button uses. The
+   .pp-device.phone twin writes 44px as a literal because no media query fires inside a preview
+   frame, so --pp-tap is still its 36px desktop value there (README, *Responsive*). */
+@media (max-width:480px){.pp-btn-sm{min-height:var(--pp-tap)}}
+.pp-device.phone .pp-btn-sm{min-height:44px}
 .pp-btn-icon{width:var(--pp-tap);min-width:var(--pp-tap);padding:0}
 .pp-btn:disabled,.pp-btn[aria-disabled=true]{opacity:var(--opacity-disabled);cursor:not-allowed}
 .pp-btn[aria-busy=true]{cursor:progress}
@@ -214,12 +223,18 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
    than a debt. The .pp-device.phone twin below is the preview frame's copy of the same rule: a
    frame is a 360px CONTAINER at the page's own viewport width, so no media query fires inside it
    (README, *Responsive*). The app still never sets .phone (do-dont, 1.2). */
-@media (max-width:480px){.pp-line{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-2)}.pp-line>:first-child{grid-column:1/-1}.pp-line>.pp-badge{grid-column:1;grid-row:2;justify-self:start}.pp-line>.pp-right{grid-column:2;grid-row:2;justify-self:end}.pp-line .acts{grid-column:1/-1}}
+/* GAP-156 (2.12): the actions WRAP in that third band. Measured at 360px: the band is 294px and a
+   fileless queue row's two actions ("Bestanden koppelen", "Status wijzigen") need 308px, so the
+   right gutter was gone on exactly the rows that carry two. `.pp-row` wraps by default; the
+   preview markup turned that off with `pp-nowrap`, which this rule overrides on the phone (and the
+   previews no longer set it on `.acts`). Two 44px buttons then stack, which is what ScreenQueue's
+   *Phone* note has always described. */
+@media (max-width:480px){.pp-line{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-2)}.pp-line>:first-child{grid-column:1/-1}.pp-line>.pp-badge{grid-column:1;grid-row:2;justify-self:start}.pp-line>.pp-right{grid-column:2;grid-row:2;justify-self:end}.pp-line .acts{grid-column:1/-1;flex-wrap:wrap}}
 .pp-device.phone .pp-line{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-2)}
 .pp-device.phone .pp-line>:first-child{grid-column:1/-1}
 .pp-device.phone .pp-line>.pp-badge{grid-column:1;grid-row:2;justify-self:start}
 .pp-device.phone .pp-line>.pp-right{grid-column:2;grid-row:2;justify-self:end}
-.pp-device.phone .pp-line .acts{grid-column:1/-1}
+.pp-device.phone .pp-line .acts{grid-column:1/-1;flex-wrap:wrap}
 /* share link, token */
 .pp-share{--pp-share-act:88px;display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr)) var(--pp-share-act);gap:var(--space-3);align-items:center;padding:var(--space-3) var(--space-4);font-size:var(--text-sm)}
 .pp-share b{color:var(--text-strong);font-weight:600;display:block}
@@ -823,9 +838,15 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-ogrp-bar{display:flex;flex-wrap:wrap;gap:var(--space-2);justify-content:flex-end;padding:var(--space-2) var(--space-4);border-bottom:1px solid var(--border)}
 .pp-ogrp-more{display:flex;justify-content:center;padding:var(--space-2) var(--space-4)}
 .pp-ogrp-list{display:flex;flex-direction:column;gap:0}
-@media (max-width:480px){.pp-ogrp>summary{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-1);padding:var(--space-3)}.pp-ogrp>summary .ttl{grid-column:1;grid-row:1}.pp-ogrp>summary .chev{grid-column:2;grid-row:1;justify-self:end}.pp-ogrp>summary .age{grid-column:1;grid-row:2}.pp-ogrp>summary .amt{grid-column:2;grid-row:2;justify-self:end}}
+/* GAP-155 (2.12): THE AGE BADGE IS AS WIDE AS ITS OWN WORDS. 1.9 gave `.age` a 1fr column on the
+   phone and no `justify-self`, so the box filled it: measured on Openstaand at 360px, "oudste 752
+   dagen" painted 124px of text inside a 223px tinted pill, and with ScreenQueue's `.amt` emptied
+   (see OutstandingGroup, *The slots*) the column is wider still. 2.11's own `.pp-line>.pp-badge`
+   rule already carries `justify-self:start`; these two rules describe the same kind of thing and
+   now agree. A status pill is never wider than its words anywhere else in this system. */
+@media (max-width:480px){.pp-ogrp>summary{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-1);padding:var(--space-3)}.pp-ogrp>summary .ttl{grid-column:1;grid-row:1}.pp-ogrp>summary .chev{grid-column:2;grid-row:1;justify-self:end}.pp-ogrp>summary .age{grid-column:1;grid-row:2;justify-self:start}.pp-ogrp>summary .amt{grid-column:2;grid-row:2;justify-self:end}}
 .pp-device.phone .pp-ogrp>summary{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-1);padding:var(--space-3)}
-.pp-device.phone .pp-ogrp>summary .ttl{grid-column:1;grid-row:1}.pp-device.phone .pp-ogrp>summary .chev{grid-column:2;grid-row:1;justify-self:end}.pp-device.phone .pp-ogrp>summary .age{grid-column:1;grid-row:2}.pp-device.phone .pp-ogrp>summary .amt{grid-column:2;grid-row:2;justify-self:end}
+.pp-device.phone .pp-ogrp>summary .ttl{grid-column:1;grid-row:1}.pp-device.phone .pp-ogrp>summary .chev{grid-column:2;grid-row:1;justify-self:end}.pp-device.phone .pp-ogrp>summary .age{grid-column:1;grid-row:2;justify-self:start}.pp-device.phone .pp-ogrp>summary .amt{grid-column:2;grid-row:2;justify-self:end}
 @media (prefers-reduced-motion:reduce){.pp-ogrp>summary .chev{transition:none}}
 .pp-ogrp .pp-money{white-space:nowrap}
 /* GAP-081 Deel-links filter and duplicate hint */

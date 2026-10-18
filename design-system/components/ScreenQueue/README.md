@@ -33,7 +33,7 @@ The owner named two things that are both "not printed yet" and are not interchan
 - A fourth state would make him **assert** a fact the app can **observe**. Moving a job from "designing" to "ready to print" by hand is a second assertion for an event the indexer sees — the files appeared. Rule 1: an asserted stage can go stale in silence, an observed one cannot. So this distinction belongs on the observed axis, which also means it is right the moment the files land and needs nobody to remember it.
 - What he said hurts is *remembering they exist at all*, not classifying them.
 
-**So the fileless rows sort first inside `Mee bezig`**, each carrying `queue.noFiles`, and the group summary's `.amt` slot carries `queue.ofWhichWithoutFiles` — "waarvan {n} zonder bestanden". That is the one figure that answers "how much of my own labour is queued", without a second state and without a second assertion.
+**So the fileless rows sort first inside `Mee bezig`**, each carrying `queue.noFiles`, and the group summary carries `queue.ofWhichWithoutFiles` — "waarvan {n} zonder bestanden" — as the **second muted line of its `.ttl` block** (2.12, GAP-155; it stood in the `.amt` slot from 2.10 until then, where it sized a shared column and squeezed the heading). That is the one figure that answers "how much of my own labour is queued", without a second state and without a second assertion.
 
 **The word is the observation, not the inference.** "Zonder bestanden", never "nog te ontwerpen": a print can lack files because he has not downloaded a model yet, not only because he must design one. Naming the inference would be the fault rule 6 was written for.
 
@@ -45,9 +45,9 @@ The owner named two things that are both "not printed yet" and are not interchan
 
 **States.** Loading (Skeleton rows), default, a group busy, a row busy (spinner in its button, the row kept), **empty** (`.pp-empty`: "Niets in de wachtrij" with "Nieuwe aanvragen komen hier te staan." and the "Aanvraag toevoegen" button), error (inline alert, nothing changed). A group with no rows is **not rendered** — an empty `Mee bezig` card is a box about nothing.
 
-**Phone (480px and below).** `.pp-ogrp>summary` reflows to its two-column, two-row form (inherited) and **`.pp-line` reflows to three bands** (2.11, GAP-151): the name block over the full width, then the age badge left with the figure right, then the actions. That is the same pairing the summary above it uses, and it is a change to `bundle.css` rather than something inherited — see *2.11* below. Groups stay open; actions wrap under each row at 44px.
+**Phone (480px and below).** `.pp-ogrp>summary` reflows to its two-column, two-row form (inherited) and **`.pp-line` reflows to three bands** (2.11, GAP-151): the name block over the full width, then the age badge left with the figure right, then the actions. That is the same pairing the summary above it uses, and it is a change to `bundle.css` rather than something inherited — see *2.11* below. Groups stay open; **actions wrap under each row at 44px**, which 2.12 finally makes true in `bundle.css` rather than only here (GAP-156).
 
-**Accessibility.** One `<h1>`; each group is a native `<details>` with an `<h3>` in its summary, reachable by Enter and Space; the summary's accessible name is "Mee bezig, 6 aanvragen, waarvan 4 zonder bestanden"; the age badge is text plus icon, never colour alone; "Nog geen bestanden" is real text in the row and not a tooltip; the row count is announced politely when a filter or an action changes it.
+**Accessibility.** One `<h1>`; each group is a native `<details>` with an `<h3>` in its summary, reachable by Enter and Space; the summary's accessible name is its own visible text in DOM order — "Mee bezig, 6 aanvragen, waarvan 4 zonder bestanden, oudste 1 dag" — and there is **no `aria-label` key for it** (2.12): a second copy of a sentence the summary already says out loud can only drift from it; the age badge is text plus icon, never colour alone; "Nog geen bestanden" is real text in the row and not a tooltip; the row count is announced politely when a filter or an action changes it.
 
 **Dutch copy.** Wachtrij | Aanvraag toevoegen | Nog niet besloten | Mee bezig | {n} aanvragen | waarvan {n} zonder bestanden | vandaag gevraagd / {n} dagen geleden gevraagd | Nog geen bestanden | Bestanden koppelen | Status wijzigen | Niets in de wachtrij | Nieuwe aanvragen komen hier te staan. | Toon alle {n} regels and oudste {n} dagen / alles van vandaag (both reused from ScreenOutstanding: `outstanding.showAll` and `outstanding.oldestDays`) | Bron | Notitie.
 
@@ -96,3 +96,48 @@ most rows show "Nog geen bestanden" and nothing more. Nothing is inferred from a
 absent note — no badge, no sort, no filter, no "nog te ontwerpen". The sort inside a group is still
 2.10's (fileless rows first). The preview draws that distribution rather than the convenient case:
 of the six fileless rows in the 980px frame, one has a bron, one has a note and four have neither.
+
+## 2.12 (2026-10-18)
+
+**The "waarvan" sentence leaves the `.amt` slot (GAP-155).** 2.10 put a sentence where
+OutstandingGroup's summary keeps a figure, and an `auto` column sized by a sentence is a column
+that takes the width from everything in it. Measured in the app at 360px: `.amt` took **181px**, so
+the `1fr` column was left **109px** — the age badge needed 130px and overprinted the sentence by
+10px, *and* the group's `h3` was squeezed to the same 109px, so "Nog niet besloten" wrapped to two
+lines while "Mee bezig", whose group carries no sentence, had 274px on one line. The owner held the
+badge back and the overprint went away; **the squeeze did not**, which is the measurement that
+decided this. The badge was never the cause of that half.
+
+So the sentence becomes the **second muted line of the `.ttl` block**, under the count:
+
+```
+Nog niet besloten          [oudste 118 dagen]              v
+4 aanvragen
+waarvan 2 zonder bestanden
+```
+
+- **`.amt` stays in the markup and stays empty on this screen** — `<span class="amt"></span>` — as
+  `.pp-right` is empty on a row with no price. The slot keeps the summary's four tracks, so the
+  chevron keeps its own, and no CSS has to know which screen it is drawing.
+- **One block order, phone and desktop.** Three lines of `.ttl` on both; nothing is joined with a
+  separator on one width and stacked on the other, and either line can be absent on its own
+  (`queue.ofWhichWithoutFiles` is only rendered from 1 up).
+- **The `h3` gets the full column back**: with `.amt` empty the `auto` track is the chevron's 24px,
+  so at 360px the title block has about 288px instead of 109px.
+- **The badge can ship again.** The reason it was held back was the overprint, and the overprint had
+  one cause. Nothing about `outstanding.oldestDays` changes; GAP-148 and GAP-149 stay resolved.
+- **Openstaand is untouched** — its `.amt` is money, its eleven groups measured clear, and this
+  change is Wachtrij's markup only.
+
+**The age badge is as wide as its own words (GAP-155, the older half).** `.pp-ogrp > summary .age`
+gets `justify-self: start`, which 2.11's `.pp-line > .pp-badge` already had. It was the one of the
+two rules that let a 124px string paint inside a 223px pill.
+
+**Row actions wrap, and a small button is 44px on a phone (GAP-156).** `.pp-line .acts` gets
+`flex-wrap: wrap` at 480px and below — two actions needed 308px of a 294px band — and the preview
+markup no longer sets `pp-nowrap` on it. `.pp-btn-sm` takes the tap floor on the phone
+(`min-height: var(--pp-tap)`, 44px there) and keeps 32px on the desktop; it had pinned 32px as a
+literal since 1.0, so the *Phone* paragraph above has been describing something `bundle.css` did
+not do. Every row action on this screen is a thumb target now, which is the whole premise of a page
+the owner uses *"als ik bij iemand op bezoek ben, of als ik onderweg ben"*. A fileless row's two
+actions stack into two 44px lines on the phone; that is the intended cost.

@@ -1743,8 +1743,9 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing. The twins are not app code and the one app-visible half of this round is GAP-151.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.11
+- **Re-measured at the 2.12 import (2026-10-18), because 2.12 adds three more twins.** Rendering every published phone frame at 1400px: `.pp-btn-sm` is **44px** in all of them (the twin writes the literal), `.pp-line .acts` is `flex-wrap: wrap` and a two-action queue row stacks into two 44px lines inside the frame as it does in the app, `.pp-ogrp > summary .age` is `justify-self: start` and each badge is the width of its own words (128px to 141px, no 223px pill), and ScreenQueue's six summaries all draw an empty `.amt`. **Nothing clips in ScreenQueue's or OutstandingGroup's frames.** But the gap's own subject is unchanged and the export says so itself: measured inside a `.pp-device.phone` frame, `--pp-tap` and `--pp-control-h` are still **36px**, their desktop values, because `:root`'s media query cannot fire inside a container. So a phone frame still draws 36px icon buttons and palette buttons where the app draws 44px. 2.12 proposes twinning the two tokens for 2.13 and declines to do it blind; we agree, and the gap stays open for that.
 
-## GAP-154 [open] Three more day-count strings with no plural, and one that may be dead
+## GAP-154 [resolved in v2.12] Three more day-count strings with no plural, and one that may be dead
 - **Type:** raised by the design system (v2.11)
 - **Found while:** the copy-deck de-duplication of GAP-148 (2.11)
 - **Where needed:** `share.expiresIn`, `overview.expiryNotice`, `outstanding.groupMeta`, `date.daysOne`/`date.daysOther`, `share.expiresToday`/`share.expiresTomorrow`
@@ -1761,8 +1762,9 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing. Nothing was changed on this gap's account this round.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.11
+- **Resolved in 2.12 and built, per key — the design system took every one of our four call-site answers.** `outstanding.groupMeta` is the count alone, `{count, plural, one {# print} other {# prints}}`; `outstanding.groupLabel` is **in the deck at last**, with plurals on the count and the badge's own three day arms, and our hand-written value is replaced by it; `share.expiresIn`'s row is dropped, which needed **no app change** — re-checked by grepping `frontend/src` for the identifier `expiresIn`, which matches only `expiresInDays` on the share-link API, an unrelated field; `overview.expiryNotice` and `date.daysOne`/`date.daysOther` keep their 1.6 shape. Measured in the running app at 1360px: a klant with one line now reads **"1 print"** where it read "1 prints · oudste 1 dagen open", and that summary's accessible name is **"<klant>, 1 print, oudste 737 dagen, € 0,21"**. The age is now stated once on screen, by the badge. Unit tests pin the `one`, `other` and `=0` arms of both keys.
 
-## GAP-155 [open] The queue summary's new age badge overlaps "waarvan {n} zonder bestanden" at 360px
+## GAP-155 [resolved in v2.12] The queue summary's new age badge overlaps "waarvan {n} zonder bestanden" at 360px
 - **Type:** suspected design bug
 - **Found while:** verifying 2.11's resolution of GAP-148/GAP-149 in the running app (2026-10-18)
 - **Where needed:** `.pp-ogrp > summary` at `@media (max-width:480px)` in `components/bundle.css`; ScreenQueue's group summary; also its own phone preview frame
@@ -1781,8 +1783,10 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **A note for whoever fixes it:** the second half of the problem is the stretch, which was already there. `.pp-ogrp > summary .age` has no `justify-self`, so the badge box fills its column: measured on Openstaand at 360px, "oudste 752 dagen" paints 124px of text inside a **223px** tinted pill. Nothing overlaps there, so it has never been reported, but a status pill twice the width of its own words is not what StatusBadge draws anywhere else.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.11
+- **Resolved in 2.12 and built: proposal 3, the sentence leaves `.amt`.** `queue.ofWhichWithoutFiles` is now the `.ttl` block's second muted line and `.amt` is `<span className="amt" />`, empty but present, so the summary keeps its four tracks. Re-measured in the running app at a 360px viewport, where the fault was 109px: the group heading **"Nog niet besloten" is 274px on one line** (the design system expected about 288px; the difference is the 16px chevron track and its gap, not a fault), each of the three `.ttl` lines is one line, `.amt` is 0px wide, and the summary is **113px** tall with the "waarvan" line and **93px** without. The badge is back on this screen and sits on its own band at 112px for "oudste 1 dag", nothing overprints, and the page does not scroll sideways (`scrollWidth` 360 = `clientWidth` 360).
+- **The older half is built with it and is visible on Openstaand.** `justify-self: start` arrives with the import. Measured at 360px with the pre-2.12 declaration put back by hand for comparison: "oudste 750 dagen" painted in a **223px** pill and is now **140px**; "oudste 752 dagen" was 234px and is now 140px. Every group summary badge on that page is now the width of its own words.
 
-## GAP-156 [open] A queue row's two actions overflow their band at 360px and are 32px tall where the screen says 44px
+## GAP-156 [resolved in v2.12] A queue row's two actions overflow their band at 360px and are 32px tall where the screen says 44px
 - **Type:** suspected design bug
 - **Found while:** the same verification pass; pre-existing, not caused by 2.11 (2026-10-18)
 - **Where needed:** `.pp-line .acts` on ScreenQueue and ScreenOutstanding; `.pp-btn-sm` in `components/bundle.css`; ScreenQueue's *Phone* note
@@ -1794,6 +1798,8 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing. This repository changes neither of them: `.pp-btn-sm` and the `.acts` rule are both `bundle.css`, and the row markup is the one ScreenQueue specifies.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.11
+- **Resolved in 2.12 and built; both halves arrive with the import, since both are `bundle.css`.** The 44px floor is written **inside** `@media (max-width:480px)` and nowhere else, with a `.pp-device.phone` twin that writes 44px as a literal — not the `max(32px, var(--pp-tap))` this entry proposed, which the design system rejected because `--pp-tap` is 36px outside the phone query and that form would have enlarged every small button on the desktop. The rejection is right and the export ships the narrow form; verified by reading `bundle.css` rather than the changelog. Measured in the running app at 360px: every row action is **44px** tall on Wachtrij and Openstaand, and still **32px** at 1400px. A fileless queue row's two actions now wrap into two lines — band 294px wide and **92px** tall, content 307px, nothing past the band (the last button ends at x=156 against a band ending at x=327). Openstaand's two actions need 253px, so they stay on one line there and only the height changes.
+- **The cost, measured, so the owner can judge it.** The Wachtrij at 360px is **1492px** tall where the pre-2.12 rules give **1324px**: +12px for every row from the tap floor, and +48px more for each of the two rows that carry two actions. Openstaand with a group open is 2816px against 2708px — +12px per line and no wrap. `pp-nowrap` is removed from `.acts` in both screens, as the previews did, so nothing in the app re-asserts `nowrap`.
 
 ## GAP-157 [open] "Aanvraag toevoegen" has never been designed, and now two components say it carries their fields
 - **Type:** missing component
@@ -1826,3 +1832,16 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing is broken; the act works today. Held: any copy change to the control, and the question of whether a finished job is recorded as such.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.11
+
+## GAP-160 [open] `.pp-line > .pp-badge` does not match on Openstaand's lines; the band is right by accident
+- **Type:** suspected design bug
+- **Found while:** the 2.12 import — the design system asked for this one in writing ("Log it as its own gap and I will decide it with the markup in front of me", `changelog.md` 2.12, *Where I was unsure*)
+- **Where needed:** `.pp-line > .pp-badge` at `@media (max-width:480px)` and its `.pp-device.phone` twin in `components/bundle.css`; OutstandingGroup's line anatomy; `frontend/src/finance/OutstandingPage.tsx:232`
+- **What is missing or wrong:** 2.11's phone rule for a line places the age badge with a **child** selector, `.pp-line > .pp-badge{grid-column:1;grid-row:2;justify-self:start}`. On ScreenQueue the badge is a direct child and the rule applies. On ScreenOutstanding it is not: since 1.9 the badge shares a wrapper, `span.pp-row.pp-gap-1`, with the *Gearchiveerd* StatusBadge, because a line can carry both and they must sit side by side. The wrapper has no class the rule names, so nothing places it.
+
+  It lands in the right cell anyway. Measured at 360px with all eleven groups open, over all 40 lines: every badge wrapper computes `grid-column-start: auto`, `grid-row-start: auto`, `justify-self: auto` — the rule does not reach it — while the queue's six direct badges compute `grid-column-start: 1`, `grid-row-start: 2`, `justify-self: start` from the same stylesheet. Rendered, the wrapper still sits at the line's left edge in the second band (x=16 of a 294px line, 239px wide, with `.pp-right` beside it at x=267), because grid **auto-placement** fills the next free cell and the next free cell is that one: `>:first-child` spans both columns of row 1. The `justify-self: start` is missing too, and is invisible today only because the wrapper is a `.pp-row` flex box that shrink-wraps its children.
+- **Why it matters:** the layout is correct today and depends on nothing that is written down. Adding an element to the line, reordering two, or giving the wrapper a width would move it with no rule to appeal to, and the screen it would break is the one the owner reads on a phone. It is also the second time a selector on this component has quietly not matched: 2.12 fixed `.pp-ogrp > summary .age`, which disagreed with this same rule about `justify-self`.
+- **Proposal:** name the wrapper. A class on it — `.pp-badges`, say — placed by the phone rule alongside `.pp-badge`, so both screens are placed by the same declaration: `.pp-line > .pp-badge, .pp-line > .pp-badges{grid-column:1;grid-row:2;justify-self:start}`. That is a new class and a one-attribute markup change on the one screen that has the wrapper. A `:has()` selector would need no markup but would hide the dependency again, which is the fault being reported. The design system decides; this entry only reports that the rule does not match where the component says it does.
+- **Blocked:** nothing. Openstaand's phone layout is correct as measured and no placeholder is in the code, so there is no `ds-gap` marker for this.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.12

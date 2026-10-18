@@ -1,6 +1,6 @@
 OutstandingGroup lists everything one klant still owes, with age and actions.
 
-**Anatomy.** Card with a header (`surface-2`): klant name (600), "N prints · oudste 12 dagen open", the open total (`MoneyDisplay`, the sum of remaining amounts), and the buttons Herinnering (PDF) and Alles als betaald. Lines: print name and project, days-open badge (`unpaid` after 14 days, neutral before), the line amount and per-line actions Markeer als betaald and Afschrijven. **Partial line:** the badge Deels betaald, the remaining amount as the line total (600) with "van € 11,89" in `muted` and "Nog € 6,89 open" below it; Afschrijven then covers only the remainder. Prints of customers that are niet factureren never appear here. At 480px and below the actions wrap under each line.
+**Anatomy.** Card with a header (`surface-2`): klant name (600), the count "3 prints" (the age is the badge's, not the meta line's — 2.12), the open total (`MoneyDisplay`, the sum of remaining amounts), and the buttons Herinnering (PDF) and Alles als betaald. Lines: print name and project, days-open badge (`unpaid` after 14 days, neutral before), the line amount and per-line actions Markeer als betaald and Afschrijven. **Partial line:** the badge Deels betaald, the remaining amount as the line total (600) with "van € 11,89" in `muted` and "Nog € 6,89 open" below it; Afschrijven then covers only the remainder. Prints of customers that are niet factureren never appear here. At 480px and below the actions wrap under each line.
 
 **Tokens.** `surface`, `surface-2`, `border`, `unpaid`, `unpaid-tint`, `radius-lg`.
 
@@ -8,7 +8,7 @@ OutstandingGroup lists everything one klant still owes, with age and actions.
 
 **Accessibility.** Header is an `<h3>`; lines are a list; days-open and remaining are text with an icon, not colour alone.
 
-**Dutch copy.** Joey · 4 prints · oudste 16 dagen open | € 40,67 | Herinnering (PDF) | Alles als betaald | 12 dagen open | Deels betaald | van € 11,89 | Nog € 6,89 open | Markeer als betaald | Afschrijven.
+**Dutch copy.** Joey · 3 prints (the count alone since 2.12, `outstanding.groupMeta`) | oudste 16 dagen (the `.age` badge, `outstanding.oldestDays`) | € 40,67 | Herinnering (PDF) | Alles als betaald | 12 dagen open | Deels betaald | van € 11,89 | Nog € 6,89 open | Markeer als betaald | Afschrijven.
 
 **1.5.** Lines are orders: a Nabestelling line is named "{print} (nabestelling {n})" and Bestelling 1 shows the print name. Days open count from the invoice date, else the date the Verkoopprijs was set, else the order date. "Markeer als betaald" opens the amount dialog (see ScreenOutstanding). For the role User the group is read-only: no buttons.
 
@@ -31,3 +31,34 @@ phone form at all.
 component is about money owed, and a model's source page and the owner's note about the work are
 not part of that. They appear on ScreenQueue's rows, which use the same `.pp-line` form — so the
 difference between the two screens' rows is now one of content, not of layout.
+
+**2.12.** (2026-10-18) **The slots, said once (GAP-155, GAP-154).**
+
+- **`.ttl` is the name and what the group *is*:** an `h3`, then one muted line per fact that is not
+  a figure and not the age — here the count alone, on Wachtrij the count and "waarvan {n} zonder
+  bestanden". **`.age` is the age badge. `.amt` is a figure — money or a count — and never a
+  sentence.** A sentence in `.amt` sizes an `auto` column that the phone layout shares with the
+  heading above it, which is how 2.10's "waarvan {n} zonder bestanden" squeezed a two-word heading
+  to 109px on ScreenQueue and overprinted the badge by 10px. A slot that may be **empty** keeps its
+  element, as `.pp-right` does on a line with no price.
+- **`.pp-ogrp > summary .age` now has `justify-self: start`** on the phone, in the media query and
+  in the `.pp-device.phone` twin. Without it the badge box filled its column: measured here at
+  360px, "oudste 752 dagen" painted 124px of text inside a **223px** tinted pill. 2.11's
+  `.pp-line > .pp-badge` carried `justify-self: start` from the day it was written, so the two
+  rules disagreed about the same kind of thing; they agree now, and no status pill in this system is
+  wider than its words.
+- **The summary's meta line says the age no more.** `outstanding.groupMeta` was "{count} prints ·
+  oudste {days} dagen open" in the deck — unpluralized on both counts, and 20px from a badge that
+  says the same thing better. It is now the count alone, "{count, plural, one {# print} other {#
+  prints}}", which is **what this component's preview has drawn since 1.9**.
+- **The accessible name has a key at last: `outstanding.groupLabel`.** 1.9 wrote the string in
+  prose and gave it no key, so the app wrote its own and a screen reader heard "1 prints, oudste 1
+  dagen". It keeps the age, because the badge is visible; its day arms are
+  `outstanding.oldestDays`' arms word for word.
+- **A line's actions wrap on the phone (GAP-156).** `.pp-line .acts` is `flex-wrap: wrap` at 480px
+  and below, and `.pp-btn-sm` is 44px there: "Markeer als betaald" and "Afschrijven" stack instead
+  of running 14px past their band. Above 480px nothing changes.
+
+**Nothing here changes Openstaand's layout.** Its `.amt` was always money, its eleven group
+summaries were measured clear at 360px, and the two CSS changes above only narrow a pill and wrap
+two buttons.

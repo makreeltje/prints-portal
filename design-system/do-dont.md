@@ -140,3 +140,43 @@
   jou. Niet zichtbaar op de deel-link."). **Don't** leave "internal" to a role check nobody can
   see from the screen (GAP-152, PrintNote).
 
+## Added in 2.12
+
+- **Do** give a slot a type and keep to it: `.ttl` carries the name and what a group *is*, `.age`
+  the age badge, `.amt` a **figure**. **Don't** put a sentence in a figure slot — an `auto` track
+  sized by prose is shared with the row above it, so a 181px sentence left a two-word heading 109px
+  and two lines on a phone, two rounds before anybody noticed (GAP-155, OutstandingGroup).
+- **Do** measure a fix against the half of the bug nobody removed: holding back the badge that
+  collided removed the overprint and **left** the squeeze, which is what chose between three
+  proposals. **Don't** accept the first explanation that makes a symptom disappear (GAP-155).
+- **Do** give a pill `justify-self: start` when it sits in a `1fr` column, and write the same
+  declaration on every rule that places the same kind of thing. **Don't** let two rules about one
+  kind of element disagree: `.pp-line > .pp-badge` had it and `.pp-ogrp > summary .age` did not, so
+  124px of text painted inside a 223px tinted pill on one screen only (GAP-155).
+- **Do** keep a size variant to text and padding. **Don't** let it carry a smaller touch target:
+  `.pp-btn-sm` pinned `min-height: 32px` as a literal and so ignored the 44px floor this file has
+  stated since 1.2, in nearly every row of the app, where no automated check can see it — WCAG
+  2.2's target rule stops at 24px (GAP-156, Button).
+- **Do** read a proposed `max()` before taking it: `max(32px, var(--pp-tap))` is **36px** on the
+  desktop, because that is what the token is outside the phone query, and it would have abolished
+  the small button everywhere. **Don't** express two states of a token as a maximum — put the rule
+  where the token changes (GAP-156).
+- **Do** let a row's actions wrap when they do not fit: two buttons needing 308px of a 294px band
+  is the band's answer, not the buttons'. **Don't** set `pp-nowrap` on `.pp-line .acts` (GAP-156).
+- **Do** give every string the app renders a key in `copy-deck.md`, the `aria-label`s included: a
+  string the deck does not carry is a string nobody proofreads — 1.9 wrote a group's accessible
+  name in prose, the app wrote it without plurals, and a screen reader said "1 prints, oudste 1
+  dagen" (GAP-154, `outstanding.groupLabel`).
+- **Do** let one element own a fact. **Don't** state the age in a badge *and* in the line beside it:
+  two strings that must agree about one number, computed in two places, disagree the first time a
+  threshold changes (GAP-154, `outstanding.groupMeta`).
+- **Do** remove a key the app has measured dead rather than correct it — `share.expiresIn` was
+  absent from `nl.ts` with zero call sites, and pluralizing it would have made the deck look better
+  and the app no better. **Don't** delete one on a guess: the same round's guess about
+  `outstanding.groupMeta` was wrong in the other direction (GAP-154).
+- **Do** remember that a `.pp-device.phone` frame still inherits the **desktop** `--pp-tap` and
+  `--pp-control-h` (36px), because `:root`'s media query cannot fire inside a container: a phone
+  frame draws 36px controls where the app draws 44px. 2.12 twins only `.pp-btn-sm`, with a literal,
+  because `min-height` cannot push a frame sideways. **Don't** twin the two tokens on the frame
+  until the phone frames have been re-rendered and measured — it widens `.pp-btn-icon` and the
+  palette buttons in every one of them (proposed for 2.13).

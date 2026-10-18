@@ -100,7 +100,9 @@ describe('OutstandingPage', () => {
     // Oldest klant first; partial lines show the remainder of the price.
     const groups = screen.getAllByRole('group').map((r) => r.getAttribute('aria-labelledby'));
     expect(groups).toHaveLength(2);
-    expect(within(joey).getByText('2 prints · oudste 12 dagen open')).toBeInTheDocument();
+    // The count alone since 2.12; the age is the badge's beside it (GAP-154).
+    expect(within(joey).getByText('2 prints')).toBeInTheDocument();
+    expect(within(joey).getByText('oudste 12 dagen')).toBeInTheDocument();
     expect(text(within(joey).getByText(/^van /).textContent)).toBe('van € 11,89');
     expect(within(joey).getByText('Gearchiveerd')).toBeInTheDocument();
     // Three age steps now (GAP-080): neutral to 30 days, warning to 90, unpaid above.
