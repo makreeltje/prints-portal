@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, RotateCw, Search, TriangleAlert } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { useAnchoredPanel } from '../components/anchoredPanel';
+import { Portal } from '../components/Portal';
 import { formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import type { Spool } from '../prints/types';
@@ -106,13 +107,25 @@ export function SpoolPicker({
         </span>
       </button>
       {open && (
-        <SpoolPopover
-          panelRef={panelRef}
-          selected={value?.id ?? null}
-          trigger={trigger}
-          onPick={(id) => void pick(id)}
-          onClose={close}
-        />
+        /*
+          The panel leaves `.pp-lift` entirely (ds-gap: GAP-146). `.pp-lift`
+          is `z-index: 1`, so the panel's own z-index 30 is compared only
+          inside that wrapper — and every later row's trigger, at the same
+          level, wins on DOM order and paints over the open list. Measured on
+          a print with four files: two triggers covered 200x32 of the panel
+          each. `position: fixed` does not help; a fixed box escapes clipping,
+          not its ancestors' stacking contexts. Same fault, and the same
+          placeholder, as the klant tile's menu.
+        */
+        <Portal from={trigger}>
+          <SpoolPopover
+            panelRef={panelRef}
+            selected={value?.id ?? null}
+            trigger={trigger}
+            onPick={(id) => void pick(id)}
+            onClose={close}
+          />
+        </Portal>
       )}
     </span>
   );
