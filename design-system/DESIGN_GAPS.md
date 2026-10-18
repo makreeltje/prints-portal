@@ -2171,6 +2171,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.15
 
+- **Built in 2.15:** `SessionPrintsPage` reads a new `fetchAllPrints` instead of `useInfiniteQuery`, and the whole `.pp-more` block — the count line, "Meer laden" and "Alle prints geladen" — is gone from that page. `fetchAllPrints` asks in chunks of the server's own `MAX_PAGE_SIZE` (100) and **loops** rather than asking for one large page, so a klant who one day passes the ceiling gets their whole list instead of a silent truncation; on this library it is one request. The unpaged result has its own query key (`keys.listAll`) because it is a different shape under the same `['prints']` prefix, so live events still invalidate it. **Nothing died:** `common.loadMore`, `common.count` and `common.allLoaded` are all still rendered by the operator's dashboard (and `common.count` by the FilterBar), `.pp-more` is still used there, and no component prop became unused.
 ## GAP-179 [open] PaymentPanel still specifies a *Rol User* state that GAP-170 made unreachable
 - **Type:** conflict
 - **Found while:** implementing GAP-170 in the 2.15 round

@@ -3,18 +3,27 @@ import type { TagPaletteKey } from './tag-palette';
 import type { Customer, PrintDetail, PrintFilter, PrintSummary, Tag, TagWithCount } from './types';
 
 export const PAGE_SIZE = 24;
+/**
+ * The server's own ceiling (`MAX_PAGE_SIZE`). A session's Prints is not paged
+ * (GAP-178), so it asks in chunks of this size and keeps going until it has
+ * the klant's whole list — one request for every klant in this library, and
+ * still correct for a klant who one day has more than a hundred prints.
+ */
+const MAX_PAGE_SIZE = 100;
 
 /** Query keys: every live event invalidates `['prints']` and the print's own key. */
 export const keys = {
   all: ['prints'] as const,
   list: (filter: PrintFilter) => ['prints', 'list', filter] as const,
+  /** The unpaged list a session's Prints reads; a different shape, so a different key. */
+  listAll: (filter: PrintFilter) => ['prints', 'list', 'all', filter] as const,
   customers: (archived: boolean, deleted: boolean) =>
     ['prints', 'customers', archived, deleted] as const,
   detail: (id: string) => ['prints', 'detail', id] as const,
   tags: ['tags'] as const,
 };
 
-function listQuery(filter: PrintFilter, offset: number): string {
+function listQuery(filter: PrintFilter, offset: number, limit = PAGE_SIZE): string {
   const params = new URLSearchParams();
   if (filter.customer !== null) params.set('customer', filter.customer);
   for (const tag of filter.tagIds) params.append('tag', tag);
@@ -24,12 +33,38 @@ function listQuery(filter: PrintFilter, offset: number): string {
   if (filter.sort !== 'newest') params.set('sort', filter.sort);
   if (filter.status !== null) params.set('status', filter.status);
   params.set('offset', String(offset));
-  params.set('limit', String(PAGE_SIZE));
+  params.set('limit', String(limit));
   return params.toString();
 }
 
 export function fetchPrints(filter: PrintFilter, offset: number) {
   return api<{ items: PrintSummary[]; total: number }>(`/api/prints?${listQuery(filter, offset)}`);
+}
+
+/**
+ * Every print the filter matches, in one result and with no page boundary: a
+ * session's Prints renders the klant's whole list, because the Overzicht one
+ * tap away has listed all of it since 1.0 and the two screens may never
+ * disagree about which print is the last one (GAP-178, ScreenShareSession §5).
+ *
+ * It loops rather than asking for one large page, so a klant past the server's
+ * ceiling gets their whole list instead of a silent truncation; the loop also
+ * stops on a short or empty page, so a count that shifts between requests
+ * cannot spin it.
+ */
+export async function fetchAllPrints(filter: PrintFilter) {
+  const items: PrintSummary[] = [];
+  let total: number;
+  do {
+    const page = await api<{ items: PrintSummary[]; total: number }>(
+      `/api/prints?${listQuery(filter, items.length, MAX_PAGE_SIZE)}`,
+    );
+    total = page.total;
+    items.push(...page.items);
+    // A short page is the last one; that also stops a count that moved.
+    if (page.items.length < MAX_PAGE_SIZE) break;
+  } while (items.length < total);
+  return { items, total };
 }
 
 export function fetchCustomers(archived: boolean, deleted: boolean) {
