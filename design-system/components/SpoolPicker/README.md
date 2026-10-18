@@ -114,3 +114,48 @@ the chip a chip, and the chip's text is `muted` on `surface-2` at 4.5:1 or bette
 Nothing depends on that hairline, and it is recorded rather than rounded up.
 
 **Dutch copy (new).** archief | Gearchiveerd in Spoolman | {grams, plural, =0 {leeg} other {# g over}}
+
+**2.14.** (2026-10-18) **The 32px that disappeared was the card's clip, and the trigger's floor is now a floor for the panel only (GAP-163, resolved on the app's measurement).**
+
+The app measured what 2.13 asked for and the answer is unambiguous: at 360px the trigger is **314px**
+wide with `scrollWidth` equal to `clientWidth` — *nothing truncates it* — its row offers about
+**302px**, and the only ancestor with an `overflow` is `section.pp-card.pp-assetlist.pp-flush`
+(`clientWidth` **326** against `scrollWidth` **358**). So the last **32px** of "Creality Rainbow Wild
+Blossom Hyper" is painted outside the card and `overflow: hidden` removes it. The page does not
+scroll sideways precisely because the card absorbs it, which is why it read as a shortened name.
+**I was wrong about one thing and right about another:** nothing in `bundle.css` truncates a trigger
+(right), and my sentence that GAP-111's band "removes the only thing that was squeezing it" is true
+at 961px and has **no effect at 326px** (wrong) — below 760px `.acts` has spanned the row for
+longer than this round.
+
+**The decision: at 480px and below the trigger may go below 200px, and the name takes the middle cut
+this file already specified as the rule.** 200px was always a floor for the *panel's* sake, not a
+width, and a floor that makes a control wider than its row is not protecting anything.
+
+- `min-width: 0; max-width: 100%` on the trigger inside a file row's `.acts`, in the media query and
+  in its `.pp-device.phone` twin. Both class names the trigger is built with are named
+  (`.pp-spoolbtn` and `.pp-minw-200`), so the rule does not depend on which one the app wrote.
+- **Markup obligation:** the trigger's name is wrapped — `<span class="nm pp-fname sans"><span
+  class="a">…</span><span class="b">…</span></span>`. `.pp-fname` is GAP-119's mechanism (a
+  shrinking head with an ellipsis, a fixed tail) and **`.pp-fname.sans`** is new, one declaration,
+  because a spool name is not mono. The **app splits the string**, as it does for a file name:
+  `.b` is the **last word** of the spool's name, `.a` is the rest. A spool is identified at both
+  ends — brand and material at the front, the colour or line at the back — so "Creality Rainbow Wild
+  Blossom Hyper" reads "Creality Rainbow Wild…Hyper" and never loses the end.
+- The swatch, the hint chip ("van de print", "archief") and the chevron keep their width: only the
+  name pays, and the chip gets `flex: none` so a qualification never shrinks to nothing.
+- **Above 480px nothing changes at all.** The floor holds, the widest trigger in this library is
+  216px, and the band gives it 738px.
+
+**Rejected, both of the app's other two shapes.** **Wrapping the trigger to two lines:** a control
+whose height depends on a spool's name undoes the row agreement GAP-111 bought two weeks ago, and
+turns a 44px target into 68px on the one width where 44px was the point. **Letting the card scroll
+its rows sideways:** this system scrolls tables inside their own container, not cards (`README.md`
+*Responsive*), `.pp-flush`'s `overflow: hidden` is what keeps a flush list inside the card's radius,
+and a scroll that hides a control is worse than a name cut where it can still be read.
+
+**What this does not fix, and I want it measured.** The clip was at the card's edge, so **any**
+control in that band can be clipped the same way at 360px. The spool trigger is the widest and was
+the one that showed; see *What I need measured* in `changelog.md` 2.14.
+
+**Both themes.** No new token, no new colour pair. New classes: `.pp-fname.sans`, `.pp-spoolbtn > .nm`.

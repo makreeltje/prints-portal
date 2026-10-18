@@ -28,8 +28,18 @@ export const queueKeys = { all: ['queue'] as const };
 
 export const fetchQueue = () => api<{ groups: QueueGroup[] }>('/api/queue');
 
-export const addRequest = (customer: string, name: string) =>
-  api<{ id: string }>('/api/requests', { method: 'POST', body: { customer, name } });
+export const addRequest = (
+  customer: string,
+  name: string,
+  state: Exclude<RequestState, 'declined'>,
+) => api<{ id: string }>('/api/requests', { method: 'POST', body: { customer, name, state } });
+
+/**
+ * The ending of a request with no files (ScreenQueue 2.14, GAP-159). Only a
+ * record with `origin: 'request'` and no files can be deleted this way, which
+ * the backend checks: a print with files is a record the owner's disk owns.
+ */
+export const deleteRequest = (id: string) => api(`/api/requests/${id}`, { method: 'DELETE' });
 
 export const linkRequest = (requestId: string, printId: string) =>
   api(`/api/requests/${requestId}/link`, { method: 'POST', body: { printId } });

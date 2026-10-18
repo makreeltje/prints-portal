@@ -22,7 +22,7 @@ import { InvoicesPage } from './finance/InvoicesPage';
 import { QueuePage } from './prints/QueuePage';
 import { OutstandingPage } from './finance/OutstandingPage';
 import { TagsPage } from './prints/TagsPage';
-import { SharePage } from './sharing/SharePage';
+import { ShareSessionRoutes } from './sharing/ShareSessionRoutes';
 import { ShareLinksPage } from './sharing/ShareLinksPage';
 import { AppShell } from './shell/AppShell';
 import { canSee, NAV_ITEMS } from './shell/navigation';
@@ -151,8 +151,14 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* The share page is public: no session, no AppShell, the visitor's own theme. */}
-          <Route path="/share/:token" element={<SharePage />} />
+          {/*
+            A deel-link is a key, not a page (ScreenShareSession 2.14,
+            GAP-165): it mints an anonymous read-only session for one klant
+            and the visitor walks the real screens in the guest shell. No
+            AuthProvider and no operator chrome; the token stays in the URL,
+            because it is the visitor's only credential.
+          */}
+          <Route path="/share/:token/*" element={<ShareSessionRoutes />} />
           <Route
             path="*"
             element={

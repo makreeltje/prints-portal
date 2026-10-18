@@ -67,3 +67,44 @@ down for the second field, before it can be forgotten.
 **Colour and contrast.** `primary` on `surface` for the link (6.12 light / 6.79 dark, already in
 `contrast.md`); the glyph is `muted` and `aria-hidden`, so colour carries nothing on its own. No
 new pair.
+
+**2.14.** (2026-10-18) **This page survives, and it becomes the session's landing screen (GAP-165).**
+The deel-link is a key now (ScreenShareSession): a valid token mints an anonymous read-only session
+for one klant. The app's instinct was to keep this page as the landing screen and that instinct is
+right — *"stuur me even het overzicht"* is a real request, the Overzicht PDF hangs off it, and
+nothing that works today stops working. Four things change, all of them small:
+
+- **The studio head moves up into the shell.** `.pp-share-head` no longer draws `.pp-brand`: the
+  logo or company name is in `.pp-guesthead`, one line above, and drawing it twice on the landing
+  screen would be the only place in the portal where the studio is named twice. The `<h1>`
+  "Overzicht voor {klant}" stays and is the one place the session says whose prints these are.
+- **The page keeps its own column inside the session.** `.pp-share-col` (560px, centred) sits in
+  `.pp-main`; everything inside it — the switch, the list, the totals card, the "Betalen" block,
+  "Download overzicht" and the footnote — is unchanged, in that order.
+- **The expiry notice gains a tone step.** At **0 or 1 day** left the badge is `warning` instead of
+  `info`. The strings (`share.expiresToday`, `share.expiresTomorrow`) and the clock glyph are
+  unchanged: the words already carry the fact and the tint only reinforces it. No expiry (Nooit)
+  still shows no notice.
+- **A dead link is still one page, and now it is also the end of a session.** Unknown, malformed,
+  expired and revoked all show "Deze link is verlopen of ingetrokken" — the 1.6 rule, untouched —
+  and that page is drawn **without the session shell**. It appears at the visitor's **next
+  action**, never on a timer: a page already on screen was true when it loaded and the visitor
+  cannot change anything on it. Closing the session yourself is a different fact and has its own
+  page (`session.ended.*`, ScreenShareSession §4).
+
+**The link's facts stay here, and a persistent bar is rejected.** The expiry notice and the
+"Betalen" block are read where they mean something — beside the totals they belong to — not
+repeated as chrome on a print's page where nothing can be done with either. That is GAP-101's rule
+in a second place: a label belongs to its control, an explanation belongs to the section.
+
+**GAP-164, resolved: one sentence, one key.** 2.0.1 called the "no IBAN but a betaallink" sentence
+`settings.customer.payLink.only` in this file's prose while `copy-deck.md` carries it as
+**`settings.payLink.noIban`** ("Deze klant heeft wel een betaallink."). The deck's key is the key;
+the name in this file was never in the deck and is withdrawn. The app has it right at both call
+sites. **This is my mistake, not an app bug** — the second time in two rounds that this file
+invented a key name in prose (GAP-088 was the first), which is why 2.13's rule about keying every
+string belongs to the design system as much as to the app.
+
+**Nothing on the page is widened for a session.** No cost, no margin, no notes, no file names, no
+other klant, no tags — the list from 1.0, unchanged. The session adds screens; it does not add
+facts to this one.

@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Check,
   ChevronDown,
   CircleAlert,
   Clock,
@@ -17,18 +16,10 @@ import { t, type MessageKey } from '../i18n/nl';
 import { formatMoney } from '../i18n/format';
 import { ErrorState, LoadingRows } from '../pages/ErrorState';
 import { useToast } from '../components/toast-context';
-import {
-  addRequest,
-  fetchQueue,
-  linkRequest,
-  queueKeys,
-  type QueueGroup,
-  type QueueRow,
-} from './api-queue';
-import { fetchCustomers, fetchPrints, keys, setPrintNote, setPrintSource } from './api';
-import { runBulk } from '../finance/api';
-import { isHttpUrl } from '../core/url';
-import { MAX_NOTE_LENGTH } from './notes';
+import { fetchQueue, linkRequest, queueKeys, type QueueGroup, type QueueRow } from './api-queue';
+import { fetchPrints, keys } from './api';
+import { AanvraagDialog } from './AanvraagDialog';
+import { QueueStatusDialog } from './QueueStatusDialog';
 import { placeOf } from './filter';
 import { SourceLink } from './PrintSource';
 import type { PrintFilter } from './types';
@@ -76,6 +67,7 @@ export function QueuePage() {
   const queryClient = useQueryClient();
   const [adding, setAdding] = useState(false);
   const [linking, setLinking] = useState<QueueRow | null>(null);
+  const [changing, setChanging] = useState<QueueRow | null>(null);
   const queue = useQuery({ queryKey: queueKeys.all, queryFn: fetchQueue });
 
   const refresh = async () => {
@@ -111,26 +103,35 @@ export function QueuePage() {
         </div>
       ) : (
         groups.map((group) => (
-          <Group
-            key={group.state}
-            group={group}
-            onLink={setLinking}
-            onDone={async (row) => {
-              await runBulk([row.id], { action: 'setRequestState', state: null });
-              toast.success(t('toast.saved'));
-              await refresh();
-            }}
-          />
+          <Group key={group.state} group={group} onLink={setLinking} onStatus={setChanging} />
         ))
       )}
 
       {adding && (
-        <AddRequestDialog
+        <AanvraagDialog
           onClose={() => {
             setAdding(false);
           }}
           onDone={() => {
             setAdding(false);
+            toast.success(t('queue.added'));
+            void refresh();
+          }}
+        />
+      )}
+      {changing !== null && (
+        <QueueStatusDialog
+          row={changing}
+          onClose={() => {
+            setChanging(null);
+          }}
+          onDone={() => {
+            setChanging(null);
+            toast.success(t('toast.saved'));
+            void refresh();
+          }}
+          onDeleted={() => {
+            setChanging(null);
             void refresh();
           }}
         />
@@ -156,11 +157,11 @@ export function QueuePage() {
 function Group({
   group,
   onLink,
-  onDone,
+  onStatus,
 }: {
   group: QueueGroup;
   onLink: (row: QueueRow) => void;
-  onDone: (row: QueueRow) => Promise<void>;
+  onStatus: (row: QueueRow) => void;
 }) {
   const titleId = useId();
   const oldestDays = Math.max(...group.rows.map((row) => row.waitingDays));
@@ -203,7 +204,7 @@ function Group({
       </summary>
       <div className="pp-ogrp-list">
         {group.rows.map((row) => (
-          <Row key={row.id} row={row} onLink={onLink} onDone={onDone} />
+          <Row key={row.id} row={row} onLink={onLink} onStatus={onStatus} />
         ))}
       </div>
     </details>
@@ -213,13 +214,12 @@ function Group({
 function Row({
   row,
   onLink,
-  onDone,
+  onStatus,
 }: {
   row: QueueRow;
   onLink: (row: QueueRow) => void;
-  onDone: (row: QueueRow) => Promise<void>;
+  onStatus: (row: QueueRow) => void;
 }) {
-  const [busy, setBusy] = useState(false);
   return (
     <div className="pp-line">
       <div>
@@ -282,191 +282,24 @@ function Row({
           </button>
         )}
         {/*
-          The act every finished job needs, with a word for it (ds-gap:
-          GAP-159, the owner's decision). It writes the same null the detail
-          page's "Geen status" writes — nothing new is stored — but on the
-          detail page that value means undo, and here it means done. The one
-          surface where a job is finished should not ask the owner to say
-          "this has no status". It is a third action on a row the design
-          system drew with two; that cost is in the gap.
+          Two ghost buttons and no more (ScreenQueue 2.14, GAP-159). 2.13 and
+          the owner's decision had put a third here, "Uit de wachtrij halen",
+          which wrote the same null the detail page writes; 2.14 refused it,
+          because absence is a value and not an operation (GAP-138). The act
+          now lives inside this dialog, where a fileless request can also be
+          thrown away — the only ending that does not leave it invisible.
         */}
         <button
           type="button"
           className="pp-btn pp-btn-ghost pp-btn-sm"
-          disabled={busy}
           onClick={() => {
-            setBusy(true);
-            void onDone(row).finally(() => {
-              setBusy(false);
-            });
+            onStatus(row);
           }}
         >
-          {busy ? (
-            <span className="pp-spin" aria-hidden="true" />
-          ) : (
-            <Check className="pp-ico" aria-hidden="true" />
-          )}
-          {t('queue.done')}
-        </button>
-        <a className="pp-btn pp-btn-ghost pp-btn-sm" href={`/prints/${row.id}`}>
           {t('queue.changeStatus')}
-        </a>
+        </button>
       </div>
     </div>
-  );
-}
-
-/** "Aanvraag toevoegen": klant and what was asked. No folder is made (rule 7). */
-function AddRequestDialog({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
-  const id = useId();
-  const [customer, setCustomer] = useState('');
-  const [name, setName] = useState('');
-  const [source, setSource] = useState('');
-  const [note, setNote] = useState('');
-  const [invalidSource, setInvalidSource] = useState(false);
-  const customers = useQuery({
-    queryKey: keys.customers(false, false),
-    queryFn: () => fetchCustomers(false, false),
-  });
-  const save = useMutation({
-    mutationFn: async () => {
-      const id = (await addRequest(customer, name)).id;
-      // Two more calls rather than three fields on one route: the two are
-      // fields of a print, and a request is a print (PrintSource, PrintNote).
-      const trimmed = source.trim();
-      if (trimmed !== '') await setPrintSource(id, trimmed);
-      if (note.trim() !== '') await setPrintNote(id, note);
-    },
-    onSuccess: onDone,
-  });
-  const ready = customer !== '' && name.trim() !== '';
-  return (
-    <Dialog
-      open
-      title={t('queue.addTitle')}
-      onClose={onClose}
-      busy={save.isPending}
-      onSubmit={() => {
-        if (!ready) return;
-        // The same single rule the print detail and the backend apply.
-        if (source.trim() !== '' && !isHttpUrl(source.trim())) {
-          setInvalidSource(true);
-          return;
-        }
-        save.mutate();
-      }}
-      footer={
-        <>
-          <button type="button" className="pp-btn pp-btn-secondary" onClick={onClose}>
-            {t('common.cancel')}
-          </button>
-          <button
-            type="submit"
-            className="pp-btn pp-btn-primary"
-            disabled={!ready || save.isPending}
-          >
-            {save.isPending && <span className="pp-spin" aria-hidden="true" />}
-            {t('queue.add')}
-          </button>
-        </>
-      }
-    >
-      <div className="pp-col">
-        {save.isError && <GenericError />}
-        <label className="pp-field">
-          <span className="pp-label" id={`${id}-klant`}>
-            {t('queue.addKlant')}
-          </span>
-          <div className="pp-iwrap">
-            <select
-              className="pp-input pp-select"
-              aria-labelledby={`${id}-klant`}
-              value={customer}
-              onChange={(event) => {
-                setCustomer(event.target.value);
-              }}
-            >
-              <option value="">—</option>
-              {(customers.data?.customers ?? []).map((one) => (
-                <option key={one.folder} value={one.folder}>
-                  {one.folder}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pp-ico r" aria-hidden="true" />
-          </div>
-        </label>
-        <label className="pp-field">
-          <span className="pp-label">{t('queue.addName')}</span>
-          <input
-            className="pp-input"
-            value={name}
-            data-autofocus
-            onChange={(event) => {
-              setName(event.target.value);
-            }}
-          />
-        </label>
-        {/*
-          Bron and notitie, which PrintSource and PrintNote both say this
-          dialog carries — "when it is designed". Its anatomy still is not
-          (ds-gap: GAP-157), so these reuse the two fields above rather than
-          inventing a shape. They are why the dialog is worth having on a
-          phone at all: a request arrives with a link, and asking the owner to
-          save it and then go and find the print to paste it would undo the
-          capture this whole page exists for.
-        */}
-        {/*
-          `for`/`id` rather than a wrapping label (FormField): help and error
-          text belong to `aria-describedby`, and inside a label they would be
-          read as part of the field's name instead.
-        */}
-        <div className="pp-field">
-          <label className="pp-label" htmlFor={`${id}-src`}>
-            {t('print.source')}
-          </label>
-          <input
-            id={`${id}-src`}
-            className="pp-input"
-            type="url"
-            inputMode="url"
-            value={source}
-            placeholder={t('print.source.placeholder')}
-            aria-invalid={invalidSource ? 'true' : undefined}
-            aria-describedby={invalidSource ? `${id}-src-err` : undefined}
-            onChange={(event) => {
-              setSource(event.target.value);
-              setInvalidSource(false);
-            }}
-          />
-          {invalidSource && (
-            <span className="pp-err" id={`${id}-src-err`} role="alert">
-              {t('print.source.invalid')}
-            </span>
-          )}
-        </div>
-        <div className="pp-field">
-          <label className="pp-label" htmlFor={`${id}-note`}>
-            {t('print.note')}
-          </label>
-          <textarea
-            id={`${id}-note`}
-            className="pp-input"
-            rows={2}
-            maxLength={MAX_NOTE_LENGTH}
-            value={note}
-            placeholder={t('print.note.placeholder')}
-            aria-describedby={`${id}-note-help`}
-            onChange={(event) => {
-              setNote(event.target.value);
-            }}
-          />
-          <span className="pp-help" id={`${id}-note-help`}>
-            {t('print.note.internal')}
-          </span>
-        </div>
-      </div>
-    </Dialog>
   );
 }
 

@@ -65,11 +65,19 @@ const groups: QueueGroup[] = [
 const render = (body: { groups: QueueGroup[] }) => {
   const stub = stubFetch({
     'GET /api/queue': () => ({ json: body }),
-    'GET /api/customers': () => ({ json: { customers: [{ folder: 'Joey', printCount: 2 }] } }),
+    'GET /api/customers': () => ({
+      json: {
+        customers: [
+          { folder: 'Joey', printCount: 2 },
+          { folder: 'Joey Bouwhuis', printCount: 0 },
+        ],
+      },
+    }),
     'GET /api/prints': () => ({
       json: { total: 1, items: [{ id: 'p9', name: 'Babybox locks' }] },
     }),
     'POST /api/requests': () => ({ status: 201, json: { id: 'new' } }),
+    'DELETE /api/requests/r1': () => ({ status: 204 }),
     'PUT /api/prints/new/source': () => ({ status: 204 }),
     'PUT /api/prints/new/note': () => ({ status: 204 }),
     'POST /api/requests/r1/link': () => ({ status: 204 }),
@@ -108,19 +116,65 @@ describe('Wachtrij', () => {
     expect(within(inProgress).getByText('1 aanvraag')).toBeInTheDocument();
   });
 
-  it('takes a job off the queue by clearing its status', async () => {
+  /*
+    2.14 refused the third row action this page had improvised ("Uit de
+    wachtrij halen") and wrote the ending into the dialog instead: four values
+    on a row with files, two plus a deletion on a row without (GAP-159).
+  */
+  it('offers the four values on a row that has files', async () => {
     const { calls } = render({ groups });
-    const row = (await screen.findByText('Vitrinekast inzet')).closest('.pp-line');
+    const row = (await screen.findByText('Kabelgoot bureau')).closest('.pp-line');
     if (!(row instanceof HTMLElement)) throw new Error('row missing');
-    await userEvent.click(within(row).getByRole('button', { name: 'Uit de wachtrij halen' }));
+    expect(within(row).queryByRole('button', { name: 'Uit de wachtrij halen' })).toBeNull();
+    await userEvent.click(within(row).getByRole('button', { name: 'Status wijzigen' }));
+    const dialog = screen.getByRole('dialog');
+    for (const label of ['Nog niet besloten', 'Mee bezig', 'Niet doorgegaan', 'Geen status']) {
+      expect(within(dialog).getByRole('radio', { name: label })).toBeInTheDocument();
+    }
+    expect(within(dialog).queryByRole('button', { name: 'Aanvraag verwijderen' })).toBeNull();
+    expect(within(dialog).queryByText(/Zonder bestanden kan een aanvraag/)).toBeNull();
+
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Geen status' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Opslaan' }));
     await waitFor(() => {
       expect(calls.some((call) => call.path === '/api/prints/bulk')).toBe(true);
     });
     // The same null the detail page writes: nothing new is stored (GAP-159).
     expect(calls.find((call) => call.path === '/api/prints/bulk')?.body).toEqual({
-      ids: ['r1'],
+      ids: ['r2'],
       action: 'setRequestState',
       state: null,
+    });
+  });
+
+  it('offers a fileless request the two queue states and a deletion', async () => {
+    const { calls } = render({ groups });
+    const row = (await screen.findByText('Vitrinekast inzet')).closest('.pp-line');
+    if (!(row instanceof HTMLElement)) throw new Error('row missing');
+    await userEvent.click(within(row).getByRole('button', { name: 'Status wijzigen' }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getAllByRole('radio')).toHaveLength(2);
+    expect(within(dialog).queryByRole('radio', { name: 'Geen status' })).toBeNull();
+    expect(within(dialog).queryByRole('radio', { name: 'Niet doorgegaan' })).toBeNull();
+    expect(
+      within(dialog).getByText('Zonder bestanden kan een aanvraag alleen in de wachtrij staan.'),
+    ).toBeInTheDocument();
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Aanvraag verwijderen' }));
+    const confirm = screen.getByRole('alertdialog');
+    expect(
+      within(confirm).getByRole('heading', { name: 'Aanvraag Vitrinekast inzet verwijderen?' }),
+    ).toBeInTheDocument();
+    expect(
+      within(confirm).getByText(
+        'De aanvraag verdwijnt uit de wachtrij. Er horen geen bestanden bij, dus er gaat niets van de schijf.',
+      ),
+    ).toBeInTheDocument();
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Verwijderen' }));
+    await waitFor(() => {
+      expect(
+        calls.some((call) => call.path === '/api/requests/r1' && call.method === 'DELETE'),
+      ).toBe(true);
     });
   });
 
@@ -149,26 +203,60 @@ describe('Wachtrij', () => {
     expect(within(withFiles).queryByRole('button', { name: 'Bestanden koppelen' })).toBeNull();
   });
 
-  it('adds a request with a klant and what was asked', async () => {
+  it('adds a request: Naam first, a klant who may be new, and a status', async () => {
     const stub = render({ groups });
     await userEvent.click(await screen.findByRole('button', { name: 'Aanvraag toevoegen' }));
     const dialog = screen.getByRole('dialog');
-    // Nothing to save until both are given.
-    const save = within(dialog).getByRole('button', { name: 'Aanvraag toevoegen' });
-    expect(save).toBeDisabled();
-    await userEvent.selectOptions(within(dialog).getByRole('combobox'), 'Joey');
+    // Naam holds focus: it is the thing he was just told (AanvraagDialog).
+    expect(within(dialog).getByRole('textbox', { name: 'Naam' })).toHaveFocus();
+
+    // Nothing filled in: the two required fields say so, and nothing is sent.
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Toevoegen' }));
+    expect(within(dialog).getByText('Vul een naam in.')).toBeInTheDocument();
+    expect(within(dialog).getByText('Kies of typ een klant.')).toBeInTheDocument();
+    expect(stub.calls.some((call) => call.path === '/api/requests')).toBe(false);
+
     await userEvent.type(
-      within(dialog).getByRole('textbox', { name: 'Wat is er gevraagd?' }),
+      within(dialog).getByRole('textbox', { name: 'Naam' }),
       'Lamp voor in de gang',
     );
-    expect(save).toBeEnabled();
-    await userEvent.click(save);
+    // The klant list says how many prints each one has, which is how two
+    // klanten whose names start the same are told apart.
+    await userEvent.type(within(dialog).getByRole('combobox'), 'Joey');
+    expect(within(dialog).getByRole('option', { name: /Joey Bouwhuis/ })).toHaveTextContent(
+      'Nog geen prints',
+    );
+    await userEvent.click(within(dialog).getByRole('option', { name: /^Joey2 prints$/ }));
+    await userEvent.click(within(dialog).getByRole('radio', { name: 'Mee bezig' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Toevoegen' }));
     await waitFor(() => {
       expect(stub.calls.some((call) => call.path === '/api/requests')).toBe(true);
     });
     expect(stub.calls.find((call) => call.path === '/api/requests')?.body).toEqual({
       customer: 'Joey',
       name: 'Lamp voor in de gang',
+      state: 'inProgress',
+    });
+  });
+
+  it('takes a klant who is not a folder yet, as the last option', async () => {
+    const stub = render({ groups });
+    await userEvent.click(await screen.findByRole('button', { name: 'Aanvraag toevoegen' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.type(within(dialog).getByRole('textbox', { name: 'Naam' }), 'Kastje');
+    await userEvent.type(within(dialog).getByRole('combobox'), 'Denise');
+    const options = within(dialog).getAllByRole('option');
+    expect(options.at(-1)).toHaveTextContent('Nieuwe klant: Denise');
+    await userEvent.click(options.at(-1) as HTMLElement);
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Toevoegen' }));
+    await waitFor(() => {
+      expect(stub.calls.some((call) => call.path === '/api/requests')).toBe(true);
+    });
+    // Nothing creates a folder; the record keeps the typed name (rule 7).
+    expect(stub.calls.find((call) => call.path === '/api/requests')?.body).toEqual({
+      customer: 'Denise',
+      name: 'Kastje',
+      state: 'undecided',
     });
   });
 
@@ -226,19 +314,12 @@ describe('Wachtrij', () => {
     const stub = render({ groups });
     await userEvent.click(await screen.findByRole('button', { name: 'Aanvraag toevoegen' }));
     const dialog = screen.getByRole('dialog');
-    await userEvent.selectOptions(within(dialog).getByRole('combobox'), 'Joey');
-    await userEvent.type(
-      within(dialog).getByRole('textbox', { name: 'Wat is er gevraagd?' }),
-      'Lamp',
-    );
+    await userEvent.type(within(dialog).getByRole('textbox', { name: 'Naam' }), 'Lamp');
+    await userEvent.type(within(dialog).getByRole('combobox'), 'Joey');
+    await userEvent.keyboard('{Escape}');
     await userEvent.type(
       within(dialog).getByRole('textbox', { name: 'Bron' }),
       'https://printables.com/model/1',
-    );
-    const boxes = within(dialog).getAllByRole('textbox');
-    console.log(
-      'NAMES:',
-      boxes.map((b) => b.getAttribute('aria-label') ?? b.closest('label')?.textContent),
     );
     await userEvent.type(within(dialog).getByRole('textbox', { name: 'Notitie' }), 'In zwart');
     // The dialog says, where it is typed, that a klant never sees the note.
@@ -246,7 +327,7 @@ describe('Wachtrij', () => {
       within(dialog).getByText('Alleen voor jou. Niet zichtbaar op de deel-link.'),
     ).toBeInTheDocument();
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Aanvraag toevoegen' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Toevoegen' }));
     await waitFor(() => {
       expect(stub.calls.some((call) => call.path === '/api/prints/new/note')).toBe(true);
     });
@@ -262,16 +343,14 @@ describe('Wachtrij', () => {
     const stub = render({ groups });
     await userEvent.click(await screen.findByRole('button', { name: 'Aanvraag toevoegen' }));
     const dialog = screen.getByRole('dialog');
-    await userEvent.selectOptions(within(dialog).getByRole('combobox'), 'Joey');
-    await userEvent.type(
-      within(dialog).getByRole('textbox', { name: 'Wat is er gevraagd?' }),
-      'Lamp',
-    );
+    await userEvent.type(within(dialog).getByRole('textbox', { name: 'Naam' }), 'Lamp');
+    await userEvent.type(within(dialog).getByRole('combobox'), 'Joey');
+    await userEvent.keyboard('{Escape}');
     await userEvent.type(
       within(dialog).getByRole('textbox', { name: 'Bron' }),
       'printables.com/model/1',
     );
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Aanvraag toevoegen' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Toevoegen' }));
     expect(
       within(dialog).getByText('Vul een volledige link in, met https:// ervoor.'),
     ).toBeInTheDocument();

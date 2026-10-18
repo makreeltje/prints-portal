@@ -213,8 +213,17 @@ export class SessionStore {
     return new Set(rows.map((row) => row.id_hash));
   }
 
+  /**
+   * Ends one session, whichever kind it is. A deel-link session lives in its
+   * own table, and "Sessie afsluiten" (ScreenShareSession §1) is the visitor's
+   * only way out: deel-links are opened on borrowed phones and in family
+   * group chats, and without this the only way to end one is to clear the
+   * browser. The hash is of the cookie's token, so it can only match one row
+   * in one of the two tables.
+   */
   async destroy(idHash: string): Promise<void> {
     await this.db.deleteFrom('sessions').where('id_hash', '=', idHash).execute();
+    await this.db.deleteFrom('share_sessions').where('id_hash', '=', idHash).execute();
   }
 
   /** Ends every session of a user, optionally except the current one. */

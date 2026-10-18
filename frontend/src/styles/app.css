@@ -326,3 +326,22 @@
   max-height: 100%;
   object-fit: contain;
 }
+
+/*
+ * GAP-169, owner-approved placeholder. ScreenShareSession 2.14 §6 dresses the
+ * guest head bar with the pair `.pp-nav a[aria-current=page]` has used since
+ * 1.0, which paints only the destination the visitor is already on. In a
+ * sidebar that suffices; in a two-item head bar it leaves the screen he has
+ * not seen with no ink at all, and :hover is no cue on the phone a deel-link
+ * is opened on. A resting outline on both items, the current one keeping its
+ * tint on top. The shape is theirs to settle (`.pp-seg`, `.pp-tabs` or this);
+ * box-sizing is border-box globally, so the hairline stays inside --pp-tap.
+ *
+ * `--border-strong`, not `--border`: measured against the head's `--surface`,
+ * `--border` is 1.37:1 in dark and 1.42:1 in light, under the 3:1 WCAG 1.4.11
+ * wants for the boundary that identifies a control — which is the whole job
+ * here. `--border-strong` is 3.75:1 and 4.29:1.
+ */
+.pp-guestnav a {
+  border: 1px solid var(--border-strong); /* ds-gap: GAP-169 */
+}

@@ -7,7 +7,19 @@ import { formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import type { Spool } from '../prints/types';
 import { fetchSpools, financeKeys, refreshSpoolman } from './api';
+import { splitSpoolName } from './spoolLabel';
 import { SpoolSwatch } from './money';
+
+/** The trigger's name in `.pp-fname`'s two halves, in the button's own face. */
+function SpoolName({ name }: { name: string }) {
+  const { head, tail } = splitSpoolName(name);
+  return (
+    <span className="nm pp-fname sans">
+      <span className="a">{head}</span>
+      <span className="b">{tail}</span>
+    </span>
+  );
+}
 
 /**
  * "294 g over", "leeg" at zero, or nothing when Spoolman does not say
@@ -76,18 +88,41 @@ export function SpoolPicker({
   // window-placed, so an offset parent is exactly what it must not have.
   useAnchoredPanel(panelRef, trigger, open, close);
   return (
-    <span className="pp-lift">
+    /*
+      `pp-minw-0` on the wrapper, which is the design system's own utility and
+      the reason GAP-163's fix reaches this trigger at all: its rules name
+      `.pp-asset .acts .pp-spoolbtn`, but the flex item in that band is this
+      `.pp-lift` wrapper (required since 2.13 for the window-placed panel), and
+      a flex item at its content width cannot let its child shrink. Measured at
+      360px: without it the trigger stays 28px outside the card.
+    */
+    <span className="pp-lift pp-minw-0">
       <button
         ref={trigger}
         type="button"
         className="pp-btn pp-btn-secondary pp-btn-sm pp-spoolbtn pp-minw-200 pp-start"
         aria-haspopup="listbox"
         aria-expanded={open}
+        /*
+          The name is split across two spans now (GAP-163), and a split name
+          is the one case the design system itself labels explicitly
+          (ModelPicker does the same for a file name): name computation joins
+          element children without the space that is inside them, so
+          "Creality Rainbow Wild Blossom Hyper" would be announced as one
+          word. The label is the trigger's own visible words and nothing
+          else — the archived chip included, so the qualification stays in
+          the name as well as on screen (SpoolPicker 2.13, GAP-161).
+        */
         aria-label={
           shown !== null && value === null
             ? t('asset.spoolFromPrint.aria', { naam: shown.name })
             : label === undefined
-              ? undefined
+              ? [
+                  shown?.name ?? t('spool.choose'),
+                  shown?.archived === true ? t('spool.archived') : null,
+                ]
+                  .filter((part) => part !== null)
+                  .join(' ')
               : `${label}: ${value?.name ?? t('spool.choose')}`
         }
         aria-busy={busy}
@@ -98,7 +133,14 @@ export function SpoolPicker({
         }}
       >
         {busy ? <span className="pp-spin" aria-hidden="true" /> : <SpoolSwatch spool={shown} />}
-        {shown?.name ?? t('spool.choose')}
+        {/*
+          The name takes the middle cut (SpoolPicker 2.14, GAP-163): at 360px
+          the trigger's 200px floor is lifted inside a file row's band, so the
+          name shrinks instead of being painted outside the card and clipped
+          there. The app splits the string and CSS does the cutting; `.b` is
+          the last word, because that is where a spool's colour lives.
+        */}
+        <SpoolName name={shown?.name ?? t('spool.choose')} />
         {/*
           The chip sits on the trigger, not in the cell beside it: a hint chip
           qualifies the value it sits on, so it belongs on the control that can

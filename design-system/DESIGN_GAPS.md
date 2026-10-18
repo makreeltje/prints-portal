@@ -1841,7 +1841,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Resolved in 2.12 and built; both halves arrive with the import, since both are `bundle.css`.** The 44px floor is written **inside** `@media (max-width:480px)` and nowhere else, with a `.pp-device.phone` twin that writes 44px as a literal — not the `max(32px, var(--pp-tap))` this entry proposed, which the design system rejected because `--pp-tap` is 36px outside the phone query and that form would have enlarged every small button on the desktop. The rejection is right and the export ships the narrow form; verified by reading `bundle.css` rather than the changelog. Measured in the running app at 360px: every row action is **44px** tall on Wachtrij and Openstaand, and still **32px** at 1400px. A fileless queue row's two actions now wrap into two lines — band 294px wide and **92px** tall, content 307px, nothing past the band (the last button ends at x=156 against a band ending at x=327). Openstaand's two actions need 253px, so they stay on one line there and only the height changes.
 - **The cost, measured, so the owner can judge it.** The Wachtrij at 360px is **1492px** tall where the pre-2.12 rules give **1324px**: +12px for every row from the tap floor, and +48px more for each of the two rows that carry two actions. Openstaand with a group open is 2816px against 2708px — +12px per line and no wrap. `pp-nowrap` is removed from `.acts` in both screens, as the previews did, so nothing in the app re-asserts `nowrap`.
 
-## GAP-157 [open] "Aanvraag toevoegen" has never been designed, and now two components say it carries their fields
+## GAP-157 [resolved in v2.14] "Aanvraag toevoegen" has never been designed, and now two components say it carries their fields
 - **Type:** missing component
 - **Found while:** building GAP-152 part two (bron and notitie)
 - **Where needed:** ScreenQueue's "Aanvraag toevoegen" dialog
@@ -1849,8 +1849,9 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Proposal:** Four fields in this order: klant (a Select of existing klanten), what was asked (text), bron (`input[type=url]`, the same validation as PrintSource), notitie (`textarea`, `maxlength` 280, the internal help line). Built that way now, from the components above and no invented values. The one real question is whether bron and notitie belong in the dialog at all or only on the print afterwards — and the measurement says they do: a request arrives with a link while the owner is somewhere else, and saving it first and then finding the print to paste the link undoes the capture this page exists for.
 - **Blocked:** nothing. Marked `ds-gap: GAP-157` so the checker knows the dialog is improvised, and it stays open until the dialog is specified.
 - **Temporary placeholder approved:** yes — the owner approved building part two; this dialog is the only piece of it with no spec.
+- **Resolved in 2.14:** **AanvraagDialog** draws it. Built as specified, in `frontend/src/prints/AanvraagDialog.tsx`: Naam (holds focus, placeholder "Bijvoorbeeld: Babybox locks", error `queue.add.nameError`), Klant as a combobox over the known klanten with `customers.printCount` as each option's meta line and the typed name as the **last** option, Status as two radios defaulting to *Nog niet besloten*, and the optional Bron and Notitie. No Project, no price, and neither *Niet doorgegaan* nor *Geen status* at birth. The improvised dialog and its three app-only keys (`queue.addTitle`, `queue.addKlant`, `queue.addName`) are gone and the `ds-gap: GAP-157` marker with them. One deviation we kept: bron and notitie are still written with their own `PUT /api/prints/:id/source` and `/note` after the create, rather than as fields of `POST /api/requests` — they are fields of a print and a request is a print, and the dialog's failed state keeps everything typed either way.
 
-## GAP-158 [open] A User has no "Deze print" card, so PrintSource's read-only row cannot appear
+## GAP-158 [resolved in v2.14] A User has no "Deze print" card, so PrintSource's read-only row cannot appear
 - **Type:** conflict
 - **Found while:** building GAP-152 part two
 - **Where needed:** ScreenPrintDetail for role User; `frontend/src/prints/PrintDetailPage.tsx:286`
@@ -1861,8 +1862,9 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** the bron for role User on ScreenPrintDetail. Everything else of GAP-152 is built: an Admin and an Editor see and edit both fields, the queue row shows both, and the share page shows the bron — including to the same klant.
 - **The owner decided 2026-10-18:** a User gets the reduced card — klant, project, datum, bron — rather than dropping the sentence from ScreenPrintDetail. Built: the User branch now renders `ThisPrint` with `canManage={false}`, which already gated its facts that way, marked `ds-gap: GAP-158`. The gap stays open because the card itself is not designed for this role: what a User's page is for is still the design system's to say.
 - **Temporary placeholder approved:** yes — the owner chose the reduced card, 2026-10-18; lines marked `ds-gap: GAP-158`
+- **Resolved in 2.14, after diffing what we built against the anatomy.** ScreenPrintDetail 2.14 gives the card `section.pp-card.pp-sec` with an `<h2>` and one `dl.pp-kv.tight` holding Klant · Project (only when it differs) · Datum · Bron. Three differences came out of the diff and are fixed: the card showed **Project unconditionally** (GAP-072's rule was in the breadcrumb but not here — measured in this library, the row repeats the print's name on **84 of 84** prints, so for a klant it was never worth a row); it showed the **missing-files line** and the header showed the **`pp-lacks` chip**, both of which are facts about the owner's folder; and the title was a `b.pp-strong` where 2.14 and ScreenShareSession's preview both draw an `<h2>`. The operator's card keeps `b.pp-strong` and keeps its Project row, because GAP-095 specifies it and 2.14 only spoke for the reduced one. Marker removed.
 
-## GAP-159 [open] "Geen status" is the only way to finish a job, and it says "no information" rather than "done"
+## GAP-159 [resolved in v2.14] "Geen status" is the only way to finish a job, and it says "no information" rather than "done"
 - **Type:** unclear spec
 - **Found while:** answering the owner's question "hoe haal ik iets van de wachtrij af?"
 - **Where needed:** StatusBadge (the four-value control), ScreenQueue, ScreenPrintDetail's payment panel; `frontend/src/finance/PaymentPanel.tsx:502`
@@ -1875,6 +1877,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** yes — the owner chose this wording, 2026-10-18; lines marked `ds-gap: GAP-159`
 - **Design system version:** 2.11
 - **The owner decided 2026-10-18:** keep three stored states and give the act its own word where it is performed. Built: the queue row gains a third action **"Uit de wachtrij halen"** which writes the same null the detail page's "Geen status" writes, marked `ds-gap: GAP-159`. No new state, no migration. The gap stays open for two things that are the design system's: a third action on a row it drew with two (which costs height on a phone, where 2.12 just made them wrap), and whether `check` is the right glyph for an act that is not a confirmation.
+- **Resolved in 2.14, and it reverses what we shipped.** The design system refused the third action — absence is a value, not an operation (GAP-138) — and wrote the ending into the "Status wijzigen" dialog instead. Built: the row has two ghost buttons again, `queue.done` and its test are gone, and `frontend/src/prints/QueueStatusDialog.tsx` offers four radios on a row **with** files and, on a **fileless** row, the two queue states, the help line `queue.statusHelp.fileless` and a ghost "Aanvraag verwijderen" below a hairline, confirmed with `queue.remove.confirm*`. Deleting needed a route, so `DELETE /api/requests/:id` is new; it refuses anything whose `origin` is not `request`, because an indexed record belongs to the owner's disk and is hidden rather than deleted. **The design system's reason is now a test rather than a sentence:** `backend/test/prints/queue-api.test.ts` clears a request's state and asserts it is then in no list at all.
 
 ## GAP-160 [resolved in v2.13] `.pp-line > .pp-badge` does not match on Openstaand's lines; the band is right by accident
 - **Type:** suspected design bug
@@ -1939,7 +1942,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Verified in the running app on the one klant whose folder is empty (12 klanten, 1 empty), in both themes at 1400px and 360px:** the tile and the chip read "Nog geen prints"; the tile has no `aria-haspopup="menu"` control and no "Factuur" button; `.amt` and `.acts` are present and empty; the phone toolbar offers no acts at all; and the filter lands on **"Nog geen prints voor &lt;klant&gt;"** with "Prints verschijnen hier zodra er bestanden in de map van deze klant staan." `@axe-core/playwright` against WCAG 2.1 A and AA: **0 violations in 8 runs** over that tile and that empty state.
 - **Design system version:** 2.13
 
-## GAP-163 [open] At 360px a file row's spool trigger is cut off 32px short by the card's own `overflow: hidden`
+## GAP-163 [resolved in v2.14] At 360px a file row's spool trigger is cut off 32px short by the card's own `overflow: hidden`
 - **Type:** suspected design bug
 - **Found while:** the 2.13 import — the design system asked for this one in writing ("Tell me which element clips … if this system is doing it somewhere I have not found, log it as its own gap and I will decide it with the markup in front of me", `changelog.md` 2.13, GAP-161)
 - **Where needed:** `.pp-card.pp-flush` and `.pp-asset`/`.pp-spoolbtn` in `components/bundle.css`; AssetListItem's phone frame; SpoolPicker's trigger; `frontend/src/prints/AssetList.tsx` renders the row
@@ -1958,8 +1961,9 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing; the row renders and no placeholder is in the code, so there is no `ds-gap` marker. The trigger is correct per SpoolPicker 2.13 and the card is correct per its own rule; the two together lose 32px of a name.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.13
+- **Resolved in 2.14:** the floor is lifted at 480px and below inside a file row's band (`.pp-asset .acts .pp-spoolbtn, .pp-asset .acts .pp-minw-200{min-width:0;max-width:100%}`, with the `.pp-device.phone` twin) and the name takes the middle cut through `span.nm.pp-fname.sans` with `.a`/`.b`. Built: the app's trigger already carried **both** class names the rules target, so no class had to change; `frontend/src/finance/spoolLabel.ts` splits the string with `.b` as the last word, as SpoolPicker 2.14 specifies. The design system rejected wrapping the trigger and scrolling the card. Measured after the change at 360px: the trigger is 234px inside a 326px card and no part of it falls outside (see the measurements in `docs/design-feedback/implementation.md`).
 
-## GAP-164 [open] Two READMEs give the same Betaallink sentence two different copy keys
+## GAP-164 [resolved in v2.14] Two READMEs give the same Betaallink sentence two different copy keys
 - **Type:** conflict
 - **Found while:** the 2.13 import, keying the four `settings.payLink*` strings the deck carries for the first time
 - **Where needed:** `copy-deck.md` *Added in 2.13*; `components/ScreenSettings/README.md` 2.0.1 and 2.13; `components/ScreenSharePage/README.md`
@@ -1971,8 +1975,9 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.13
+- **Resolved in 2.14: `settings.payLink.noIban` wins and the app changes nothing.** Confirmed by grep rather than by memory: the key is defined once in `frontend/src/i18n/nl.ts` and read at exactly the two call sites the gap names (`SettingsPage.tsx:467`, the klant row, and `ShareLinksPage.tsx:411`, the Deel-link dialog); `settings.customer.payLink.only` appears nowhere in the app. One leftover in the export, small but worth naming: ScreenSharePage's **line 40** still carries the withdrawn key in its 2.0.1 prose, and only the appended 2.14 section withdraws it. A reader who stops at the anatomy still reads the wrong name.
 
-## GAP-165 [open] A deel-link should let the klant walk through the portal, and an anonymous shell is not designed
+## GAP-165 [resolved in v2.14] A deel-link should let the klant walk through the portal, and an anonymous shell is not designed
 - **Type:** missing screen
 - **Found while:** the owner used a share link and said it was not what he expected
 - **Where needed:** ScreenSharePage, AppShell, ScreenDashboard and ScreenPrintDetail for an anonymous visitor
@@ -1993,3 +1998,70 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** every screen of it. Nothing is built; the backend half can be built behind this gap without drawing anything new.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.13
+- **Resolved in 2.14, all five parts, and built.** **ScreenShareSession** is the account. The backend half shipped first (`POST /api/share/:token/session`, `sessionScope`, the link re-read on every request); 2.14 drew the rest and the frontend now has it: the guest shell `.pp-app.guest` with one head bar (studio · Overzicht · Prints · "Sessie afsluiten") and no avatar, role, theme control, "Uitloggen", live dot, drawer, rail or bottom bar; the link's facts staying on the Overzicht, with the expiry notice turning `warning` at 0 or 1 day; the dead-link page unchanged from 1.6 and now drawn **without** the shell, at the visitor's next action and never on a timer; "Sessie afsluiten" with its own page; and ScreenSharePage surviving as the landing screen, minus the studio head that moved into the shell. The visitor's Prints is ScreenDashboard without the klant axis (no strip, no FilterBar, no selection, no tags, no tint, no meta line, no "Ontbreekt" chip) and the visitor's print page is the User variant with the payment as a state. Two things needed code outside the drawings: `sessions.destroy` now clears a share session too (it only deleted from `sessions`, so "Sessie afsluiten" would have done nothing), and the visitor's routes keep the token in the URL — `/share/:token`, `/share/:token/prints`, `/share/:token/prints/:id` — because the URL is the only credential a visitor has and a reload has to carry it. **"Download overzicht" still works for a visitor**, with a test that says so. Three of the four measurements the export asked for are answered in `docs/design-feedback/implementation.md`; the fourth (the largest klant) is **36 prints**, not the ~7 the no-FilterBar decision assumed.
+
+## GAP-166 [open] Tags for role User: ScreenPrintDetail 2.14 says no, ScreenShareSession 2.14 says it is still a proposal
+- **Type:** conflict
+- **Found while:** the 2.14 import, building the visitor's print page
+- **Where needed:** `components/ScreenPrintDetail/README.md` 2.14, `components/ScreenShareSession/README.md` *What the owner still decides*; `frontend/src/prints/PrintDetailPage.tsx`
+- **What is missing or wrong:** the same round says both things about the same control.
+  - ScreenPrintDetail 2.14: "**The rest of the page for role User and for a visitor.** … the payment badge — **no tags**, no `pp-lacks`, no '⋯' menu." That is an instruction, in the section that resolves GAP-158.
+  - ScreenShareSession, *What the owner still decides (do not build these yet)*, point 3: "**Tags.** 1.4 says role User sees tags; the share page never has. … **proposed, needs his confirmation** … Until then: **no tags in a share session**, and the conflict is on the record."
+
+  For a **visitor** the two agree and we built it: no tags. For a signed-in **role User** they do not: one file withdraws the tags, the other says the question is open and names 1.4 as the standing answer. 1.4 is what the app implements today.
+- **Why it matters:** this is GAP-088 again — a gap resolved in one README and contradicted in another — and the cost of guessing is a feature silently removed for an account holder who was given it on purpose. It is also the kind of difference a changelog cannot see: both sentences are in the same export and neither is marked as superseding the other.
+- **Proposal:** treat ScreenShareSession's sentence as the governing one, because it is the one that *knows* it is deciding something, and leave role User's tags as 1.4 has them until the owner answers. We have built exactly that: a visitor sees no tags, a signed-in User still does, and the line in `PrintDetailPage.tsx` says so with this gap's number. If the owner says no tags for role User either, it is one condition and the gap closes.
+- **Blocked:** nothing; both halves render. Held: whether role User keeps tags.
+- **Temporary placeholder approved:** no — nothing is improvised, the app keeps the published 1.4 behaviour for the role the two files disagree about.
+- **Design system version:** 2.14
+
+## GAP-167 [open] ScreenQueue's README lost its whole 2.12 section in the 2.14 export
+- **Type:** conflict
+- **Found while:** the 2.14 import — `git diff` over `design-system/` after `sync-design-system.sh`
+- **Where needed:** `components/ScreenQueue/README.md`; `copy-deck.md` (`queue.ofWhichWithoutFiles`); `components/bundle.css` lines for GAP-155 and GAP-156
+- **What is missing or wrong:** ScreenQueue's README is the **only** file in this export with deletions (38 added, 47 removed; every other file is purely additive and `bundle.css` adds 58 lines and removes none). What went is the entire `## 2.12` section, plus three sentences that were changed back to their 2.11 wording:
+  - the *fileless rows* paragraph now says the group summary's **`.amt` slot** carries `queue.ofWhichWithoutFiles` — 2.12 moved that sentence to the **second muted line of `.ttl`** (GAP-155) after we measured `.amt` taking 181px and leaving the heading 109px at 360px;
+  - the *Phone* paragraph loses "which 2.12 finally makes true in `bundle.css`" (GAP-156, `.pp-btn-sm` at 44px and `.pp-line .acts` wrapping);
+  - the *Accessibility* paragraph loses 2.12's rule against an `aria-label` that repeats the summary's own text.
+
+  The 2.14 changelog says "**Breaking changes: none**" and "nothing is renamed, nothing is removed", and lists ScreenQueue only under *Components changed*. `bundle.css` still carries every 2.12 declaration, so the stylesheet and this README now disagree.
+- **Why it matters:** it is the same accident 2.12 described and repaired for `README.md` and `changelog.md` ("had fallen four rounds behind on the artifact and were restored from the 2.11 export with 2.12 on top") — this time in the other direction and unnoticed. A reader following ScreenQueue 2.14 would put the sentence back in `.amt` and re-create the 109px heading we measured away, and GAP-155 and GAP-156 are marked resolved in this log.
+- **Proposal:** restore the `## 2.12` section and the three sentences in ScreenQueue's README (the artifact's own 2.12 text is in our `design-system/changelog.md`), and say in 2.15 that GAP-155 and GAP-156 stand. **We have changed nothing in the app**: the summary still renders `queue.ofWhichWithoutFiles` as the second muted line of `.ttl` with `.amt` empty, which is what 2.12 specified and what `bundle.css` supports, and the queue test asserts it.
+- **Blocked:** nothing. Held: any future change to the queue summary, which has two specs until this is settled.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.14
+
+## GAP-168 [open] GAP-163's rules do not reach a trigger wrapped in `.pp-lift`, which rule 9 requires
+- **Type:** suspected design bug
+- **Found while:** verifying GAP-163 in the running app at 360px, right after the 2.14 import
+- **Where needed:** `components/bundle.css` (the 2.14 GAP-163 block), `components/SpoolPicker/README.md` 2.14, `components/Popover/README.md` rule 8/9; `frontend/src/finance/SpoolPicker.tsx`
+- **What is missing or wrong:** 2.14 lifts the floor with `.pp-asset .acts .pp-spoolbtn, .pp-asset .acts .pp-minw-200 { min-width: 0; max-width: 100% }` and notes that **both** class names a trigger can carry are covered "so the fix does not depend on which one the app wrote". Ours carries both — and the fix still did not work. Measured at 360px on the print whose row holds the 35-character spool name, with 2.14 applied and the markup obligation (`span.nm.pp-fname.sans` with `.a`/`.b`) in place:
+  - the trigger was **310px** wide and still **28px outside** the card (`.pp-card.pp-assetlist.pp-flush`, `clientWidth` 326), down from 32px only because the name block changed.
+  - The reason is not the class but the **wrapper**: since 2.13 the trigger sits in `span.pp-lift` (rule 9: a window-placed panel needs a lifted, non-anchoring wrapper), and `.pp-lift` is the flex item in `.acts`. `.pp-lift{position:relative;z-index:var(--z-raised)}` sets no `min-width`, so the flex item keeps its content width and `max-width: 100%` on the child resolves against *that*, not against the row.
+  - With `pp-minw-0` — the design system's own utility — added to the wrapper, the trigger is **270px**, ends **12px inside** the card, the card measures `scrollWidth` 326 = `clientWidth` 326 (it was 358 against 326 in 2.13) and the name reads "Creality Rainbow Wild…Hyper". At 1400px nothing changes: the trigger is 310px, the 200px floor holds and the whole name shows.
+- **Why it matters:** the rule is right and lands nowhere, which is worse than a rule that is wrong: the export, the README and the changelog all say GAP-163 is resolved, and without a measurement in the running app we would have shipped the same 28px clip under a resolved heading. It will also recur: every other window-placed panel's trigger is inside a `.pp-lift`.
+- **Proposal:** name the wrapper in the rule — `.pp-asset .acts > .pp-lift{min-width:0}` beside the two existing selectors — or state in Popover's rule 9 that `.pp-lift` carries `min-width: 0` wherever it is a flex item, which would fix this class of bug once. **Built in the meantime, and not a placeholder:** `pp-minw-0` on the wrapper, a published utility doing its documented job, with the measurement in the comment. Say which shape you want and we follow.
+- **Blocked:** nothing.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.14
+
+## GAP-169 [open] A visitor's nav marks where he is and never that the other screen exists
+- **Type:** suspected design bug
+- **Found while:** the owner walking the merged deel-link session on the local stack, the first use by anyone who did not build it
+- **Where needed:** `components/ScreenShareSession/README.md` §2 and §6, `components/AppShell/README.md` 2.14 (the `guest` variant's head bar), `components/bundle.css` `.pp-guestnav`; `frontend/src/sharing/GuestShell.tsx`
+- **What is missing or wrong:** his words: *"het is niet duidelijk genoeg dat je ook naar prints kan gaan"*. The rest of the session he passed. The cause is one sentence in §6 — the head bar uses "`primary-tint`/`text-strong` for the current item — the pairs `.pp-nav a[aria-current=page]` has used since 1.0" — and that pair dresses **only** the item you are already on:
+  - `.pp-guestnav a` carries no background, no border and no underline, only `color: var(--text)` at `--text-base`;
+  - `.pp-guestnav a[aria-current=page]` adds `background: var(--primary-tint)`, `color: var(--text-strong)` and `font-weight: 600`;
+  - the only resting cue for the other destination is `:hover` → `--primary-tint-soft`, and a deel-link is opened on a phone, where there is no hover.
+  So a visitor lands on the Overzicht and sees one filled pill reading "Overzicht" with the word "Prints" in plain body text beside it, between a brand and a ghost button. The pill reads as a heading for the page, not as one of two tabs.
+- **Why it matters:** the same pair works in the operator's shell because `.pp-nav` lives in a sidebar or rail — a column of items in a known place is self-evidently navigation, so marking only the current one is enough. Lifted into a horizontal head bar with two items, that logic inverts: the current-item highlight is the *only* ink, and the unvisited screen is the one with none. Prints is half of what GAP-165 was for — the owner's whole complaint about the old share page was that a klant could not walk through the portal — and it is the half a first-time visitor cannot see. This is also the one screen whose user gets no second chance: a klant opens the link once, from WhatsApp, and never learns the interface.
+- **Proposal:** give the non-current destination a resting affordance, in the head bar only. Three shapes, ours in order of preference, all from existing tokens:
+  1. **SegmentedControl's visual** (`.pp-seg`: `surface-2` track, `border`, `radius-pill`, the current item a `surface` pill with `shadow-sm`). It is the clearest "two views, pick one" in the system and both items are visibly the same kind of thing. **But its semantics do not fit**: `.pp-seg` is `aria-pressed` buttons for in-page view switching, and these are routes that must stay links with `aria-current="page"`. If you want this shape, it needs a blessing for links — a nav variant of the track — not us reusing the class.
+  2. **Tabs' visual** (`.pp-tabs`/`.pp-tab`: shared `border-bottom` on the track, inactive in `--muted`, current in `--primary` with a 2px bottom border). Same semantic caveat, weaker signal, but closer to a bar of destinations.
+  3. **A border on both items**: `1px solid var(--border)` on `.pp-guestnav a`, the current one keeping its tint. Smallest change, keeps the links exactly as specified, and no new pair.
+  A fourth that is not styling and may be worth doing anyway: a link to Prints on the Overzicht itself, where the visitor actually is.
+- **Blocked:** nothing is half-built. The nav is as 2.14 specifies it and works; we are not changing the head bar's visual language on our own, and we would rather not pick between the three above for you.
+- **Temporary placeholder approved:** yes (by the owner, 2026-10-18), shape 3 only — `1px solid var(--border-strong)` on `.pp-guestnav a` in `frontend/src/styles/app.css`, marked `ds-gap: GAP-169`. Shapes 1 and 2 are still yours to decide, and this gap stays open until you do.
+- **One number from building it, which is feedback whichever shape you pick:** `--border` cannot do this job. Against the head bar's `--surface` it measures **1.37:1** in dark (`#2e3250` on `#1a1b26`) and **1.42:1** in light (`#d3d9e6` on `#ffffff`) — far under the **3:1** WCAG 1.4.11 asks for the boundary that identifies a control, which is exactly what is being asked of it here. `--border-strong` is **3.75:1** and **4.29:1**, so the placeholder uses that. The same applies to shape 1: `.pp-seg`'s track border is `--border`, so a nav built on that track would mark its own outline at 1.4:1. Worth a look at whether `.pp-seg` should carry `--border-strong` generally, since the track is the only thing saying "these two are one control".
+- **Measured with the placeholder in place** (local stack, a real session, both themes): the items are 36px tall at 1400px and **44px** at 360px — unchanged, because `box-sizing: border-box` is global, so the hairline eats content width and not tap height. Head bar 61px at 1400px and 121px at 360px, both the same as before. The two tabs stay on one line (162px each at 360px) and nothing scrolls sideways. The current item keeps `--primary-tint` and now sits inside the same outline as the other one.
+- **Design system version:** 2.14

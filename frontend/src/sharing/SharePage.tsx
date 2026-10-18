@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Box, Check, Clock, Copy, Download, ExternalLink, Link as LinkIcon } from 'lucide-react';
+import { Box, Check, Clock, Copy, Download, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { ApiError } from '../api/client';
@@ -9,6 +9,7 @@ import { formatDate, formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import { squashName } from '../prints/filter';
 import { calendarDays } from './days';
+import { Gone } from './EndPages';
 import {
   fetchShareView,
   overviewUrl,
@@ -29,8 +30,24 @@ const day = (date: string) => formatDate(`${date}T12:00:00Z`);
  * the label and expiry, "Alleen openstaand", one line per order, the totals
  * and "Download overzicht". A niet-factureren klant gets the print list only.
  * Unknown, expired and revoked links get the same friendly page.
+ *
+ * **2.14 (GAP-165): this page survives and becomes the session's landing
+ * screen.** Inside a session it loses exactly one thing, the studio head,
+ * which is now one line above it in the guest shell — drawing the studio
+ * twice would be the only place in the portal where it is named twice. The
+ * `<h1>` stays and is the one place a session says whose prints these are,
+ * and the link's own facts (the expiry notice, the "Betalen" block) stay here
+ * rather than becoming a bar: there is nothing to act on from a print's page,
+ * and the amount is only correct beside the totals it belongs to.
  */
-export function SharePage() {
+export function SharePage({
+  inSession = false,
+  onGone,
+}: {
+  inSession?: boolean;
+  /** In a session the dead-link page is drawn without the shell, by the parent. */
+  onGone?: () => void;
+} = {}) {
   const { token = '' } = useParams();
   const [onlyOpen, setOnlyOpen] = useState(false);
   const view = useQuery({
@@ -47,6 +64,11 @@ export function SharePage() {
   }, [data]);
 
   if (view.isError && view.error instanceof ApiError && view.error.status === 404) {
+    // Mid-session the whole page becomes that one page, shell and all.
+    if (inSession) {
+      onGone?.();
+      return null;
+    }
     return <Gone />;
   }
   if (view.isError) {
@@ -71,7 +93,7 @@ export function SharePage() {
   const priced = data.billed && data.lines.some((line) => line.price !== null);
   return (
     <main className="pp-share-col">
-      <Head token={token} data={data} />
+      <Head token={token} data={data} inSession={inSession} />
       {data.billed ? (
         <div className="pp-share-body pp-pb4">
           <label className="pp-opt pp-text-md">
@@ -130,12 +152,13 @@ export function SharePage() {
   );
 }
 
-function Head({ token, data }: { token: string; data: ShareView }) {
+function Head({ token, data, inSession }: { token: string; data: ShareView; inSession: boolean }) {
   const [logoFailed, setLogoFailed] = useState(false);
   const showLogo = data.studio.hasLogo && !logoFailed;
   return (
     <header className="pp-share-head">
-      {showLogo ? (
+      {/* In a session the studio is in the head bar, one line above (2.14). */}
+      {inSession ? null : showLogo ? (
         <div className="pp-brand pp-p0 has-logo">
           <img
             className="logo pp-logo"
@@ -166,7 +189,7 @@ function ExpiryNotice({ expiresAt }: { expiresAt: string }) {
         ? t('share.expiresTomorrow', { date })
         : t('overview.expiryNotice', { days, date });
   return (
-    <span className="pp-badge info pp-mt">
+    <span className={`pp-badge ${days <= 1 ? 'warning' : 'info'} pp-mt`}>
       <Clock className="pp-ico" aria-hidden="true" />
       {text}
     </span>
@@ -431,19 +454,6 @@ function PlainList({ lines }: { lines: readonly PlainShareLine[] }) {
         </div>
       </div>
     </>
-  );
-}
-
-/** "Deze link is verlopen of ingetrokken": the same page for every link that does not work. */
-function Gone() {
-  return (
-    <main className="pp-center pp-gap-2 pp-center-t">
-      <div className="pp-illus pp-card pp-illus-box">
-        <LinkIcon className="pp-ico pp-ico-24" aria-hidden="true" />
-      </div>
-      <h1 className="pp-share-h404">{t('share.notFound')}</h1>
-      <p className="pp-muted pp-m0 pp-maxch">{t('share.askNew')}</p>
-    </main>
   );
 }
 

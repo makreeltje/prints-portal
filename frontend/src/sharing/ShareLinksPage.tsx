@@ -222,6 +222,13 @@ function ShareLinkRow({ link }: { link: ShareLink }) {
       <ConfirmDialog
         open={confirming}
         title={t('confirm.revokeLink', { label: link.label })}
+        /*
+          Revoking now ends a visit as well as a page (ScreenShareLinks
+          2.14): a deel-link mints a session, so somebody may be three
+          screens into one on this token. An act whose consequence the
+          operator cannot see should at least be stated to him.
+        */
+        body={t('share.revoke.body')}
         confirmLabel={t('share.revoke')}
         destructive
         onConfirm={async () => {

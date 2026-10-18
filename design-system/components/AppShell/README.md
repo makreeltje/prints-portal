@@ -21,3 +21,21 @@ AppShell is the frame around every operator page: sidebar on desktop, a 56px ico
 - **Roles:** Wachtrij is visible to Admin and Editor. **Not to User** — a User sees only the klanten they were granted and never cost or notes, and a queue of the owner's own unstarted work is neither of those things.
 
 **Dutch copy (new).** Wachtrij.
+
+**2.14.** (2026-10-18) **A visitor with a deel-link gets this shell without its chrome (GAP-165, the owner's decision).** A deel-link is a key now: a valid token mints an anonymous read-only session for one klant and the visitor walks the real screens (**ScreenShareSession**). The shell they get is this one — same `main.pp-main`, same screens inside it — with the sidebar, the icon rail, the drawer and the bottom bar replaced by **one head bar**, because a visitor has no account, no stored preference, nothing to log out of and only two destinations.
+
+**DOM, one markup at every size:** `div.pp-app.guest > header.pp-guesthead + main.pp-main`. The head holds, in order: `div.pp-brand` (the uploaded logo as everywhere else, else the company name, else "3D Prints Portal"), `nav.pp-guestnav[aria-label="Hoofdmenu"]` with **two** `<a>` items — **Overzicht** (`list`) and **Prints** (`layout-dashboard`) — and a ghost `pp-btn-sm` **"Sessie afsluiten"** (`log-out`). `.pp-main` is capped at 1080px and centred; the Overzicht keeps its own 560px `.pp-share-col` inside it.
+
+**Nothing else from the operator's footer survives.** No avatar and no role name (there is no account), **no "Thema"** (a preference we cannot carry to the visitor's next tap on the same WhatsApp link — the session follows the system setting, as ScreenSharePage always has), no "Uitloggen", **no LiveIndicator and no offline bar** (both exist so an operator knows whether what he is editing is current). The reasons are tabled in ScreenShareSession §1.
+
+**Phone (480px and below) and its twin.** `.pp-guestnav` moves to its own full-width line as two equal tabs, each at least `--pp-tap` high; the brand and the exit button share the first line. The rule is written twice, as every phone rule in this system is since 2.11: once in the media query for the app, once as `.pp-device.phone .pp-guestnav` for a preview frame.
+
+**New classes.** `.pp-app.guest`, `.pp-guesthead`, `.pp-guesthead > .pp-brand`, `.pp-guestnav`, `.pp-guestnav a`, `.pp-guestnav a[aria-current=page]`. The operator shell's own classes are untouched and nothing is renamed or removed.
+
+**Accessibility.** One `<nav aria-label="Hoofdmenu">` as on every width of the operator shell; the skip link "Naar inhoud" stays; `aria-current="page"` marks the open screen; "Sessie afsluiten" opens a ConfirmDialog, because the only way back is a link the portal will not show again.
+
+**A correction to this file's own preview, not a gap.** 2.10 put **Wachtrij** in the sidebar, the rail and the phone bottom bar (Facturen moving into "Meer") and the preview was never redrawn — it still showed the 2.9 nav in all four places. It is drawn now: Wachtrij between Dashboard and Openstaand in the sidebars, the rail and the drawers, and the bottom bar back to its specified four, **Dashboard · Wachtrij · Openstaand · Meer**. The README was right and the picture was four versions stale; when the two disagree the README is the spec, and a preview that contradicts it is a bug in the preview (2.11's rule, applied to a nav rather than a breakpoint).
+
+**Still the User role's, and not decided here (proposed, needs your confirmation).** Role **User** sees Dashboard, Openstaand and **API-docs**. I believe API-docs is wrong for a User for the same reason it is absent from a share session — a klant has nothing to call — but a User is an account holder and may have been given the docs deliberately. Say the word and the item goes behind the same role check as Facturen; **do not build it yet**.
+
+**Dutch copy (new).** Overzicht | Prints | Sessie afsluiten.

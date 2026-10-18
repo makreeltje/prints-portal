@@ -262,6 +262,51 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
     expect(withFiles?.note).toBe('Twee stuks');
   });
 
+  /*
+    The ending of a fileless request (ScreenQueue 2.14, GAP-159). Clearing its
+    status would leave it alive in the database and on no screen, because
+    every query but the queue's filters `origin = 'indexed'` — which this test
+    states as a fact rather than as a claim in prose.
+  */
+  it('deletes a request, and only a request', async () => {
+    const id = await addRequest('Joey', 'Lamp voor in de gang');
+    const response = await t.as(admin, { method: 'DELETE', url: `/api/requests/${id}` });
+    expect(response.statusCode).toBe(204);
+
+    const groups = (await queue()).groups;
+    expect(groups.flatMap((group) => group.rows).some((row) => row.id === id)).toBe(false);
+    expect((await t.as(admin, { url: `/api/prints/${id}` })).statusCode).toBe(404);
+
+    // An indexed print belongs to the owner's disk: it is hidden, never deleted.
+    const print = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
+      items: { id: string }[];
+    }>().items[0];
+    const refused = await t.as(admin, {
+      method: 'DELETE',
+      url: `/api/requests/${print?.id ?? ''}`,
+    });
+    expect(refused.statusCode).toBe(422);
+    expect(refused.json()).toEqual({ error: 'not_a_request' });
+    expect((await t.as(admin, { url: `/api/prints/${print?.id ?? ''}` })).statusCode).toBe(200);
+  });
+
+  it('a cleared request state would strand the record, which is why it can be deleted', async () => {
+    const id = await addRequest('Joey', 'Kastje voor de meterkast');
+    await t.as(admin, {
+      method: 'POST',
+      url: '/api/prints/bulk',
+      payload: { ids: [id], action: 'setRequestState', state: null },
+    });
+    // Off the queue...
+    const groups = (await queue()).groups;
+    expect(groups.flatMap((group) => group.rows).some((row) => row.id === id)).toBe(false);
+    // ...and on no other list either: the leak 2.14 names.
+    const items = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
+      items: { id: string }[];
+    }>().items;
+    expect(items.some((item) => item.id === id)).toBe(false);
+  });
+
   it('refuses to link something that is not a request', async () => {
     const items = (await t.as(admin, { url: '/api/prints?limit=100' })).json<{
       items: { id: string }[];

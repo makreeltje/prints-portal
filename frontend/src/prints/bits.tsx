@@ -214,8 +214,21 @@ export function ColourDot({ colour, slicer = false }: { colour: string | null; s
  * image (.pp-thumb.tinted, --c1), surface-2 without colour, "Geen voorbeeld"
  * when there is no image.
  */
-export function Thumbnail({ print, small = false }: { print: PrintSummary; small?: boolean }) {
-  const tinted = print.colour !== null;
+export function Thumbnail({
+  print,
+  small = false,
+  plain = false,
+}: {
+  print: PrintSummary;
+  small?: boolean;
+  /**
+   * No filament tint: on a customer's screen a dark filament hides the model,
+   * and which filament it was is operator information (GAP-079, and
+   * ScreenShareSession §5 for a visitor's card).
+   */
+  plain?: boolean;
+}) {
+  const tinted = print.colour !== null && !plain;
   const content = print.hasThumbnail ? (
     <img
       /*

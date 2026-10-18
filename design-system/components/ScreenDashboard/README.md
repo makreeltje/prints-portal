@@ -21,3 +21,14 @@ Dashboard (`/`) is the working view: customers with print counts, filters and th
 The denominator is the argument, not tidiness. "9 van 83 prints" is a load-bearing sentence on this page; a dashboard that counted jobs and prints in one figure would be wrong for both, and the FilterBar's Status options are all about money (`Geen prijs`, `Open`, `Betaald`, `Afgeschreven`, `Onvolledige kosten`) and have nothing to say about a job that has not been designed. Work that is not yet a print belongs in a list of its own; see `changelog.md` 2.8 for the proposed queue, which is **not in this version**.
 
 Two things this does **not** do. It does not hide a *declined* print: that print has files and stays on the dashboard with its "Niet doorgegaan" badge (StatusBadge). And it does not add a filter here — "show me the open requests" is the queue's question, not this page's.
+
+**2.14.** (2026-10-18) **A visitor with a deel-link sees this screen with the klant axis removed (GAP-165).** The deel-link mints an anonymous read-only session for one klant (**ScreenShareSession**), and its second destination is this page. The reduction is listed there in full; the short version, because a reader of this file has to know a second form exists:
+
+- **gone:** the klant strip and its overview dialog (there is one klant, and switching klanten is the thing a session may not do), "Factuur", the selection and the BulkActionBar, "Toon verwijderde", "Gearchiveerd tonen" — and the **FilterBar as a whole**;
+- **gone from a card:** the filament tint (GAP-079's reason, on a customer's screen a dark filament hides the model), the checkbox, the tags and the meta line;
+- **kept:** the thumbnail, the name, project and date, the price and the status badge — exactly the facts an Overzicht line carries, in a card — and the card's link into the print;
+- **order:** newest first, the same order as the Overzicht's list, so the two screens never disagree about which print is the last one.
+
+**No FilterBar, and it is a judgement about numbers I would like checked.** 84 prints over 12 klanten is about seven per klant, and a filter bar above seven cards is chrome. The number that decides it is the *largest* klant, not the average, and the app has the library: see *What I need measured* in `changelog.md` 2.14. If one klant has thirty prints, the visitor gets the search field and nothing else from the bar.
+
+**The archived rule, so the two screens agree.** Archived prints stay in a visitor's list without a badge and without a toggle, which is what this klant's Overzicht has done since 1.6. "Gearchiveerd" is a word about the owner's disk, not about the klant's print.

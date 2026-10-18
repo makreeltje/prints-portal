@@ -1,3 +1,264 @@
+# Changelog 2.14
+
+**A deel-link stopped being a page you send and became a key, and that is one decision with five
+designs hanging off it.** The owner used a share link and said *"leuk, maar niet wat ik had
+verwacht"*: he expected the klant to **walk through the portal**, not to read "een karig overzicht
+van zijn prints". The portal already does what he expected — role **User** has been read-only by
+construction since 1.1, no cost and no notes — so the only thing between the klant and his
+expectation was a login. A valid token now mints an anonymous read-only session for one klant, the
+visitor uses the **real** screens, and this round draws the five things that did not exist: the
+shell for someone with no account, what the nav offers, where the link's own facts live, what
+happens when the link dies mid-visit, and what becomes of the page he was sending. Four of those
+five are mostly **subtraction**, which is the point: a second audience should cost one shell, not a
+second portal. Beside it, three carried-over gaps are settled, one of them by refusing the shape the
+app had to improvise. Version 2.13 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-157 | The "Aanvraag toevoegen" dialog has no anatomy, and two published components say it carries their fields | **Drawn, after two postponements that were one too many.** New component **AanvraagDialog**: Naam (focus), **Klant as a combobox that accepts a klant who is not a folder yet**, Status (the two queue states, default *Nog niet besloten*), and the optional **Bron** and **Notitie** that PrintSource and PrintNote have pointed here since 2.11. **No Project** (a folder level the indexer reads — a name typed here has to keep agreeing with a folder nobody has made), **no price** (a quote is not a thing this system has), and **no "Niet doorgegaan" / "Geen status" at birth** (a fileless record with either is in no list on any screen). A form dialog, so no backdrop close; failure keeps everything typed | **resolved** |
+| GAP-158 | No reduced "Deze print" card for role User; the shape the app built is undesigned | **Anatomy instead of a clause**, and GAP-165 makes it a klant's main screen. `pp-kv tight`: **Klant · Project (only when it differs) · Datum · Bron (when there is one, read-only, no chip)**. No spool row, no note, no missing-files line, no `pp-lacks`, no "⋯", no file list; the payment is a **state** (badge and amount), not a form. A card of two rows is still a card | **resolved** |
+| GAP-159 | "Geen status" as the ending; the app had to improvise a third action on a queue row drawn with two | **The third button is refused and the ending is written down.** Absence is a **value**, not an operation (GAP-138, the owner's own decision, and `do-dont.md`'s own line). "Status wijzigen" offers four values on a row **with files**; on a row **with no files** it offers the two queue states plus the ghost **"Aanvraag verwijderen"** below a hairline, because this page is the only place a fileless record appears and the other two values would leave it alive in the database and absent from every screen | **resolved** |
+| GAP-163 | The spool trigger clipped 32px by `.pp-card.pp-flush` at 360px, measured and logged, not patched | **The 200px floor is lifted at 480px and below and the name takes the middle cut** this file already specified as the rule: `min-width: 0; max-width: 100%` inside a file row's band, the name wrapped in `span.nm.pp-fname sans` (`.a` the head, `.b` the **last word** — a spool is identified at both ends), the swatch, chip and chevron keeping their width. **Rejected:** wrapping the trigger to two lines (it undoes GAP-111's row agreement and makes a 44px target 68px) and scrolling the card's rows sideways (this system scrolls tables, not cards, and a scroll that hides a control is worse than a cut name) | **resolved** |
+| GAP-164 | One sentence, two keys: `settings.payLink.noIban` in the deck, `settings.customer.payLink.only` in ScreenSharePage's prose | **The deck's key is the key.** The name in ScreenSharePage was never in `copy-deck.md` and is withdrawn from that file; the app has it right at both call sites and changes nothing. My mistake, and the second time this file has invented a key name in prose (GAP-088 was the first) | **resolved** |
+| GAP-165 | A deel-link should let the klant into the portal — five things that do not exist | **All five decided.** (1) **The shell:** `.pp-app.guest`, a head bar with the studio, two destinations and "Sessie afsluiten"; no avatar, no role name, no theme control, no "Uitloggen", no live dot, no drawer, no rail, no bottom bar. (2) **The nav:** **Overzicht** and **Prints** — API-docs rejected (a klant has nothing to call) and **Openstaand rejected** (one klant's version of that question is the "Alleen openstaand" switch, next to the totals and the IBAN). (3) **The link's facts stay on the Overzicht; the persistent bar is rejected**, and the expiry notice becomes `warning` at 0 or 1 day. (4) **Mid-session death ends at the visitor's next action**, on the same single page every dead link shows — the 1.6 rule untouched — drawn **without** the shell; no timer, no countdown. (5) **ScreenSharePage survives as the session's landing screen**, minus the studio head that moved into the shell. New component **ScreenShareSession** holds the whole account | **resolved** |
+
+## New and changed
+
+- **Tokens:** none. `tokens.json` `version` is **2.14**. No token added, renamed, changed or removed.
+- **New classes**, all in `components/bundle.css`, **fifteen selectors, nothing changed and nothing removed**:
+  `.pp-app.guest`, `.pp-app.guest > .pp-main`, `.pp-guesthead`, `.pp-guesthead > .pp-brand`,
+  `.pp-guesthead .pp-logo`, `.pp-guestnav`, `.pp-guestnav a`, `.pp-guestnav a:hover`,
+  `.pp-guestnav a[aria-current=page]`, the phone rule `@media (max-width:480px){.pp-guestnav, .pp-guestnav a}`
+  and its twin `.pp-device.phone .pp-guestnav`, `.pp-device.phone .pp-guestnav a` (GAP-165); and
+  `.pp-fname.sans`, `.pp-spoolbtn > .nm`, the phone rule
+  `@media (max-width:480px){.pp-asset .acts .pp-spoolbtn, .pp-asset .acts .pp-minw-200}` with its
+  `> .pp-hintchip` pair, and the matching `.pp-device.phone …` twins (GAP-163).
+  **No existing declaration is touched.** The GAP-163 rules name **both** class names a trigger is
+  built with (`.pp-spoolbtn` in AssetListItem, `.pp-minw-200` in SpoolPicker's own preview), so the
+  fix does not depend on which one the app wrote.
+- **Copy:** **28 new keys**, none changed and none removed, all in `copy-deck.md` under *Added in 2.14*.
+  `session.nav.overview`, `session.nav.prints`, `session.prints.title`, `session.prints.empty`,
+  `session.prints.emptyBody`, `session.exit`, `session.exit.confirm`, `session.exit.confirmBody`,
+  `session.exit.ok`, `session.ended.title`, `session.ended.body`, `share.revoke.body`,
+  `queue.add.name`, `queue.add.namePlaceholder`, `queue.add.nameError`, `queue.add.customer`,
+  `queue.add.customerPlaceholder`, `queue.add.customerNew`, `queue.add.customerHelp`,
+  `queue.add.customerError`, `queue.add.status`, `queue.add.submit`, `queue.add.error`,
+  `queue.added`, `queue.statusHelp.fileless`, `queue.remove`, `queue.remove.confirm`,
+  `queue.remove.confirmBody`.
+  **Reused rather than duplicated:** `queue.add` (the dialog's title and the button that opens it),
+  `common.cancel`, `common.close`, `common.delete`, `queue.group.notDecided`,
+  `queue.group.inProgress`, `customers.printCount` (the klant list's meta line, zero arm included),
+  `print.source*`, `print.note*`, `share.notFound`, `share.askNew`, `share.expiresToday`,
+  `share.expiresTomorrow`, `pay.userNote`, and **`bulk.statusNone`** for "Geen status" in the queue's
+  picker — the name is wrong for that call site and a third key with the same three words would be
+  worse; collapsing `bulk.statusNone` and `invoices.noStatus` into one `status.none` is a rename and
+  therefore 3.0's, written down in the deck rather than done quietly.
+- **New components:** **ScreenShareSession** (README + preview: the landing at 980px, the landing at
+  360px on its last day, Prints at 360px, one print at 980px, the empty klant, and the two endings)
+  and **AanvraagDialog** (README + preview: empty, the klant list open, a missing name, a failed
+  save, saving, and the 360px sheet).
+- **Components changed:** AppShell (README + preview), ScreenSharePage (README), ScreenShareLinks
+  (README), ScreenDashboard (README), ScreenPrintDetail (README), PaymentPanel (README + preview),
+  SpoolPicker (README), ScreenQueue (README).
+- **Screens changed:** the share page keeps its column and loses its studio head to the shell; the
+  dashboard and the print detail gain a visitor form; the queue's primary button finally has a
+  dialog behind it.
+- **Pages changed:** `README.md` (*Floating panels* — rule 9's focus contract scoped, *Three rules
+  this round wrote down (2.14)*, *Roles*, the Iconography table gains `list`, *Versie 2.14*),
+  `changelog.md`, `copy-deck.md`, `do-dont.md`, `tokens.json`.
+- **Contrast report: no new pair, so `contrast.md` is unchanged.** Everything new is `surface` with a
+  `border` rule, `primary-tint` under `text-strong` for the current nav item (the pair
+  `.pp-nav a[aria-current=page]` has used since 1.0), and `warning` on `warning-tint` in a badge that
+  already exists. The 2.13 under-3:1 row (the chip's dashed edge on a selected option in the dark
+  theme) stays recorded and unchanged, as the app left it.
+- **Breaking changes: none.** Three markup obligations are added: `div.pp-app.guest >
+  header.pp-guesthead` with `nav.pp-guestnav` for a session (new markup, nothing replaced); the spool
+  trigger's name wrapped in `span.nm.pp-fname sans` with `.a` and `.b` (the app splits the string, as
+  it already does for file names); and `.pp-dialog` for AanvraagDialog, which is the dialog form the
+  app already builds. Nothing is renamed, nothing is removed, and no existing markup becomes invalid.
+- **What this costs:** a visitor's session is almost entirely existing screens, so the new CSS is
+  about 1.1 KB. The one thing that grows is the system's surface area: there are now two shells in
+  `bundle.css`, and the rule that keeps them from drifting is written in `README.md` — chrome belongs
+  to the role, screens belong to the system.
+
+## GAP-165: the five things, and why four of them are subtraction
+
+**1. The shell.** AppShell's footer is an account: an avatar with a role, a theme cycle, "Uitloggen",
+a live dot. A visitor has none of those and the URL is their credential. Rather than a second shell I
+took the one that exists and replaced its chrome: `.pp-app.guest` is one head bar over the same
+`main.pp-main`, so **every screen inside it is unchanged** — which is the only mechanism that keeps a
+session from becoming the second portal the owner rejected.
+
+The removals each have their own reason, and one of them is worth stating because it looks like a
+feature: **no theme control.** A visitor's preference cannot survive the next tap on the same
+WhatsApp link, and a control that forgets is worse than no control; the session follows the system
+setting, which is what the share page has done since 1.0. **No LiveIndicator and no offline bar**
+either: both exist to tell an operator whether what he is *working on* is current, and a visitor can
+act on neither.
+
+**There is a way out, and it is one item.** "Sessie afsluiten" drops the session, asks first
+(ConfirmDialog) and lands on its own page. The case is real: deel-links are opened on borrowed phones
+and in family group chats, and without this the only way to end a session is to clear the browser.
+If the app would rather not build the endpoint now, this is the one piece that can be left out
+without breaking anything else.
+
+**2. The nav.** Two items, and two refusals. **API-docs** is the clearest case in this system of a
+control a role cannot use: a klant has no token and no account. **Openstaand** is the interesting
+one — it looks like it belongs, since a klant cares what is open. It does not: Openstaand answers
+*which klanten owe me what, and how old is it*, a studio's question with a klant axis and age steps,
+and one klant's version of it is the **"Alleen openstaand" switch** on their own overview, standing
+next to the totals and the payment details. Two answers to one question, one of them worse, is how a
+second portal starts.
+
+**3. Where the link's facts live.** The app is right that a session has no obvious home for the
+expiry notice and the "Betalen" block, and **the obvious home is the one it already has.** Both stay
+on the Overzicht. A bar is rejected: neither fact changes what a visitor does on a print's page,
+there is nothing to act on from there, and the "Betalen" block carries an **amount** that is only
+correct beside the totals it belongs to. The arithmetic is GAP-101's: one sentence on four screens is
+not four facts. The visitor meets the expiry notice on the screen they land on, every time they open
+the link, which is the only moment it can change anything.
+
+The one change: at **0 or 1 day** the notice is `warning` rather than `info`. Same strings
+(`share.expiresToday`, `share.expiresTomorrow`), same clock glyph — the words carry it and the tint
+reinforces.
+
+**4. Expiry mid-session.** The rule that unknown, expired, malformed and revoked show one page stays
+exactly as 1.6 wrote it, so nothing about a token can be learned by probing. That page is now also
+the end of a session, drawn **without the shell** (a nav of dead links is worse than no nav), and it
+appears at the visitor's **next action**. No timer: the page on screen was true when it loaded, the
+visitor cannot change anything on it (it is read-only), and the portal does not know what clock the
+device is on. A countdown is also a second fact about the link on every screen, which point 3 just
+refused. **Revoking is the same ending**, and the operator is now told so in the Intrekken
+confirmation (`share.revoke.body`) — an act whose consequence is invisible to him should at least be
+stated to him.
+
+**"Sessie afsluiten" gets its own page**, because it is not the same fact as a dead link: "Je bent
+afgemeld van dit overzicht" with "Open de link opnieuw om je prints te bekijken." No button —
+a button back in would need the token, and the point of the act is that the session no longer has
+one.
+
+**5. The overview page survives, and the app's instinct was right.** *"Stuur me even het
+overzicht"* is a real request and the PDF hangs off it. It becomes the session's landing screen,
+keeps its 560px column inside the guest `.pp-main`, and loses exactly one thing: the studio head,
+which is now one line above it in the shell. The `<h1>` "Overzicht voor {klant}" stays and is the one
+place a session says whose prints these are.
+
+**And two reductions that follow from the session rather than from a gap.** The visitor's **Prints**
+screen is the dashboard without its klant axis (no strip, no Factuur, no selection, no bulk bar, no
+tags, no FilterBar, no filament tint on a card) and the visitor's **print page** is the User variant,
+now drawn (GAP-158). Both are written where they belong — ScreenDashboard 2.14, ScreenPrintDetail
+2.14 — with the full account in ScreenShareSession.
+
+## GAP-163: the clip was never a text-overflow, and the measurement is what found it
+
+The app measured exactly what 2.13 asked for and the answer closes the gap by itself: the trigger is
+**314px** wide at 360px with `scrollWidth` equal to `clientWidth` — nothing truncates it — the row
+offers about **302px**, and the only ancestor with an `overflow` is
+`section.pp-card.pp-assetlist.pp-flush` (326 against 358). So the last **32px** of the name is
+painted outside the card and `overflow: hidden` deletes it, which is why the page never scrolls
+sideways and why it reads as a shortened name. **Two of my sentences from 2.13 are settled by it:**
+"nothing in `bundle.css` truncates a trigger" was true, and "the band of GAP-111 removes the only
+thing that was squeezing it" was **wrong** — true at 961px, and `.acts` has spanned the row below
+760px since before that round.
+
+The decision and the two rejections are in the table and in SpoolPicker 2.14. What I want to add
+here is the general lesson, because it is the second clip this system has found the same way: **a
+minimum and an ancestor's `overflow: hidden` together make a silent editorial decision about which
+end of a string the viewer loses.** Nobody wrote "cut the colour off the spool name"; a 200px floor
+and a radius-keeping clip wrote it together.
+
+## The 44px band, decided on the app's number (GAP-111, confirmed as built)
+
+The app measured the trade and asked me to decide it: at a 2000px window the band costs **+44px** on
+each row whose controls used to fit beside the name, saves **12px** on each row that already wrapped,
+and at **1400px — the owner's window — it changes nothing at all**, because an order's file list is
+628px there, below the 760px container query. On his longest print that is +404px at 2000px and ±0 at
+1400px.
+
+**The band stays universal and GAP-111 stays as shipped.** It is already conditional in the only way
+that matters: the container query makes it inert below 760px, so it costs nothing where it buys
+nothing. Making it conditional on *context* instead would mean a class whose meaning depends on how
+wide the window happens to be, which is the kind of data-dependent layout this system refused in
+GAP-101. And the cost is paid by the **last card on the page** (2.3's rule: a long list costs nothing
+when nothing is behind it), on the width where the page has the most room. If the owner looks at a
+2000px window and dislikes it, that is a different conversation and I would rather have it about his
+screen than about mine.
+
+## Rejected this round
+
+- **A persistent bar for the link's facts** (GAP-165) — one sentence on four screens that nobody can
+  act on. The facts stay on the Overzicht.
+- **Openstaand and API-docs in a visitor's nav** (GAP-165) — the first is a studio's question the
+  "Alleen openstaand" switch already answers for one klant; the second is a control a klant cannot
+  use.
+- **A theme control for a visitor** (GAP-165) — a preference that cannot survive their next tap on
+  the link.
+- **A timer or a countdown for expiry** (GAP-165) — never yank a page out from under someone who is
+  reading it, and never make the link's clock a second fact on every screen.
+- **Wording that distinguishes expired from revoked** (GAP-165) — that distinction is the one thing
+  the dead-link page exists to hide.
+- **A third action on a queue row** (GAP-159) — absence is a value, not an operation.
+- **"Geen status" and "Niet doorgegaan" for a fileless record** (GAP-159) — either would leave the
+  record alive in the database and on no screen.
+- **A Project field and a price field in "Aanvraag toevoegen"** (GAP-157) — a folder level that
+  nothing can yet be compared against, and a quote this system has no concept of.
+- **Wrapping the spool trigger to two lines, and a horizontally scrolling card** (GAP-163).
+- **A third "Geen status" copy key** — `bulk.statusNone` is reused; the rename belongs to 3.0.
+
+## What I need measured
+
+None of these blocks anything in this export.
+
+1. **The largest number of prints one klant has** (not the average). 84 prints over 12 klanten is
+   about seven each, and that is why a visitor's Prints screen has no FilterBar. If one klant has
+   thirty, the visitor gets the search field — and nothing else from the bar.
+2. **Which other controls in a file row's band are clipped by the card at 360px** (GAP-163). The clip
+   is the card's, not the trigger's, so the trigger may simply have been the widest victim: for each
+   control in `.acts`, its right edge against the card's right edge, and `scrollWidth`/`clientWidth`
+   on the card. If a second control is outside, say which and I will decide it with the same rule.
+3. **The guest head at 360px with the longest studio name** in the running app: its height, whether
+   the two nav tabs stay on one line, whether "Sessie afsluiten" stays on the first line, and that
+   nothing scrolls sideways. I cannot render it; the frame in the preview is a container, and the
+   twin is my claim about the media query, not proof of it.
+4. **Whether a visitor's print page has anything below the fold at 390×844** — viewer, "Deze print",
+   payment. If the payment badge is below the fold on a phone, the order of those three is wrong and
+   I would rather move it than defend it.
+
+## Not decided this round, and why
+
+- **Materiaal and Gewicht for a klant** (ScreenPrintDetail 2.14, ScreenShareSession) — **proposed,
+  needs the owner's confirmation.** The invoice already prints Gram, so it is defensible, but what a
+  klant reads is his call. **Do not build it**; the card is complete without it.
+- **The timelapse in a visitor's media strip** — **proposed, needs the owner's confirmation.** 60% of
+  prints have one and it is a film of the klant's own print; it is also a surface no customer has ever
+  had, and the same network-tab threshold applies as to the model. Until he says yes: **models only**.
+- **Tags for role User** (1.4 says a User sees them; the share page never has) — **proposed, needs
+  the owner's confirmation**, and it is a conflict in this system rather than a new idea. A tag is
+  the owner's filing word ("cadeau" on a present). A session shows **no tags** either way.
+- **API-docs in role User's nav** (AppShell 2.14) — **proposed, needs your confirmation.** I believe
+  it is wrong for the same reason it is absent from a session, but a User is an account holder and may
+  have been given the docs deliberately. **Do not build it yet.**
+- **GAP-144** stays `[wontfix]` and **GAP-129**, **GAP-145** and **GAP-152** are closed by the owner
+  or by the app, as `implementation.md` records.
+
+## Where I was unsure
+
+- **The two-item nav.** Two destinations is the smallest nav that is still a nav, and at 360px it
+  draws two tabs across the width, which looks more like a tab bar than a menu. I think that is right
+  for a visitor, and if the owner later wants Openstaand in there I would rather be told than guess —
+  but adding it back means two answers to one question, so it should be a decision and not a drift.
+- **"Sessie afsluiten".** I am confident the act should exist and much less confident anybody will
+  press it. It is one button and one endpoint; if the app would rather wait, leave it out of the head
+  entirely rather than render it disabled.
+- **Whether the visitor's Prints screen needs its own sort control.** I gave it the Overzicht's order
+  (newest first) and no control at all. On seven prints that is obviously right and on thirty it may
+  not be, which is why measurement 1 exists.
+- **AanvraagDialog's field order.** Naam before Klant, because the row it creates reads name-then-klant
+  and the name is the thing he was just told. If he finds himself choosing the klant first every time,
+  that is a cheap swap and worth telling me about.
+- **The guest head's layout at 360px.** `flex-wrap` with one `margin-right: auto` on the brand puts the
+  exit button on the first line and the nav on its own; I cannot render it, so measurement 3.
+
 # Changelog 2.13
 
 **Two screens gave a column its max-content and left the rest to starve, and in both the starved
@@ -283,7 +544,6 @@ one. It stays open and the marker stays.
   reading, and it is also the one that will annoy somebody who meant to dismiss a question. Esc and
   Annuleren are both there; if the owner finds it irritating in use, say so and I will look at it
   again rather than defend it.
-"""
 
 # Changelog 2.12
 

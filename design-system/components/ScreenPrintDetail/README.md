@@ -86,3 +86,24 @@ are records, not files, and nothing about them needs the disk.
 **Phone.** Both are full width inside the card, which keeps its place in the one page order
 (header, `pp-pdtop`, orders, "Nabestelling maken", files). Neither field moves the price field,
 which the 1.9 and 2.0 measurements are still waiting on.
+
+**2.14.** (2026-10-18) **The reduced "Deze print" card, drawn at last (GAP-158, the owner's decision; and it is now load-bearing).** 2.0 wrote one clause for role User — *"the media row's right-hand card holds only Klant, Project and Datum"* — and 2.11 added that a User sees the **bron** and never the note. The app built the card from those two sentences and marked it `ds-gap`. GAP-165 makes that card the main screen of every klant who opens a deel-link, so it gets an anatomy instead of a clause.
+
+**The card, role User and share session.** `section.pp-card.pp-sec` with `<h2>` "Deze print" and one `dl.pp-kv.tight`, in this order:
+
+| row | shown |
+|---|---|
+| **Klant** | always |
+| **Project** | only when it differs from the print name, case and spaces ignored (GAP-072) |
+| **Datum** | always |
+| **Bron** | only when the print has one: `div.pp-srcs` with PrintSource's entries, read-only, **no chip** and no folder name — the klant has no use for the library's shape, which is the share page's rule since 2.11 |
+
+**And nothing else.** No Materiaal, Tijd, Gewicht or Bestellingen (see the proposal below); **no SpoolPicker trigger and no spool row at all** — the spool is a cost input, nothing here can override it, and a spool's name is the owner's stock, which changes under a print that is finished; **no `pp-note`** (the 1.1 rule, literal since 2.11); **no missing-files line and no `pp-lacks` chip** — "Ontbreekt: 3MF" is a fact about the owner's folder and reads to a klant as if something is wrong with their print.
+
+**A card of two or three rows is still a card, not a frame.** The shortest honest case — a print whose project equals its name, with no bron — is Klant and Datum. That is two facts beside a viewer, and it is what the page has to say; padding it out with the cost inputs would be inventing content for a layout.
+
+**The rest of the page for role User and for a visitor.** Header with the breadcrumb (klant, and the project when it differs), the name as `<h1>`, the payment badge — **no tags, no `pp-lacks`, no "⋯" menu**. Then `pp-pdtop`: the viewer with the media strip (**models only**; the timelapse is a proposal, see ScreenShareSession) and this card. Then the payment as a **state**: a `pp-card pp-pay` with `<h3>` "Betaling", the status badge and the amount, and nothing else — no fields, no history, no write-off, and **no payment instruction** (paying per print does not exist in this system; the Overzicht is where the amount is the total). **No `pp-pdfiles`** at all, as 2.0 already said. A print with several orders shows one badge and the summed price, as 1.4 specified for this role.
+
+**Both themes, phone and desktop.** `pp-pdtop` is one column below 901px with the viewer first, exactly as for an operator; no new class and no new colour pair.
+
+**Proposed, needs the owner's confirmation (do not build).** **Materiaal** and **Gewicht** as two more `pp-kv` rows, and the same two facts as the card's meta line in a visitor's print card. The invoice already prints Gram, so this is defensible — and it is a decision about what a klant reads, which is his. **Tijd stays out either way**: machine time is the one input on that list a klant cannot check and the one that only means something next to a cost.

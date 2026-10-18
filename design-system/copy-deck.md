@@ -860,3 +860,90 @@ anywhere, because `/prints` is Nextcloud's (`README.md` rule 7). It sits beside 
 
 **No key is removed and nothing is renamed.** `asset.pickSpool`, `spool.choose` and the rest of the
 picker's vocabulary are unchanged.
+
+## Added in 2.14
+
+**A visitor's session, the request dialog that was never drawn, and the end of a request (GAP-165,
+GAP-157, GAP-159, GAP-163, GAP-164).** **Twenty-eight new keys**, nothing changed and nothing
+removed.
+
+**The session (GAP-165).** Eleven keys. A deel-link mints an anonymous read-only session for one
+klant; the visitor's chrome is two nav items and a way out.
+
+| key | text |
+|---|---|
+| session.nav.overview | Overzicht |
+| session.nav.prints | Prints |
+| session.prints.title | Prints |
+| session.prints.empty | Nog geen prints |
+| session.prints.emptyBody | Zodra er iets voor je geprint is, zie je het hier. |
+| session.exit | Sessie afsluiten |
+| session.exit.confirm | Sessie afsluiten? |
+| session.exit.confirmBody | Je kunt daarna alleen terug met de link die je hebt gekregen. |
+| session.exit.ok | Afsluiten |
+| session.ended.title | Je bent afgemeld van dit overzicht |
+| session.ended.body | Open de link opnieuw om je prints te bekijken. |
+
+**Three of these look like keys that already exist, and each is a separate slot on purpose.**
+`session.nav.overview` is a nav label where `overview.title` is a **document** title (the PDF): one
+key for both is the `outstanding.oldest` fault of GAP-148, a tile label and a badge in one string.
+`session.nav.prints` beside `session.prints.title` follows the `nav.queue` / `queue.title` pair that
+is already in this deck. And `session.prints.empty*` is **not** `empty.customerNoPrints.*`: that
+body says "zodra er bestanden in de map van deze klant staan", which is the workshop's vocabulary —
+a klant has never been told about folders and should not learn now. The operator keeps the folder
+sentence; the klant gets a sentence about prints.
+
+**The visitor is never called "User", "gast" or "bezoeker" anywhere they can read.** The screens say
+"Overzicht", "Prints" and the studio's name, and nothing on them names a role. A role is an internal
+word, and a klant who reads "User" learns only that the portal has levels.
+
+**"Aanvraag toevoegen" (GAP-157).** Twelve keys, all in **AanvraagDialog**. The dialog reuses
+`queue.add` as its title, `common.cancel`, `print.source*` and `print.note*`, the two group names as
+its Status labels and `customers.printCount` for the klant list's meta line, so only the strings the
+dialog itself invents are new.
+
+| key | text |
+|---|---|
+| queue.add.name | Naam |
+| queue.add.namePlaceholder | Bijvoorbeeld: Babybox locks |
+| queue.add.nameError | Vul een naam in. |
+| queue.add.customer | Klant |
+| queue.add.customerPlaceholder | Zoek of typ een klant |
+| queue.add.customerNew | Nieuwe klant: {klant} |
+| queue.add.customerHelp | Een nieuwe klant is alleen een naam, tot er een map met bestanden is. |
+| queue.add.customerError | Kies of typ een klant. |
+| queue.add.status | Status |
+| queue.add.submit | Toevoegen |
+| queue.add.error | Toevoegen mislukt. Wat je hebt ingevuld staat er nog; probeer het opnieuw. |
+| queue.added | Aanvraag toegevoegd. |
+
+`queue.add.customerHelp` says what rule 7 says: the portal reads `/prints` and never writes it, so a
+new klant is a name until a folder with files exists. It is a help line under the field, not a
+warning: typing a new klant is the normal way a request arrives.
+
+**The end of a request (GAP-159).** Four keys.
+
+| key | text |
+|---|---|
+| queue.statusHelp.fileless | Zonder bestanden kan een aanvraag alleen in de wachtrij staan. |
+| queue.remove | Aanvraag verwijderen |
+| queue.remove.confirm | Aanvraag {naam} verwijderen? |
+| queue.remove.confirmBody | De aanvraag verdwijnt uit de wachtrij. Er horen geen bestanden bij, dus er gaat niets van de schijf. |
+
+**And one for the operator who revokes a link (GAP-165).**
+
+| key | text |
+|---|---|
+| share.revoke.body | Wie de link nu open heeft, komt er na deze actie niet meer in. |
+
+**A duplication this deck has and 2.14 does not make worse.** "Geen status" exists twice already,
+as `bulk.statusNone` and `invoices.noStatus`. The queue's "Status wijzigen" dialog **reuses
+`bulk.statusNone`** rather than adding a third — the name is wrong for the call site, and that is
+the lesser fault. Collapsing the two into one `status.none` is a rename, which means a breaking
+change for the app's strings file, so it belongs in 3.0 and is written down here rather than done
+quietly.
+
+**Nothing is renamed and nothing is removed.** `settings.payLink.noIban` keeps the name the deck
+gave it in 2.13; the key `settings.customer.payLink.only`, which ScreenSharePage 2.0.1 invented in
+prose and which was never in this deck, is withdrawn in that file (GAP-164) and was never a row
+here.

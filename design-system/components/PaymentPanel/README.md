@@ -21,3 +21,12 @@ PaymentPanel sets the Verkoopprijs and records payment, partial payment and writ
 **1.6.** (2026-10-07) **Locked state covers the whole order (GAP-048).** Besides the disabled price field, the lock also applies to "Aanpassen" (CostBreakdown), "Aantal keer geprint", "Telt niet mee in kosten" and the spool pickers (AssetListItem). The reason is one visible help line, linked with `aria-describedby`; it is never a tooltip alone.
 
 **1.9.** (2026-10-07) **One warning for missing costs (GAP-073, resolved).** The sentence "Kosten ontbreken. Het voorstel uit marge is niet beschikbaar." in this panel is the **official** one: it states the consequence (no suggestion) and the "Voorstel uit marge" button stays disabled. The cost card above it shows only "Onvolledig" and names the missing input (see CostBreakdown), so the same condition is not reported twice in the same words. In the single-column order (phone, tablet) the two sit apart by the files section and no longer stack.
+
+**2.14.** (2026-10-18) **The User state has two forms, and the preview was saying something the deck does not carry (GAP-158, GAP-165).**
+
+- **Role User with an account:** badge, customer price, and the line `pay.userNote` **"Je ziet alleen prijs en status."** — addressed to someone who logged in and might expect to edit.
+- **A visitor in a share session:** badge and customer price, **no note line**. "Je ziet alleen prijs en status" tells a klant that something is being withheld from them, which is both true and none of their business; the share page has never said it, and a session is not the place to start.
+
+Neither form has fields, history, "Markeer als betaald", "Afschrijven" or an undo, and neither carries a payment instruction: the IBAN, the amount and the reference live in the "Betalen" block on the Overzicht, where the amount is the total (ScreenSharePage).
+
+**And a correction to this component's own preview.** Its *Rol User* card read **"Dit is een overzicht; wijzigen kan een editor."** — a sentence in no deck row, which is exactly the fault 2.12 wrote a rule about and 2.13 caught in ScreenSettings. The card now shows `pay.userNote`, the string the deck has carried since 1.4. No copy key is added or changed.

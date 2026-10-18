@@ -227,3 +227,35 @@
   and the app built them from the README. **Don't** assume the rule from 2.12 is about the app
   (GAP-101, `copy-deck.md` *Added in 2.13*).
 
+
+## Added in 2.14
+
+- **Do** give a new audience the **same** screens in a smaller frame, and replace only the chrome:
+  a visitor with a deel-link walks ScreenDashboard and ScreenPrintDetail with a head bar instead of
+  the sidebar. **Don't** widen a sent-out page screen by screen until it is a second portal — two
+  implementations of "a print" disagree the first time one of them is changed (GAP-165,
+  ScreenShareSession).
+- **Do** drop a control a role has nothing to do with, including the ones that look harmless: no
+  theme cycle for a visitor whose preference cannot survive the next tap on the link, no live dot
+  for someone who is not working, no "Uitloggen" where there is no account. **Don't** render it
+  disabled or empty "for consistency" (GAP-165, AppShell).
+- **Do** say a fact where it changes what somebody does, **once**: the expiry notice and the
+  "Betalen" block stay on the overview, beside the totals they belong to. **Don't** promote a fact
+  the viewer can do nothing about into a bar on every screen — that is twelve betaallink help lines
+  again, in a session (GAP-101, GAP-165).
+- **Do** keep **one** page for every dead link — unknown, expired, revoked — and end a session at
+  the visitor's **next action**. **Don't** interrupt a page somebody is reading with a timer, and
+  don't let the wording distinguish the reasons: that distinction is the one thing the page exists
+  to hide (GAP-165, ScreenSharePage 1.6).
+- **Do** lift a minimum where it has stopped protecting anything: the spool trigger's 200px floor
+  goes at 480px and below and the name takes the middle cut. **Don't** leave a control wider than
+  its row and let an ancestor's `overflow: hidden` decide what the viewer loses — a clip nobody
+  declared takes the end of the name, which is where a spool's colour lives (GAP-163, SpoolPicker).
+- **Do** make a dialog's required fields the two a record cannot exist without, and let the rest be
+  optional: a request is a Naam and a Klant, with Bron and Notitie if he has them. **Don't** offer a
+  value at birth that would make the new record invisible — "Geen status" on a fileless request
+  leaves it in no list on any screen (GAP-157, GAP-159, AanvraagDialog).
+- **Do** write the ending of a thing somewhere it can be reached: a fileless request ends with
+  "Aanvraag verwijderen" **inside** the dialog it already has. **Don't** add a third button to a row
+  for an act that happens twice a month, and don't turn a value into an operation (GAP-138,
+  GAP-159, ScreenQueue).
