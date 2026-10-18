@@ -233,6 +233,7 @@ export const nl = {
   'queue.noFiles': 'Nog geen bestanden',
   'queue.linkFiles': 'Bestanden koppelen',
   'queue.changeStatus': 'Status wijzigen',
+  'queue.done': 'Uit de wachtrij halen', // ds-gap: GAP-159
   'queue.empty': 'Niets in de wachtrij',
   'queue.emptyBody': 'Nieuwe aanvragen komen hier te staan.',
   'queue.addTitle': 'Aanvraag toevoegen',

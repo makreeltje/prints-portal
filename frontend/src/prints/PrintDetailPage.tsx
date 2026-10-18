@@ -296,8 +296,24 @@ export function PrintDetailPage() {
         />
       ) : (
         <div className="pp-detail">
-          <div>
+          <div className="pp-col pp-gap-4">
             <ModelView detail={detail} />
+            {/*
+              The reduced card, by the owner's decision (ds-gap: GAP-158).
+              PrintSource says a User sees the bron read-only "because the
+              klant sees it too" — and since 1.9 this branch had no card for
+              it to sit in, so the same klant saw the bron on the share page
+              and not when signed in. ThisPrint already gates its facts on
+              `canManage`, so a User gets klant, project, datum and bron, and
+              nothing that belongs to an order.
+            */}
+            <ThisPrint
+              detail={detail}
+              spoolmanOn={spoolmanOn}
+              quiet={quiet}
+              toast={toast}
+              canManage={false}
+            />
           </div>
           <div>{userOrder !== null && paymentFor(userOrder)}</div>
         </div>
@@ -870,12 +886,7 @@ function ManagedOrders({
           (GAP-095). The dead space of 1.9 was this card's missing half. */}
       <div className="pp-pdtop">
         <ModelView detail={detail} />
-        {/*
-          Always true here: this is the Admin-and-Editor branch, and a User
-          gets a different block with no "Deze print" card at all (GAP-158).
-          The prop stays because ThisPrint gates facts on it and a second call
-          site would need it.
-        */}
+        {/* The Admin-and-Editor branch; a User gets the reduced card above. */}
         <ThisPrint
           detail={detail}
           spoolmanOn={spoolmanOn}

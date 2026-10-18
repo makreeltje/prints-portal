@@ -486,7 +486,7 @@ describe('bron and notitie on a print', () => {
     ).toBeInTheDocument();
   });
 
-  it('gives a User neither field and no way to write either', async () => {
+  it('gives a User the bron read-only, the note never, and no way to write either', async () => {
     // What the backend sends a User: the bron, never the note.
     stubFetch({
       'GET /api/prints/p1': () => ({ json: detail({ ...withBoth(), note: null }) }),
@@ -497,11 +497,15 @@ describe('bron and notitie on a print', () => {
     expect(screen.queryByRole('button', { name: 'Bron toevoegen' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Notitie toevoegen' })).toBeNull();
     /*
-      And no bron either, which is a conflict with PrintSource rather than a
-      decision of ours: a User's page has no "Deze print" card to put it in
-      (GAP-158). The same klant does see it on the share page.
+      The bron is there, in the reduced "Deze print" card this branch gained
+      by the owner's decision (GAP-158). PrintSource says a User sees it
+      "because the klant sees it too", and until now the same klant saw it on
+      the share page and not when signed in.
     */
-    expect(document.querySelector('.pp-srcs')).toBeNull();
+    expect(document.querySelector('.pp-srcs')).not.toBeNull();
+    // Still nothing that belongs to an order, and nothing editable.
+    expect(screen.queryByText('Materiaal')).toBeNull();
+    expect(screen.queryByRole('textbox', { name: 'Bron' })).toBeNull();
   });
 
   it('refuses a bron that is not a full link, and sends nothing', async () => {

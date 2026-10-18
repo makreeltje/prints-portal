@@ -1659,7 +1659,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Status as published:** resolved
 - **Design system version:** 2.10
 
-## GAP-144 [open] "Geprint, nog niet geleverd" — the owner's third bucket
+## GAP-144 [wontfix] "Geprint, nog niet geleverd" — the owner's third bucket
 - **Type:** raised by the design system (v2.10)
 - **Found while:** the request-lifecycle rounds, 2.10
 - **Where needed:** see 2.10 in `changelog.md`
@@ -1667,8 +1667,9 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Decision:** **No state exists, so it gets no group, and I am not inventing one.** 2.8 also flagged it as the group nobody would ever clear. My reading is still that *delivered* wants asserting at the moment payment is recorded rather than as an action of its own, which is one fewer thing to remember — but that is a flow question for the owner and nothing is designed for it
 - **Status as published:** proposed, needs your confirmation
 - **Design system version:** 2.10
+- **Closed 2026-10-18:** the owner does not want it. Asked directly whether he misses a "geprint, nog niet geleverd" state, he answered that it can go. No state is added, nothing infers delivery, and the two states the Wachtrij has stay the whole vocabulary.
 
-## GAP-145 [open] The age thresholds on a queue row
+## GAP-145 [resolved by the owner's decision] The age thresholds on a queue row
 - **Type:** raised by the design system (v2.10)
 - **Found while:** the request-lifecycle rounds, 2.10
 - **Where needed:** see 2.10 in `changelog.md`
@@ -1676,6 +1677,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Decision:** **Reused from ScreenOutstanding as a starting point and flagged as unmeasured:** neutral to 30 days, `warning` 31–90, `unpaid` over 90. Those were chosen for **money** ageing. A *request* sitting 30 days may already be bad — the owner says one can sit for weeks — so the escalation may be far too lenient here. The app picks the class, so the cut-offs move without a design change
 - **Status as published:** needs your measurement
 - **Design system version:** 2.10
+- **Settled 2026-10-18:** the owner chose **7 and 21 days**, in his own words: "een print die drie weken ligt voelt anders dan een factuur die drie weken openstaat". Openstaand keeps 30/90, which is money's. The app picks the class, so no design change was needed and the "unmeasured" note is gone from the code.
 
 ## GAP-148 [resolved in v2.11] `outstanding.oldest` is two different strings in one copy deck
 - **Type:** conflict
@@ -1819,6 +1821,8 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
   This matters more than it looks: the same klant can open the share page and see the bron there (the owner's decision), but a User signed in to the portal cannot see it at all. The two views disagree about the same fact.
 - **Proposal:** Either give the User branch a reduced "Deze print" card — klant, project, date and bron, which is what a User may see of it anyway — or state in ScreenPrintDetail that the bron is Admin/Editor and share-page only, and drop the sentence about role User. The first is more consistent with the share page; the second is less work and is defensible if the portal's User view is meant to stay minimal. **This is a product decision about what a User's page is for, not a visual one.**
 - **Blocked:** the bron for role User on ScreenPrintDetail. Everything else of GAP-152 is built: an Admin and an Editor see and edit both fields, the queue row shows both, and the share page shows the bron — including to the same klant.
+- **The owner decided 2026-10-18:** a User gets the reduced card — klant, project, datum, bron — rather than dropping the sentence from ScreenPrintDetail. Built: the User branch now renders `ThisPrint` with `canManage={false}`, which already gated its facts that way, marked `ds-gap: GAP-158`. The gap stays open because the card itself is not designed for this role: what a User's page is for is still the design system's to say.
+- **Temporary placeholder approved:** yes — the owner chose the reduced card, 2026-10-18; lines marked `ds-gap: GAP-158`
 
 ## GAP-159 [open] "Geen status" is the only way to finish a job, and it says "no information" rather than "done"
 - **Type:** unclear spec
@@ -1830,8 +1834,9 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Why it matters:** this is the one act every finished job needs, and the word for it describes an absence. It is also asymmetric: a refused job has its own word ("Niet doorgegaan") and keeps its badge on the dashboard, while a completed job — the more common ending — has none and leaves no trace of having been in the queue.
 - **Proposal:** Preferred: **keep three stored states and give the act its own wording where it is performed.** The queue row's action reads "Uit de wachtrij halen" and writes the same null; the detail control keeps "Geen status", where undo is what it really means. Nothing is stored that is not stored today, and no badge is invented. Second option, if the owner wants the ending recorded: a fifth value "Klaar", neutral ink like "Niet doorgegaan" (a settled state takes no live ink, StatusBadge 2.9), absent from the Wachtrij and from every total. That is a new stored fact and a product decision, not a rename — and GAP-143 refused to *infer* a job's ending once; asserting one is a different question, so it is worth asking rather than assuming.
 - **Blocked:** nothing is broken; the act works today. Held: any copy change to the control, and the question of whether a finished job is recorded as such.
-- **Temporary placeholder approved:** no
+- **Temporary placeholder approved:** yes — the owner chose this wording, 2026-10-18; lines marked `ds-gap: GAP-159`
 - **Design system version:** 2.11
+- **The owner decided 2026-10-18:** keep three stored states and give the act its own word where it is performed. Built: the queue row gains a third action **"Uit de wachtrij halen"** which writes the same null the detail page's "Geen status" writes, marked `ds-gap: GAP-159`. No new state, no migration. The gap stays open for two things that are the design system's: a third action on a row it drew with two (which costs height on a phone, where 2.12 just made them wrap), and whether `check` is the right glyph for an act that is not a confirmation.
 
 ## GAP-160 [open] `.pp-line > .pp-badge` does not match on Openstaand's lines; the band is right by accident
 - **Type:** suspected design bug

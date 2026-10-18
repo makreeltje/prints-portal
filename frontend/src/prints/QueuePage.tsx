@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  Check,
   ChevronDown,
   CircleAlert,
   Clock,
@@ -25,6 +26,7 @@ import {
   type QueueRow,
 } from './api-queue';
 import { fetchCustomers, fetchPrints, keys, setPrintNote, setPrintSource } from './api';
+import { runBulk } from '../finance/api';
 import { isHttpUrl } from '../core/url';
 import { MAX_NOTE_LENGTH } from './notes';
 import { placeOf } from './filter';
@@ -32,13 +34,14 @@ import { SourceLink } from './PrintSource';
 import type { PrintFilter } from './types';
 
 /*
-  The same three age steps as Openstaand, and the same caveat: the thresholds
-  are the design system's and unmeasured for a queue (GAP-145). A request
-  sitting 30 days may already be bad where 30 days of an unpaid invoice is not.
-  The app picks the class, so they move without a design change.
+  The same three age steps as Openstaand, with the owner's own numbers rather
+  than money's (GAP-145, settled 2026-10-18). Openstaand borrowed 30 and 90
+  from an unpaid invoice, and a job waiting is not an invoice waiting: "een
+  print die drie weken ligt voelt anders dan een factuur die drie weken
+  openstaat". The app picks the class, so they moved without a design change.
 */
-const AGE_WARNING_AFTER_DAYS = 30;
-const AGE_LATE_AFTER_DAYS = 90;
+const AGE_WARNING_AFTER_DAYS = 7;
+const AGE_LATE_AFTER_DAYS = 21;
 
 const ageTone = (days: number): string =>
   days > AGE_LATE_AFTER_DAYS ? 'unpaid' : days > AGE_WARNING_AFTER_DAYS ? 'warning' : 'neutral';
@@ -107,7 +110,18 @@ export function QueuePage() {
           <p>{t('queue.emptyBody')}</p>
         </div>
       ) : (
-        groups.map((group) => <Group key={group.state} group={group} onLink={setLinking} />)
+        groups.map((group) => (
+          <Group
+            key={group.state}
+            group={group}
+            onLink={setLinking}
+            onDone={async (row) => {
+              await runBulk([row.id], { action: 'setRequestState', state: null });
+              toast.success(t('toast.saved'));
+              await refresh();
+            }}
+          />
+        ))
       )}
 
       {adding && (
@@ -139,7 +153,15 @@ export function QueuePage() {
 }
 
 /** One state's group, in OutstandingGroup's form; both are open by default. */
-function Group({ group, onLink }: { group: QueueGroup; onLink: (row: QueueRow) => void }) {
+function Group({
+  group,
+  onLink,
+  onDone,
+}: {
+  group: QueueGroup;
+  onLink: (row: QueueRow) => void;
+  onDone: (row: QueueRow) => Promise<void>;
+}) {
   const titleId = useId();
   const oldestDays = Math.max(...group.rows.map((row) => row.waitingDays));
   return (
@@ -181,14 +203,23 @@ function Group({ group, onLink }: { group: QueueGroup; onLink: (row: QueueRow) =
       </summary>
       <div className="pp-ogrp-list">
         {group.rows.map((row) => (
-          <Row key={row.id} row={row} onLink={onLink} />
+          <Row key={row.id} row={row} onLink={onLink} onDone={onDone} />
         ))}
       </div>
     </details>
   );
 }
 
-function Row({ row, onLink }: { row: QueueRow; onLink: (row: QueueRow) => void }) {
+function Row({
+  row,
+  onLink,
+  onDone,
+}: {
+  row: QueueRow;
+  onLink: (row: QueueRow) => void;
+  onDone: (row: QueueRow) => Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
   return (
     <div className="pp-line">
       <div>
@@ -250,6 +281,33 @@ function Row({ row, onLink }: { row: QueueRow; onLink: (row: QueueRow) => void }
             {t('queue.linkFiles')}
           </button>
         )}
+        {/*
+          The act every finished job needs, with a word for it (ds-gap:
+          GAP-159, the owner's decision). It writes the same null the detail
+          page's "Geen status" writes — nothing new is stored — but on the
+          detail page that value means undo, and here it means done. The one
+          surface where a job is finished should not ask the owner to say
+          "this has no status". It is a third action on a row the design
+          system drew with two; that cost is in the gap.
+        */}
+        <button
+          type="button"
+          className="pp-btn pp-btn-ghost pp-btn-sm"
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+            void onDone(row).finally(() => {
+              setBusy(false);
+            });
+          }}
+        >
+          {busy ? (
+            <span className="pp-spin" aria-hidden="true" />
+          ) : (
+            <Check className="pp-ico" aria-hidden="true" />
+          )}
+          {t('queue.done')}
+        </button>
         <a className="pp-btn pp-btn-ghost pp-btn-sm" href={`/prints/${row.id}`}>
           {t('queue.changeStatus')}
         </a>

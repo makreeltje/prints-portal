@@ -32,7 +32,7 @@ const groups: QueueGroup[] = [
         customerFolder: 'Anouk',
         projectFolder: 'Kabelgoot bureau',
         hasFiles: true,
-        waitingDays: 40,
+        waitingDays: 10,
         price: 12.5,
         requestState: 'undecided',
         source: null,
@@ -73,6 +73,7 @@ const render = (body: { groups: QueueGroup[] }) => {
     'PUT /api/prints/new/source': () => ({ status: 204 }),
     'PUT /api/prints/new/note': () => ({ status: 204 }),
     'POST /api/requests/r1/link': () => ({ status: 204 }),
+    'POST /api/prints/bulk': () => ({ json: { results: [{ id: 'r1', ok: true }] } }),
   });
   renderWithAuth(<QueuePage />, { state: signedIn('Admin') });
   return { calls: stub };
@@ -107,10 +108,27 @@ describe('Wachtrij', () => {
     expect(within(inProgress).getByText('1 aanvraag')).toBeInTheDocument();
   });
 
+  it('takes a job off the queue by clearing its status', async () => {
+    const { calls } = render({ groups });
+    const row = (await screen.findByText('Vitrinekast inzet')).closest('.pp-line');
+    if (!(row instanceof HTMLElement)) throw new Error('row missing');
+    await userEvent.click(within(row).getByRole('button', { name: 'Uit de wachtrij halen' }));
+    await waitFor(() => {
+      expect(calls.some((call) => call.path === '/api/prints/bulk')).toBe(true);
+    });
+    // The same null the detail page writes: nothing new is stored (GAP-159).
+    expect(calls.find((call) => call.path === '/api/prints/bulk')?.body).toEqual({
+      ids: ['r1'],
+      action: 'setRequestState',
+      state: null,
+    });
+  });
+
   it('escalates the age badge in three steps, with an icon as well as a colour', async () => {
     render({ groups });
     const late = (await screen.findByText('118 dagen geleden gevraagd')).closest('.pp-badge');
-    const middle = screen.getByText('40 dagen geleden gevraagd').closest('.pp-badge');
+    // 7 and 21 days, the owner's own steps for a job waiting (GAP-145).
+    const middle = screen.getByText('10 dagen geleden gevraagd').closest('.pp-badge');
     const fresh = screen.getByText('3 dagen geleden gevraagd').closest('.pp-badge');
     expect(late).toHaveClass('unpaid');
     expect(middle).toHaveClass('warning');
