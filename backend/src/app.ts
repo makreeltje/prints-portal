@@ -132,6 +132,7 @@ export async function buildApp({
     thumbnails,
     publicUrl: config.auth.publicUrl,
     rateLimit: config.auth.shareRateLimit,
+    sessions,
     now,
   });
   registerLiveRoute(app, { config, hub, sessions });

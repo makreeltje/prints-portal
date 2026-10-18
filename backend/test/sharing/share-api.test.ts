@@ -142,6 +142,127 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     expect(odd.statusCode).toBe(400);
   });
 
+  describe('a link as a way in (GAP-165)', () => {
+    /** The session a visitor gets from a valid token. */
+    const enter = async (token: string) => {
+      const response = await t.as(null, { method: 'POST', url: `/api/share/${token}/session` });
+      if (response.statusCode !== 200) return null;
+      const cookie = response.cookies.find((c) => c.name === 'pp_session');
+      if (cookie === undefined) throw new Error('no session cookie');
+      return {
+        cookie: `pp_session=${cookie.value}`,
+        csrfToken: response.json<{ csrfToken: string }>().csrfToken,
+      };
+    };
+
+    it('lets the visitor use the portal, scoped to that klant and read-only', async () => {
+      await start();
+      const { token } = await create('Joey');
+      const visitor = await enter(token);
+      if (visitor === null) throw new Error('no session');
+
+      // The portal's own screens, not the share page.
+      const list = (await t.as(visitor, { url: '/api/prints?limit=100' })).json<{
+        items: PrintSummary[];
+      }>();
+      expect(list.items.length).toBeGreaterThan(0);
+      expect(new Set(list.items.map((item) => item.customerFolder))).toEqual(new Set(['Joey']));
+      // Only their own klant, and nothing of anyone else's.
+      const customers = (await t.as(visitor, { url: '/api/customers' })).json<{
+        customers: { folder: string }[];
+      }>();
+      expect(customers.customers.map((one) => one.folder)).toEqual(['Joey']);
+
+      // The viewer yes, the file no: the owner's decision, and `MANAGE` already.
+      const print = list.items[0];
+      expect(
+        (await t.as(visitor, { url: `/api/prints/${print?.id ?? ''}/model` })).statusCode,
+      ).not.toBe(403);
+      const detail = (
+        await t.as(visitor, { url: `/api/prints/${print?.id ?? ''}` })
+      ).json<PrintDetail>();
+      const assetId = detail.assets?.[0]?.id ?? '';
+      expect((await t.as(visitor, { url: `/api/assets/${assetId}/download` })).statusCode).toBe(
+        403,
+      );
+
+      // Nothing an operator does.
+      expect((await t.as(visitor, { url: '/api/queue' })).statusCode).toBe(403);
+      expect((await t.as(visitor, { url: '/api/share-links' })).statusCode).toBe(403);
+      expect((await t.as(visitor, { url: '/api/settings' })).statusCode).toBe(403);
+      expect(
+        (await t.as(visitor, { method: 'POST', url: '/api/admin/reindex', payload: {} }))
+          .statusCode,
+      ).toBe(403);
+    });
+
+    it('sees another klant neither in a list nor by id', async () => {
+      await start();
+      const { token } = await create('Joey');
+      const visitor = await enter(token);
+      if (visitor === null) throw new Error('no session');
+      const others = (await t.as(admin, { url: '/api/prints?limit=100' }))
+        .json<{
+          items: PrintSummary[];
+        }>()
+        .items.filter((item) => item.customerFolder !== 'Joey');
+      expect(others.length).toBeGreaterThan(0);
+      expect((await t.as(visitor, { url: `/api/prints/${others[0]?.id ?? ''}` })).statusCode).toBe(
+        403,
+      );
+    });
+
+    it('is refused by a token that does not work, exactly like the page', async () => {
+      await start();
+      // 404 for a malformed token too: unknown, malformed, expired and
+      // revoked must stay indistinguishable (ScreenSharePage 1.6).
+      expect(
+        (await t.as(null, { method: 'POST', url: '/api/share/nope/session' })).statusCode,
+      ).toBe(404);
+      const dead = await create('Joey');
+      await t.as(admin, { method: 'POST', url: `/api/share-links/${dead.link.id}/revoke` });
+      expect(await enter(dead.token)).toBeNull();
+    });
+
+    it('ends the moment the link is revoked, with the visitor already inside', async () => {
+      await start();
+      const { token, link } = await create('Joey');
+      const visitor = await enter(token);
+      if (visitor === null) throw new Error('no session');
+      expect((await t.as(visitor, { url: '/api/prints?limit=100' })).statusCode).toBe(200);
+      await t.as(admin, { method: 'POST', url: `/api/share-links/${link.id}/revoke` });
+      // Not at the next sign-in: now.
+      expect((await t.as(visitor, { url: '/api/prints?limit=100' })).statusCode).toBe(401);
+    });
+
+    it('needs the CSRF header for a write, like any other session', async () => {
+      await start();
+      const { token } = await create('Joey');
+      const visitor = await enter(token);
+      if (visitor === null) throw new Error('no session');
+      const id =
+        (await t.as(visitor, { url: '/api/prints?limit=100' })).json<{ items: PrintSummary[] }>()
+          .items[0]?.id ?? '';
+      // Without the header: refused as CSRF. With it: refused as forbidden,
+      // which is the role answering rather than the guard.
+      const bare = await t.as(null, {
+        method: 'PUT',
+        url: `/api/prints/${id}/note`,
+        payload: { note: 'x' },
+        headers: { cookie: visitor.cookie },
+      });
+      expect(bare.statusCode).toBe(403);
+      expect(bare.json<{ error: string }>().error).toBe('csrf');
+      const withHeader = await t.as(visitor, {
+        method: 'PUT',
+        url: `/api/prints/${id}/note`,
+        payload: { note: 'x' },
+      });
+      expect(withHeader.statusCode).toBe(403);
+      expect(withHeader.json<{ error: string }>().error).toBe('forbidden');
+    });
+  });
+
   it('shows one line per order with the customer price only, never cost', async () => {
     await start();
     const box = await orderOf('Babybox locks');

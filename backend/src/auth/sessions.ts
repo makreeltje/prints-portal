@@ -1,5 +1,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import type { ExpressionBuilder } from 'kysely';
 import type { AppDatabase } from '../db/connection.js';
+import type { Database } from '../db/schema.js';
 import type { UserRow } from './users.js';
 
 export const SESSION_IDLE_MS = 60 * 60 * 1000;
@@ -12,6 +14,12 @@ export interface ActiveSession {
   csrfToken: string;
   expiresAt: Date;
   user: UserRow;
+  /**
+   * Set when a deel-link minted this session (GAP-165). The visitor has no
+   * account, so `user` is built here and exists nowhere else; what they may
+   * see comes from this one klant and from nothing stored against a user.
+   */
+  share?: { linkId: string; customerFolder: string };
 }
 
 /**
@@ -47,6 +55,37 @@ export class SessionStore {
     return { token, csrfToken, expiresAt };
   }
 
+  /**
+   * A session minted by a deel-link: no user row, scoped to one klant, and
+   * only for as long as the link itself is valid (GAP-165).
+   */
+  async createForShareLink(
+    linkId: string,
+  ): Promise<{ token: string; csrfToken: string; expiresAt: Date }> {
+    const now = this.now();
+    await this.purgeExpired(now);
+    const token = randomBytes(32).toString('base64url');
+    const csrfToken = randomBytes(32).toString('base64url');
+    const expiresAt = new Date(now.getTime() + SESSION_ABSOLUTE_MS);
+    await this.db
+      .insertInto('share_sessions')
+      .values({
+        id_hash: this.hash(token),
+        share_link_id: linkId,
+        csrf_token: csrfToken,
+        created_at: now.toISOString(),
+        last_seen_at: now.toISOString(),
+        expires_at: expiresAt.toISOString(),
+      })
+      .execute();
+    return { token, csrfToken, expiresAt };
+  }
+
+  /** Ends every session a link minted; used when it is revoked. */
+  async destroyForShareLink(linkId: string): Promise<void> {
+    await this.db.deleteFrom('share_sessions').where('share_link_id', '=', linkId).execute();
+  }
+
   /** The session and its user, extending the idle window; null when unknown or expired. */
   async resolve(token: string): Promise<ActiveSession | null> {
     if (token === '' || token.length > 100) return null;
@@ -62,7 +101,7 @@ export class SessionStore {
       ])
       .where('sessions.id_hash', '=', idHash)
       .executeTakeFirst();
-    if (row === undefined) return null;
+    if (row === undefined) return this.resolveShare(idHash);
 
     const now = this.now();
     const lastSeen = new Date(row.session_last_seen_at);
@@ -93,6 +132,73 @@ export class SessionStore {
     return { idHash, csrfToken: row.session_csrf_token, expiresAt, user };
   }
 
+  /**
+   * The share half of `resolve`. The link is re-read on every request, so a
+   * revoked or expired link ends the session at once rather than at the next
+   * sign-in — an Admin who revokes a link expects it to be dead, not dead in
+   * an hour.
+   *
+   * The user is built here and stored nowhere: role `User`, which already
+   * means read-only, no cost and no notes everywhere in this app, and an id
+   * that cannot collide with a real one.
+   */
+  private async resolveShare(idHash: string): Promise<ActiveSession | null> {
+    const row = await this.db
+      .selectFrom('share_sessions as s')
+      .innerJoin('share_links as l', 'l.id', 's.share_link_id')
+      .select([
+        's.share_link_id',
+        's.csrf_token',
+        's.last_seen_at',
+        's.expires_at',
+        'l.customer_folder',
+        'l.label',
+        'l.revoked_at',
+        'l.expires_at as link_expires_at',
+        'l.created_at as link_created_at',
+      ])
+      .where('s.id_hash', '=', idHash)
+      .executeTakeFirst();
+    if (row === undefined) return null;
+
+    const now = this.now();
+    const expiresAt = new Date(row.expires_at);
+    const lastSeen = new Date(row.last_seen_at);
+    const linkDead =
+      row.revoked_at !== null ||
+      (row.link_expires_at !== null && row.link_expires_at <= now.toISOString());
+    if (linkDead || now >= expiresAt || now.getTime() - lastSeen.getTime() >= SESSION_IDLE_MS) {
+      await this.db.deleteFrom('share_sessions').where('id_hash', '=', idHash).execute();
+      return null;
+    }
+    if (now.getTime() - lastSeen.getTime() >= TOUCH_INTERVAL_MS) {
+      await this.db
+        .updateTable('share_sessions')
+        .set({ last_seen_at: now.toISOString() })
+        .where('id_hash', '=', idHash)
+        .execute();
+    }
+    const user: UserRow = {
+      id: `share:${row.share_link_id}`,
+      login: `share:${row.share_link_id}`,
+      display_name: row.customer_folder,
+      role: 'User',
+      password_hash: null,
+      oidc_subject: null,
+      role_from_group: 0,
+      must_change_password: 0,
+      created_at: row.link_created_at,
+      last_login_at: null,
+    };
+    return {
+      idHash,
+      csrfToken: row.csrf_token,
+      expiresAt,
+      user,
+      share: { linkId: row.share_link_id, customerFolder: row.customer_folder },
+    };
+  }
+
   /** Session hashes (from `candidates`) that are still valid; never extends a session. */
   async activeAmong(candidates: readonly string[]): Promise<Set<string>> {
     if (candidates.length === 0) return new Set();
@@ -119,15 +225,14 @@ export class SessionStore {
   }
 
   async purgeExpired(now = this.now()): Promise<void> {
-    await this.db
-      .deleteFrom('sessions')
-      .where((eb) =>
-        eb.or([
-          eb('expires_at', '<=', now.toISOString()),
-          eb('last_seen_at', '<=', new Date(now.getTime() - SESSION_IDLE_MS).toISOString()),
-        ]),
-      )
-      .execute();
+    const stale = (eb: ExpressionBuilder<Database, 'sessions' | 'share_sessions'>) =>
+      eb.or([
+        eb('expires_at', '<=', now.toISOString()),
+        eb('last_seen_at', '<=', new Date(now.getTime() - SESSION_IDLE_MS).toISOString()),
+      ]);
+    await this.db.deleteFrom('sessions').where(stale).execute();
+    // The share half ages the same way; a dead link is handled on resolve.
+    await this.db.deleteFrom('share_sessions').where(stale).execute();
   }
 
   private hash(token: string): string {

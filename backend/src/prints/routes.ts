@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { customerScope, scopeAllows } from '../auth/access.js';
+import { scopeAllows, sessionScope } from '../auth/access.js';
 import { TAG_PALETTE, TagNameError, type TagPaletteKey } from '../core/tags.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { Role } from '../db/schema.js';
@@ -82,7 +82,10 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
     if (request.auth === null) throw new Error('session missing after guard');
     return request.auth.user;
   };
-  const scopeOf = (request: FastifyRequest) => customerScope(db, sessionUser(request));
+  const scopeOf = (request: FastifyRequest) => {
+    if (request.auth === null) throw new Error('session missing after guard');
+    return sessionScope(db, request.auth);
+  };
   const isAdmin = (request: FastifyRequest) => sessionUser(request).role === 'Admin';
   const broadcast = (type: LiveEvent['type'], printId: string, customerFolder: string) => {
     hub.broadcast({ type, printId, customerFolder });

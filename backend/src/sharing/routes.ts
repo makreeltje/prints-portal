@@ -1,5 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { setSessionCookie } from '../auth/guard.js';
+import type { SessionStore } from '../auth/sessions.js';
 import type { AppDatabase } from '../db/connection.js';
 import type { Role } from '../db/schema.js';
 import { logoPath, safeFileName } from '../finance/billing-routes.js';
@@ -26,6 +28,8 @@ export interface ShareRouteDependencies {
   publicUrl: string | null;
   /** Requests per minute per IP address on the public endpoints. */
   rateLimit: number;
+  /** A valid link mints a session with it (GAP-165). */
+  sessions: SessionStore;
   now: () => Date;
 }
 
@@ -120,6 +124,12 @@ export function registerShareRoutes(app: FastifyInstance, deps: ShareRouteDepend
     async (request, reply) => {
       const revoked = await revokeShareLink(db, request.params.id, userId(request), now());
       if (!revoked) return reply.code(404).send({ error: 'not_found' });
+      /*
+        Whoever is inside right now goes out with it (GAP-165). `resolve`
+        would refuse the next request anyway, because it re-reads the link —
+        this makes the row go too, so a revoked link leaves nothing behind.
+      */
+      await deps.sessions.destroyForShareLink(request.params.id);
       return reply.code(204).send();
     },
   );
@@ -144,6 +154,35 @@ export function registerShareRoutes(app: FastifyInstance, deps: ShareRouteDepend
 
   const privateHeaders = (reply: FastifyReply) =>
     reply.header('cache-control', 'private, no-store').header('x-robots-tag', 'noindex');
+
+  /**
+   * The link as a way in (GAP-165). A valid token mints an anonymous session
+   * scoped to this one klant, so the visitor can use the portal's own screens
+   * instead of one page.
+   *
+   * It gives no right the role User does not already have: no cost, no
+   * notes, no other klant, and `/api/assets/:id/download` stays `MANAGE`, so
+   * a visitor can look at a model and not take the file. The session dies
+   * with its link, which `resolve` re-reads on every request.
+   *
+   * POST, not GET: a GET would hand a session to anything that follows a
+   * link in a mail client or a chat preview.
+   */
+  app.post<{ Params: { token: string } }>(
+    '/api/share/:token/session',
+    { config: publicConfig, schema: { params: tokenParams } },
+    async (request, reply) => {
+      const link = await linkFor(request.params.token);
+      if (link === null) return gone(reply);
+      const session = await deps.sessions.createForShareLink(link.id);
+      setSessionCookie(request, reply, session.token, session.expiresAt);
+      return privateHeaders(reply).send({
+        csrfToken: session.csrfToken,
+        customer: link.customer_folder,
+        expiresAt: link.expires_at,
+      });
+    },
+  );
 
   app.get<{ Params: { token: string }; Querystring: { onlyOpen?: boolean } }>(
     '/api/share/:token',

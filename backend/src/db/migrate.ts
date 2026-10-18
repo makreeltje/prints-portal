@@ -11,6 +11,7 @@ import * as m0008 from './migrations/0008_request_state.js';
 import * as m0009 from './migrations/0009_request_records.js';
 import * as m0010 from './migrations/0010_source_and_note.js';
 import * as m0011 from './migrations/0011_customer_on_disk.js';
+import * as m0012 from './migrations/0012_share_sessions.js';
 
 /** Migrations are listed explicitly so the compiled app needs no directory scanning. */
 const MIGRATIONS: Record<string, Migration> = {
@@ -25,6 +26,7 @@ const MIGRATIONS: Record<string, Migration> = {
   '0009_request_records': m0009,
   '0010_source_and_note': m0010,
   '0011_customer_on_disk': m0011,
+  '0012_share_sessions': m0012,
 };
 
 const provider: MigrationProvider = {

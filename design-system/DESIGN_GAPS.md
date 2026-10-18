@@ -1971,3 +1971,25 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.13
+
+## GAP-165 [open] A deel-link should let the klant walk through the portal, and an anonymous shell is not designed
+- **Type:** missing screen
+- **Found while:** the owner used a share link and said it was not what he expected
+- **Where needed:** ScreenSharePage, AppShell, ScreenDashboard and ScreenPrintDetail for an anonymous visitor
+- **What is missing or wrong:** the owner expected a deel-link to let the klant **walk through the portal as a User**, and found "een karig overzicht". The portal already has what he expected — role **User** sees Dashboard and Openstaand scoped to the klanten they are granted, with the viewer, the reduced "Deze print" card and their own payment panel — but only behind a login. ScreenSharePage is deliberately a page you *send*: one centred column, never cost, margin, notes, file names or another klant.
+
+  **His decision, 2026-10-18: the link becomes a key rather than a page.** Visiting a valid deel-link gives an anonymous session scoped to that klant, and the visitor uses the real screens. He rejected two alternatives: widening the share page screen by screen (a second portal that drifts from the first), and turning the link into an invitation to make an account (a barrier for a klant who ordered one keychain).
+
+  **The rights are already right.** A User never sees cost or notes — that is in the data model since 1.1, not in the page — and `/api/assets/:id/download` is `MANAGE`, so a User cannot download a file today. The owner asked for exactly that: the viewer yes, downloading no. **One honest limit to write down:** `/api/prints/:id/model` streams the source STL or 3MF to the viewer, so a visitor who can see a model can save its bytes from the network tab. The absent download button is a threshold, not a boundary. A real boundary means serving a derived mesh, which is separate work and is not part of this.
+
+  **What is not designed**, and why this is a gap rather than a build:
+  1. **The shell for a visitor with no account.** AppShell's head carries a user menu, a theme control and "Uitloggen". A visitor has no account to log out of, and the URL is their credential. What the head holds, and whether there is a way out at all, is undesigned.
+  2. **What the nav offers.** A User sees Dashboard, Openstaand and API-docs. The third is certainly wrong for a klant; the first two are the ones the owner wants.
+  3. **The link's own facts.** Today the page carries the expiry notice and the "Betalen" block. In a session those belong somewhere, and the obvious somewhere — a persistent bar — does not exist.
+  4. **Expiry mid-session**, and what the visitor sees when a link is revoked while they are three screens in. Today every dead link shows one page on purpose, so a visitor cannot tell unknown from expired from revoked.
+  5. **Whether the overview page survives.** "Stuur me even het overzicht" is a real use, the PDF hangs off it, and a klant who wants one page should not have to browse for it.
+- **Why it matters:** it is the owner's own expectation of a feature that has shipped, and the first thing he has called wrong rather than missing.
+- **Proposal:** the session is ours to build — a valid token mints a read-only session scoped to one klant, with no new rights beyond role User and downloads refused. The shell, the nav, where the link's facts live, the expiry behaviour and the fate of the overview page are yours. We would keep the current page as the session's landing screen, so nothing that works today stops working.
+- **Blocked:** every screen of it. Nothing is built; the backend half can be built behind this gap without drawing anything new.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.13

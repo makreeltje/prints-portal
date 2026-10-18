@@ -144,6 +144,19 @@ export interface SessionTable {
   expires_at: string;
 }
 
+/**
+ * A session a deel-link minted: no user, and it lives only while its link
+ * does (GAP-165).
+ */
+export interface ShareSessionTable {
+  id_hash: string;
+  share_link_id: string;
+  csrf_token: string;
+  created_at: string;
+  last_seen_at: string;
+  expires_at: string;
+}
+
 export interface TagTable {
   id: string;
   /** As typed (trimmed, single spaces). */
@@ -321,6 +334,7 @@ export interface Database {
   users: UserTable;
   customer_access: CustomerAccessTable;
   sessions: SessionTable;
+  share_sessions: ShareSessionTable;
   tags: TagTable;
   print_tags: PrintTagTable;
   app_settings: AppSettingTable;
