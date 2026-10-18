@@ -148,3 +148,29 @@ export async function linkRequest(
     await trx.deleteFrom('print_records').where('id', '=', requestId).execute();
   });
 }
+
+/**
+ * Throw a request away (ScreenQueue 2.14, GAP-159).
+ *
+ * This is the ending of a record with no files, and the design system's reason
+ * for it is one the data confirms: the Wachtrij lists `undecided` and
+ * `inProgress` only, and every other query filters `origin = 'indexed'`, so a
+ * request whose state is cleared is alive in the database and visible on no
+ * screen. A note to yourself that you no longer need is thrown away, not
+ * relabelled.
+ *
+ * Only a record the app created (`origin = 'request'`) can go. An indexed
+ * record belongs to the owner's disk and is hidden, never deleted, which is
+ * what `DELETE /api/prints/:id` does. Its order goes with it (cascade), and
+ * nothing of it is on disk to lose.
+ */
+export async function deleteRequest(db: Kysely<Database>, requestId: string): Promise<void> {
+  const record = await db
+    .selectFrom('print_records')
+    .select(['id', 'origin'])
+    .where('id', '=', requestId)
+    .executeTakeFirst();
+  if (record === undefined) throw new RequestError('not_found');
+  if (record.origin !== 'request') throw new RequestError('not_a_request');
+  await db.deleteFrom('print_records').where('id', '=', requestId).execute();
+}

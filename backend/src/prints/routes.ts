@@ -9,7 +9,7 @@ import type { ThumbnailService } from '../thumbnails/service.js';
 import { REQUEST_STATES, parseRequestState } from '../finance/state.js';
 import { sendPrintFile } from './files.js';
 import { queue } from './queue.js';
-import { createRequest, linkRequest, RequestError } from './requests.js';
+import { createRequest, deleteRequest, linkRequest, RequestError } from './requests.js';
 import {
   createTag,
   deleteCustomer,
@@ -461,6 +461,32 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
         }
         throw error;
       }
+    },
+  );
+
+  /**
+   * "Aanvraag verwijderen": the ending of a request that never got files
+   * (ScreenQueue 2.14, GAP-159). The dialog that offers it is the only place a
+   * fileless record appears, and the two other status values would leave it
+   * alive here and absent from every screen.
+   */
+  app.delete<{ Params: { id: string } }>(
+    '/api/requests/:id',
+    { config: { auth: MANAGE }, schema: { params: idParams } },
+    async (request, reply) => {
+      const record = await customerOfPrint(db, request.params.id);
+      try {
+        await deleteRequest(db, request.params.id);
+      } catch (error) {
+        if (error instanceof RequestError) {
+          return reply
+            .code(error.message === 'not_found' ? 404 : 422)
+            .send({ error: error.message });
+        }
+        throw error;
+      }
+      broadcast('print:deleted', request.params.id, record?.customerFolder ?? '');
+      return reply.code(204).send();
     },
   );
 

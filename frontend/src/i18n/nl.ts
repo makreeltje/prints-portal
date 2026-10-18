@@ -234,12 +234,30 @@ export const nl = {
   'queue.noFiles': 'Nog geen bestanden',
   'queue.linkFiles': 'Bestanden koppelen',
   'queue.changeStatus': 'Status wijzigen',
-  'queue.done': 'Uit de wachtrij halen', // ds-gap: GAP-159
   'queue.empty': 'Niets in de wachtrij',
   'queue.emptyBody': 'Nieuwe aanvragen komen hier te staan.',
-  'queue.addTitle': 'Aanvraag toevoegen',
-  'queue.addKlant': 'Klant',
-  'queue.addName': 'Wat is er gevraagd?',
+  // AanvraagDialog 2.14 (GAP-157): the dialog ScreenQueue's primary button
+  // opens. Its title is `queue.add`, the button that opens it; only the
+  // strings the dialog itself invents are keyed here.
+  'queue.add.name': 'Naam',
+  'queue.add.namePlaceholder': 'Bijvoorbeeld: Babybox locks',
+  'queue.add.nameError': 'Vul een naam in.',
+  'queue.add.customer': 'Klant',
+  'queue.add.customerPlaceholder': 'Zoek of typ een klant',
+  'queue.add.customerNew': 'Nieuwe klant: {klant}',
+  'queue.add.customerHelp': 'Een nieuwe klant is alleen een naam, tot er een map met bestanden is.',
+  'queue.add.customerError': 'Kies of typ een klant.',
+  'queue.add.status': 'Status',
+  'queue.add.submit': 'Toevoegen',
+  'queue.add.error': 'Toevoegen mislukt. Wat je hebt ingevuld staat er nog; probeer het opnieuw.',
+  'queue.added': 'Aanvraag toegevoegd.',
+  // The ending of a request (ScreenQueue 2.14, GAP-159): a fileless row may
+  // only hold the two queue states, so its ending is a deletion.
+  'queue.statusHelp.fileless': 'Zonder bestanden kan een aanvraag alleen in de wachtrij staan.',
+  'queue.remove': 'Aanvraag verwijderen',
+  'queue.remove.confirm': 'Aanvraag {naam} verwijderen?',
+  'queue.remove.confirmBody':
+    'De aanvraag verdwijnt uit de wachtrij. Er horen geen bestanden bij, dus er gaat niets van de schijf.',
   'queue.linkTitle': 'Bestanden koppelen aan {naam}',
   'queue.linkIntro': 'Kies de print waarvan de bestanden bij deze aanvraag horen.',
   'queue.linkPick': 'Print',
