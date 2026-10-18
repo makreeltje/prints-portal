@@ -1939,7 +1939,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Verified in the running app on the one klant whose folder is empty (12 klanten, 1 empty), in both themes at 1400px and 360px:** the tile and the chip read "Nog geen prints"; the tile has no `aria-haspopup="menu"` control and no "Factuur" button; `.amt` and `.acts` are present and empty; the phone toolbar offers no acts at all; and the filter lands on **"Nog geen prints voor &lt;klant&gt;"** with "Prints verschijnen hier zodra er bestanden in de map van deze klant staan." `@axe-core/playwright` against WCAG 2.1 A and AA: **0 violations in 8 runs** over that tile and that empty state.
 - **Design system version:** 2.13
 
-## GAP-163 [open] At 360px a file row's spool trigger is cut off 32px short by the card's own `overflow: hidden`
+## GAP-163 [resolved in v2.14] At 360px a file row's spool trigger is cut off 32px short by the card's own `overflow: hidden`
 - **Type:** suspected design bug
 - **Found while:** the 2.13 import — the design system asked for this one in writing ("Tell me which element clips … if this system is doing it somewhere I have not found, log it as its own gap and I will decide it with the markup in front of me", `changelog.md` 2.13, GAP-161)
 - **Where needed:** `.pp-card.pp-flush` and `.pp-asset`/`.pp-spoolbtn` in `components/bundle.css`; AssetListItem's phone frame; SpoolPicker's trigger; `frontend/src/prints/AssetList.tsx` renders the row
@@ -1958,6 +1958,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing; the row renders and no placeholder is in the code, so there is no `ds-gap` marker. The trigger is correct per SpoolPicker 2.13 and the card is correct per its own rule; the two together lose 32px of a name.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.13
+- **Resolved in 2.14:** the floor is lifted at 480px and below inside a file row's band (`.pp-asset .acts .pp-spoolbtn, .pp-asset .acts .pp-minw-200{min-width:0;max-width:100%}`, with the `.pp-device.phone` twin) and the name takes the middle cut through `span.nm.pp-fname.sans` with `.a`/`.b`. Built: the app's trigger already carried **both** class names the rules target, so no class had to change; `frontend/src/finance/spoolLabel.ts` splits the string with `.b` as the last word, as SpoolPicker 2.14 specifies. The design system rejected wrapping the trigger and scrolling the card. Measured after the change at 360px: the trigger is 234px inside a 326px card and no part of it falls outside (see the measurements in `docs/design-feedback/implementation.md`).
 
 ## GAP-164 [open] Two READMEs give the same Betaallink sentence two different copy keys
 - **Type:** conflict

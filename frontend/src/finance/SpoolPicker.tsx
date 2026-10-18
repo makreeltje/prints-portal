@@ -7,7 +7,19 @@ import { formatMoney } from '../i18n/format';
 import { t } from '../i18n/nl';
 import type { Spool } from '../prints/types';
 import { fetchSpools, financeKeys, refreshSpoolman } from './api';
+import { splitSpoolName } from './spoolLabel';
 import { SpoolSwatch } from './money';
+
+/** The trigger's name in `.pp-fname`'s two halves, in the button's own face. */
+function SpoolName({ name }: { name: string }) {
+  const { head, tail } = splitSpoolName(name);
+  return (
+    <span className="nm pp-fname sans">
+      <span className="a">{head}</span>
+      <span className="b">{tail}</span>
+    </span>
+  );
+}
 
 /**
  * "294 g over", "leeg" at zero, or nothing when Spoolman does not say
@@ -98,7 +110,14 @@ export function SpoolPicker({
         }}
       >
         {busy ? <span className="pp-spin" aria-hidden="true" /> : <SpoolSwatch spool={shown} />}
-        {shown?.name ?? t('spool.choose')}
+        {/*
+          The name takes the middle cut (SpoolPicker 2.14, GAP-163): at 360px
+          the trigger's 200px floor is lifted inside a file row's band, so the
+          name shrinks instead of being painted outside the card and clipped
+          there. The app splits the string and CSS does the cutting; `.b` is
+          the last word, because that is where a spool's colour lives.
+        */}
+        <SpoolName name={shown?.name ?? t('spool.choose')} />
         {/*
           The chip sits on the trigger, not in the cell beside it: a hint chip
           qualifies the value it sits on, so it belongs on the control that can
