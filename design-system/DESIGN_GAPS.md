@@ -2100,6 +2100,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.15
 
+- **Built in 2.15:** the CSS is theirs; the app's share is the markup obligation. The exit button carries `.pp-guestexit` and its label in `<span class="lbl">Sessie afsluiten</span>` at **every** width, so the accessible name is the same on the phone as on the desktop and the words are hidden rather than dropped. The brand already held the whole studio name in the DOM, so the ellipsis costs a screen reader nothing. Measured after the change: one head height at all five name lengths (see the measurements in `docs/design-feedback/implementation.md`).
 ## GAP-173 [open] Role User's nav still offers API-docs
 - **Type:** unclear spec
 - **Found while:** the 2.14 import (AppShell raised it as a proposal with no id); numbered here by the design system in 2.15 so it can be tracked

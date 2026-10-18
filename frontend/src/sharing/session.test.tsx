@@ -83,7 +83,16 @@ describe('a deel-linksessie (GAP-165)', () => {
     for (const gone of ['Thema', 'Uitloggen', 'API-docs', 'Openstaand', 'Wachtrij']) {
       expect(within(head).queryByText(gone)).toBeNull();
     }
-    expect(within(head).getByRole('button', { name: 'Sessie afsluiten' })).toBeInTheDocument();
+    const exit = within(head).getByRole('button', { name: 'Sessie afsluiten' });
+    expect(exit).toBeInTheDocument();
+    /*
+      GAP-172: at 480px and below the button is a `--pp-tap` square and the
+      words are *visually* hidden, so the accessible name has to come from a
+      `.lbl` span that is there at every width — not from an aria-label that
+      only exists on the phone.
+    */
+    expect(exit).toHaveClass('pp-guestexit');
+    expect(exit.querySelector('.lbl')?.textContent).toBe('Sessie afsluiten');
   });
 
   it('lands on the Overzicht, which keeps everything but its studio head', async () => {
