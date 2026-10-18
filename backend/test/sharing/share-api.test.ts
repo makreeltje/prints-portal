@@ -270,6 +270,54 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     ]);
   });
 
+  it("shows a print's bron once, and never a note", async () => {
+    await start();
+    const print = (await t.as(admin, { url: '/api/prints?limit=100&customer=Joey' })).json<{
+      items: { id: string; name: string }[];
+    }>().items[0];
+    const id = print?.id ?? '';
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/prints/${id}/source`,
+      payload: { url: 'https://makerworld.com/en/models/38999' },
+    });
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/prints/${id}/note`,
+      payload: { note: 'In zwart printen, de vorige was wit' },
+    });
+    /*
+      A nabestelling on the same print, so the print has two lines on the
+      share page: the bron goes on the first and must not repeat on the rest.
+    */
+    const printLines = (await t.as(admin, { url: `/api/prints/${id}` }))
+      .json<{
+        assets: { lines: { id: string }[] }[];
+      }>()
+      .assets.flatMap((asset) => asset.lines);
+    await t.as(admin, {
+      method: 'POST',
+      url: `/api/prints/${id}/orders`,
+      payload: { items: printLines.map((line) => ({ lineId: line.id, timesPrinted: 1 })) },
+    });
+
+    const { token } = await create('Joey');
+    const response = await t.as(null, { url: `/api/share/${token}` });
+    const lines = response.json<{ lines: { printId: string; source: unknown }[] }>().lines;
+    const mine = lines.filter((line) => line.printId === id);
+    expect(mine.length).toBeGreaterThan(1);
+    expect(mine[0]?.source).toEqual({
+      url: 'https://makerworld.com/en/models/38999',
+      label: 'makerworld.com/en/models/38999',
+    });
+    // Every later line of the same print carries nothing.
+    expect(mine.slice(1).every((line) => line.source === null)).toBe(true);
+
+    // The note is internal: not in the payload at all, under any key.
+    expect(response.body).not.toMatch(/zwart printen/);
+    expect(response.body).not.toMatch(/"note"/);
+  });
+
   it('gives a niet-factureren klant the print list without amounts and no PDF', async () => {
     await start();
     await t.as(admin, {
@@ -283,8 +331,18 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
     expect(data.billed).toBe(false);
     expect(data.lines.length).toBeGreaterThan(0);
     for (const line of data.lines) {
-      expect(Object.keys(line).sort()).toEqual(['date', 'description', 'id', 'printId', 'project']);
+      // `source` is the one field GAP-152 added here: the klant does see a
+      // bron (the owner's decision). The note never reaches this payload.
+      expect(Object.keys(line).sort()).toEqual([
+        'date',
+        'description',
+        'id',
+        'printId',
+        'project',
+        'source',
+      ]);
     }
+    expect(response.body).not.toMatch(/"note"/);
     expect(response.body).not.toMatch(/price|paid|total|open/i);
     const pdf = await t.as(null, { url: `/api/share/${token}/overview.pdf` });
     expect(pdf.statusCode).toBe(404);

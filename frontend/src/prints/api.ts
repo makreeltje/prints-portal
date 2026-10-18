@@ -71,3 +71,11 @@ export const updateTag = (id: string, changes: { name?: string; colour?: TagPale
 export const deleteTag = (id: string) => api(`/api/tags/${id}`, { method: 'DELETE' });
 export const deleteCustomer = (folder: string) =>
   api(`/api/customers/${encodeURIComponent(folder)}`, { method: 'DELETE' });
+
+/** "Bron": the typed link. Null clears it; the folder's entries are untouched. */
+export const setPrintSource = (id: string, url: string | null) =>
+  api(`/api/prints/${id}/source`, { method: 'PUT', body: { url } });
+
+/** "Notitie": internal prose. Null clears it (GAP-138: absence is a value). */
+export const setPrintNote = (id: string, note: string | null) =>
+  api(`/api/prints/${id}/note`, { method: 'PUT', body: { note } });

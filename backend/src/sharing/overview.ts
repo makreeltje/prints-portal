@@ -1,4 +1,5 @@
 import type { Kysely } from 'kysely';
+import { sourceLabel } from '../core/url-file.js';
 import { localDate } from '../core/time.js';
 import type { Database, ShareLinkTable } from '../db/schema.js';
 import { billableOrders, orderDescription, type BillableOrder } from '../finance/billing.js';
@@ -23,6 +24,13 @@ export interface BilledShareLine {
   status: ShareLineStatus;
   /** For the line's thumbnail; the image itself is fetched per link. */
   printId: string;
+  /**
+   * "Bron", on the first line this print has and never again — a nabestelling
+   * does not repeat it (PrintSource). Null on every later line of the same
+   * print, and on a print with none. The owner decided the klant sees this;
+   * the note is internal and never reaches here.
+   */
+  source: { url: string; label: string } | null;
 }
 
 /** Niet-factureren klant: Print, Project and Datum only. */
@@ -32,6 +40,7 @@ export interface PlainShareLine {
   project: string | null;
   date: string;
   printId: string;
+  source: { url: string; label: string } | null;
 }
 
 interface ShareHead {
@@ -91,6 +100,49 @@ function byDateThenName(a: BillableOrder, b: BillableOrder): number {
  * prints included, written-off orders and deleted prints left out. With
  * "Alleen openstaand" only open and partially paid orders remain.
  */
+/**
+ * The bron each print shows on the share page, once (PrintSource).
+ *
+ * Returns a function rather than a map so a caller cannot show the same link
+ * on a print's nabestelling as well: the first line that asks for a print gets
+ * it, every later line gets null.
+ */
+async function sourcePerPrint(
+  db: Db,
+  printIds: string[],
+): Promise<(printId: string) => { url: string; label: string } | null> {
+  if (printIds.length === 0) return () => null;
+  const [records, assets] = await Promise.all([
+    db
+      .selectFrom('print_records')
+      .select(['id', 'source_url'])
+      .where('id', 'in', printIds)
+      .execute(),
+    db
+      .selectFrom('print_assets')
+      .select(['print_record_id', 'url_target'])
+      .where('print_record_id', 'in', printIds)
+      .execute(),
+  ]);
+  const best = new Map<string, string>();
+  // Typed first, then the folder's, as everywhere else (PrintSource).
+  for (const asset of assets) {
+    if (asset.url_target !== null && !best.has(asset.print_record_id)) {
+      best.set(asset.print_record_id, asset.url_target);
+    }
+  }
+  for (const record of records) {
+    if (record.source_url !== null) best.set(record.id, record.source_url);
+  }
+  const shown = new Set<string>();
+  return (printId) => {
+    const url = best.get(printId);
+    if (url === undefined || shown.has(printId)) return null;
+    shown.add(printId);
+    return { url, label: sourceLabel(url) };
+  };
+}
+
 async function shareOrders(db: Db, customer: string, onlyOpen: boolean, settings: Settings) {
   const orders = (await billableOrders(db, { customer }, settings))
     .filter((item) => item.money.status !== 'writtenOff')
@@ -132,6 +184,7 @@ export async function shareView(
   if (await notBilled(db, link.customer_folder)) {
     // The backend returns no prices for these links (ScreenSharePage); the switch does not apply.
     const all = await shareOrders(db, link.customer_folder, false, settings);
+    const firstOf = await sourcePerPrint(db, [...new Set(all.map((item) => item.print.id))]);
     return {
       ...head,
       billed: false,
@@ -141,10 +194,12 @@ export async function shareView(
         project: item.print.project,
         date: localDate(item.date),
         printId: item.print.id,
+        source: firstOf(item.print.id),
       })),
     };
   }
   const orders = await shareOrders(db, link.customer_folder, options.onlyOpen, settings);
+  const firstOf = await sourcePerPrint(db, [...new Set(orders.map((item) => item.print.id))]);
   const lines = orders.map((item): BilledShareLine => {
     const status = lineStatus(item);
     return {
@@ -152,6 +207,7 @@ export async function shareView(
       description: orderDescription(item.print.name, item.order.number),
       project: item.print.project,
       date: localDate(item.date),
+      source: firstOf(item.print.id),
       price: status === 'noPrice' ? null : euros(item.money.priceCents ?? 0),
       paid: euros(item.money.paidCents),
       remaining: status === 'noPrice' ? null : euros(item.money.remainingCents ?? 0),

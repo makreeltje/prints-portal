@@ -27,7 +27,15 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
       groups: {
         state: string;
         withoutFiles: number;
-        rows: { id: string; name: string; hasFiles: boolean; waitingDays: number }[];
+        rows: {
+          id: string;
+          name: string;
+          hasFiles: boolean;
+          waitingDays: number;
+          source: { url: string; label: string } | null;
+          sourceCount: number;
+          note: string | null;
+        }[];
       }[];
     }>();
 
@@ -137,6 +145,63 @@ describe.each(TEST_DATABASES)('queue and requests on $name', ({ url }) => {
     }>();
     expect(after.orders.at(-1)?.price).toBe(18.5);
     expect(after.orders.at(-1)?.requestState).toBe('undecided');
+  });
+
+  it('shows a bron only on a fileless row, and a note on any row', async () => {
+    const id = await addRequest('Joey', 'Lamp voor in de gang');
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/prints/${id}/source`,
+      payload: { url: 'https://makerworld.com/en/models/38999' },
+    });
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/prints/${id}/note`,
+      payload: { note: 'In zwart printen' },
+    });
+    const row = (await queue()).groups.flatMap((group) => group.rows).find((one) => one.id === id);
+    expect(row?.source).toEqual({
+      url: 'https://makerworld.com/en/models/38999',
+      label: 'makerworld.com/en/models/38999',
+    });
+    expect(row?.sourceCount).toBe(1);
+    expect(row?.note).toBe('In zwart printen');
+
+    /*
+      Once the files are there the row's job is done and the bron is noise
+      (PrintSource), but the note is about the work and outlives them
+      (PrintNote). Linking is how files arrive for a request.
+    */
+    const target = (await t.as(admin, { url: '/api/prints?limit=100' }))
+      .json<{
+        items: { id: string; name: string }[];
+      }>()
+      .items.find((print) => print.name === 'Babybox locks');
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/prints/${target?.id ?? ''}/note`,
+      payload: { note: 'Twee stuks' },
+    });
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/prints/${target?.id ?? ''}/source`,
+      payload: { url: 'https://printables.com/model/1' },
+    });
+    await t.as(admin, {
+      method: 'PUT',
+      url: `/api/orders/${
+        (await t.as(admin, { url: `/api/prints/${target?.id ?? ''}` })).json<{
+          orders: { id: string }[];
+        }>().orders[0]?.id ?? ''
+      }/state`,
+      payload: { state: 'inProgress' },
+    });
+    const withFiles = (await queue()).groups
+      .flatMap((group) => group.rows)
+      .find((one) => one.id === target?.id);
+    expect(withFiles?.hasFiles).toBe(true);
+    expect(withFiles?.source).toBeNull();
+    expect(withFiles?.note).toBe('Twee stuks');
   });
 
   it('refuses to link something that is not a request', async () => {

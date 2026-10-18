@@ -11,6 +11,11 @@ export interface QueueRow {
   waitingDays: number;
   price: number | null;
   requestState: Exclude<RequestState, 'declined'>;
+  /** The first bron and how many it stands for; only on a fileless row. */
+  source: { url: string; label: string } | null;
+  sourceCount: number;
+  /** The note, on any row — the work outlives the files (PrintNote). */
+  note: string | null;
 }
 
 export interface QueueGroup {

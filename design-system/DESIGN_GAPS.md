@@ -1794,3 +1794,35 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing. This repository changes neither of them: `.pp-btn-sm` and the `.acts` rule are both `bundle.css`, and the row markup is the one ScreenQueue specifies.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.11
+
+## GAP-157 [open] "Aanvraag toevoegen" has never been designed, and now two components say it carries their fields
+- **Type:** missing component
+- **Found while:** building GAP-152 part two (bron and notitie)
+- **Where needed:** ScreenQueue's "Aanvraag toevoegen" dialog
+- **What is missing or wrong:** ScreenQueue 2.10 specifies the button and the page but not the dialog behind it; the README calls its anatomy undesigned. It was built anyway in 2.10 from Dialog, `pp-field` and `pp-input`, because the page is useless without it. PrintSource and PrintNote both now say, in the same words, that this dialog "carries this field and PrintNote's **when it is designed**" — so two published components depend on a shape that does not exist.
+- **Proposal:** Four fields in this order: klant (a Select of existing klanten), what was asked (text), bron (`input[type=url]`, the same validation as PrintSource), notitie (`textarea`, `maxlength` 280, the internal help line). Built that way now, from the components above and no invented values. The one real question is whether bron and notitie belong in the dialog at all or only on the print afterwards — and the measurement says they do: a request arrives with a link while the owner is somewhere else, and saving it first and then finding the print to paste the link undoes the capture this page exists for.
+- **Blocked:** nothing. Marked `ds-gap: GAP-157` so the checker knows the dialog is improvised, and it stays open until the dialog is specified.
+- **Temporary placeholder approved:** yes — the owner approved building part two; this dialog is the only piece of it with no spec.
+
+## GAP-158 [open] A User has no "Deze print" card, so PrintSource's read-only row cannot appear
+- **Type:** conflict
+- **Found while:** building GAP-152 part two
+- **Where needed:** ScreenPrintDetail for role User; `frontend/src/prints/PrintDetailPage.tsx:286`
+- **What is missing or wrong:** PrintSource says the bron renders in the card "Deze print" and that "role User sees the row read-only, because the klant sees it too". A User's print page has no such card. Since 1.9 the page branches on the role: an Admin or Editor gets the media row with "Deze print" beside the viewer, and a User gets a two-column block with the viewer and their own order's payment panel, and nothing else. So the one surface the spec names for a User does not exist on that page.
+
+  This matters more than it looks: the same klant can open the share page and see the bron there (the owner's decision), but a User signed in to the portal cannot see it at all. The two views disagree about the same fact.
+- **Proposal:** Either give the User branch a reduced "Deze print" card — klant, project, date and bron, which is what a User may see of it anyway — or state in ScreenPrintDetail that the bron is Admin/Editor and share-page only, and drop the sentence about role User. The first is more consistent with the share page; the second is less work and is defensible if the portal's User view is meant to stay minimal. **This is a product decision about what a User's page is for, not a visual one.**
+- **Blocked:** the bron for role User on ScreenPrintDetail. Everything else of GAP-152 is built: an Admin and an Editor see and edit both fields, the queue row shows both, and the share page shows the bron — including to the same klant.
+
+## GAP-159 [open] "Geen status" is the only way to finish a job, and it says "no information" rather than "done"
+- **Type:** unclear spec
+- **Found while:** answering the owner's question "hoe haal ik iets van de wachtrij af?"
+- **Where needed:** StatusBadge (the four-value control), ScreenQueue, ScreenPrintDetail's payment panel; `frontend/src/finance/PaymentPanel.tsx:502`
+- **What is missing or wrong:** The control has four values — Geen status, Nog niet besloten, Mee bezig, Niet doorgegaan — and StatusBadge 2.9 justifies the fourth with one reason only: **a state must be able to go back**, because a klant can change their mind. That is "undo", and the word fits it.
+
+  ScreenQueue 2.10 then gave the same value a second job without naming it. The Wachtrij lists exactly `undecided` and `inProgress`, so a job that is **finished** leaves the queue only by being set back to "Geen status". The owner asked how to take something off the queue and the honest answer is "mark it as having no status", which reads as deleting information about work that was in fact completed. The two meanings also collide: a print that was never a request and a print that is done both end up in the same value, and nothing afterwards can tell them apart.
+- **Why it matters:** this is the one act every finished job needs, and the word for it describes an absence. It is also asymmetric: a refused job has its own word ("Niet doorgegaan") and keeps its badge on the dashboard, while a completed job — the more common ending — has none and leaves no trace of having been in the queue.
+- **Proposal:** Preferred: **keep three stored states and give the act its own wording where it is performed.** The queue row's action reads "Uit de wachtrij halen" and writes the same null; the detail control keeps "Geen status", where undo is what it really means. Nothing is stored that is not stored today, and no badge is invented. Second option, if the owner wants the ending recorded: a fifth value "Klaar", neutral ink like "Niet doorgegaan" (a settled state takes no live ink, StatusBadge 2.9), absent from the Wachtrij and from every total. That is a new stored fact and a product decision, not a rename — and GAP-143 refused to *infer* a job's ending once; asserting one is a different question, so it is worth asking rather than assuming.
+- **Blocked:** nothing is broken; the act works today. Held: any copy change to the control, and the question of whether a finished job is recorded as such.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.11

@@ -195,6 +195,10 @@ const billed: ShareView = {
       remaining: 6.89,
       status: 'partial',
       printId: 'p1',
+      source: {
+        url: 'https://www.printables.com/model/417260-laptop-tablet-foldable-stand',
+        label: 'printables.com/model/417260-laptop-tablet-foldable-stand',
+      },
     },
     {
       id: 'o2',
@@ -206,6 +210,7 @@ const billed: ShareView = {
       remaining: null,
       status: 'noPrice',
       printId: 'p1',
+      source: null,
     },
   ],
   totals: { total: 11.89, paid: 5, open: 6.89 },
@@ -312,6 +317,8 @@ describe('SharePage', () => {
           customer: 'Bas',
           label: 'Familie',
           expiresAt: null,
+          // No `source` and no `printId` on purpose: a payload from before
+          // this field existed must still render.
           lines: [{ id: 'o1', description: 'Cable organizer', project: null, date: '2026-10-02' }],
         },
       }),

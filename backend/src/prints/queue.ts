@@ -1,4 +1,5 @@
 import type { Kysely } from 'kysely';
+import { sourceLabel } from '../core/url-file.js';
 import type { Database } from '../db/schema.js';
 import { ordersWithMoney } from '../finance/read.js';
 import { parseRequestState, type RequestState } from '../finance/state.js';
@@ -27,6 +28,11 @@ export interface QueueRow {
   waitingDays: number;
   price: number | null;
   requestState: RequestState;
+  /** The first bron, and how many more (PrintSource); only on a fileless row. */
+  source: { url: string; label: string } | null;
+  sourceCount: number;
+  /** The note, on any row — the work outlives the files (PrintNote). */
+  note: string | null;
 }
 
 export interface QueueGroup {
@@ -48,6 +54,8 @@ export async function queue(db: Kysely<Database>, now: string): Promise<QueueGro
       'r.project_folder',
       'r.discovered_at',
       'r.origin',
+      'r.source_url',
+      'r.note',
       'o.request_state',
     ])
     .where('r.status', '=', 'indexed')
@@ -57,15 +65,20 @@ export async function queue(db: Kysely<Database>, now: string): Promise<QueueGro
 
   const ids = records.map((row) => row.id);
   const money = await ordersWithMoney(db, ids);
-  const withFiles = new Set(
-    (
-      await db
-        .selectFrom('print_assets')
-        .select('print_record_id')
-        .where('print_record_id', 'in', ids)
-        .execute()
-    ).map((row) => row.print_record_id),
-  );
+  const assets = await db
+    .selectFrom('print_assets')
+    .select(['print_record_id', 'file_name', 'url_target'])
+    .where('print_record_id', 'in', ids)
+    .execute();
+  const withFiles = new Set(assets.map((row) => row.print_record_id));
+  const found = new Map<string, string[]>();
+  for (const asset of assets) {
+    if (asset.url_target === null) continue;
+    found.set(asset.print_record_id, [
+      ...(found.get(asset.print_record_id) ?? []),
+      asset.url_target,
+    ]);
+  }
 
   const asked = Date.parse(now);
   const rows: QueueRow[] = records.flatMap((row) => {
@@ -86,6 +99,13 @@ export async function queue(db: Kysely<Database>, now: string): Promise<QueueGro
             ? null
             : newest.money.priceCents / 100,
         requestState: state,
+        /*
+          Same order as the card: typed first, then the folder's, with an
+          exact duplicate folded (PrintSource). Only a fileless row shows one
+          — with files on disk the row's job is done and the bron is noise.
+        */
+        ...sourceOf(row.source_url, found.get(row.id) ?? [], withFiles.has(row.id)),
+        note: row.note,
       },
     ];
   });
@@ -104,4 +124,17 @@ export async function queue(db: Kysely<Database>, now: string): Promise<QueueGro
     if (mine.length === 0) return [];
     return [{ state, rows: mine, withoutFiles: mine.filter((row) => !row.hasFiles).length }];
   });
+}
+
+/** The one bron a row shows, and how many it stands for (PrintSource). */
+function sourceOf(
+  typed: string | null,
+  found: string[],
+  hasFiles: boolean,
+): Pick<QueueRow, 'source' | 'sourceCount'> {
+  if (hasFiles) return { source: null, sourceCount: 0 };
+  const all = typed === null || found.includes(typed) ? found : [typed, ...found];
+  const first = all[0];
+  if (first === undefined) return { source: null, sourceCount: 0 };
+  return { source: { url: first, label: sourceLabel(first) }, sourceCount: all.length };
 }

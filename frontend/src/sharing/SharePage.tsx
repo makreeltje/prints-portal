@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Box, Check, Clock, Copy, Download, Link as LinkIcon } from 'lucide-react';
+import { Box, Check, Clock, Copy, Download, ExternalLink, Link as LinkIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { ApiError } from '../api/client';
@@ -362,6 +362,7 @@ function BilledLine({ token, line }: { token: string; line: BilledShareLine }) {
         <div>
           <b className="pp-strong pp-text-md">{line.description}</b>
           <div className="pp-muted pp-text-sm">{lineSubtitle(line)}</div>
+          <ShareSource source={line.source} />
         </div>
       </div>
       <div className="pp-share-amt">
@@ -400,7 +401,10 @@ function PlainList({ lines }: { lines: readonly PlainShareLine[] }) {
             <tbody>
               {lines.map((line) => (
                 <tr key={line.id}>
-                  <td>{line.description}</td>
+                  <td>
+                    {line.description}
+                    <ShareSource source={line.source} />
+                  </td>
                   <td>{line.project ?? '—'}</td>
                   <td>{day(line.date)}</td>
                 </tr>
@@ -419,6 +423,7 @@ function PlainList({ lines }: { lines: readonly PlainShareLine[] }) {
                   <div className="pp-muted pp-text-sm">
                     {line.project === null ? day(line.date) : `${line.project} · ${day(line.date)}`}
                   </div>
+                  <ShareSource source={line.source} />
                 </div>
               </li>
             ))}
@@ -439,5 +444,33 @@ function Gone() {
       <h1 className="pp-share-h404">{t('share.notFound')}</h1>
       <p className="pp-muted pp-m0 pp-maxch">{t('share.askNew')}</p>
     </main>
+  );
+}
+
+/**
+ * The bron on the share page: the host as a link under the print's name, once
+ * per print (PrintSource). The backend hands it to the first line a print has,
+ * so a nabestelling never repeats it.
+ *
+ * No chip, no folder name, no provenance — the klant does not need to know the
+ * library's shape. The note never reaches this page at all.
+ */
+function ShareSource({ source }: { source?: { url: string; label: string } | null }) {
+  // `== null` on purpose: a payload without the field must not crash the page
+  // a klant opens, and an older backend has no `source` to send.
+  if (source == null) return null;
+  return (
+    <div className="pp-src pp-row pp-gap-1">
+      <ExternalLink className="pp-ico" aria-hidden="true" />
+      <a
+        className="pp-link"
+        href={source.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={t('print.source.open', { host: source.label })}
+      >
+        {source.label}
+      </a>
+    </div>
   );
 }

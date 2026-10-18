@@ -118,8 +118,21 @@ export interface PrintDetail extends PrintSummary {
   markupPercent: number | null;
   /** "Spoel voor de hele print" (Admin/Editor). */
   spool: SpoolSnapshot | null;
+  /** "Bron": the typed link first, then the folder's (PrintSource). */
+  sources: PrintSourceDto[];
+  /** "Notitie": internal, so null for a User (PrintNote). */
+  note: string | null;
   /** Order 1 first; Users get number, status and price only. */
   orders: OrderDto[];
+}
+
+/** One bron: where a model came from (PrintSource, GAP-152). */
+export interface PrintSourceDto {
+  url: string;
+  /** Host and path without the scheme: what the link shows. */
+  label: string;
+  /** The `.url` file it was read from, or null when it was typed. */
+  fileName: string | null;
 }
 
 export interface CustomerSummary {

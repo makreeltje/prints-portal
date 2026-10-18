@@ -2,6 +2,7 @@ import { normalizeTagName, tagKey, type TagPaletteKey } from '../core/tags.js';
 import type { AppDatabase } from '../db/connection.js';
 import { toTagDto } from './queries.js';
 import type { TagDto } from './types.js';
+import { isHttpUrl } from '../core/url-file.js';
 
 /**
  * Soft delete (plan, "Soft delete"): status Deleted hides a print from every
@@ -225,4 +226,61 @@ export async function setPrintTags(
       .where('id', '=', printId)
       .execute();
   });
+}
+
+/**
+ * "Bron": where the model came from, as the operator typed it (PrintSource).
+ *
+ * Only the typed half is writable. The folder's entries follow their `.url`
+ * files and the next index pass would undo any edit, which is why the spec
+ * makes a found entry read-only rather than letting it be changed here.
+ *
+ * Clearing is saving an empty value; there is no separate act (GAP-138).
+ */
+export async function setPrintSource(
+  db: AppDatabase,
+  id: string,
+  url: string | null,
+  now: Date,
+): Promise<boolean> {
+  if (url !== null && !isHttpUrl(url)) throw new PrintFieldError('invalid_url');
+  return setField(db, id, { source_url: url }, now);
+}
+
+/** "Notitie": the operator's own prose, internal (PrintNote). */
+export async function setPrintNote(
+  db: AppDatabase,
+  id: string,
+  note: string | null,
+  now: Date,
+): Promise<boolean> {
+  // 280 characters, because a row shows one clamped line of it (PrintNote).
+  if (note !== null && note.length > MAX_NOTE_LENGTH) throw new PrintFieldError('note_too_long');
+  return setField(db, id, { note }, now);
+}
+
+export class PrintFieldError extends Error {
+  override name = 'PrintFieldError';
+}
+
+export const MAX_NOTE_LENGTH = 280;
+
+async function setField(
+  db: AppDatabase,
+  id: string,
+  values: { source_url?: string | null; note?: string | null },
+  now: Date,
+): Promise<boolean> {
+  const row = await db
+    .selectFrom('print_records')
+    .select('status')
+    .where('id', '=', id)
+    .executeTakeFirst();
+  if (row === undefined || row.status === 'deleted') return false;
+  await db
+    .updateTable('print_records')
+    .set({ ...values, updated_at: now.toISOString() })
+    .where('id', '=', id)
+    .execute();
+  return true;
 }

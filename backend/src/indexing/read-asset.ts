@@ -1,7 +1,12 @@
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { duplicateFingerprint } from '../core/duplicates.js';
 import { parseGcodeFileName, parseVideoFileName } from '../core/file-names.js';
+import { readUrlShortcut } from '../core/url-file.js';
 import { classifyAsset, type AssetType } from '../core/files.js';
+
+/** A shortcut is a few hundred bytes; nothing stops someone naming a huge file `.url`. */
+const MAX_URL_FILE_BYTES = 64 * 1024;
 import { bestThumbnail, readGcodeFile, type GcodeSlot } from '../core/gcode.js';
 import { readThreeMf } from '../core/threemf.js';
 import type { ScannedFile } from './scanner.js';
@@ -17,6 +22,8 @@ export interface AssetReading {
   slicer: string | null;
   hasThumbnail: boolean;
   parseError: string | null;
+  /** For a `.url` shortcut: the link inside it (PrintSource, GAP-152). */
+  urlTarget: string | null;
   lines: LineReading[];
 }
 
@@ -48,11 +55,20 @@ export async function readAsset(root: string, file: ScannedFile): Promise<AssetR
     slicer: null,
     hasThumbnail: false,
     parseError: null,
+    urlTarget: null,
     lines: [],
   };
 
   try {
-    if (type === 'gcode') {
+    if (type === 'url') {
+      /*
+        A shortcut is a few hundred bytes of INI, so it is read whole. The cap
+        is there because nothing stops someone naming a gigabyte `.url`.
+      */
+      if (file.sizeBytes <= MAX_URL_FILE_BYTES) {
+        reading.urlTarget = readUrlShortcut(await readFile(absolute, 'utf8'));
+      }
+    } else if (type === 'gcode') {
       const meta = await readGcodeFile(absolute);
       reading.slicer = meta.slicer === null ? null : `${meta.slicer.name} ${meta.slicer.version}`;
       reading.hasThumbnail = bestThumbnail(meta.thumbnails) !== null;

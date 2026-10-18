@@ -219,7 +219,17 @@ export class Indexer {
         force ||
         prev === undefined ||
         prev.size_bytes !== file.sizeBytes ||
-        prev.last_write_utc !== file.lastWriteUtc;
+        prev.last_write_utc !== file.lastWriteUtc ||
+        /*
+          A `.url` shortcut indexed before 0010 has no link read out of it yet,
+          and nothing about the file changed, so the two checks above would
+          never look inside it again. This reads it once more. It is bounded by
+          how few of these exist (16 in the owner's library, a few hundred
+          bytes each) and by the fact that a readable one stops matching after
+          the first pass; an unreadable one is re-read, which is also how a
+          shortcut the owner repairs gets picked up.
+        */
+        (prev.type === 'url' && prev.url_target === null);
       const item: (typeof work)[number] = { file, hash };
       if (prev !== undefined) item.prev = prev;
       if (changed) {
@@ -339,6 +349,8 @@ function newRecord(id: string, key: string, ref: ProjectRef, now: string): Print
     updated_at: now,
     spool_id: null,
     spool_snapshot: null,
+    source_url: null,
+    note: null,
   };
 }
 
@@ -368,6 +380,7 @@ function assetValues(
     slicer: reading.slicer,
     has_thumbnail: reading.hasThumbnail ? 1 : 0,
     parse_error: reading.parseError,
+    url_target: reading.urlTarget,
     indexed_at: now,
   };
 }

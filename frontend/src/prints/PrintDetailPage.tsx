@@ -1,5 +1,14 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, Film, Info, Package, Trash2, TriangleAlert } from 'lucide-react';
+import {
+  Box,
+  ExternalLink,
+  Film,
+  Info,
+  Package,
+  StickyNote,
+  Trash2,
+  TriangleAlert,
+} from 'lucide-react';
 import {
   Fragment,
   type CSSProperties,
@@ -20,6 +29,10 @@ import { useCurrentUser } from '../auth/context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useToast } from '../components/toast-context';
 import { formatDate, formatDuration, formatGrams } from '../i18n/format';
+import { isHttpUrl } from '../core/url';
+import { MAX_NOTE_LENGTH } from './notes';
+import { NoteBlock } from './PrintNote';
+import { SourceList } from './PrintSource';
 import { t } from '../i18n/nl';
 import { LoadingRows } from '../pages/ErrorState';
 import { ForbiddenState, GlobalErrorState } from '../pages/StatePages';
@@ -56,6 +69,8 @@ import {
   restorePrint,
   setPrintTags,
   modelThumbnailUrl,
+  setPrintNote,
+  setPrintSource,
 } from './api';
 import { LacksChip, RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList, type AssetControls } from './AssetList';
@@ -364,6 +379,14 @@ function ThisPrint({
     facts.push([t('print.project'), detail.projectFolder]);
   }
   if (detail.printDate !== null) facts.push([t('print.date'), formatDate(detail.printDate)]);
+  /*
+    "Bron" is a fact like the others and sits among them, read-only here — a
+    User sees it too, because the klant sees it on the share page (PrintSource).
+    Editing is the separate control below.
+  */
+  if (detail.sources.length > 0) {
+    facts.push([t('print.source'), <SourceList key="src" sources={detail.sources} />]);
+  }
   if (canManage) {
     if (detail.material !== null) facts.push([t('print.material'), detail.material]);
     if (detail.printSeconds !== null) {
@@ -427,6 +450,14 @@ function ThisPrint({
           </span>
         </div>
       )}
+      {canManage && <SourceEditor detail={detail} quiet={quiet} />}
+      {/*
+        The note sits at the foot of the card, under the facts and the spool
+        control (PrintNote). A User never sees the block at all, which the
+        backend already guarantees by sending null.
+      */}
+      {detail.note !== null && <NoteBlock note={detail.note} />}
+      {canManage && <NoteEditor detail={detail} quiet={quiet} />}
       {detail.lacks.length > 0 && (
         <span className="pp-help">
           {t('print.lacks.aria', {
@@ -839,7 +870,19 @@ function ManagedOrders({
           (GAP-095). The dead space of 1.9 was this card's missing half. */}
       <div className="pp-pdtop">
         <ModelView detail={detail} />
-        <ThisPrint detail={detail} spoolmanOn={spoolmanOn} quiet={quiet} toast={toast} canManage />
+        {/*
+          Always true here: this is the Admin-and-Editor branch, and a User
+          gets a different block with no "Deze print" card at all (GAP-158).
+          The prop stays because ThisPrint gates facts on it and a second call
+          site would need it.
+        */}
+        <ThisPrint
+          detail={detail}
+          spoolmanOn={spoolmanOn}
+          quiet={quiet}
+          toast={toast}
+          canManage={true}
+        />
       </div>
       {unassignedCount > 0 && (
         <div className="pp-alert info" role="status">
@@ -925,5 +968,202 @@ function ManagedOrders({
         />
       )}
     </>
+  );
+}
+
+/**
+ * Writing the typed bron (PrintSource, Admin and Editor).
+ *
+ * Only the typed entry is editable: an entry with the chip follows its `.url`
+ * file and the next index pass would undo any edit. Clearing is emptying the
+ * field and saving — there is no remove button, because absence is a value and
+ * not a separate act (GAP-138).
+ */
+function SourceEditor({
+  detail,
+  quiet,
+}: {
+  detail: PrintDetail;
+  quiet: (action: () => Promise<unknown>) => Promise<void>;
+}) {
+  const typed = detail.sources.find((source) => source.fileName === null) ?? null;
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(typed?.url ?? '');
+  const [invalid, setInvalid] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const errorId = useId();
+  const fieldId = useId();
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        className="pp-btn pp-btn-ghost pp-btn-sm pp-self-start"
+        onClick={() => {
+          setValue(typed?.url ?? '');
+          setInvalid(false);
+          setEditing(true);
+        }}
+      >
+        <ExternalLink className="pp-ico" aria-hidden="true" />
+        {typed === null ? t('print.source.add') : t('print.source')}
+      </button>
+    );
+  }
+  const save = () => {
+    const trimmed = value.trim();
+    // The only validation: a bron must parse as an absolute http(s) URL.
+    if (trimmed !== '' && !isHttpUrl(trimmed)) {
+      setInvalid(true);
+      return;
+    }
+    setSaving(true);
+    void quiet(async () => {
+      await setPrintSource(detail.id, trimmed === '' ? null : trimmed);
+      setSaving(false);
+      setEditing(false);
+    }).finally(() => {
+      setSaving(false);
+    });
+  };
+  return (
+    <div className="pp-field">
+      <label className="pp-label" htmlFor={fieldId}>
+        {t('print.source')}
+      </label>
+      <input
+        id={fieldId}
+        className="pp-input"
+        type="url"
+        inputMode="url"
+        data-autofocus
+        value={value}
+        disabled={saving}
+        placeholder={t('print.source.placeholder')}
+        aria-invalid={invalid ? 'true' : undefined}
+        aria-describedby={invalid ? errorId : undefined}
+        onChange={(event) => {
+          setValue(event.target.value);
+          setInvalid(false);
+        }}
+      />
+      {invalid && (
+        <span className="pp-err" id={errorId} role="alert">
+          {t('print.source.invalid')}
+        </span>
+      )}
+      <span className="pp-row pp-gap-1">
+        <button
+          type="button"
+          className="pp-btn pp-btn-secondary pp-btn-sm"
+          disabled={saving}
+          onClick={() => {
+            setEditing(false);
+          }}
+        >
+          {t('common.cancel')}
+        </button>
+        <button
+          type="button"
+          className="pp-btn pp-btn-primary pp-btn-sm"
+          disabled={saving}
+          onClick={save}
+        >
+          {saving && <span className="pp-spin" aria-hidden="true" />}
+          {t('common.save')}
+        </button>
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Writing the note (PrintNote, Admin and Editor).
+ *
+ * `maxlength` stops the 281st character, so there is no "too long" error — the
+ * state nobody has to be told about. The internal line is tied to the field
+ * with `aria-describedby`, never only visual.
+ */
+function NoteEditor({
+  detail,
+  quiet,
+}: {
+  detail: PrintDetail;
+  quiet: (action: () => Promise<unknown>) => Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(detail.note ?? '');
+  const [saving, setSaving] = useState(false);
+  const helpId = useId();
+  const fieldId = useId();
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        className="pp-btn pp-btn-ghost pp-btn-sm pp-self-start"
+        onClick={() => {
+          setValue(detail.note ?? '');
+          setEditing(true);
+        }}
+      >
+        <StickyNote className="pp-ico" aria-hidden="true" />
+        {detail.note === null ? t('print.note.add') : t('print.note')}
+      </button>
+    );
+  }
+  return (
+    <div className="pp-field">
+      <label className="pp-label" htmlFor={fieldId}>
+        {t('print.note')}
+      </label>
+      <textarea
+        id={fieldId}
+        className="pp-input"
+        rows={3}
+        maxLength={MAX_NOTE_LENGTH}
+        data-autofocus
+        value={value}
+        disabled={saving}
+        placeholder={t('print.note.placeholder')}
+        aria-describedby={helpId}
+        onChange={(event) => {
+          setValue(event.target.value);
+        }}
+      />
+      <span className="pp-help" id={helpId}>
+        {t('print.note.internal')}
+      </span>
+      <span className="pp-row pp-gap-1">
+        <button
+          type="button"
+          className="pp-btn pp-btn-secondary pp-btn-sm"
+          disabled={saving}
+          onClick={() => {
+            setEditing(false);
+          }}
+        >
+          {t('common.cancel')}
+        </button>
+        <button
+          type="button"
+          className="pp-btn pp-btn-primary pp-btn-sm"
+          disabled={saving}
+          onClick={() => {
+            setSaving(true);
+            void quiet(async () => {
+              // Keep the operator's own line breaks; empty clears it.
+              await setPrintNote(detail.id, value.trim() === '' ? null : value);
+              setEditing(false);
+            }).finally(() => {
+              setSaving(false);
+            });
+          }}
+        >
+          {saving && <span className="pp-spin" aria-hidden="true" />}
+          {t('common.save')}
+        </button>
+      </span>
+    </div>
   );
 }

@@ -14,6 +14,10 @@ import {
   createTag,
   deleteCustomer,
   deletePrint,
+  MAX_NOTE_LENGTH,
+  PrintFieldError,
+  setPrintNote,
+  setPrintSource,
   deleteTag,
   listTags,
   restoreCustomer,
@@ -333,6 +337,77 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
         broadcast('print:updated', id, folder);
       }
       return { restored: restored.length };
+    },
+  );
+
+  /**
+   * "Bron" and "Notitie" (PrintSource, PrintNote). Both are fields on the
+   * print record, so a request carries them before its folder exists.
+   *
+   * Clearing is saving null; neither has a remove route, because absence is a
+   * value and not a separate act (GAP-138).
+   */
+  app.put<{ Params: { id: string }; Body: { url: string | null } }>(
+    '/api/prints/:id/source',
+    {
+      config: { auth: MANAGE },
+      schema: {
+        params: idParams,
+        body: {
+          type: 'object',
+          required: ['url'],
+          properties: { url: { type: ['string', 'null'], maxLength: 2048 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const url =
+        request.body.url === null || request.body.url.trim() === ''
+          ? null
+          : request.body.url.trim();
+      try {
+        if (!(await setPrintSource(db, request.params.id, url, now()))) {
+          return await reply.code(404).send({ error: 'not_found' });
+        }
+      } catch (error) {
+        if (error instanceof PrintFieldError) {
+          return reply.code(422).send({ error: error.message });
+        }
+        throw error;
+      }
+      broadcast('print:updated', request.params.id, '');
+      return reply.code(204).send();
+    },
+  );
+
+  app.put<{ Params: { id: string }; Body: { note: string | null } }>(
+    '/api/prints/:id/note',
+    {
+      config: { auth: MANAGE },
+      schema: {
+        params: idParams,
+        body: {
+          type: 'object',
+          required: ['note'],
+          properties: { note: { type: ['string', 'null'], maxLength: MAX_NOTE_LENGTH } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const note =
+        request.body.note === null || request.body.note.trim() === '' ? null : request.body.note;
+      try {
+        if (!(await setPrintNote(db, request.params.id, note, now()))) {
+          return await reply.code(404).send({ error: 'not_found' });
+        }
+      } catch (error) {
+        if (error instanceof PrintFieldError) {
+          return reply.code(422).send({ error: error.message });
+        }
+        throw error;
+      }
+      broadcast('print:updated', request.params.id, '');
+      return reply.code(204).send();
     },
   );
 

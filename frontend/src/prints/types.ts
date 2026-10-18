@@ -192,7 +192,23 @@ export interface PrintDetail extends PrintSummary {
   noBilling: boolean;
   markupPercent: number | null;
   spool: Spool | null;
+  /** "Bron": the typed link, and the ones found in the folder (PrintSource). */
+  sources: PrintSource[];
+  /** "Notitie": internal. Null for role User, who never sees it (PrintNote). */
+  note: string | null;
   orders: Order[];
+}
+
+/** One bron: where a model came from (PrintSource, GAP-152). */
+export interface PrintSource {
+  url: string;
+  /** Host and path without the scheme: what the link shows. */
+  label: string;
+  /**
+   * The `.url` file this came out of, or null when the operator typed it.
+   * Only a found one carries the chip, and only a typed one can be edited.
+   */
+  fileName: string | null;
 }
 
 export interface Customer {

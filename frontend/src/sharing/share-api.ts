@@ -31,6 +31,11 @@ export interface BilledShareLine {
   remaining: number | null;
   status: 'paid' | 'open' | 'partial' | 'noPrice';
   printId: string;
+  /**
+   * "Bron", on the first line this print has and never again — a nabestelling
+   * does not repeat it (PrintSource). The note never reaches this page.
+   */
+  source: { url: string; label: string } | null;
 }
 
 export interface PlainShareLine {
@@ -39,6 +44,7 @@ export interface PlainShareLine {
   project: string | null;
   date: string;
   printId: string;
+  source: { url: string; label: string } | null;
 }
 
 interface ShareHead {

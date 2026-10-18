@@ -3,8 +3,10 @@ import {
   ChevronDown,
   CircleAlert,
   Clock,
+  ExternalLink,
   Link as LinkIcon,
   Plus,
+  StickyNote,
   TriangleAlert,
 } from 'lucide-react';
 import { useId, useState } from 'react';
@@ -22,8 +24,11 @@ import {
   type QueueGroup,
   type QueueRow,
 } from './api-queue';
-import { fetchCustomers, fetchPrints, keys } from './api';
+import { fetchCustomers, fetchPrints, keys, setPrintNote, setPrintSource } from './api';
+import { isHttpUrl } from '../core/url';
+import { MAX_NOTE_LENGTH } from './notes';
 import { placeOf } from './filter';
+import { SourceLink } from './PrintSource';
 import type { PrintFilter } from './types';
 
 /*
@@ -196,6 +201,30 @@ function Row({ row, onLink }: { row: QueueRow; onLink: (row: QueueRow) => void }
           nothing was downloaded yet, not only because it must be designed.
         */}
         {!row.hasFiles && <div className="pp-reason">{t('queue.noFiles')}</div>}
+        {/*
+          A bron only where there are no files — with files on disk the row's
+          job is done and the link is noise (PrintSource). The note shows on
+          any row, because the work outlives the arrival of the files
+          (PrintNote). Order inside the block is fixed by the spec: name,
+          klant, "Nog geen bestanden", bron, notitie, each one line.
+        */}
+        {row.source !== null && (
+          <div className="pp-reason one pp-row pp-gap-1">
+            <ExternalLink className="pp-ico" aria-hidden="true" />
+            <SourceLink source={{ ...row.source, fileName: null }} />
+            {row.sourceCount > 1 && (
+              <span className="n pp-muted">
+                {t('print.source.more', { count: row.sourceCount - 1 })}
+              </span>
+            )}
+          </div>
+        )}
+        {row.note !== null && (
+          <div className="pp-reason one pp-row pp-gap-1">
+            <StickyNote className="pp-ico" aria-hidden="true" />
+            <span>{row.note}</span>
+          </div>
+        )}
       </div>
       <span className={`pp-badge ${ageTone(row.waitingDays)}`}>
         <AgeIcon days={row.waitingDays} />
@@ -230,12 +259,22 @@ function AddRequestDialog({ onClose, onDone }: { onClose: () => void; onDone: ()
   const id = useId();
   const [customer, setCustomer] = useState('');
   const [name, setName] = useState('');
+  const [source, setSource] = useState('');
+  const [note, setNote] = useState('');
+  const [invalidSource, setInvalidSource] = useState(false);
   const customers = useQuery({
     queryKey: keys.customers(false, false),
     queryFn: () => fetchCustomers(false, false),
   });
   const save = useMutation({
-    mutationFn: () => addRequest(customer, name),
+    mutationFn: async () => {
+      const id = (await addRequest(customer, name)).id;
+      // Two more calls rather than three fields on one route: the two are
+      // fields of a print, and a request is a print (PrintSource, PrintNote).
+      const trimmed = source.trim();
+      if (trimmed !== '') await setPrintSource(id, trimmed);
+      if (note.trim() !== '') await setPrintNote(id, note);
+    },
     onSuccess: onDone,
   });
   const ready = customer !== '' && name.trim() !== '';
@@ -246,7 +285,13 @@ function AddRequestDialog({ onClose, onDone }: { onClose: () => void; onDone: ()
       onClose={onClose}
       busy={save.isPending}
       onSubmit={() => {
-        if (ready) save.mutate();
+        if (!ready) return;
+        // The same single rule the print detail and the backend apply.
+        if (source.trim() !== '' && !isHttpUrl(source.trim())) {
+          setInvalidSource(true);
+          return;
+        }
+        save.mutate();
       }}
       footer={
         <>
@@ -299,6 +344,64 @@ function AddRequestDialog({ onClose, onDone }: { onClose: () => void; onDone: ()
             }}
           />
         </label>
+        {/*
+          Bron and notitie, which PrintSource and PrintNote both say this
+          dialog carries — "when it is designed". Its anatomy still is not
+          (ds-gap: GAP-157), so these reuse the two fields above rather than
+          inventing a shape. They are why the dialog is worth having on a
+          phone at all: a request arrives with a link, and asking the owner to
+          save it and then go and find the print to paste it would undo the
+          capture this whole page exists for.
+        */}
+        {/*
+          `for`/`id` rather than a wrapping label (FormField): help and error
+          text belong to `aria-describedby`, and inside a label they would be
+          read as part of the field's name instead.
+        */}
+        <div className="pp-field">
+          <label className="pp-label" htmlFor={`${id}-src`}>
+            {t('print.source')}
+          </label>
+          <input
+            id={`${id}-src`}
+            className="pp-input"
+            type="url"
+            inputMode="url"
+            value={source}
+            placeholder={t('print.source.placeholder')}
+            aria-invalid={invalidSource ? 'true' : undefined}
+            aria-describedby={invalidSource ? `${id}-src-err` : undefined}
+            onChange={(event) => {
+              setSource(event.target.value);
+              setInvalidSource(false);
+            }}
+          />
+          {invalidSource && (
+            <span className="pp-err" id={`${id}-src-err`} role="alert">
+              {t('print.source.invalid')}
+            </span>
+          )}
+        </div>
+        <div className="pp-field">
+          <label className="pp-label" htmlFor={`${id}-note`}>
+            {t('print.note')}
+          </label>
+          <textarea
+            id={`${id}-note`}
+            className="pp-input"
+            rows={2}
+            maxLength={MAX_NOTE_LENGTH}
+            value={note}
+            placeholder={t('print.note.placeholder')}
+            aria-describedby={`${id}-note-help`}
+            onChange={(event) => {
+              setNote(event.target.value);
+            }}
+          />
+          <span className="pp-help" id={`${id}-note-help`}>
+            {t('print.note.internal')}
+          </span>
+        </div>
       </div>
     </Dialog>
   );

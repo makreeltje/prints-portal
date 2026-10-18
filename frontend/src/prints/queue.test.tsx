@@ -19,6 +19,12 @@ const groups: QueueGroup[] = [
         waitingDays: 118,
         price: null,
         requestState: 'undecided',
+        source: {
+          url: 'https://makerworld.com/en/models/38999',
+          label: 'makerworld.com/en/models/38999',
+        },
+        sourceCount: 2,
+        note: null,
       },
       {
         id: 'r2',
@@ -29,6 +35,9 @@ const groups: QueueGroup[] = [
         waitingDays: 40,
         price: 12.5,
         requestState: 'undecided',
+        source: null,
+        sourceCount: 0,
+        note: 'In zwart printen, de vorige was wit',
       },
     ],
   },
@@ -45,6 +54,9 @@ const groups: QueueGroup[] = [
         waitingDays: 3,
         price: null,
         requestState: 'inProgress',
+        source: null,
+        sourceCount: 0,
+        note: null,
       },
     ],
   },
@@ -58,6 +70,8 @@ const render = (body: { groups: QueueGroup[] }) => {
       json: { total: 1, items: [{ id: 'p9', name: 'Babybox locks' }] },
     }),
     'POST /api/requests': () => ({ status: 201, json: { id: 'new' } }),
+    'PUT /api/prints/new/source': () => ({ status: 204 }),
+    'PUT /api/prints/new/note': () => ({ status: 204 }),
     'POST /api/requests/r1/link': () => ({ status: 204 }),
   });
   renderWithAuth(<QueuePage />, { state: signedIn('Admin') });
@@ -113,7 +127,10 @@ describe('Wachtrij', () => {
     const save = within(dialog).getByRole('button', { name: 'Aanvraag toevoegen' });
     expect(save).toBeDisabled();
     await userEvent.selectOptions(within(dialog).getByRole('combobox'), 'Joey');
-    await userEvent.type(within(dialog).getByRole('textbox'), 'Lamp voor in de gang');
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: 'Wat is er gevraagd?' }),
+      'Lamp voor in de gang',
+    );
     expect(save).toBeEnabled();
     await userEvent.click(save);
     await waitFor(() => {
@@ -144,6 +161,95 @@ describe('Wachtrij', () => {
     expect(stub.calls.find((call) => call.path === '/api/requests/r1/link')?.body).toEqual({
       printId: 'p9',
     });
+  });
+
+  it('shows a bron only where there are no files, and a note anywhere', async () => {
+    render({ groups });
+    await screen.findByText('Vitrinekast inzet');
+    const fileless = screen.getByText('Vitrinekast inzet').closest('.pp-line');
+    const withFiles = screen.getByText('Kabelgoot bureau').closest('.pp-line');
+    if (!(fileless instanceof HTMLElement) || !(withFiles instanceof HTMLElement)) {
+      throw new Error('lines missing');
+    }
+
+    // The bron: the host and path, never the scheme, and the new tab is said
+    // out loud in the accessible name rather than left to the icon.
+    const link = within(fileless).getByRole('link', {
+      name: 'makerworld.com/en/models/38999, opent in een nieuw tabblad',
+    });
+    expect(link).toHaveAttribute('href', 'https://makerworld.com/en/models/38999');
+    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    expect(link).toHaveTextContent('makerworld.com/en/models/38999');
+    // Two brons, one line: the counter stands for the rest.
+    expect(within(fileless).getByText('+1')).toBeInTheDocument();
+
+    // With files the row's job is done, so no bron — but the note stays,
+    // because the work outlives the arrival of the files.
+    expect(
+      within(withFiles).queryByRole('link', { name: /opent in een nieuw tabblad/ }),
+    ).toBeNull();
+    expect(within(withFiles).getByText('In zwart printen, de vorige was wit')).toBeInTheDocument();
+    expect(within(fileless).queryByText(/zwart printen/)).toBeNull();
+  });
+
+  it('carries a bron and a note straight from "Aanvraag toevoegen"', async () => {
+    const stub = render({ groups });
+    await userEvent.click(await screen.findByRole('button', { name: 'Aanvraag toevoegen' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.selectOptions(within(dialog).getByRole('combobox'), 'Joey');
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: 'Wat is er gevraagd?' }),
+      'Lamp',
+    );
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: 'Bron' }),
+      'https://printables.com/model/1',
+    );
+    const boxes = within(dialog).getAllByRole('textbox');
+    console.log(
+      'NAMES:',
+      boxes.map((b) => b.getAttribute('aria-label') ?? b.closest('label')?.textContent),
+    );
+    await userEvent.type(within(dialog).getByRole('textbox', { name: 'Notitie' }), 'In zwart');
+    // The dialog says, where it is typed, that a klant never sees the note.
+    expect(
+      within(dialog).getByText('Alleen voor jou. Niet zichtbaar op de deel-link.'),
+    ).toBeInTheDocument();
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Aanvraag toevoegen' }));
+    await waitFor(() => {
+      expect(stub.calls.some((call) => call.path === '/api/prints/new/note')).toBe(true);
+    });
+    expect(stub.calls.find((call) => call.path === '/api/prints/new/source')?.body).toEqual({
+      url: 'https://printables.com/model/1',
+    });
+    expect(stub.calls.find((call) => call.path === '/api/prints/new/note')?.body).toEqual({
+      note: 'In zwart',
+    });
+  });
+
+  it('refuses a bron that is not a full link, before anything is sent', async () => {
+    const stub = render({ groups });
+    await userEvent.click(await screen.findByRole('button', { name: 'Aanvraag toevoegen' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.selectOptions(within(dialog).getByRole('combobox'), 'Joey');
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: 'Wat is er gevraagd?' }),
+      'Lamp',
+    );
+    await userEvent.type(
+      within(dialog).getByRole('textbox', { name: 'Bron' }),
+      'printables.com/model/1',
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Aanvraag toevoegen' }));
+    expect(
+      within(dialog).getByText('Vul een volledige link in, met https:// ervoor.'),
+    ).toBeInTheDocument();
+    expect(within(dialog).getByRole('textbox', { name: 'Bron' })).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+    expect(stub.calls.some((call) => call.path === '/api/requests')).toBe(false);
   });
 
   it('has an empty state when nothing is queued', async () => {

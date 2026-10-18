@@ -44,6 +44,10 @@ export interface PrintRecordTable {
   /** "Spoel voor de hele print": Spoolman id and the snapshot taken at assignment (JSON). */
   spool_id: number | null;
   spool_snapshot: string | null;
+  /** "Bron": where the model came from, as the operator typed it (GAP-152). */
+  source_url: string | null;
+  /** "Notitie": what still has to be made. Internal; a klant never sees it. */
+  note: string | null;
 }
 
 /** One file on disk belonging to a print. */
@@ -70,6 +74,8 @@ export interface PrintAssetTable {
   slicer: string | null;
   has_thumbnail: number;
   parse_error: string | null;
+  /** For a `.url` shortcut: the link inside it, read when the file is parsed. */
+  url_target: string | null;
   indexed_at: string;
 }
 

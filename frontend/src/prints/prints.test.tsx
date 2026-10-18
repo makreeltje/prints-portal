@@ -426,6 +426,115 @@ describe('DashboardPage', () => {
   });
 });
 
+describe('bron and notitie on a print', () => {
+  /*
+    The page reads its id from the route, so it needs a real one — rendering
+    the element on its own leaves `useParams().id` undefined.
+  */
+  const renderDetail = (role: 'Admin' | 'User') =>
+    renderWithAuth(
+      <Routes>
+        <Route path="/prints/:id" element={<PrintDetailPage />} />
+      </Routes>,
+      { state: signedIn(role), path: '/prints/p1' },
+    );
+
+  const withBoth = () =>
+    detail({
+      sources: [
+        {
+          url: 'https://makerworld.com/en/models/38999',
+          label: 'makerworld.com/en/models/38999',
+          fileName: null,
+        },
+        {
+          url: 'https://www.printables.com/model/417260-laptop-stand',
+          label: 'printables.com/model/417260-laptop-stand',
+          fileName: 'Laptop Stand.url',
+        },
+      ],
+      note: 'In zwart printen, de vorige was wit',
+    });
+
+  it("shows both brons, and the chip only on the folder's", async () => {
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: withBoth() }) });
+    renderDetail('Admin');
+    const list = (await screen.findByText('makerworld.com/en/models/38999')).closest('.pp-srcs');
+    if (!(list instanceof HTMLElement)) throw new Error('no source list');
+    // The typed one leads: it is the only one editable here.
+    expect([...list.querySelectorAll('.pp-src .pp-link')].map((a) => a.textContent)).toEqual([
+      'makerworld.com/en/models/38999',
+      'printables.com/model/417260-laptop-stand',
+    ]);
+    // The chip marks provenance, so it is on the folder's entry and no other.
+    const chips = [...list.querySelectorAll('.pp-hintchip')];
+    expect(chips).toHaveLength(1);
+    expect(chips[0]).toHaveAccessibleName('Gevonden in Laptop Stand.url, in de map van deze print');
+    expect(chips[0]?.closest('.pp-src')).toHaveTextContent('printables.com');
+  });
+
+  it('says beside the note that a klant never sees it', async () => {
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: withBoth() }) });
+    renderDetail('Admin');
+    const note = (await screen.findByText('In zwart printen, de vorige was wit')).closest(
+      '.pp-note',
+    );
+    if (!(note instanceof HTMLElement)) throw new Error('no note block');
+    expect(within(note).getByText('Notitie')).toBeInTheDocument();
+    expect(
+      within(note).getByText('Alleen voor jou. Niet zichtbaar op de deel-link.'),
+    ).toBeInTheDocument();
+  });
+
+  it('gives a User neither field and no way to write either', async () => {
+    // What the backend sends a User: the bron, never the note.
+    stubFetch({
+      'GET /api/prints/p1': () => ({ json: detail({ ...withBoth(), note: null }) }),
+    });
+    renderDetail('User');
+    await screen.findByRole('heading', { level: 1 });
+    expect(document.querySelector('.pp-note')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Bron toevoegen' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Notitie toevoegen' })).toBeNull();
+    /*
+      And no bron either, which is a conflict with PrintSource rather than a
+      decision of ours: a User's page has no "Deze print" card to put it in
+      (GAP-158). The same klant does see it on the share page.
+    */
+    expect(document.querySelector('.pp-srcs')).toBeNull();
+  });
+
+  it('refuses a bron that is not a full link, and sends nothing', async () => {
+    const stub = stubFetch({
+      'GET /api/prints/p1': () => ({ json: detail({ sources: [], note: null }) }),
+      'PUT /api/prints/p1/source': () => ({ status: 204 }),
+    });
+    renderDetail('Admin');
+    await userEvent.click(await screen.findByRole('button', { name: 'Bron toevoegen' }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'Bron' }), 'makerworld.com/x');
+    const field = screen.getByRole('textbox', { name: 'Bron' }).closest('.pp-field');
+    if (!(field instanceof HTMLElement)) throw new Error('no field');
+    await userEvent.click(within(field).getByRole('button', { name: 'Opslaan' }));
+    expect(screen.getByText('Vul een volledige link in, met https:// ervoor.')).toBeInTheDocument();
+    expect(stub.some((call) => call.path === '/api/prints/p1/source')).toBe(false);
+
+    // Correcting it sends it; clearing it sends null, with no remove button.
+    await userEvent.clear(screen.getByRole('textbox', { name: 'Bron' }));
+    await userEvent.type(screen.getByRole('textbox', { name: 'Bron' }), 'https://makerworld.com/x');
+    await userEvent.click(within(field).getByRole('button', { name: 'Opslaan' }));
+    await waitFor(() => {
+      expect(stub.some((call) => call.path === '/api/prints/p1/source')).toBe(true);
+    });
+    expect(stub.find((call) => call.path === '/api/prints/p1/source')?.body).toEqual({
+      url: 'https://makerworld.com/x',
+    });
+    // Clearing is emptying the field and saving; the field offers no remove
+    // button of its own (GAP-138: absence is a value). The page's own "print
+    // verwijderen" is a different thing and is not what this looks at.
+    expect(within(field).queryByRole('button', { name: /verwijder/i })).toBeNull();
+  });
+});
+
 function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
   return {
     ...summary(),
@@ -433,6 +542,8 @@ function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
     archivedAt: null,
     hasModel: false,
     models: [],
+    sources: [],
+    note: null,
     noBilling: false,
     markupPercent: null,
     spool: null,

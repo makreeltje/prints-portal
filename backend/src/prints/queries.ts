@@ -1,5 +1,6 @@
 import { sql, type ExpressionBuilder, type Selectable, type SelectQueryBuilder } from 'kysely';
 import { scopeAllows, type CustomerScope } from '../auth/access.js';
+import { sourceLabel } from '../core/url-file.js';
 import { isTagPaletteKey, tagInkColor } from '../core/tags.js';
 import { printFinance } from '../finance/dto.js';
 import { ordersWithMoney, spoolTints, summariseMoney } from '../finance/read.js';
@@ -15,6 +16,7 @@ import type {
   PrintDetail,
   PrintSummary,
   TagDto,
+  PrintSourceDto,
 } from './types.js';
 
 export const DEFAULT_PAGE_SIZE = 24;
@@ -406,6 +408,37 @@ export async function listCustomers(
 
 type RecordRow = Database['print_records'];
 
+/**
+ * A print's brons: the typed one first, then the folder's in folder order
+ * (PrintSource). The typed one leads because it is the only one editable here.
+ *
+ * There is no precedence — a typed bron never overwrites a `.url` in the
+ * folder and the folder never overwrites what was typed, the same arrangement
+ * as a typed price beside measured grams. The one case folded is an exact
+ * match: that is one fact written twice, not two sources.
+ */
+function sourcesOf(
+  row: { source_url: string | null },
+  assets: { file_name: string; url_target: string | null }[],
+): PrintSourceDto[] {
+  const found = assets.flatMap((asset) =>
+    asset.url_target === null
+      ? []
+      : [
+          {
+            url: asset.url_target,
+            label: sourceLabel(asset.url_target),
+            fileName: asset.file_name,
+          },
+        ],
+  );
+  const typed =
+    row.source_url === null || found.some((one) => one.url === row.source_url)
+      ? []
+      : [{ url: row.source_url, label: sourceLabel(row.source_url), fileName: null }];
+  return [...typed, ...found];
+}
+
 /** A print by id with its files; null when it does not exist (deleted ones only with `includeDeleted`). */
 export async function getPrintDetail(
   db: AppDatabase,
@@ -473,6 +506,14 @@ export async function getPrintDetail(
     noBilling: finance.noBilling,
     markupPercent: options.withAssets ? finance.markupPercent : null,
     spool: options.withAssets ? finance.spool : null,
+    sources: sourcesOf(row, assets),
+    /*
+      A note is internal and role User never sees one — the rule this system
+      has had since 1.1 ("User never sees cost or notes"), made concrete by the
+      first field it applies to. `withAssets` is already the Admin-or-Editor
+      line here, which is the same line.
+    */
+    note: options.withAssets ? row.note : null,
     orders: finance.orders,
   };
   if (!options.withAssets) return detail;

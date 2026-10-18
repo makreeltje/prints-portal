@@ -18,6 +18,8 @@ const kerst: TagWithCount = { id: 't2', name: 'Kerst', colour: null, ink: null, 
 
 function detail(): PrintDetail {
   return {
+    sources: [],
+    note: null,
     id: 'p1',
     name: 'Babybox locks',
     customerFolder: 'Joey',
