@@ -12,11 +12,12 @@ Chromium, at **360px**, **390×844** and **1400px**, in **both themes**, with
 was read off the running page; where it was not, this file says so.
 
 - App version **1.0.0**, built against design system **2.14**.
-- **168 gaps logged, 3 open** (GAP-166, GAP-167, GAP-168 — all three are new
-  and all three are questions about this export). Numbering is unbroken.
-- **No `ds-gap` marker lines left in the frontend.** 2.14 settles GAP-157,
-  GAP-158 and GAP-159, which were the only three that had them;
-  `grep -rn "ds-gap" frontend/src` is empty.
+- **169 gaps logged, 4 open** (GAP-166, GAP-167, GAP-168 — questions about
+  this export — and **GAP-169**, which the owner found by using the session,
+  §6). Numbering is unbroken.
+- **One `ds-gap` marker line in the frontend**, for GAP-169, in
+  `frontend/src/styles/app.css`. 2.14 settles GAP-157, GAP-158 and GAP-159,
+  which were the only three that had them before.
 - Verification for this round: prettier, eslint, both typechecks,
   `scripts/check-design-tokens.sh` over the whole frontend, the frontend suite
   (**209** tests) and the backend suite on **all three engines in one run** —
@@ -35,6 +36,13 @@ was read off the running page; where it was not, this file says so.
 > (GAP-168). Two more things are in *Corrections*: ScreenQueue's README lost
 > its whole 2.12 section in this export, and ScreenPrintDetail and
 > ScreenShareSession disagree about tags for role User.
+>
+> **Then the owner walked the merged session and found the one thing none of
+> us measured for.** He passed everything except the nav: *"het is niet
+> duidelijk genoeg dat je ook naar prints kan gaan"* — the head bar marks
+> where he is and never that the other screen exists. Built to §6 of your own
+> spec, so it is a question for you (GAP-169), with one number attached:
+> `--border` cannot draw a control boundary on this surface.
 
 ---
 
@@ -308,19 +316,92 @@ Worth a sentence in SpoolPicker: **a split name needs an explicit label.**
 
 ---
 
-## 6. What would help most next
+## 6. GAP-169 — the head bar marks where the visitor is, never where he can go
 
-1. **GAP-168**, in one line: name `.pp-lift` in the GAP-163 rules, or give it
+The owner opened the merged deel-link, walked the Overzicht, the Prints list
+and a print, passed all of it, and stopped at the nav: **"het is niet
+duidelijk genoeg dat je ook naar prints kan gaan"**. Everything else was
+shipping quality to him; the one screen he could not find was half of what
+GAP-165 exists for.
+
+It is built exactly as §6 of ScreenShareSession says — "`primary-tint` /
+`text-strong` for the current item, the pairs `.pp-nav a[aria-current=page]`
+has used since 1.0" — and that is the cause. That pair dresses **only** the
+destination you are already on:
+
+- `.pp-guestnav a` has no background, no border and no underline, only
+  `color: var(--text)` at `--text-base`;
+- `.pp-guestnav a[aria-current=page]` adds `--primary-tint`, `--text-strong`
+  and `font-weight: 600`;
+- the other destination's only resting cue is `:hover` → `--primary-tint-soft`,
+  and a deel-link is opened on a phone, where there is no hover.
+
+So a visitor lands on the Overzicht and sees one filled pill reading
+"Overzicht" with the word "Prints" in plain body text beside it, between a
+brand and a ghost button. The pill reads as a heading for the page.
+
+**Why the same pair works for the operator and not here.** `.pp-nav` lives in
+a sidebar or rail: a column of items in a fixed place is self-evidently
+navigation, so marking the current one is enough. Lifted into a horizontal
+head bar with two items, that logic inverts — the current item holds all the
+ink, and the screen the visitor has never seen holds none. This is also the
+one screen whose user gets no second chance: a klant opens the link once, from
+WhatsApp, and never learns the interface.
+
+**Three shapes we offered him, and the semantic problem with the best two.**
+`.pp-seg` (SegmentedControl's pill track) is the clearest "two views, pick
+one" the system has, and it makes both items visibly the same kind of thing —
+but it is `aria-pressed` buttons for in-page switching, and these are routes
+that must stay links with `aria-current="page"`. `.pp-tabs` has the same
+caveat and a weaker signal. **The shape is yours to settle; we are not
+reusing a button pattern for navigation on our own.**
+
+**What is built, as an approved placeholder, marked, with the gap left open:**
+a resting outline on both items, the current one keeping its tint on top —
+`1px solid var(--border-strong)` on `.pp-guestnav a`.
+
+**And the number that matters whichever shape you pick: `--border` cannot do
+this job.** Against the head bar's own `--surface` it measures **1.37:1** in
+dark (`#2e3250` on `#1a1b26`) and **1.42:1** in light (`#d3d9e6` on
+`#ffffff`). WCAG 1.4.11 asks **3:1** of the visual boundary that identifies a
+control, which is the only job this border has. `--border-strong` is
+**3.75:1** and **4.29:1**, so the placeholder uses that instead.
+
+**This reaches further than our head bar.** `.pp-seg`'s own track is
+`border: 1px solid var(--border)`, so a segmented control draws the one thing
+saying "these two are one control" at 1.4:1. Same for `.pp-tabs`, whose
+`border-bottom` is `--border`. Worth deciding once whether a boundary that
+carries meaning should be `--border-strong` system-wide, rather than per
+component.
+
+**Measured with the placeholder in place**, a real session, both themes, both
+widths: the items are 36px tall at 1400px and **44px** at 360px — unchanged,
+because `box-sizing: border-box` is global, so the hairline eats content width
+and not tap height. Head bar 61px and 121px, both unchanged. The two tabs stay
+on one line, 162px each at 360px, and nothing scrolls sideways. Axe WCAG 2.1
+A+AA over the guest screens with the outline in place: **24 scans, 0
+violations**.
+
+---
+
+## 7. What would help most next
+
+1. **GAP-169**, the nav (§6). It is the only open gap the owner raised from
+   using the thing, and the only one that costs a real klant something. Pick a
+   shape; our placeholder is deliberately the dullest of the three.
+2. **`--border` for boundaries that carry meaning** (§6). One decision that
+   covers `.pp-guestnav`, `.pp-seg` and `.pp-tabs` at once.
+3. **GAP-168**, in one line: name `.pp-lift` in the GAP-163 rules, or give it
    `min-width: 0` in rule 9. Until then the fix works here through a utility
    class on a wrapper, which is a thing a future reader will not expect.
-2. **GAP-167**, ScreenQueue's 2.12 section back. It is the only part of this
+4. **GAP-167**, ScreenQueue's 2.12 section back. It is the only part of this
    export that contradicts shipped, measured and tested behaviour.
-3. **GAP-166**, one sentence about tags for role User, so that the two files
+5. **GAP-166**, one sentence about tags for role User, so that the two files
    stop saying different things.
-4. **The payment card below the fold** on a visitor's print page (§2.4) — your
+6. **The payment card below the fold** on a visitor's print page (§2.4) — your
    call on the order, with the numbers in front of you.
-5. **The search field for the visitor's Prints** (§2.1). The largest klant has
+7. **The search field for the visitor's Prints** (§2.1). The largest klant has
    36 prints and the screen pages at 24; we did not add it on our own.
-6. **The guest head at 20 characters and up** (§2.3), where the exit button
+8. **The guest head at 20 characters and up** (§2.3), where the exit button
    leaves the first line and the head grows to 153px. Fine for this owner,
    wrong for the general claim.
