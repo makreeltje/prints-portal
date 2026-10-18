@@ -2044,3 +2044,22 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.14
+
+## GAP-169 [open] A visitor's nav marks where he is and never that the other screen exists
+- **Type:** suspected design bug
+- **Found while:** the owner walking the merged deel-link session on the local stack, the first use by anyone who did not build it
+- **Where needed:** `components/ScreenShareSession/README.md` §2 and §6, `components/AppShell/README.md` 2.14 (the `guest` variant's head bar), `components/bundle.css` `.pp-guestnav`; `frontend/src/sharing/GuestShell.tsx`
+- **What is missing or wrong:** his words: *"het is niet duidelijk genoeg dat je ook naar prints kan gaan"*. The rest of the session he passed. The cause is one sentence in §6 — the head bar uses "`primary-tint`/`text-strong` for the current item — the pairs `.pp-nav a[aria-current=page]` has used since 1.0" — and that pair dresses **only** the item you are already on:
+  - `.pp-guestnav a` carries no background, no border and no underline, only `color: var(--text)` at `--text-base`;
+  - `.pp-guestnav a[aria-current=page]` adds `background: var(--primary-tint)`, `color: var(--text-strong)` and `font-weight: 600`;
+  - the only resting cue for the other destination is `:hover` → `--primary-tint-soft`, and a deel-link is opened on a phone, where there is no hover.
+  So a visitor lands on the Overzicht and sees one filled pill reading "Overzicht" with the word "Prints" in plain body text beside it, between a brand and a ghost button. The pill reads as a heading for the page, not as one of two tabs.
+- **Why it matters:** the same pair works in the operator's shell because `.pp-nav` lives in a sidebar or rail — a column of items in a known place is self-evidently navigation, so marking only the current one is enough. Lifted into a horizontal head bar with two items, that logic inverts: the current-item highlight is the *only* ink, and the unvisited screen is the one with none. Prints is half of what GAP-165 was for — the owner's whole complaint about the old share page was that a klant could not walk through the portal — and it is the half a first-time visitor cannot see. This is also the one screen whose user gets no second chance: a klant opens the link once, from WhatsApp, and never learns the interface.
+- **Proposal:** give the non-current destination a resting affordance, in the head bar only. Three shapes, ours in order of preference, all from existing tokens:
+  1. **SegmentedControl's visual** (`.pp-seg`: `surface-2` track, `border`, `radius-pill`, the current item a `surface` pill with `shadow-sm`). It is the clearest "two views, pick one" in the system and both items are visibly the same kind of thing. **But its semantics do not fit**: `.pp-seg` is `aria-pressed` buttons for in-page view switching, and these are routes that must stay links with `aria-current="page"`. If you want this shape, it needs a blessing for links — a nav variant of the track — not us reusing the class.
+  2. **Tabs' visual** (`.pp-tabs`/`.pp-tab`: shared `border-bottom` on the track, inactive in `--muted`, current in `--primary` with a 2px bottom border). Same semantic caveat, weaker signal, but closer to a bar of destinations.
+  3. **A border on both items**: `1px solid var(--border)` on `.pp-guestnav a`, the current one keeping its tint. Smallest change, keeps the links exactly as specified, and no new pair.
+  A fourth that is not styling and may be worth doing anyway: a link to Prints on the Overzicht itself, where the visitor actually is.
+- **Blocked:** nothing is half-built. The nav is as 2.14 specifies it and works; we are not changing the head bar's visual language on our own, and we would rather not pick between the three above for you.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.14
