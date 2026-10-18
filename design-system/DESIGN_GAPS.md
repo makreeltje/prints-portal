@@ -2031,7 +2031,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.14
 
-## GAP-168 [open] GAP-163's rules do not reach a trigger wrapped in `.pp-lift`, which rule 9 requires
+## GAP-168 [resolved in v2.15] GAP-163's rules do not reach a trigger wrapped in `.pp-lift`, which rule 9 requires
 - **Type:** suspected design bug
 - **Found while:** verifying GAP-163 in the running app at 360px, right after the 2.14 import
 - **Where needed:** `components/bundle.css` (the 2.14 GAP-163 block), `components/SpoolPicker/README.md` 2.14, `components/Popover/README.md` rule 8/9; `frontend/src/finance/SpoolPicker.tsx`
@@ -2045,6 +2045,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.14
 
+- **Resolved in 2.15, and as the second shape:** `.pp-lift { min-width: 0 }` on the wrapper itself, not a fourth selector in the GAP-163 block, because every window-placed panel in the system has a `.pp-lift` wrapper by Popover rule 9 and they all had the same hidden floor. Rule 9 gains the sentence that a `.pp-lift` wrapper is a stacking context *and* a shrinkable box. `pp-minw-0` is off the spool trigger's wrapper in `frontend/src/finance/SpoolPicker.tsx` and is no longer on any `.pp-lift` (the two that remain are on Openstaand's stat cards, where the utility is doing its own documented job); the trigger was re-measured at 360px afterwards (see `docs/design-feedback/implementation.md`).
 ## GAP-169 [resolved in v2.15] A visitor's nav marks where he is and never that the other screen exists
 - **Type:** suspected design bug
 - **Found while:** the owner walking the merged deel-link session on the local stack, the first use by anyone who did not build it
