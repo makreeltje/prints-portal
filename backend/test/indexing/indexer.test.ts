@@ -62,19 +62,19 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
       await db.selectFrom('print_records').select('record_key').orderBy('record_key').execute()
     ).map((r) => r.record_key);
     expect(keys).toEqual([
-      'Denise/Board game',
-      'Denise/Keychain',
-      'Joey/',
-      'Joey/Babybox locks',
-      'Wouter/Empty',
+      'Esmee/Board game',
+      'Esmee/Keychain',
+      'Koen/',
+      'Koen/Bloembak clips',
+      'Veerle/Empty',
     ]);
 
-    const babybox = await record('Joey/Babybox locks');
-    expect(babybox).toMatchObject({
+    const bloembak = await record('Koen/Bloembak clips');
+    expect(bloembak).toMatchObject({
       status: 'indexed',
-      customer_folder: 'Joey',
-      project_folder: 'Babybox locks',
-      display_name: 'Babybox locks',
+      customer_folder: 'Koen',
+      project_folder: 'Bloembak clips',
+      display_name: 'Bloembak clips',
       total_grams: 173.49,
       total_print_seconds: 12_294,
       part_name: 'lock',
@@ -83,7 +83,7 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
     });
 
     expect(
-      (await lines('Joey/Babybox locks')).map((l) => [
+      (await lines('Koen/Bloembak clips')).map((l) => [
         l.file_name,
         l.auto_excluded,
         l.auto_exclusion_reason,
@@ -97,34 +97,34 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
     const files = await db
       .selectFrom('print_assets')
       .select(['relative_path', 'sub_path', 'type'])
-      .where('print_record_id', '=', babybox.id)
+      .where('print_record_id', '=', bloembak.id)
       .orderBy('relative_path')
       .execute();
     expect(files).toEqual([
       {
-        relative_path: 'Joey/Babybox locks/Nog te printen/next_PLA_11m.gcode',
+        relative_path: 'Koen/Bloembak clips/Nog te printen/next_PLA_11m.gcode',
         sub_path: 'Nog te printen',
         type: 'gcode',
       },
-      { relative_path: 'Joey/Babybox locks/lock.3mf', sub_path: '', type: '3mf' },
-      { relative_path: 'Joey/Babybox locks/lock_PLA_3h27m.gcode', sub_path: '', type: 'gcode' },
-      { relative_path: 'Joey/Babybox locks/render.png', sub_path: '', type: 'other' },
+      { relative_path: 'Koen/Bloembak clips/lock.3mf', sub_path: '', type: '3mf' },
+      { relative_path: 'Koen/Bloembak clips/lock_PLA_3h27m.gcode', sub_path: '', type: 'gcode' },
+      { relative_path: 'Koen/Bloembak clips/render.png', sub_path: '', type: 'other' },
     ]);
 
-    expect(await record('Joey/')).toMatchObject({
+    expect(await record('Koen/')).toMatchObject({
       project_folder: null,
-      display_name: 'Joey',
+      display_name: 'Koen',
       total_grams: 15.36,
     });
-    expect(await record('Denise/Board game')).toMatchObject({
+    expect(await record('Esmee/Board game')).toMatchObject({
       total_grams: 224.39,
       printer_model: 'K1 Max',
     });
-    expect(await record('Wouter/Empty')).toMatchObject({ total_grams: null, print_date: null });
+    expect(await record('Veerle/Empty')).toMatchObject({ total_grams: null, print_date: null });
 
-    const keychain = await lines('Denise/Keychain');
+    const keychain = await lines('Esmee/Keychain');
     expect(keychain.map((l) => l.possible_duplicate)).toEqual([1, 1]);
-    expect(await record('Denise/Keychain')).toMatchObject({ total_grams: 6.06 });
+    expect(await record('Esmee/Keychain')).toMatchObject({ total_grams: 6.06 });
 
     expect(events.filter((e) => e.type === 'print:created')).toHaveLength(5);
   });
@@ -139,7 +139,7 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
 
   it('keeps user decisions when a file changes', async () => {
     await indexer.indexAll();
-    const next = (await lines('Joey/Babybox locks')).find(
+    const next = (await lines('Koen/Bloembak clips')).find(
       (l) => l.file_name === 'next_PLA_11m.gcode',
     );
     await db
@@ -153,15 +153,15 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
       .where('path_hash', '=', next?.path_hash ?? '')
       .execute();
 
-    const file = path.join(root, 'Joey/Babybox locks/Nog te printen/next_PLA_11m.gcode');
+    const file = path.join(root, 'Koen/Bloembak clips/Nog te printen/next_PLA_11m.gcode');
     await appendFile(file, '\n; touched\n');
     const summary = await indexer.indexProject({
-      customerFolder: 'Joey',
-      projectFolder: 'Babybox locks',
+      customerFolder: 'Koen',
+      projectFolder: 'Bloembak clips',
     });
     expect(summary).toMatchObject({ updated: 1, filesParsed: 1 });
 
-    const after = (await lines('Joey/Babybox locks')).find(
+    const after = (await lines('Koen/Bloembak clips')).find(
       (l) => l.file_name === 'next_PLA_11m.gcode',
     );
     expect(after).toMatchObject({ user_excluded: 0, auto_excluded: 1 });
@@ -172,13 +172,13 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
       .executeTakeFirstOrThrow();
     expect(item.times_printed).toBe(2);
     // 173.49 + 2 × 3.03
-    expect((await record('Joey/Babybox locks')).total_grams).toBe(179.55);
+    expect((await record('Koen/Bloembak clips')).total_grams).toBe(179.55);
   });
 
   it('lets a 3MF count when the user excludes the only G-code', async () => {
     await indexer.indexAll();
-    const babybox = await record('Joey/Babybox locks');
-    const gcode = (await lines('Joey/Babybox locks')).find(
+    const bloembak = await record('Koen/Bloembak clips');
+    const gcode = (await lines('Koen/Bloembak clips')).find(
       (l) => l.file_name === 'lock_PLA_3h27m.gcode',
     );
     await db
@@ -186,11 +186,11 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
       .set({ user_excluded: 1 })
       .where('id', '=', gcode?.id ?? '')
       .execute();
-    await indexer.recalculateRecord(babybox.id);
+    await indexer.recalculateRecord(bloembak.id);
 
-    const threeMf = (await lines('Joey/Babybox locks')).find((l) => l.file_name === 'lock.3mf');
+    const threeMf = (await lines('Koen/Bloembak clips')).find((l) => l.file_name === 'lock.3mf');
     expect(threeMf).toMatchObject({ auto_excluded: 0, auto_exclusion_reason: null });
-    expect((await record('Joey/Babybox locks')).total_grams).toBe(224.39);
+    expect((await record('Koen/Bloembak clips')).total_grams).toBe(224.39);
   });
 
   it('never re-creates or revives a deleted print, and hides it', async () => {
@@ -198,27 +198,27 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
     await db
       .updateTable('print_records')
       .set({ status: 'deleted', deleted_at: '2026-10-05T12:00:00.000Z' })
-      .where('record_key', '=', 'Denise/Keychain')
+      .where('record_key', '=', 'Esmee/Keychain')
       .execute();
-    await putText(root, 'Denise/Keychain/new_PLA_1h.gcode', '; filament used [g] = 1');
+    await putText(root, 'Esmee/Keychain/new_PLA_1h.gcode', '; filament used [g] = 1');
 
     const summary = await indexer.indexAll(true);
     expect(summary.skippedDeleted).toBe(1);
-    expect((await record('Denise/Keychain')).status).toBe('deleted');
+    expect((await record('Esmee/Keychain')).status).toBe('deleted');
     const visible = await visibleRecords(db).select('record_key').execute();
-    expect(visible.map((r) => r.record_key)).not.toContain('Denise/Keychain');
+    expect(visible.map((r) => r.record_key)).not.toContain('Esmee/Keychain');
     expect(visible).toHaveLength(4);
   });
 
   it('archives a print whose folder disappears and revives it when it returns', async () => {
     await indexer.indexAll();
-    const before = await record('Denise/Board game');
-    const folder = path.join(root, 'Denise/Board game');
+    const before = await record('Esmee/Board game');
+    const folder = path.join(root, 'Esmee/Board game');
     const parked = path.join(root, '..', `parked-${path.basename(root)}`);
     await rename(folder, parked);
 
     expect(await indexer.indexAll()).toMatchObject({ archived: 1 });
-    const archived = await record('Denise/Board game');
+    const archived = await record('Esmee/Board game');
     expect(archived).toMatchObject({ id: before.id, status: 'archived', total_grams: 224.39 });
     expect(archived.archived_at).not.toBeNull();
     const assets = await db
@@ -230,7 +230,7 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
 
     await rename(parked, folder);
     expect(await indexer.indexAll()).toMatchObject({ updated: 1 });
-    expect(await record('Denise/Board game')).toMatchObject({
+    expect(await record('Esmee/Board game')).toMatchObject({
       id: before.id,
       status: 'indexed',
       archived_at: null,
@@ -240,34 +240,34 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
 
   it('archives every print of a customer folder that is removed', async () => {
     await indexer.indexAll();
-    await rm(path.join(root, 'Joey'), { recursive: true });
-    const summary = await indexer.indexCustomer('Joey');
+    await rm(path.join(root, 'Koen'), { recursive: true });
+    const summary = await indexer.indexCustomer('Koen');
     expect(summary.archived).toBe(2);
-    expect((await record('Joey/')).status).toBe('archived');
+    expect((await record('Koen/')).status).toBe('archived');
   });
 
   it('adds and removes files inside a print', async () => {
     await indexer.indexAll();
-    await rm(path.join(root, 'Denise/Keychain/key_PLA_11m copy.gcode'));
-    await putText(root, 'Denise/Keychain/notes.pdf', '%PDF');
+    await rm(path.join(root, 'Esmee/Keychain/key_PLA_11m copy.gcode'));
+    await putText(root, 'Esmee/Keychain/notes.pdf', '%PDF');
     const later = new Date('2030-01-01T00:00:00Z');
-    await utimes(path.join(root, 'Denise/Keychain/notes.pdf'), later, later);
+    await utimes(path.join(root, 'Esmee/Keychain/notes.pdf'), later, later);
 
-    await indexer.indexProject({ customerFolder: 'Denise', projectFolder: 'Keychain' });
+    await indexer.indexProject({ customerFolder: 'Esmee', projectFolder: 'Keychain' });
     const names = await db
       .selectFrom('print_assets')
       .select('file_name')
-      .where('relative_path', 'like', 'Denise/Keychain/%')
+      .where('relative_path', 'like', 'Esmee/Keychain/%')
       .orderBy('file_name')
       .execute();
     expect(names.map((n) => n.file_name)).toEqual(['key_PLA_11m.gcode', 'notes.pdf']);
-    expect((await lines('Denise/Keychain')).map((l) => l.possible_duplicate)).toEqual([0]);
-    expect((await record('Denise/Keychain')).total_grams).toBe(3.03);
+    expect((await lines('Esmee/Keychain')).map((l) => l.possible_duplicate)).toEqual([0]);
+    expect((await record('Esmee/Keychain')).total_grams).toBe(3.03);
   });
 
   it('puts every file of a new print in order 1', async () => {
     await indexer.indexAll();
-    const box = await record('Joey/Babybox locks');
+    const box = await record('Koen/Bloembak clips');
     const orders = await db
       .selectFrom('print_orders')
       .selectAll()
@@ -279,24 +279,20 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
       .selectAll()
       .where('order_id', '=', orders[0]?.id ?? '')
       .execute();
-    expect(items).toHaveLength((await lines('Joey/Babybox locks')).length);
+    expect(items).toHaveLength((await lines('Koen/Bloembak clips')).length);
     expect(items.every((item) => item.times_printed === 1)).toBe(true);
   });
 
   it('keeps new files out of an order that has a price, until a Nabestelling', async () => {
     await indexer.indexAll();
-    const keychain = await record('Denise/Keychain');
+    const keychain = await record('Esmee/Keychain');
     await db
       .updateTable('print_orders')
       .set({ sale_price_cents: 500 })
       .where('print_record_id', '=', keychain.id)
       .execute();
-    await putText(
-      root,
-      'Denise/Keychain/spare_PLA_11m.gcode',
-      '; total filament used [g] = 3.03\n',
-    );
-    await indexer.indexProject({ customerFolder: 'Denise', projectFolder: 'Keychain' });
+    await putText(root, 'Esmee/Keychain/spare_PLA_11m.gcode', '; total filament used [g] = 3.03\n');
+    await indexer.indexProject({ customerFolder: 'Esmee', projectFolder: 'Keychain' });
 
     const items = await db
       .selectFrom('order_items as i')
@@ -304,18 +300,18 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
       .select('i.path_hash')
       .where('o.print_record_id', '=', keychain.id)
       .execute();
-    const spare = (await lines('Denise/Keychain')).find(
+    const spare = (await lines('Esmee/Keychain')).find(
       (l) => l.file_name === 'spare_PLA_11m.gcode',
     );
     expect(spare).toBeDefined();
     expect(items.map((i) => i.path_hash)).not.toContain(spare?.path_hash);
     // A file in no order does not count.
-    expect((await record('Denise/Keychain')).total_grams).toBe(keychain.total_grams);
+    expect((await record('Esmee/Keychain')).total_grams).toBe(keychain.total_grams);
   });
 
   it('keeps orders and their items when an archived folder returns', async () => {
     await indexer.indexAll();
-    const before = await record('Denise/Board game');
+    const before = await record('Esmee/Board game');
     await db
       .updateTable('order_items')
       .set({ times_printed: 3 })
@@ -323,7 +319,7 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
         eb.selectFrom('print_orders').select('id').where('print_record_id', '=', before.id),
       )
       .execute();
-    const folder = path.join(root, 'Denise/Board game');
+    const folder = path.join(root, 'Esmee/Board game');
     const parked = path.join(root, '..', `parked-orders-${path.basename(root)}`);
     await rename(folder, parked);
     await indexer.indexAll();
@@ -340,7 +336,7 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
   });
 
   it('records unreadable files instead of failing', async () => {
-    await putText(root, 'Wouter/Empty/broken.3mf', 'this is not a zip');
+    await putText(root, 'Veerle/Empty/broken.3mf', 'this is not a zip');
     const summary = await indexer.indexAll();
     expect(summary.parseErrors).toBe(1);
     const broken = await db
@@ -355,7 +351,7 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
   it('runs overlapping requests one after another', async () => {
     const results = await Promise.all([
       indexer.indexAll(),
-      indexer.indexProject({ customerFolder: 'Joey', projectFolder: 'Babybox locks' }),
+      indexer.indexProject({ customerFolder: 'Koen', projectFolder: 'Bloembak clips' }),
       indexer.indexAll(),
     ]);
     expect(results.map((r) => r.created)).toEqual([5, 0, 0]);

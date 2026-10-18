@@ -7,32 +7,32 @@ import { placeOf, squashName } from './filter';
  */
 describe('placeOf', () => {
   const print = (projectFolder: string | null, name: string) => ({
-    customerFolder: 'Joey',
+    customerFolder: 'Koen',
     projectFolder,
     name,
   });
 
   it('names the klant alone when the project repeats the print name', () => {
-    expect(placeOf(print('Babybox locks', 'Babybox locks'))).toBe('Joey');
+    expect(placeOf(print('Bloembak clips', 'Bloembak clips'))).toBe('Koen');
   });
 
   it('ignores case, spaces and punctuation when comparing', () => {
-    expect(placeOf(print('babybox-locks', 'Babybox locks'))).toBe('Joey');
-    expect(placeOf(print('Babybox_Locks ', 'babybox locks'))).toBe('Joey');
+    expect(placeOf(print('bloembak-clips', 'Bloembak clips'))).toBe('Koen');
+    expect(placeOf(print('Bloembak_Clips ', 'bloembak clips'))).toBe('Koen');
   });
 
   it('keeps a project that says something the name does not', () => {
-    expect(placeOf(print('Kerstversiering 2026', 'Babybox locks'))).toBe(
-      'Joey / Kerstversiering 2026',
+    expect(placeOf(print('Kerstversiering 2026', 'Bloembak clips'))).toBe(
+      'Koen / Kerstversiering 2026',
     );
   });
 
   it('names the klant alone for a print directly under the customer', () => {
-    expect(placeOf(print(null, 'Babybox locks'))).toBe('Joey');
+    expect(placeOf(print(null, 'Bloembak clips'))).toBe('Koen');
   });
 
   it('treats an empty project as no project', () => {
-    expect(placeOf(print('', 'Babybox locks'))).toBe('Joey');
+    expect(placeOf(print('', 'Bloembak clips'))).toBe('Koen');
   });
 
   it('does not collapse two different names to the same squash', () => {

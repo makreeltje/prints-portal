@@ -79,7 +79,7 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
         is the point — the table type describes the newest schema, and this row
         deliberately does not.
       */
-      .values(withoutOrigin(record('r', 'Joey/Box', 'Joey')))
+      .values(withoutOrigin(record('r', 'Koen/Box', 'Koen')))
       .execute();
     await sqlInsert(db, 'r');
     await migrateToLatest(db);
@@ -116,8 +116,8 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
     await db
       .insertInto('customer_access')
       .values([
-        { user_id: 'u1', customer_folder: 'Joey', granted_at: now },
-        { user_id: 'u1', customer_folder: 'joey', granted_at: now },
+        { user_id: 'u1', customer_folder: 'Koen', granted_at: now },
+        { user_id: 'u1', customer_folder: 'koen', granted_at: now },
       ])
       .execute();
     await db
@@ -140,11 +140,11 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
     db = await openTestDatabase(url);
     await db
       .insertInto('print_records')
-      .values(record('a', 'Joey/Box', 'Joey'))
+      .values(record('a', 'Koen/Box', 'Koen'))
       .execute();
     await db
       .insertInto('print_records')
-      .values(record('b', 'joey/Box', 'joey'))
+      .values(record('b', 'koen/Box', 'koen'))
       .execute();
     const rows = await db
       .selectFrom('print_records')
@@ -152,8 +152,8 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
       .orderBy('id')
       .execute();
     expect(rows).toEqual([
-      { record_key: 'Joey/Box', total_grams: 12.5, total_print_seconds: 3_000_000_000 },
-      { record_key: 'joey/Box', total_grams: 12.5, total_print_seconds: 3_000_000_000 },
+      { record_key: 'Koen/Box', total_grams: 12.5, total_print_seconds: 3_000_000_000 },
+      { record_key: 'koen/Box', total_grams: 12.5, total_print_seconds: 3_000_000_000 },
     ]);
   });
 
@@ -161,14 +161,14 @@ describe.each(TEST_DATABASES)('migrations on $name', ({ url }) => {
     db = await openTestDatabase(url);
     await db
       .insertInto('print_records')
-      .values(record('r', 'Joey/Box', 'Joey'))
+      .values(record('r', 'Koen/Box', 'Koen'))
       .execute();
     await db
       .insertInto('print_assets')
       .values({
         id: 'asset',
         print_record_id: 'r',
-        relative_path: 'Joey/Box/a.gcode',
+        relative_path: 'Koen/Box/a.gcode',
         path_hash: 'h',
         file_name: 'a.gcode',
         sub_path: '',
@@ -230,7 +230,7 @@ async function sqlInsert(db: AppDatabase, recordId: string): Promise<void> {
     .values({
       id: 'a1',
       print_record_id: recordId,
-      relative_path: 'Joey/Box/a.gcode',
+      relative_path: 'Koen/Box/a.gcode',
       path_hash: 'h1',
       file_name: 'a.gcode',
       sub_path: '',

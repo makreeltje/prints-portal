@@ -613,7 +613,7 @@ function rasterise(svg: Buffer): Buffer | null {
   }
 }
 
-/** "Factuur-2026-008-Joey.pdf": plain ASCII, safe in every header and file system. */
+/** "Factuur-2026-008-Koen.pdf": plain ASCII, safe in every header and file system. */
 /** Where the uploaded logo is kept (always a PNG). */
 export function logoPath(dataDir: string): string {
   return path.join(dataDir, 'branding', 'logo.png');

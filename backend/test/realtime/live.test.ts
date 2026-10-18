@@ -25,7 +25,7 @@ describe('live updates', () => {
     await t.as(admin, {
       method: 'PATCH',
       url: '/api/access',
-      payload: { changes: [{ userId: helperId, customerFolder: 'Joey', granted: true }] },
+      payload: { changes: [{ userId: helperId, customerFolder: 'Koen', granted: true }] },
     });
     await t.app.listen({ port: 0, host: '127.0.0.1' });
     base = `ws://127.0.0.1:${String((t.app.server.address() as AddressInfo).port)}`;
@@ -103,36 +103,36 @@ describe('live updates', () => {
     await until(() => adminLive.messages.length > 0 && helperLive.messages.length > 0);
     adminLive.socket.send(JSON.stringify({ type: 'subscribe', customers: 'all' }));
     // A User asking for everything gets only what they may see.
-    helperLive.socket.send(JSON.stringify({ type: 'subscribe', customers: ['Joey', 'Denise'] }));
+    helperLive.socket.send(JSON.stringify({ type: 'subscribe', customers: ['Koen', 'Esmee'] }));
     await until(() => helperLive.messages.some((m) => m.type === 'subscribed'));
     expect(helperLive.messages.find((m) => m.type === 'subscribed')).toEqual({
       type: 'subscribed',
-      customers: ['Joey'],
+      customers: ['Koen'],
     });
     await until(() => adminLive.messages.some((m) => m.type === 'subscribed'));
 
     const keychain = await printOf('Keychain');
-    const lock = await printOf('Babybox locks');
+    const lock = await printOf('Bloembak clips');
     await t.as(admin, { method: 'DELETE', url: `/api/prints/${keychain.id}` });
     await t.as(admin, { method: 'DELETE', url: `/api/prints/${lock.id}` });
     await until(() => adminLive.messages.filter((m) => m.type === 'print:deleted').length === 2);
     await until(() => helperLive.messages.some((m) => m.type === 'print:deleted'));
     expect(helperLive.messages.filter((m) => m.type === 'print:deleted')).toEqual([
-      { type: 'print:deleted', printId: lock.id, customerFolder: 'Joey' },
+      { type: 'print:deleted', printId: lock.id, customerFolder: 'Koen' },
     ]);
   });
 
   it('forwards indexer changes', async () => {
     const live = await connect(admin);
     await until(() => live.messages.length > 0);
-    live.socket.send(JSON.stringify({ type: 'subscribe', customers: ['Wouter'] }));
+    live.socket.send(JSON.stringify({ type: 'subscribe', customers: ['Veerle'] }));
     await until(() => live.messages.some((m) => m.type === 'subscribed'));
     const { put } = await import('../helpers/prints-tree.js');
-    await put(root, 'Wouter/Empty/stand_PLA_1h.gcode', 'orca-single-slot.gcode');
+    await put(root, 'Veerle/Empty/stand_PLA_1h.gcode', 'orca-single-slot.gcode');
     await t.app.services.indexer.indexAll();
     await until(() => live.messages.some((m) => m.type === 'print:updated'));
     expect(live.messages.find((m) => m.type === 'print:updated')).toMatchObject({
-      customerFolder: 'Wouter',
+      customerFolder: 'Veerle',
     });
   });
 

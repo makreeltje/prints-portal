@@ -60,11 +60,11 @@ describe('t', () => {
     expect(t('outstanding.groupMeta', { count: 1 })).not.toContain('oudste');
 
     const label = (count: number, days: number) =>
-      t('outstanding.groupLabel', { customer: 'Joey', count, days, amount: '€ 640,12' });
-    expect(label(1, 1)).toBe('Joey, 1 print, oudste 1 dag, € 640,12');
-    expect(label(18, 741)).toBe('Joey, 18 prints, oudste 741 dagen, € 640,12');
+      t('outstanding.groupLabel', { customer: 'Koen', count, days, amount: '€ 640,12' });
+    expect(label(1, 1)).toBe('Koen, 1 print, oudste 1 dag, € 640,12');
+    expect(label(18, 741)).toBe('Koen, 18 prints, oudste 741 dagen, € 640,12');
     // The same zero arm as the badge it names.
-    expect(label(2, 0)).toBe('Joey, 2 prints, alles van vandaag, € 640,12');
+    expect(label(2, 0)).toBe('Koen, 2 prints, alles van vandaag, € 640,12');
   });
 
   /*

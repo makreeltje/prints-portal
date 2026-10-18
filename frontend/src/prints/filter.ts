@@ -15,7 +15,7 @@ export function isFiltered(filter: PrintFilter): boolean {
 
 /**
  * Compare two names the way GAP-072 asks: case, spaces and punctuation ignored,
- * so "Babybox locks" and "babybox-locks" are the same name.
+ * so "Bloembak clips" and "bloembak-clips" are the same name.
  */
 export const squashName = (value: string) =>
   value.toLocaleLowerCase('nl').replace(/[^\p{L}\p{N}]+/gu, '');

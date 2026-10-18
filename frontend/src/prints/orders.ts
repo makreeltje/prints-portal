@@ -40,7 +40,7 @@ export const isSettled = (status: OrderStatus) => status === 'paid' || status ==
 export const newestFirst = (orders: readonly Order[]) =>
   [...orders].sort((a, b) => b.number - a.number);
 
-/** "Joey / Babybox locks", plus "· 2 bestellingen" when the print has several orders. */
+/** "Koen / Bloembak clips", plus "· 2 bestellingen" when the print has several orders. */
 export function subLine(print: PrintSummary): string {
   const orders = print.money?.orderCount ?? 1;
   return orders > 1

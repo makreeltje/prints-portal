@@ -30,7 +30,7 @@ function cost(overrides: Partial<Cost> = {}): Cost {
     lines: [
       {
         lineId: 'l1',
-        fileName: 'Babybox_locks.gcode',
+        fileName: 'Bloembak_clips.gcode',
         plateIndex: 0,
         counted: true,
         timesPrinted: 2,
@@ -98,7 +98,7 @@ const renderPanel = (
   renderWithAuth(
     <PaymentPanel
       order={o}
-      printName="Babybox locks"
+      printName="Bloembak clips"
       markupPercent={400}
       notBilled={notBilled}
       cost={4.26}
@@ -170,7 +170,7 @@ describe('PaymentPanel', () => {
     const dialog = screen.getByRole('alertdialog');
     expect(text(within(dialog).getByRole('heading').textContent)).toBe('Afschrijven (€ 6,89)?');
     expect(text(dialog.textContent)).toContain(
-      "De rest van 'Babybox locks' (€ 6,89) wordt afgeschreven.",
+      "De rest van 'Bloembak clips' (€ 6,89) wordt afgeschreven.",
     );
     expect(text(dialog.textContent)).toContain(
       'Al betaald: € 5,00. Alleen de rest wordt afgeschreven.',
@@ -301,7 +301,7 @@ describe('CostBreakdown', () => {
     expect(rows).toEqual([
       'PostBerekeningBronBedrag',
       'Materiaal€ 4,00',
-      'onderdeel van Materiaal Babybox_locks.gcode2 × 87 g × € 22,50/kgSpoolman€ 3,92',
+      'onderdeel van Materiaal Bloembak_clips.gcode2 × 87 g × € 22,50/kgSpoolman€ 3,92',
       'onderdeel van Materiaal Multicolour_deksel.gcode3,03 g€ 0,08',
       'onderdeel van Multicolour_deksel.gcode Slot 21,65 g × € 24,00/kgSpoolman€ 0,04',
       'onderdeel van Multicolour_deksel.gcode Slot 41,38 g × € 30,00/kgHandmatig€ 0,04',
@@ -443,7 +443,7 @@ describe('BulkActionBar', () => {
   const print = (id: string, name: string): PrintSummary => ({
     id,
     name,
-    customerFolder: 'Joey',
+    customerFolder: 'Koen',
     projectFolder: name,
     material: 'PLA',
     printSeconds: 60,
@@ -603,11 +603,11 @@ describe('SettingsPage', () => {
       'GET /api/customers': () => ({
         json: {
           customers: [
-            { folder: 'Joey', printCount: 12, deleted: false, noBilling: false, openAmount: 0 },
+            { folder: 'Koen', printCount: 12, deleted: false, noBilling: false, openAmount: 0 },
           ],
         },
       }),
-      'PUT /api/customers/Joey/billing': () => ({ status: 204 }),
+      'PUT /api/customers/Koen/billing': () => ({ status: 204 }),
       'HEAD /api/settings/logo': () => ({ status: 404 }),
       'GET /api/spoolman/status': () => ({
         json: {
@@ -636,7 +636,7 @@ describe('SettingsPage', () => {
 
     await userEvent.click(await screen.findByRole('switch', { name: 'Niet factureren' }));
     await waitFor(() => {
-      expect(calls.find((c) => c.path === '/api/customers/Joey/billing')?.body).toEqual({
+      expect(calls.find((c) => c.path === '/api/customers/Koen/billing')?.body).toEqual({
         noBilling: true,
       });
     });

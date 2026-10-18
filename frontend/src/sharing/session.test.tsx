@@ -47,7 +47,7 @@ const session = (overrides: Record<string, () => { status?: number; json?: unkno
     }),
     [`GET /api/share/${TOKEN}`]: () => ({ json: view }),
     'GET /api/prints': () => ({
-      json: { total: 2, items: [print('p1', 'Babybox locks'), print('p2', 'Dopje')] },
+      json: { total: 2, items: [print('p1', 'Bloembak clips'), print('p2', 'Dopje')] },
     }),
     'POST /api/auth/logout': () => ({ status: 204 }),
     ...overrides,
@@ -114,7 +114,7 @@ describe('a deel-linksessie (GAP-165)', () => {
     await screen.findByRole('banner');
     await userEvent.click(screen.getByRole('link', { name: 'Prints' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Prints' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Babybox locks' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Bloembak clips' })).toHaveAttribute(
       'href',
       `/share/${TOKEN}/prints/p1`,
     );
@@ -195,7 +195,7 @@ describe('a deel-linksessie (GAP-165)', () => {
       // and never on a timer.
       'GET /api/prints': () =>
         alive
-          ? { json: { total: 1, items: [print('p1', 'Babybox locks')] } }
+          ? { json: { total: 1, items: [print('p1', 'Bloembak clips')] } }
           : { status: 401, json: {} },
     });
     render();

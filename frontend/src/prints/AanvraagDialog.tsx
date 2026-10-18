@@ -222,8 +222,8 @@ export function AanvraagDialog({ onClose, onDone }: { onClose: () => void; onDon
 /**
  * The klant: a combobox over the klanten the library knows, with the typed
  * name as the **last** option (AanvraagDialog, SpoolPicker's pattern). The
- * meta line is `customers.printCount` with its zero arm, which is how "Joey"
- * is told from "Joey Bouwhuis".
+ * meta line is `customers.printCount` with its zero arm, which is how "Koen"
+ * is told from "Koen Bouwhuis".
  */
 function CustomerField({
   id,

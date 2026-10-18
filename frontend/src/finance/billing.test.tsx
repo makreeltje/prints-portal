@@ -15,7 +15,7 @@ const outstanding: Outstanding = {
   oldest: { printName: 'Telefoonhouder', orderNumber: 1, days: 20 },
   groups: [
     {
-      customer: 'Denise',
+      customer: 'Esmee',
       total: 24,
       count: 1,
       oldestDays: 20,
@@ -38,7 +38,7 @@ const outstanding: Outstanding = {
       ],
     },
     {
-      customer: 'Joey',
+      customer: 'Koen',
       total: 40.67,
       count: 2,
       oldestDays: 12,
@@ -47,8 +47,8 @@ const outstanding: Outstanding = {
           orderId: 'o1',
           orderNumber: 1,
           printId: 'p1',
-          printName: 'Babybox locks',
-          project: 'Babybox locks',
+          printName: 'Bloembak clips',
+          project: 'Bloembak clips',
           archived: true,
           status: 'partial',
           price: 11.89,
@@ -90,33 +90,33 @@ describe('OutstandingPage', () => {
   it('shows tiles and groups, and marks a klant paid after confirming', async () => {
     const calls = stubFetch({
       'GET /api/outstanding': () => ({ json: outstanding }),
-      'POST /api/outstanding/Joey/mark-paid': () => ({ json: { orders: 2, amount: 40.67 } }),
+      'POST /api/outstanding/Koen/mark-paid': () => ({ json: { orders: 2, amount: 40.67 } }),
     });
     renderWithAuth(<OutstandingPage />, { state: signedIn('Editor'), path: '/openstaand' });
-    const joey = await openGroup('Joey');
+    const koen = await openGroup('Koen');
     expect(screen.getAllByText('Totaal openstaand').length).toBeGreaterThan(0);
     expect(screen.getByText('uit 3 prints')).toBeInTheDocument();
-    expect(screen.getByText('Telefoonhouder · Denise')).toBeInTheDocument();
+    expect(screen.getByText('Telefoonhouder · Esmee')).toBeInTheDocument();
     // Oldest klant first; partial lines show the remainder of the price.
     const groups = screen.getAllByRole('group').map((r) => r.getAttribute('aria-labelledby'));
     expect(groups).toHaveLength(2);
     // The count alone since 2.12; the age is the badge's beside it (GAP-154).
-    expect(within(joey).getByText('2 prints')).toBeInTheDocument();
-    expect(within(joey).getByText('oudste 12 dagen')).toBeInTheDocument();
-    expect(text(within(joey).getByText(/^van /).textContent)).toBe('van € 11,89');
-    expect(within(joey).getByText('Gearchiveerd')).toBeInTheDocument();
+    expect(within(koen).getByText('2 prints')).toBeInTheDocument();
+    expect(within(koen).getByText('oudste 12 dagen')).toBeInTheDocument();
+    expect(text(within(koen).getByText(/^van /).textContent)).toBe('van € 11,89');
+    expect(within(koen).getByText('Gearchiveerd')).toBeInTheDocument();
     // Three age steps now (GAP-080): neutral to 30 days, warning to 90, unpaid above.
-    expect(within(joey).getAllByText('12 dagen open')[0]?.closest('.pp-badge')).toHaveClass(
+    expect(within(koen).getAllByText('12 dagen open')[0]?.closest('.pp-badge')).toHaveClass(
       'neutral',
     );
-    expect(within(joey).getByRole('link', { name: 'Herinnering (PDF)' })).toHaveAttribute(
+    expect(within(koen).getByRole('link', { name: 'Herinnering (PDF)' })).toHaveAttribute(
       'href',
-      '/api/customers/Joey/reminder.pdf',
+      '/api/customers/Koen/reminder.pdf',
     );
 
-    await userEvent.click(within(joey).getByRole('button', { name: 'Alles als betaald' }));
+    await userEvent.click(within(koen).getByRole('button', { name: 'Alles als betaald' }));
     const dialog = screen.getByRole('dialog', {
-      name: 'Alles als betaald markeren voor Joey (2 prints)?',
+      name: 'Alles als betaald markeren voor Koen (2 prints)?',
     });
     expect(text(dialog.textContent)).toContain(
       'Het openstaande bedrag van € 40,67 wordt als betaald geregistreerd.',
@@ -133,11 +133,11 @@ describe('OutstandingPage', () => {
       'POST /api/orders/o1/payments': () => ({ json: {} }),
     });
     renderWithAuth(<OutstandingPage />, { state: signedIn('Editor') });
-    const joey = await openGroup('Joey');
-    const line = within(joey).getByText('Babybox locks').closest('li') as HTMLElement;
+    const koen = await openGroup('Koen');
+    const line = within(koen).getByText('Bloembak clips').closest('li') as HTMLElement;
     await userEvent.click(within(line).getByRole('button', { name: 'Markeer als betaald' }));
     const dialog = screen.getByRole('dialog', { name: 'Markeer als betaald' });
-    expect(within(dialog).getByText('Babybox locks')).toBeInTheDocument();
+    expect(within(dialog).getByText('Bloembak clips')).toBeInTheDocument();
     const amount = within(dialog).getByLabelText('Betaald bedrag');
     expect(amount).toHaveValue('6,89');
     await userEvent.clear(amount);
@@ -158,7 +158,7 @@ describe('OutstandingPage', () => {
   it('is read-only for Users and says when nothing is open', async () => {
     stubFetch({ 'GET /api/outstanding': () => ({ json: outstanding }) });
     const view = renderWithAuth(<OutstandingPage />, { state: signedIn('User') });
-    await openGroup('Joey');
+    await openGroup('Koen');
     expect(screen.queryByRole('button')).toBeNull();
     expect(screen.queryByRole('link')).toBeNull();
     view.unmount();
@@ -190,11 +190,11 @@ describe('InvoiceExportDialog', () => {
   it('says why a print is left out, and never calls a declined one price-less', async () => {
     const many = ['Een', 'Twee', 'Drie', 'Vier', 'Vijf', 'Zes', 'Zeven'];
     stubFetch({
-      'GET /api/customers/Joey/invoice/preview': () => ({
+      'GET /api/customers/Koen/invoice/preview': () => ({
         json: { ...preview(false), excluded: ['Dopje'], declined: many },
       }),
     });
-    renderWithAuth(<InvoiceExportDialog customer="Joey" onClose={() => undefined} />);
+    renderWithAuth(<InvoiceExportDialog customer="Koen" onClose={() => undefined} />);
 
     // The two reasons are different sentences; the declined one is not a warning.
     const declined = await screen.findByText(/niet doorgegaan en worden niet gefactureerd/i);
@@ -213,9 +213,9 @@ describe('InvoiceExportDialog', () => {
 
   it('previews, downloads a concept and finalises after confirming', async () => {
     const calls = stubFetch({
-      'GET /api/customers/Joey/invoice/preview': () => ({ json: preview(false) }),
-      'GET /api/customers/Joey/invoice/preview?onlyOpen=true': () => ({ json: preview(true) }),
-      'POST /api/customers/Joey/invoices': () => ({
+      'GET /api/customers/Koen/invoice/preview': () => ({ json: preview(false) }),
+      'GET /api/customers/Koen/invoice/preview?onlyOpen=true': () => ({ json: preview(true) }),
+      'POST /api/customers/Koen/invoices': () => ({
         status: 201,
         json: { id: 'i1', number: '2026-008' },
       }),
@@ -223,14 +223,14 @@ describe('InvoiceExportDialog', () => {
     let closed = false;
     renderWithAuth(
       <InvoiceExportDialog
-        customer="Joey"
+        customer="Koen"
         onClose={() => {
           closed = true;
         }}
       />,
       { state: signedIn('Editor') },
     );
-    const dialog = screen.getByRole('dialog', { name: 'Factuur maken voor Joey' });
+    const dialog = screen.getByRole('dialog', { name: 'Factuur maken voor Koen' });
     expect(await within(dialog).findByText('2')).toBeInTheDocument();
     expect(text(within(dialog).getByText(/45,67/).textContent)).toBe('€ 45,67');
     expect(within(dialog).getByRole('alert')).toHaveTextContent(
@@ -238,7 +238,7 @@ describe('InvoiceExportDialog', () => {
     );
     expect(within(dialog).getAllByRole('link', { name: 'Concept downloaden' })[0]).toHaveAttribute(
       'href',
-      '/api/customers/Joey/invoice/concept.pdf?onlyOpen=false',
+      '/api/customers/Koen/invoice/concept.pdf?onlyOpen=false',
     );
 
     await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Alleen openstaand' }));
@@ -250,7 +250,7 @@ describe('InvoiceExportDialog', () => {
     );
     const confirm = screen.getByRole('dialog', { name: 'Definitief maken?' });
     expect(text(confirm.textContent)).toContain(
-      'Je maakt een factuur voor Joey met 1 prints, totaal € 6,89. De factuur krijgt nummer 2026-008',
+      'Je maakt een factuur voor Koen met 1 prints, totaal € 6,89. De factuur krijgt nummer 2026-008',
     );
     await userEvent.click(within(confirm).getByRole('button', { name: 'Definitief maken' }));
     await waitFor(() => {
@@ -265,12 +265,12 @@ describe('InvoiceExportDialog', () => {
 
   it('sends the period from the date fields and refuses an end before the start', async () => {
     const calls = stubFetch({
-      'GET /api/customers/Joey/invoice/preview': () => ({ json: preview(false) }),
+      'GET /api/customers/Koen/invoice/preview': () => ({ json: preview(false) }),
     });
-    renderWithAuth(<InvoiceExportDialog customer="Joey" onClose={() => undefined} />, {
+    renderWithAuth(<InvoiceExportDialog customer="Koen" onClose={() => undefined} />, {
       state: signedIn('Editor'),
     });
-    const dialog = screen.getByRole('dialog', { name: 'Factuur maken voor Joey' });
+    const dialog = screen.getByRole('dialog', { name: 'Factuur maken voor Koen' });
     await within(dialog).findByText('2');
     expect(
       within(dialog).getByText('De periode werkt op de datum van de bestelling.'),
@@ -279,7 +279,7 @@ describe('InvoiceExportDialog', () => {
     await userEvent.type(from, '1-9-2026{Enter}');
     await waitFor(() => {
       expect(calls.at(-1)?.path).toBe(
-        '/api/customers/Joey/invoice/preview?onlyOpen=false&from=2026-09-01',
+        '/api/customers/Koen/invoice/preview?onlyOpen=false&from=2026-09-01',
       );
     });
     expect(from).toHaveValue('1 sep 2026');
@@ -294,14 +294,14 @@ describe('InvoiceExportDialog', () => {
 
   it('blocks Definitief maken while the company has no name or IBAN', async () => {
     stubFetch({
-      'GET /api/customers/Joey/invoice/preview': () => ({
+      'GET /api/customers/Koen/invoice/preview': () => ({
         json: { ...preview(false), excluded: [], companyReady: false },
       }),
     });
-    renderWithAuth(<InvoiceExportDialog customer="Joey" onClose={() => undefined} />, {
+    renderWithAuth(<InvoiceExportDialog customer="Koen" onClose={() => undefined} />, {
       state: signedIn('Admin'),
     });
-    const dialog = screen.getByRole('dialog', { name: 'Factuur maken voor Joey' });
+    const dialog = screen.getByRole('dialog', { name: 'Factuur maken voor Koen' });
     const alert = await within(dialog).findByRole('alert');
     expect(alert).toHaveTextContent('Naam en IBAN ontbreken.');
     expect(within(alert).getByRole('link', { name: 'Naar Instellingen' })).toHaveAttribute(
@@ -319,14 +319,14 @@ describe('InvoiceExportDialog', () => {
 
   it('disables both actions when there is nothing to invoice', async () => {
     stubFetch({
-      'GET /api/customers/Wouter/invoice/preview': () => ({
+      'GET /api/customers/Veerle/invoice/preview': () => ({
         json: { ...preview(false), lines: [], total: 0, paid: 0, open: 0, excluded: [] },
       }),
     });
-    renderWithAuth(<InvoiceExportDialog customer="Wouter" onClose={() => undefined} />, {
+    renderWithAuth(<InvoiceExportDialog customer="Veerle" onClose={() => undefined} />, {
       state: signedIn('Editor'),
     });
-    const dialog = screen.getByRole('dialog', { name: 'Factuur maken voor Wouter' });
+    const dialog = screen.getByRole('dialog', { name: 'Factuur maken voor Veerle' });
     expect(await within(dialog).findByText('Geen regels in deze periode.')).toBeInTheDocument();
     for (const button of within(dialog).getAllByRole('button', { name: 'Definitief maken' })) {
       expect(button).toBeDisabled();
@@ -341,7 +341,7 @@ describe('InvoicesPage', () => {
       id: 'c1',
       number: '2026-009',
       kind: 'credit',
-      customer: 'Joey',
+      customer: 'Koen',
       issuedOn: '2026-10-05',
       total: -11.89,
       paid: 0,
@@ -352,7 +352,7 @@ describe('InvoicesPage', () => {
       id: 'i1',
       number: '2026-008',
       kind: 'invoice',
-      customer: 'Joey',
+      customer: 'Koen',
       issuedOn: '2026-10-05',
       total: 56.67,
       paid: 16,
@@ -363,7 +363,7 @@ describe('InvoicesPage', () => {
       id: 'i2',
       number: '2026-007',
       kind: 'invoice',
-      customer: 'Wouter',
+      customer: 'Veerle',
       issuedOn: '2026-09-28',
       total: 24,
       paid: 0,
@@ -380,11 +380,11 @@ describe('InvoicesPage', () => {
           id: 'i1',
           number: '2026-008',
           kind: 'invoice',
-          customer: 'Joey',
+          customer: 'Koen',
           issuedOn: '2026-10-05',
           total: 56.67,
           lines: [
-            { id: 'l1', description: 'Babybox locks', amount: 11.89, credited: true },
+            { id: 'l1', description: 'Bloembak clips', amount: 11.89, credited: true },
             { id: 'l2', description: 'Kerstversiering 2026', amount: 24.5, credited: false },
             { id: 'l3', description: 'Cable organizer', amount: 9.28, credited: false },
           ],
@@ -407,7 +407,7 @@ describe('InvoicesPage', () => {
       '/api/invoices/i1/pdf',
     );
 
-    await userEvent.type(screen.getByRole('searchbox', { name: 'Zoeken' }), 'wout');
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Zoeken' }), 'veer');
     expect(within(table).getAllByRole('row')).toHaveLength(2);
     await userEvent.clear(screen.getByRole('searchbox', { name: 'Zoeken' }));
     await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Type' }), 'credit');
@@ -424,7 +424,7 @@ describe('InvoicesPage', () => {
     expect(
       await within(dialog).findByRole('checkbox', { name: 'Kerstversiering 2026' }),
     ).toBeChecked();
-    expect(within(dialog).queryByRole('checkbox', { name: 'Babybox locks' })).toBeNull();
+    expect(within(dialog).queryByRole('checkbox', { name: 'Bloembak clips' })).toBeNull();
     expect(within(dialog).getByText('2026-010')).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Cable organizer' }));
     expect(text(within(dialog).getByText(/-24,50/).textContent)).toBe('€ -24,50');

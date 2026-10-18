@@ -24,7 +24,7 @@ describe.each(TEST_DATABASES)('bron and notitie on $name', ({ url }) => {
 
   beforeEach(async () => {
     root = await makePrintsTree();
-    dir = path.join(root, 'Joey', 'Met een bron');
+    dir = path.join(root, 'Koen', 'Met een bron');
     await mkdir(dir, { recursive: true });
     await writeFile(path.join(dir, 'cube.stl'), 'solid cube\nendsolid cube\n');
     await writeFile(
@@ -40,7 +40,7 @@ describe.each(TEST_DATABASES)('bron and notitie on $name', ({ url }) => {
     await t.as(admin, {
       method: 'PATCH',
       url: '/api/access',
-      payload: { changes: [{ userId: helperId, customerFolder: 'Joey', granted: true }] },
+      payload: { changes: [{ userId: helperId, customerFolder: 'Koen', granted: true }] },
     });
   });
 

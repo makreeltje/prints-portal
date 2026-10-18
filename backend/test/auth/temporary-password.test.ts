@@ -39,8 +39,8 @@ describe.each(TEST_DATABASES)('sign-in names and temporary passwords on $name', 
   });
 
   it('makes a new user choose their own password before anything else', async () => {
-    await create('joey');
-    const session = await t.login('joey', 'temporary-password');
+    await create('koen');
+    const session = await t.login('koen', 'temporary-password');
 
     const status = await t.as(session, { url: '/api/auth/session' });
     expect(status.json()).toMatchObject({ mustChangePassword: true });
@@ -50,9 +50,9 @@ describe.each(TEST_DATABASES)('sign-in names and temporary passwords on $name', 
 
     const changed = await changePassword(session, 'temporary-password', 'my-own-long-password');
     expect(changed.statusCode).toBe(200);
-    expect(changed.json()).toMatchObject({ mustChangePassword: false, user: { login: 'joey' } });
+    expect(changed.json()).toMatchObject({ mustChangePassword: false, user: { login: 'koen' } });
     expect((await t.as(session, { url: '/api/nothing-here' })).statusCode).toBe(404);
-    await t.login('joey', 'my-own-long-password');
+    await t.login('koen', 'my-own-long-password');
   });
 
   it.each([
@@ -60,8 +60,8 @@ describe.each(TEST_DATABASES)('sign-in names and temporary passwords on $name', 
     ['temporary-password', 'too-short', 'password_too_short'],
     ['temporary-password', 'temporary-password', 'password_unchanged'],
   ])('refuses current=%s new=%s', async (current, next, error) => {
-    await create('joey');
-    const session = await t.login('joey', 'temporary-password');
+    await create('koen');
+    const session = await t.login('koen', 'temporary-password');
     const response = await changePassword(session, current, next);
     expect(response.statusCode).toBe(400);
     expect(response.json()).toEqual({ error });
@@ -83,8 +83,8 @@ describe.each(TEST_DATABASES)('sign-in names and temporary passwords on $name', 
   });
 
   it('accepts a new password without the temporary one, but not for a normal password', async () => {
-    await create('joey');
-    const session = await t.login('joey', 'temporary-password');
+    await create('koen');
+    const session = await t.login('koen', 'temporary-password');
     const withoutCurrent = (s: Session) =>
       t.as(s, {
         method: 'POST',

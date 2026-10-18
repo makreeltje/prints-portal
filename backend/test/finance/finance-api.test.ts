@@ -79,7 +79,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     await t.as(admin, {
       method: 'PATCH',
       url: '/api/access',
-      payload: { changes: [{ userId: helperId, customerFolder: 'Joey', granted: true }] },
+      payload: { changes: [{ userId: helperId, customerFolder: 'Koen', granted: true }] },
     });
     // Prices: PLA € 20/kg, € 0,25/kWh, K1 Max 350 W, markup 400 %.
     await t.as(admin, {
@@ -125,7 +125,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
   };
 
   it('calculates the cost per order from the files, settings and printer profile', async () => {
-    const box = await detail(editor, 'Babybox locks');
+    const box = await detail(editor, 'Bloembak clips');
     const order = box.orders[0];
     // 173,49 g × € 20/kg = € 3,47; 3 u 24 min 54 s × 350 W = 1,195 kWh × € 0,25 = € 0,30.
     expect(order?.cost).toMatchObject({
@@ -155,7 +155,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
   });
 
   it('recalculates when times printed, exclusions and overrides change', async () => {
-    const box = await detail(editor, 'Babybox locks');
+    const box = await detail(editor, 'Bloembak clips');
     const gcode = box.assets
       ?.flatMap((a) => a.lines.map((l) => ({ file: a.fileName, ...l })))
       .find((l) => l.file === 'lock_PLA_3h27m.gcode');
@@ -173,16 +173,16 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
         })
       ).statusCode,
     ).toBe(204);
-    let order = await firstOrder('Babybox locks');
+    let order = await firstOrder('Bloembak clips');
     expect(order.cost?.materialCost).toBe(6.94);
-    expect((await detail(editor, 'Babybox locks')).grams).toBe(346.98);
+    expect((await detail(editor, 'Bloembak clips')).grams).toBe(346.98);
 
     await t.as(editor, {
       method: 'PUT',
       url: `/api/prints/${box.id}/lines/${next.id}/excluded`,
       payload: { excluded: false },
     });
-    order = await firstOrder('Babybox locks');
+    order = await firstOrder('Bloembak clips');
     // + 3,03 g (two slots) × € 20/kg = € 0,06
     expect(order.cost?.materialCost).toBe(7);
 
@@ -191,7 +191,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       url: `/api/prints/${box.id}/lines/${gcode.id}/override`,
       payload: { slot: 0, pricePerKg: 30 },
     });
-    order = await firstOrder('Babybox locks');
+    order = await firstOrder('Bloembak clips');
     expect(order.cost?.lines.find((l) => l.lineId === gcode.id)?.slots[0]).toMatchObject({
       pricePerKg: 30,
       source: 'manual',
@@ -203,7 +203,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       url: `/api/orders/${order.id}/overrides`,
       payload: { pricePerKg: 24, grams: 100, printSeconds: 3600 },
     });
-    order = await firstOrder('Babybox locks');
+    order = await firstOrder('Bloembak clips');
     expect(order.cost).toMatchObject({
       grams: 100,
       gramsSource: 'manual',
@@ -217,11 +217,11 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       url: `/api/orders/${order.id}/overrides`,
       payload: { pricePerKg: null, grams: null, printSeconds: null },
     });
-    expect((await firstOrder('Babybox locks')).cost?.gramsSource).toBe('files');
+    expect((await firstOrder('Bloembak clips')).cost?.gramsSource).toBe('files');
   });
 
   it('assigns a Spoolman spool as a snapshot and tints the print with it', async () => {
-    const id = await idOf('Babybox locks');
+    const id = await idOf('Bloembak clips');
     const spools = (await t.as(editor, { url: '/api/spools' })).json<{
       configured: boolean;
       spools: { id: number; name: string; pricePerKg: number | null; colours: string[] }[];
@@ -252,7 +252,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
         })
       ).json(),
     ).toEqual({ changed: 1, skipped: 0 });
-    const box = await detail(editor, 'Babybox locks');
+    const box = await detail(editor, 'Bloembak clips');
     expect(box.spool).toMatchObject({
       id: 7,
       name: 'eSun PLA+ Zwart',
@@ -266,7 +266,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     // The snapshot keeps the price when Spoolman goes away.
     spoolmanUp = false;
     t.app.services.spoolman.refresh();
-    expect((await firstOrder('Babybox locks')).cost?.materialCost).toBe(4.34);
+    expect((await firstOrder('Bloembak clips')).cost?.materialCost).toBe(4.34);
     expect((await t.as(editor, { url: '/api/spools' })).statusCode).toBe(503);
     expect((await t.as(editor, { url: '/api/spoolman/status' })).json()).toMatchObject({
       configured: true,
@@ -294,13 +294,13 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
   });
 
   it('records sale prices, partial payments, refuses overpayment and undoes the last payment', async () => {
-    const order = await firstOrder('Babybox locks');
+    const order = await firstOrder('Bloembak clips');
     const call = (session: Session, method: string, path: string, payload?: object) =>
       t.as(session, { method: method as 'POST', url: `/api/orders/${order.id}${path}`, payload });
 
     expect((await call(editor, 'PUT', '/sale-price', { salePrice: 11.89 })).statusCode).toBe(204);
     expect((await call(editor, 'POST', '/payments', { amount: 5 })).statusCode).toBe(201);
-    let now = await firstOrder('Babybox locks');
+    let now = await firstOrder('Bloembak clips');
     expect(now).toMatchObject({ status: 'partial', price: 11.89, paid: 5, remaining: 6.89 });
 
     expect((await call(editor, 'POST', '/payments', { amount: 7 })).json()).toEqual({
@@ -311,7 +311,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     });
 
     expect((await call(editor, 'POST', '/payments', { amount: 6.89 })).statusCode).toBe(201);
-    now = await firstOrder('Babybox locks');
+    now = await firstOrder('Bloembak clips');
     expect(now).toMatchObject({ status: 'paid', remaining: 0 });
     expect(now.payments?.map((p) => p.amount)).toEqual([5, 6.89]);
     expect((await call(editor, 'POST', '/payments', { amount: 1 })).json()).toEqual({
@@ -321,13 +321,13 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     // Undo is Admin-only and reverses only the last payment.
     expect((await call(editor, 'POST', '/payments/undo')).statusCode).toBe(403);
     expect((await call(admin, 'POST', '/payments/undo')).statusCode).toBe(204);
-    now = await firstOrder('Babybox locks');
+    now = await firstOrder('Bloembak clips');
     expect(now).toMatchObject({ status: 'partial', paid: 5, remaining: 6.89 });
     expect(now.payments?.[1]).toMatchObject({ amount: 6.89, undoneBy: 'owner@example.org' });
     expect(now.payments?.[1]?.undoneAt).not.toBeNull();
 
     // Users see the price and status only.
-    const seen = await detail(helper, 'Babybox locks');
+    const seen = await detail(helper, 'Bloembak clips');
     expect(seen.orders).toEqual([
       {
         id: order.id,
@@ -344,7 +344,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
   });
 
   it('a declined request owes nothing, keeps its price and leaves every total', async () => {
-    const order = await firstOrder('Babybox locks');
+    const order = await firstOrder('Bloembak clips');
     const call = (method: string, path: string, payload?: object) =>
       t.as(editor, { method: method as 'PUT', url: `/api/orders/${order.id}${path}`, payload });
 
@@ -357,7 +357,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     );
 
     expect((await call('PUT', '/state', { state: 'declined' })).statusCode).toBe(204);
-    const declined = await firstOrder('Babybox locks');
+    const declined = await firstOrder('Bloembak clips');
     // The price is history, not a debt: kept, but nothing is owed.
     expect(declined).toMatchObject({ status: 'declined', price: 24.5, remaining: null });
 
@@ -373,25 +373,25 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       own list, because a declined order has a price and must not be announced
       as one "zonder verkoopprijs" (GAP-140).
     */
-    const preview = (await t.as(admin, { url: '/api/customers/Joey/invoice/preview' })).json<{
+    const preview = (await t.as(admin, { url: '/api/customers/Koen/invoice/preview' })).json<{
       lines: unknown[];
       excluded: string[];
       declined: string[];
     }>();
-    expect(preview.declined.some((d) => d.includes('Babybox locks'))).toBe(true);
-    expect(preview.excluded.some((d) => d.includes('Babybox locks'))).toBe(false);
+    expect(preview.declined.some((d) => d.includes('Bloembak clips'))).toBe(true);
+    expect(preview.excluded.some((d) => d.includes('Bloembak clips'))).toBe(false);
 
     // Any state may follow any other, with no confirmation (owner's rule).
     expect((await call('PUT', '/state', { state: 'undecided' })).statusCode).toBe(204);
-    expect(await firstOrder('Babybox locks')).toMatchObject({ status: 'open', price: 24.5 });
+    expect(await firstOrder('Bloembak clips')).toMatchObject({ status: 'open', price: 24.5 });
     expect((await call('PUT', '/state', { state: null })).statusCode).toBe(204);
-    expect(await firstOrder('Babybox locks')).toMatchObject({ status: 'open' });
+    expect(await firstOrder('Bloembak clips')).toMatchObject({ status: 'open' });
 
     expect((await call('PUT', '/state', { state: 'nonsense' })).statusCode).toBe(400);
   });
 
   it('writes off the remainder only, and lets Admins undo it', async () => {
-    const order = await firstOrder('Babybox locks');
+    const order = await firstOrder('Bloembak clips');
     await t.as(editor, {
       method: 'PUT',
       url: `/api/orders/${order.id}/sale-price`,
@@ -411,7 +411,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
         })
       ).statusCode,
     ).toBe(204);
-    let now = await firstOrder('Babybox locks');
+    let now = await firstOrder('Bloembak clips');
     expect(now).toMatchObject({
       status: 'writtenOff',
       paid: 5,
@@ -426,7 +426,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       (await t.as(admin, { method: 'DELETE', url: `/api/orders/${order.id}/write-off` }))
         .statusCode,
     ).toBe(204);
-    now = await firstOrder('Babybox locks');
+    now = await firstOrder('Bloembak clips');
     expect(now).toMatchObject({ status: 'partial', writtenOff: null, remaining: 6.89 });
   });
 
@@ -435,17 +435,17 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       (
         await t.as(editor, {
           method: 'PUT',
-          url: '/api/customers/Joey/billing',
+          url: '/api/customers/Koen/billing',
           payload: { noBilling: true },
         })
       ).statusCode,
     ).toBe(403);
     await t.as(admin, {
       method: 'PUT',
-      url: '/api/customers/Joey/billing',
+      url: '/api/customers/Koen/billing',
       payload: { noBilling: true },
     });
-    const box = await detail(editor, 'Babybox locks');
+    const box = await detail(editor, 'Bloembak clips');
     expect(box.noBilling).toBe(true);
     expect(box.orders[0]).toMatchObject({ status: 'notBilled', price: null });
     expect(box.orders[0]?.cost?.totalCost).toBe(3.77);
@@ -462,16 +462,16 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     const customers = (await t.as(editor, { url: '/api/customers' })).json<{
       customers: { folder: string; noBilling: boolean; openAmount: number | null }[];
     }>().customers;
-    expect(customers.find((c) => c.folder === 'Joey')).toMatchObject({
+    expect(customers.find((c) => c.folder === 'Koen')).toMatchObject({
       noBilling: true,
       openAmount: null,
     });
-    // Denise: Keychain (two copies) and Board game, priced by markup.
-    expect(customers.find((c) => c.folder === 'Denise')?.openAmount).toBeGreaterThan(0);
+    // Esmee: Keychain (two copies) and Board game, priced by markup.
+    expect(customers.find((c) => c.folder === 'Esmee')?.openAmount).toBeGreaterThan(0);
   });
 
   it('makes a Nabestelling with its own price and payments', async () => {
-    const box = await detail(editor, 'Babybox locks');
+    const box = await detail(editor, 'Bloembak clips');
     const first = box.orders[0];
     const gcode = box.assets?.flatMap((a) => a.lines).find((l) => !l.excluded);
     if (first === undefined || gcode === undefined) throw new Error('setup');
@@ -483,14 +483,14 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     // A file added after order 1 was priced waits for a Nabestelling.
     await putText(
       root,
-      'Joey/Babybox locks/spare_PLA_11m.gcode',
+      'Koen/Bloembak clips/spare_PLA_11m.gcode',
       '; total filament used [g] = 10\n; filament_type = PLA\n',
     );
     await t.app.services.indexer.indexProject({
-      customerFolder: 'Joey',
-      projectFolder: 'Babybox locks',
+      customerFolder: 'Koen',
+      projectFolder: 'Bloembak clips',
     });
-    const withSpare = await detail(editor, 'Babybox locks');
+    const withSpare = await detail(editor, 'Bloembak clips');
     const spare = withSpare.assets?.find((a) => a.fileName === 'spare_PLA_11m.gcode')?.lines.at(0);
     expect(spare).toMatchObject({ inOrder: false, timesPrinted: 0 });
 
@@ -505,7 +505,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       },
     });
     expect(created.statusCode).toBe(201);
-    const after = await detail(editor, 'Babybox locks');
+    const after = await detail(editor, 'Bloembak clips');
     expect(after.orders.map((o) => o.number)).toEqual([1, 2]);
     const second = after.orders[1];
     // 10 g + 2 × 173,49 g at € 20/kg
@@ -539,7 +539,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
     expect((await del(second?.id ?? '')).json()).toEqual({ error: 'written_off' });
     await t.as(admin, { method: 'DELETE', url: `/api/orders/${second?.id ?? ''}/write-off` });
     expect((await del(second?.id ?? '')).statusCode).toBe(204);
-    const removed = await detail(editor, 'Babybox locks');
+    const removed = await detail(editor, 'Bloembak clips');
     expect(removed.orders.map((o) => o.number)).toEqual([1]);
     // Its files are back in no order; the reprinted G-code keeps its order-1 count.
     expect(
@@ -549,7 +549,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
   });
 
   it('sets the request state in bulk, on the newest order, per print', async () => {
-    const box = await idOf('Babybox locks');
+    const box = await idOf('Bloembak clips');
     const keychain = await idOf('Keychain');
     const send = (ids: string[], state: string | null) =>
       t.as(editor, {
@@ -564,18 +564,18 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
         { id: keychain, ok: true },
       ],
     });
-    expect((await firstOrder('Babybox locks')).requestState).toBe('undecided');
+    expect((await firstOrder('Bloembak clips')).requestState).toBe('undecided');
     expect((await firstOrder('Keychain')).requestState).toBe('undecided');
 
     // Clearing is as ordinary as setting: no confirmation, no special path.
     expect((await send([box], null)).json()).toEqual({ results: [{ id: box, ok: true }] });
-    expect((await firstOrder('Babybox locks')).requestState).toBeNull();
+    expect((await firstOrder('Bloembak clips')).requestState).toBeNull();
 
     expect((await send([box], 'nonsense')).statusCode).toBe(400);
   });
 
   it('runs bulk actions with a result per print', async () => {
-    const box = await idOf('Babybox locks');
+    const box = await idOf('Bloembak clips');
     const keychain = await idOf('Keychain');
     const empty = await idOf('Empty');
     const response = await t.as(editor, {
@@ -591,7 +591,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
         { id: empty, ok: false, error: 'no_price' },
       ],
     });
-    expect((await firstOrder('Babybox locks')).status).toBe('paid');
+    expect((await firstOrder('Bloembak clips')).status).toBe('paid');
 
     const priced = await t.as(editor, {
       method: 'POST',

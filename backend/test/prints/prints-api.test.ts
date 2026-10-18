@@ -32,7 +32,7 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
     await t.as(admin, {
       method: 'PATCH',
       url: '/api/access',
-      payload: { changes: [{ userId: helperId, customerFolder: 'Joey', granted: true }] },
+      payload: { changes: [{ userId: helperId, customerFolder: 'Koen', granted: true }] },
     });
   });
 
@@ -57,16 +57,10 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
     expect(
       body.items.map((item) => `${item.customerFolder}/${item.projectFolder ?? ''}`).sort(),
     ).toEqual(
-      [
-        'Denise/Board game',
-        'Denise/Keychain',
-        'Joey/',
-        'Joey/Babybox locks',
-        'Wouter/Empty',
-      ].sort(),
+      ['Esmee/Board game', 'Esmee/Keychain', 'Koen/', 'Koen/Bloembak clips', 'Veerle/Empty'].sort(),
     );
-    const lock = body.items.find((item) => item.name === 'Babybox locks');
-    expect(lock).toMatchObject({ customerFolder: 'Joey', grams: 173.49, hasThumbnail: true });
+    const lock = body.items.find((item) => item.name === 'Bloembak clips');
+    expect(lock).toMatchObject({ customerFolder: 'Koen', grams: 173.49, hasThumbnail: true });
     // Tint: slicer colour of the first slot of the counted G-code (the excluded 3MF does not count).
     expect(lock?.colour).toMatch(/^#[0-9a-f]{6}$/);
     expect(body.items.find((item) => item.name === 'Empty')?.colour).toBeNull();
@@ -84,7 +78,7 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
   it('sorts and filters by status over the whole set, not one page', async () => {
     // Price two prints so the money sorts and filters have something to work on.
     const all = await list(admin);
-    const lock = all.items.find((item) => item.name === 'Babybox locks');
+    const lock = all.items.find((item) => item.name === 'Bloembak clips');
     const keychain = all.items.find((item) => item.name === 'Keychain');
     for (const [print, price] of [
       [lock, 30],
@@ -102,10 +96,10 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
 
     // Dearest first, and a print without a price goes last either way.
     const high = await list(admin, '?sort=priceDesc');
-    expect(high.items.map((item) => item.name).slice(0, 2)).toEqual(['Babybox locks', 'Keychain']);
+    expect(high.items.map((item) => item.name).slice(0, 2)).toEqual(['Bloembak clips', 'Keychain']);
     expect(high.items.at(-1)?.money?.price ?? null).toBeNull();
     const low = await list(admin, '?sort=priceAsc');
-    expect(low.items.map((item) => item.name).slice(0, 2)).toEqual(['Keychain', 'Babybox locks']);
+    expect(low.items.map((item) => item.name).slice(0, 2)).toEqual(['Keychain', 'Bloembak clips']);
     expect(low.items.at(-1)?.money?.price ?? null).toBeNull();
 
     // Oldest first runs up the dates, newest first runs down them. (Prints that
@@ -138,31 +132,31 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
   });
 
   it('filters by customer and by search text, case-insensitively, with literal wildcards', async () => {
-    expect((await list(admin, '?customer=Denise')).items.map((i) => i.name).sort()).toEqual([
+    expect((await list(admin, '?customer=Esmee')).items.map((i) => i.name).sort()).toEqual([
       'Board game',
       'Keychain',
     ]);
-    expect((await list(admin, '?q=BABYBOX')).items.map((i) => i.name)).toEqual(['Babybox locks']);
+    expect((await list(admin, '?q=BLOEMBAK')).items.map((i) => i.name)).toEqual(['Bloembak clips']);
     expect((await list(admin, '?q=%25')).total).toBe(0);
     expect((await list(admin, '?q=_')).total).toBe(0);
   });
 
   it('scopes Users to their customers and answers 403 for others', async () => {
     const body = await list(helper);
-    expect(new Set(body.items.map((i) => i.customerFolder))).toEqual(new Set(['Joey']));
-    const denise = await idOf('Keychain');
-    expect((await t.as(helper, { url: `/api/prints/${denise}` })).statusCode).toBe(403);
-    expect((await t.as(helper, { url: `/api/prints/${denise}/thumbnail` })).statusCode).toBe(403);
+    expect(new Set(body.items.map((i) => i.customerFolder))).toEqual(new Set(['Koen']));
+    const esmee = await idOf('Keychain');
+    expect((await t.as(helper, { url: `/api/prints/${esmee}` })).statusCode).toBe(403);
+    expect((await t.as(helper, { url: `/api/prints/${esmee}/thumbnail` })).statusCode).toBe(403);
     const unknown = '00000000-0000-4000-8000-000000000000';
     expect((await t.as(helper, { url: `/api/prints/${unknown}` })).statusCode).toBe(404);
     const customers = (await t.as(helper, { url: '/api/customers' })).json<{
       customers: { folder: string }[];
     }>();
-    expect(customers.customers.map((c) => c.folder)).toEqual(['Joey']);
+    expect(customers.customers.map((c) => c.folder)).toEqual(['Koen']);
   });
 
   it('gives Admins and Editors the files; Users only the summary', async () => {
-    const id = await idOf('Babybox locks');
+    const id = await idOf('Bloembak clips');
     const full = (await t.as(editor, { url: `/api/prints/${id}` })).json<PrintDetail>();
     const files = (full.assets ?? []).map((a) => `${a.subPath}/${a.fileName}`).sort();
     expect(files).toEqual([
@@ -180,7 +174,7 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
 
     const limited = (await t.as(helper, { url: `/api/prints/${id}` })).json<PrintDetail>();
     expect(limited.assets).toBeNull();
-    expect(limited).toMatchObject({ name: 'Babybox locks', hasModel: true });
+    expect(limited).toMatchObject({ name: 'Bloembak clips', hasModel: true });
   });
 
   it('names the other file of a possible duplicate', async () => {
@@ -194,7 +188,7 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
   });
 
   it('serves the embedded G-code image as thumbnail, cached, with ETag and 304', async () => {
-    const id = await idOf('Babybox locks');
+    const id = await idOf('Bloembak clips');
     const first = await t.as(helper, { url: `/api/prints/${id}/thumbnail` });
     expect(first.statusCode).toBe(200);
     expect(first.headers['content-type']).toBe('image/png');
@@ -206,21 +200,21 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
     });
     expect(again.statusCode).toBe(304);
     // Still served from the cache when the files are gone (archived print).
-    await rm(path.join(root, 'Joey', 'Babybox locks'), { recursive: true });
+    await rm(path.join(root, 'Koen', 'Bloembak clips'), { recursive: true });
     await t.app.services.indexer.indexAll();
     const archived = await t.as(admin, { url: `/api/prints/${id}/thumbnail` });
     expect(archived.statusCode).toBe(200);
   });
 
   it('renders an STL when there is no embedded image', async () => {
-    await writeFile(path.join(root, 'Wouter', 'Empty', 'cube.stl'), asciiCube());
+    await writeFile(path.join(root, 'Veerle', 'Empty', 'cube.stl'), asciiCube());
     await t.app.services.indexer.indexAll();
     const id = await idOf('Empty');
     const response = await t.as(admin, { url: `/api/prints/${id}/thumbnail` });
     expect(response.statusCode).toBe(200);
     expect(response.headers['content-type']).toBe('image/png');
     const model = await t.as(helper, { url: `/api/prints/${id}/model` });
-    expect(model.statusCode).toBe(403); // Wouter is not granted
+    expect(model.statusCode).toBe(403); // Veerle is not granted
     const adminModel = await t.as(admin, { url: `/api/prints/${id}/model` });
     expect(adminModel.statusCode).toBe(200);
     expect(adminModel.headers['content-disposition']).toMatch(/^inline;/);
@@ -229,9 +223,9 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
   it('gives each model file its own picture, and 404 for one that has none', async () => {
     // Two models in one print: before this, the strip showed the print's one
     // image or a glyph, so both buttons looked the same (GAP-094).
-    // Its own folder: the test above also fills Wouter/Empty, and sharing it
+    // Its own folder: the test above also fills Veerle/Empty, and sharing it
     // made this one fail about one run in three.
-    const dir = path.join(root, 'Wouter', 'Twee modellen');
+    const dir = path.join(root, 'Veerle', 'Twee modellen');
     await mkdir(dir, { recursive: true });
     await writeFile(path.join(dir, 'cube.stl'), asciiCube());
     await writeFile(path.join(dir, 'cube_two.stl'), asciiCube());
@@ -278,7 +272,7 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
   });
 
   it('downloads files with Range support for Admins and Editors only', async () => {
-    const id = await idOf('Babybox locks');
+    const id = await idOf('Bloembak clips');
     const detail = (await t.as(admin, { url: `/api/prints/${id}` })).json<PrintDetail>();
     const asset = detail.assets?.find((a) => a.fileName === 'lock_PLA_3h27m.gcode');
     if (asset === undefined) throw new Error('asset missing');
@@ -304,7 +298,7 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
   });
 
   it('never serves a file outside the prints root', async () => {
-    const id = await idOf('Babybox locks');
+    const id = await idOf('Bloembak clips');
     const detail = (await t.as(admin, { url: `/api/prints/${id}` })).json<PrintDetail>();
     const asset = detail.assets?.[0];
     if (asset === undefined) throw new Error('asset missing');
@@ -316,11 +310,11 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
       .execute();
     expect((await t.as(admin, { url: `/api/assets/${asset.id}/download` })).statusCode).toBe(404);
     // …and a symlink inside the root that points out of it.
-    await mkdir(path.join(root, 'Joey', 'Babybox locks'), { recursive: true });
-    await symlink('/etc/hostname', path.join(root, 'Joey', 'Babybox locks', 'escape.gcode'));
+    await mkdir(path.join(root, 'Koen', 'Bloembak clips'), { recursive: true });
+    await symlink('/etc/hostname', path.join(root, 'Koen', 'Bloembak clips', 'escape.gcode'));
     await t.db
       .updateTable('print_assets')
-      .set({ relative_path: 'Joey/Babybox locks/escape.gcode' })
+      .set({ relative_path: 'Koen/Bloembak clips/escape.gcode' })
       .where('id', '=', asset.id)
       .execute();
     expect((await t.as(admin, { url: `/api/assets/${asset.id}/download` })).statusCode).toBe(404);
@@ -356,7 +350,7 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
   it('restores a print whose folder is gone as archived', async () => {
     const id = await idOf('Board game');
     await t.as(admin, { method: 'DELETE', url: `/api/prints/${id}` });
-    await rm(path.join(root, 'Denise', 'Board game'), { recursive: true });
+    await rm(path.join(root, 'Esmee', 'Board game'), { recursive: true });
     await t.as(admin, { method: 'POST', url: `/api/prints/${id}/restore` });
     const archived = (await list(admin, '?archived=true')).items.find((i) => i.id === id);
     expect(archived?.status).toBe('archived');
@@ -381,7 +375,7 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
     expect((await list(admin, '?customer=Anouk')).total).toBe(0);
 
     // A User sees only the klanten they are granted, empty folders included.
-    expect((await customers(helper)).map((one) => one.folder)).toEqual(['Joey']);
+    expect((await customers(helper)).map((one) => one.folder)).toEqual(['Koen']);
 
     // The folder goes away again; the klant goes with it.
     await rm(path.join(root, 'Anouk'), { recursive: true, force: true });
@@ -390,16 +384,16 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
   });
 
   it('deletes and restores a whole customer', async () => {
-    const response = await t.as(editor, { method: 'DELETE', url: '/api/customers/Denise' });
+    const response = await t.as(editor, { method: 'DELETE', url: '/api/customers/Esmee' });
     expect(response.json()).toEqual({ deleted: 2 });
-    expect((await list(admin, '?customer=Denise')).total).toBe(0);
+    expect((await list(admin, '?customer=Esmee')).total).toBe(0);
     const customers = (await t.as(admin, { url: '/api/customers?deleted=true' })).json<{
       customers: { folder: string; deleted: boolean }[];
     }>();
-    expect(customers.customers.find((c) => c.folder === 'Denise')?.deleted).toBe(true);
-    const restored = await t.as(admin, { method: 'POST', url: '/api/customers/Denise/restore' });
+    expect(customers.customers.find((c) => c.folder === 'Esmee')?.deleted).toBe(true);
+    const restored = await t.as(admin, { method: 'POST', url: '/api/customers/Esmee/restore' });
     expect(restored.json()).toEqual({ restored: 2 });
-    expect((await list(admin, '?customer=Denise')).total).toBe(2);
+    expect((await list(admin, '?customer=Esmee')).total).toBe(2);
   });
 
   it('manages tags and filters with AND', async () => {
@@ -424,7 +418,7 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
       (await t.as(helper, { method: 'POST', url: '/api/tags', payload: { name: 'x' } })).statusCode,
     ).toBe(403);
 
-    const lock = await idOf('Babybox locks');
+    const lock = await idOf('Bloembak clips');
     const key = await idOf('Keychain');
     const tag = (id: string, tagIds: string[]) =>
       t.as(editor, { method: 'PUT', url: `/api/prints/${id}/tags`, payload: { tagIds } });
@@ -434,9 +428,9 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
 
     expect((await list(admin, `?tag=${prio.id}`)).total).toBe(2);
     expect((await list(admin, `?tag=${prio.id}&tag=${gift.id}`)).items.map((i) => i.name)).toEqual([
-      'Babybox locks',
+      'Bloembak clips',
     ]);
-    expect((await list(admin, '?q=cade')).items.map((i) => i.name)).toEqual(['Babybox locks']);
+    expect((await list(admin, '?q=cade')).items.map((i) => i.name)).toEqual(['Bloembak clips']);
     // Users see tags (read-only).
     const seen = (await list(helper)).items.find((i) => i.id === lock);
     expect(seen?.tags.map((t2) => t2.name)).toEqual(['cadeau', 'prio']);
