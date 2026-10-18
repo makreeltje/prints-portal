@@ -2016,7 +2016,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Design system version:** 2.14
 
 - **Resolved in 2.15, against our proposal and for a better reason:** the **strict** half wins, not ScreenShareSession's. We argued that the file which knows it is deciding should govern, which would have kept 1.4's tags for role User; the design system pointed at the owner's own answer to **GAP-129** — he does not use tags at all — so there was never a case in this library where his filing word helps a klant, and nothing was left to ask him. 1.4's clause is marked superseded in place and role User's print page is now exactly a visitor's. Built: no chips in the print header, none on a dashboard card, none in the list view's column (the column goes rather than standing empty), and no tag control in the FilterBar — plus `tag=` dropped from the URL filter for a non-operator, the way `verwijderd=1` has been dropped for a non-Admin since 1.3, so a User cannot end up with an invisible active filter. `/tags` already redirected for that role and the tag system stays (memory: the owner has not asked for it to go).
-## GAP-167 [open] ScreenQueue's README lost its whole 2.12 section in the 2.14 export
+## GAP-167 [resolved in v2.15] ScreenQueue's README lost its whole 2.12 section in the 2.14 export
 - **Type:** conflict
 - **Found while:** the 2.14 import — `git diff` over `design-system/` after `sync-design-system.sh`
 - **Where needed:** `components/ScreenQueue/README.md`; `copy-deck.md` (`queue.ofWhichWithoutFiles`); `components/bundle.css` lines for GAP-155 and GAP-156
@@ -2032,6 +2032,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.14
 
+- **Resolved in 2.15, README only:** the whole `## 2.12` section is back in ScreenQueue's README, verbatim, with the three reverted sentences and the *Tokens* clause that names the 2.12 CSS change, plus a note in place saying what happened. Diffed against the file before the import: 55 lines added, 4 removed, and the four are the *Tokens* sentence being replaced by its 2.12 wording. **The app changed nothing and was right not to** — the queue summary still renders `queue.ofWhichWithoutFiles` as the second muted line of `.ttl` with `.amt` empty, and the test still asserts it. The design system disclosed that it read our repo's copy at commit `4572c99`, read-only, to restore the text.
 ## GAP-168 [resolved in v2.15] GAP-163's rules do not reach a trigger wrapped in `.pp-lift`, which rule 9 requires
 - **Type:** suspected design bug
 - **Found while:** verifying GAP-163 in the running app at 360px, right after the 2.14 import
@@ -2160,6 +2161,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.15
 
+- **Verified in 2.15, no app change:** the three rules are in `bundle.css` as specified — `+2px` on `.pp-nav a:focus-visible`, `-2px` on `.pp-bottomnav a:focus-visible` and on `.pp-guestnav a:focus-visible`. Measured in the running app with the keyboard, both themes, sidebar, drawer, bottom bar and guest track, including on the **tinted** current item; the numbers are in `docs/design-feedback/implementation.md`.
 ## GAP-178 [resolved in v2.15] A session's Prints pages at 24 while the Overzicht one tap away lists every print
 - **Type:** suspected design bug
 - **Found while:** measuring the largest klant for the 2.14 feedback (§2.1); numbered here by the design system in 2.15
