@@ -1281,3 +1281,61 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
    not a window. A preview can only show those by being a 360px-wide page. */
 .pp-device.phone{--pp-control-h:44px;--pp-tap:44px}
 .pp-device.phone .pp-input,.pp-device.phone .pp-select{font-size:var(--text-md)}
+
+/* ---- 2.14 (2026-10-18) --------------------------------------------------
+   GAP-165 THE SHELL FOR A VISITOR WHO HAS NO ACCOUNT. A deel-link is a key now:
+   a valid token mints an anonymous read-only session for one klant and the
+   visitor walks the real screens. The operator's shell cannot carry that
+   visitor -- its sidebar holds an avatar with a role, a theme cycle, "Uitloggen"
+   and a live dot, and a visitor has no account, no stored preference, nothing to
+   log out of and nothing to do about a reconnect. So the session gets the SAME
+   `.pp-main` and the same screens inside it, with the chrome replaced by one
+   head bar: `.pp-app.guest`. No sidebar, no icon rail, no drawer, no bottom bar
+   -- two destinations do not need a drawer at any width, and a 220px sidebar
+   holding two links is an empty operator costume on a klant.
+   ONE DOM at every size, as AppShell has since 1.0: the head wraps, and below
+   480px the nav drops to its own full-width line as two equal tabs. The phone
+   rule has its `.pp-device.phone` twin (2.11 rule), because a 360px frame is a
+   container and the media query cannot fire inside it. */
+.pp-app.guest{display:flex;flex-direction:column;flex:1}
+.pp-app.guest>.pp-main{width:100%;max-width:1080px;margin:0 auto}
+.pp-guesthead{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-4);padding:var(--space-3) var(--space-4);background:var(--surface);border-bottom:1px solid var(--border)}
+.pp-guesthead>.pp-brand{padding:0;margin-right:auto;min-width:0}
+.pp-guesthead .pp-logo{max-height:var(--space-6)}
+.pp-guestnav{display:flex;flex-wrap:wrap;gap:var(--space-1);min-width:0}
+.pp-guestnav a{display:flex;align-items:center;gap:var(--space-2);min-height:var(--pp-tap);padding:0 var(--space-3);border-radius:var(--radius-md);color:var(--text);text-decoration:none;font-size:var(--text-base)}
+.pp-guestnav a:hover{background:var(--primary-tint-soft)}
+.pp-guestnav a[aria-current=page]{background:var(--primary-tint);color:var(--text-strong);font-weight:600}
+@media (max-width:480px){.pp-guestnav{order:3;width:100%}.pp-guestnav a{flex:1 1 0;justify-content:center;min-width:0}}
+.pp-device.phone .pp-guestnav{order:3;width:100%}
+.pp-device.phone .pp-guestnav a{flex:1 1 0;justify-content:center;min-width:0}
+
+/* GAP-163 THE TRIGGER'S 200px FLOOR IS A FLOOR FOR THE PANEL, NOT FOR A PHONE.
+   Measured by the app at 360px: the trigger is 314px wide (`min-width` 200px,
+   grown by the name), the row gives it about 302px, and the LAST 32px of the
+   spool name is painted outside `section.pp-card.pp-assetlist.pp-flush` and
+   removed by that card's `overflow: hidden`. So "Creality Skin Hype..." is not
+   an ellipsis at all -- it is a hard clip at the card's edge, and the page stays
+   360px wide precisely because the card absorbs it. Nothing in this file
+   truncated a trigger; the card's clip did, silently, at the end of the name --
+   the worst cut for a spool, whose colour is the last word.
+   At 480px and below the floor is lifted and the name takes the MIDDLE cut that
+   SpoolPicker 2.13 already specifies as the rule: `.pp-fname` with the app's own
+   split, now available in the trigger's sans face through `.pp-fname.sans`. The
+   swatch, the hint chip and the chevron keep their width; only the name pays.
+   Both class names the trigger is built with are covered (`.pp-spoolbtn` in
+   AssetListItem, `.pp-minw-200` in SpoolPicker's own preview), so the rule does
+   not depend on which one the app wrote. Rejected: wrapping the trigger to two
+   lines (a control whose height depends on a spool's name breaks the row
+   agreement GAP-111 just bought, and makes a 44px target 68px), and letting the
+   card scroll its rows sideways (this system scrolls tables, not cards, and a
+   scroll that hides a control is worse than a name that is cut where it can be
+   read). */
+.pp-fname.sans{font-family:inherit}
+.pp-spoolbtn>.nm{min-width:0}
+@media (max-width:480px){
+.pp-asset .acts .pp-spoolbtn,.pp-asset .acts .pp-minw-200{min-width:0;max-width:100%}
+.pp-asset .acts .pp-spoolbtn>.pp-hintchip,.pp-asset .acts .pp-minw-200>.pp-hintchip{flex:none}
+}
+.pp-device.phone .pp-asset .acts .pp-spoolbtn,.pp-device.phone .pp-asset .acts .pp-minw-200{min-width:0;max-width:100%}
+.pp-device.phone .pp-asset .acts .pp-spoolbtn>.pp-hintchip,.pp-device.phone .pp-asset .acts .pp-minw-200>.pp-hintchip{flex:none}

@@ -78,6 +78,8 @@ Everything that floats beside a trigger — Popover, SpoolPicker, TagEditor, Ove
 
 9. **A window-placed panel leaves its wrapper: it is rendered as a child of the nearest open `<dialog>`, else of `<body>` (2.13).** `.at` escapes **clipping**; it does not escape a **stacking context**, and `.pp-lift` is one by construction (`position: relative; z-index: var(--z-raised)`). Three components found that out one at a time — the klant tile's menu (2.7), the tooltip, and the spool picker, where two later triggers of 200 x 32 painted over an open panel and it lost every probe. Measured over a grid of 575 points per menu: anchored **1 of 11** clear, portalled to the body **0 of 11** (a modal `<dialog>` paints in the top layer, so a panel outside it lands beneath the whole modal), portalled to the nearest open `<dialog>` **11 of 11**. So rule 8's list of things that confine a panel now reads: a clipping or scrolling `overflow`, a `transform`, a `filter`, a `backdrop-filter`, a `mask` — **and any stacking context, `.pp-lift` included**. Dropping `.pp-lift`'s `z-index` instead is rejected: that z-index is what `.pp-lift` is *for* (a trigger above a stretched card or row link), and without it the trigger's place in the stack depends on DOM order, which differs per component and fails silently. The cost is that Tab order cannot carry a portalled panel, so an `.at` panel is **focus-managed**: focus in on open, back to the trigger on close, Esc closes, focus leaving closes, `aria-controls` and `aria-expanded` tie the two together. Details: Popover, GAP-146.
 
+**Rule 9's focus contract binds a panel that takes focus, and the Tooltip is exempt (2.14).** The implementer asked, and the answer is no: a tooltip is `aria-hidden`, its text *is* its trigger's accessible name, and its trigger can be a non-focusable graphic inside a stretched card link — there is no focus to move in, nothing to trap and no trigger to return it to. What binds every panel, tooltip included, is the **portal**: a window-placed panel is rendered in the nearest open `<dialog>`, else in `<body>`, because that is about paint order and not about keyboards. Focus in on open, back to the trigger on close, Esc, close-on-leave and `aria-controls`/`aria-expanded` are the contract of the panels a viewer operates: menus, pickers, the tag editor, the date picker. So the Tooltip is compliant as it stands and this is not a gap.
+
 A tooltip appears **at once** on hover and on focus — no delay. Details and the name-or-description rule: Tooltip's README.
 
 ## Three rules this round wrote down (2.3)
@@ -159,7 +161,7 @@ Components are plain HTML plus `components/bundle.css` (classes prefixed `pp-`);
 
 ## Roles
 
-Admin sees everything, including Deel-links, Toegang, Gebruikers, Instellingen, Verwijderde prints with Herstellen, and the undo actions. Editor sees every klant (no grants needed, so Editor rows in Toegang are disabled and checked), Dashboard, Openstaand, Facturen, print detail with costs and payment, and can export and "Definitief maken", but cannot credit, delete users or change settings. User only sees the klanten an Admin granted. User sees customer price and status only: no internal cost, breakdown, notes or file controls, and no Facturen page. Never render a control a role cannot use.
+Admin sees everything, including Deel-links, Toegang, Gebruikers, Instellingen, Verwijderde prints with Herstellen, and the undo actions. Editor sees every klant (no grants needed, so Editor rows in Toegang are disabled and checked), Dashboard, Openstaand, Facturen, print detail with costs and payment, and can export and "Definitief maken", but cannot credit, delete users or change settings. User only sees the klanten an Admin granted. **A visitor with a deel-link is a User without an account (2.14):** a valid token mints an anonymous read-only session scoped to one klant, with the same screens and a head bar instead of the sidebar — no theme control, no "Uitloggen", no API-docs, and the URL as the only credential (ScreenShareSession, AppShell). User sees customer price and status only: no internal cost, breakdown, notes or file controls, and no Facturen page. Never render a control a role cannot use.
 
 ## Screens and documents
 
@@ -187,6 +189,7 @@ Use Lucide line icons (`lucide-react`), 1.75px stroke, in sizes 16 (inline with 
 | Missing data | `triangle-alert` |
 | Bron (de pagina waar een model vandaan komt) | `external-link` |
 | Notitie | `sticky-note` |
+| Overzicht (het scherm van de klant zelf, in een deel-linksessie) | `list` |
 
 No logo has been supplied. Show the studio name in `heading-lg` type in the app shell, on the share page and on the invoice, with an optional uploaded logo image that replaces it when set in Instellingen.
 
@@ -349,3 +352,52 @@ wrapper that a phone rule was missing, and the phone frames finally get the 44px
 token twin. One new class (`.pp-badges`), two new row modifiers (`.pp-asset.band`, `.pp-setrow.cust`) and two
 named slots (`.lead`, `.acts > .end`); no token added, renamed or removed.
 Details: `changelog.md`.
+
+## Three rules this round wrote down (2.14)
+
+**Chrome belongs to the role; screens belong to the system.** A new audience gets the **same**
+screens in a smaller frame, never a friendlier copy of a screen. The owner rejected widening the
+share page screen by screen because he had watched that drift twice in a month, and he is right: two
+implementations of "a print" disagree the first time one of them is changed. So a visitor with a
+deel-link walks ScreenDashboard and ScreenPrintDetail, with the operator's chrome — avatar, role,
+theme cycle, "Uitloggen", live dot, drawer, rail — replaced by one head bar. **What a role may see
+is a question about data; what a role needs around it is a question about chrome.** Keep them apart
+and a second audience costs one shell, not a second portal. Details: ScreenShareSession, AppShell,
+GAP-165.
+
+**A fact the viewer can do nothing about is not chrome.** The expiry notice and the "Betalen" block
+stay on the screen where they mean something — beside the totals they belong to — and do **not**
+become a bar on every screen of a session. A bar would repeat one sentence four times for a visitor
+who cannot act on it from a print's page, which is the same arithmetic that took 404px out of
+Instellingen when twelve copies of one help line became one (GAP-101). Say a fact where it changes
+what somebody does, once. Details: ScreenSharePage 2.14, GAP-165.
+
+**A floor is a floor for the thing it protects, and at some width it stops protecting anything.** The
+spool trigger's 200px minimum existed so the control would not collapse beside a 320px panel; at
+360px it made the control wider than its row, and the card's `overflow: hidden` silently removed the
+last 32px of the name — the end, which is the worst place to cut a spool. The fix is not a longer
+rule but a smaller scope: the floor is lifted where it does damage, and the name takes the middle cut
+this system already specifies for anything identified at both ends. **When a minimum and a container
+disagree, look for what is being thrown away where nobody declared it.** Details: SpoolPicker 2.14,
+GAP-163.
+
+## Versie 2.14 (2026-10-18)
+
+**A deel-link stopped being a page and became a key, and the design system had to grow a second
+kind of visitor.** The owner opened a share link and said *"leuk, maar niet wat ik had verwacht"*: he
+expected the klant to walk through the portal. So a valid token now mints an anonymous read-only
+session for one klant, and the visitor uses the real screens — which cost one new shell variant
+(`.pp-app.guest`: a head bar with the studio, two destinations and "Sessie afsluiten", and none of
+the operator's footer), one new screen page that writes down what the session is
+(**ScreenShareSession**), and four reductions that were already half-specified and are now drawn:
+the visitor's Prints list, the **reduced "Deze print" card** (GAP-158), the payment as a *state*
+rather than a form, and the two endings — a dead link, which is still one page for unknown, expired
+and revoked, and a session the visitor closed themselves. **Rejected:** a persistent bar for the
+link's facts, Openstaand and API-docs in a visitor's nav, a theme control nobody can carry, and a
+countdown that would yank a page out from under someone who is reading it. Also in this version: the
+**"Aanvraag toevoegen" dialog** has an anatomy after being postponed twice (**AanvraagDialog**,
+GAP-157); a request's **ending** is a value in the picker it already has and a deletion when there
+are no files, never a third button on the row (GAP-159); the spool trigger's **32px** are given back
+at phone width (GAP-163); and one sentence stops having two key names (GAP-164). Twenty-eight new
+copy keys, two new components, **no token added, renamed or removed**, no new colour pair, no
+breaking change. Details: `changelog.md`.

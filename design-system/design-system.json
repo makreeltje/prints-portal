@@ -13,9 +13,9 @@
  "groups": [],
  "lastChange": {
   "by": "Rick",
-  "at": "2026-10-18T13:40:00Z",
+  "at": "2026-10-18T16:20:00Z",
   "via": "Claude Code",
-  "note": "2.13: GAP-101 and GAP-111 reopened and resolved, plus GAP-146, GAP-147, GAP-153, GAP-160, GAP-161, GAP-162. .pp-settings can no longer make a third column and the sections that list records take the whole row; a file row is align-items:start with a named .lead cell and an .acts band on its own line when it carries value controls. A window-placed panel is rendered in the nearest open <dialog>. New classes .pp-badges, .pp-setrow.cust, .pp-asset.band, .lead, .acts > .end. Nine new copy keys, customers.printCount gains a zero arm. No token added, renamed or removed."
+  "note": "2.14: GAP-165 resolved in five parts plus GAP-157, GAP-158, GAP-159, GAP-163 and GAP-164. A deel-link mints an anonymous read-only session: new shell variant .pp-app.guest (head bar, two destinations, Sessie afsluiten; no avatar, theme, Uitloggen or live dot), new components ScreenShareSession and AanvraagDialog, the reduced Deze print card for role User, a request ends in its own picker or is deleted, and the spool trigger gives back its 32px at 360px. New classes .pp-app.guest, .pp-guesthead, .pp-guestnav, .pp-fname.sans, .pp-spoolbtn > .nm. 28 new copy keys, none changed or removed. No token added, renamed or removed; no new colour pair."
  },
  "layout": "files",
  "libraries": [],
