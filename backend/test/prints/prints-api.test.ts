@@ -363,6 +363,32 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
     expect((await list(admin)).items.map((i) => i.id)).not.toContain(id);
   });
 
+  it('lists a klant whose folder holds nothing yet, and forgets the folder when it goes', async () => {
+    const customers = async (session: Session) =>
+      (await t.as(session, { url: '/api/customers' })).json<{
+        customers: { folder: string; printCount: number; deleted: boolean }[];
+      }>().customers;
+    expect((await customers(admin)).map((one) => one.folder)).not.toContain('Anouk');
+    const printsBefore = (await list(admin)).total;
+
+    // The owner makes the folder for a klant who has asked for something.
+    await mkdir(path.join(root, 'Anouk'), { recursive: true });
+    await t.app.services.indexer.indexAll();
+    const anouk = (await customers(admin)).find((one) => one.folder === 'Anouk');
+    expect(anouk).toMatchObject({ printCount: 0, deleted: false });
+    // Nothing else changed: an empty folder is not a print.
+    expect((await list(admin)).total).toBe(printsBefore);
+    expect((await list(admin, '?customer=Anouk')).total).toBe(0);
+
+    // A User sees only the klanten they are granted, empty folders included.
+    expect((await customers(helper)).map((one) => one.folder)).toEqual(['Joey']);
+
+    // The folder goes away again; the klant goes with it.
+    await rm(path.join(root, 'Anouk'), { recursive: true, force: true });
+    await t.app.services.indexer.indexAll();
+    expect((await customers(admin)).map((one) => one.folder)).not.toContain('Anouk');
+  });
+
   it('deletes and restores a whole customer', async () => {
     const response = await t.as(editor, { method: 'DELETE', url: '/api/customers/Denise' });
     expect(response.json()).toEqual({ deleted: 2 });

@@ -339,7 +339,14 @@ async function listByMoney(
   };
 }
 
-/** Customers with prints the caller can see, for the dashboard strip. */
+/**
+ * Customers the caller can see, for the dashboard strip.
+ *
+ * A klant is a folder on disk (0011), so a folder with no projects in it is
+ * listed too, with a count of 0. Deriving the list from the prints alone made
+ * exactly the klant a new request is for — one with nothing yet — impossible
+ * to pick anywhere in the portal.
+ */
 export async function listCustomers(
   db: AppDatabase,
   scope: CustomerScope,
@@ -360,7 +367,7 @@ export async function listCustomers(
     .execute();
   const flags = await db
     .selectFrom('customers')
-    .select(['customer_folder', 'no_billing', 'pay_link', 'pay_link_added_at'])
+    .select(['customer_folder', 'no_billing', 'pay_link', 'pay_link_added_at', 'seen_at'])
     .execute();
   const noBilling = new Set(flags.filter((f) => f.no_billing === 1).map((f) => f.customer_folder));
   const payLinks = new Map(
@@ -387,7 +394,19 @@ export async function listCustomers(
       }
     }
   }
-  return rows
+  /*
+    Folders the indexer saw with nothing in them. They carry no prints, so no
+    scope query reaches them; the same visibility rule is applied by hand.
+    An archived or deleted print still counts as "has prints", so a klant only
+    arrives here while their folder is genuinely empty.
+  */
+  const withPrints = new Set(rows.map((row) => row.customer_folder));
+  const empty = flags
+    .filter((flag) => flag.seen_at !== null && !withPrints.has(flag.customer_folder))
+    .filter((flag) => scopeAllows(scope, flag.customer_folder))
+    .map((flag) => ({ customer_folder: flag.customer_folder, count: 0, alive: 1 }));
+
+  return [...rows, ...empty]
     .map((row) => {
       const flagged = noBilling.has(row.customer_folder);
       return {

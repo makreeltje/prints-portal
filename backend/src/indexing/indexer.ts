@@ -88,9 +88,12 @@ export class Indexer {
     return this.enqueue(async () => {
       const summary = emptySummary();
       const refs = new Map<string, ProjectRef>();
-      for (const customer of await this.scanner.listCustomers()) {
+      const customers = await this.scanner.listCustomers();
+      for (const customer of customers) {
         for (const ref of await this.scanner.listProjects(customer)) refs.set(recordKey(ref), ref);
       }
+      // A klant is a folder, including one with no projects in it yet.
+      await this.rememberCustomers(customers);
       for (const ref of await this.knownRecords()) refs.set(recordKey(ref), ref);
       for (const ref of refs.values()) await this.indexOne(ref, summary, force);
       this.options.logger?.info(summary, 'index complete');
@@ -103,12 +106,56 @@ export class Indexer {
     return this.enqueue(async () => {
       const summary = emptySummary();
       const refs = new Map<string, ProjectRef>();
-      const onDisk = await this.scanner.listProjects(customerFolder).catch(() => []);
-      for (const ref of onDisk) refs.set(recordKey(ref), ref);
+      const onDisk = await this.scanner.listProjects(customerFolder).catch(() => null);
+      for (const ref of onDisk ?? []) refs.set(recordKey(ref), ref);
+      // Null means the folder itself is gone; [] means it is there and empty,
+      // which is a klant with nothing in it and not a klant to forget.
+      if (onDisk !== null) await this.rememberCustomers([customerFolder], false);
       for (const ref of await this.knownRecords(customerFolder)) refs.set(recordKey(ref), ref);
       for (const ref of refs.values()) await this.indexOne(ref, summary, false);
       return summary;
     });
+  }
+
+  /**
+   * Write down the klant folders that are on disk (0011).
+   *
+   * `sweep` is for a full pass only: a folder that was not walked this time is
+   * no longer there, so its `seen_at` is cleared. The row itself stays, with
+   * its "niet factureren" and its betaallink — a folder can be moved away
+   * while its prints, its invoices and its history stay exactly where they are.
+   */
+  private async rememberCustomers(folders: readonly string[], sweep = true): Promise<void> {
+    const { db } = this.options;
+    const now = this.now();
+    const known = new Set(
+      (await db.selectFrom('customers').select('customer_folder').execute()).map(
+        (row) => row.customer_folder,
+      ),
+    );
+    for (const folder of folders) {
+      if (known.has(folder)) {
+        await db
+          .updateTable('customers')
+          .set({ seen_at: now })
+          .where('customer_folder', '=', folder)
+          .execute();
+      } else {
+        await db
+          .insertInto('customers')
+          .values({ customer_folder: folder, no_billing: 0, seen_at: now, updated_at: now })
+          .execute();
+      }
+    }
+    if (!sweep) return;
+    const gone = [...known].filter((folder) => !folders.includes(folder));
+    if (gone.length > 0) {
+      await db
+        .updateTable('customers')
+        .set({ seen_at: null })
+        .where('customer_folder', 'in', gone)
+        .execute();
+    }
   }
 
   indexProject(ref: ProjectRef, force = false): Promise<IndexSummary> {

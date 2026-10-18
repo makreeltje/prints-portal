@@ -1860,3 +1860,19 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing. Marked `ds-gap: GAP-161`; the gap stays open until the option's anatomy is specified.
 - **Temporary placeholder approved:** yes — the owner asked for both ("altijd zichtbaar onderaan, en zet het gewicht erbij"), 2026-10-18
 - **Design system version:** 2.12
+
+## GAP-162 [open] A klant with nothing in their folder has no designed tile, and its menu offers acts that have no object
+- **Type:** missing state
+- **Found while:** making a klant with no projects selectable (the owner's request)
+- **Where needed:** CustomerCard, CustomerChips, ScreenDashboard's klant strip; `frontend/src/prints/CustomerStrip.tsx:162`
+- **What is missing or wrong:** until now a klant was derived from the prints (`group by customer_folder`), so a klant always had at least one. A folder with nothing in it therefore existed nowhere in the portal — and that is exactly the klant a new request is for, which the Wachtrij made visible: the owner made the folder for a klant who had asked for something and then could not pick them anywhere. A klant is now a folder on disk, empty or not.
+
+  Three things that follows from, none of them designed:
+  1. **The tile reads "0 prints"** (`customers.printCount`'s `other` arm, since Dutch sends 0 there). Nothing says whether that is the right thing to show, or whether an empty klant should read differently, or sort apart from the rest.
+  2. **The tile's menu offers "Klant verwijderen" and "Factuur"** on a klant with nothing to delete and nothing to bill. Deleting is harmless — it deletes zero prints — but a destructive-looking control for an act with no object is the pattern GAP-138 was written against.
+  3. **Selecting the tile filters the grid to nothing**, which lands on the existing empty state. That may be exactly right; it has never been looked at.
+- **Why it matters:** this is now an ordinary sight rather than an edge case — every new klant starts here, and the owner hits it the moment he makes a folder for someone who has asked for a print.
+- **Proposal:** leave the count as it is and let the empty state do its work, which is what is built; and decide (2), for which the smallest honest answer is that the menu shows only what has an object. If the design system would rather mark an empty klant — a `pp-hintchip` "nog geen prints", or sorting them last — that is a decision we would rather take from you than invent.
+- **Blocked:** nothing. No placeholder was built: the tile renders a klant with 0 prints without any new markup, so there is nothing marked `ds-gap`. The question is whether what it renders is right.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.12

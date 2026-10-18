@@ -180,6 +180,11 @@ export interface CustomerTable {
   pay_link: string | null;
   /** When the link was last set, so an old link is visibly old. */
   pay_link_added_at: string | null;
+  /**
+   * When the indexer last saw this folder on disk. Null means it is gone —
+   * the row stays, because its flags and its prints may not be.
+   */
+  seen_at: string | null;
   updated_at: string;
 }
 
