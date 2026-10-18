@@ -2188,3 +2188,40 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.15
+
+## GAP-180 [open] GAP-172's rules make the guest head one height only up to 29 characters
+- **Type:** suspected design bug
+- **Found while:** verifying GAP-172 in the running app, which 2.15 asked for by name ("it should now be **one** height at all five")
+- **Where needed:** `components/bundle.css` (`.pp-guesthead`, the `@media (max-width:480px)` block for `.pp-guesthead > .pp-brand` and its `.pp-device.phone` twin), `components/AppShell/README.md` 2.15
+- **What is missing or wrong:** the two halves of GAP-172 fire in the wrong order, so the ellipsis never gets the chance to do its job. Measured at a real 360px viewport, identical in both themes, with the brand's text set in the DOM:
+
+  | studio name | head height | brand box | ellipsis engaged | rows in the head |
+  |---|---|---|---|---|
+  | 16 chars | **127px** | 138px | no | 2 |
+  | 20 chars | **127px** | 179px | no | 2 |
+  | 24 chars | 127px | 218px | no | 2 |
+  | 29 chars | 127px | 262px | no | 2 |
+  | **30 chars** | **159px** | 273px | no | **3** |
+  | 33 chars | 159px | 299px | no | 3 |
+  | **37 chars** | 159px | 328px | **yes** | 3 |
+  | 48 chars | 159px | 328px | yes | 3 |
+
+  The cause is flexbox order of operations, not the new rules. `.pp-guesthead` is `flex-wrap: wrap` and `.pp-guesthead > .pp-brand` is `flex: 0 1 auto` with `min-width: 0`, so the brand's **hypothetical main size is its full content width**. A flex container *wraps before it shrinks*: once the brand's content width plus the 16px column gap plus the 44px `.pp-guestexit` passes the 328px content box — which happens at 30 characters — the container moves the exit button to a row of its own, the brand is never shrunk, and `text-overflow: ellipsis` has nothing to cut. The ellipsis only engages at **37** characters, by which point the button has already dropped.
+- **Why it matters:** 2.15 claims the head is one height at every name length and the changelog asks for that to be confirmed; it is one height up to 29 characters and 32px taller from 30. That is a real improvement on 2.14 (121/153/177 became 127/159, and the threshold moved from about 20 characters to 30) and it is **not** what the export says, so a reader would believe the question is closed. The owner's own name is 16 characters, so he will not see it — which is exactly the case 2.14 got wrong the first time and GAP-172 exists to stop.
+- **Proposal:** one declaration, measured in the browser before proposing it. Adding `.pp-guesthead > .pp-brand { flex: 1 1 0 }` inside the same `@media (max-width:480px)` block (with its `.pp-device.phone` twin) gives the brand a zero hypothetical main size, so the line never overflows, the container never wraps the button away, and the brand shrinks — and therefore ellipsises — instead. Measured with that one line patched in: the head is **127px at every length from 16 to 80 characters**, the brand box is a constant 268px, the ellipsis engages from **30** characters, and the exit button stays on the first row at every length. The declaration belongs to the design system; we have not built it and are not proposing a placeholder, because the head is not broken, only taller than the export claims.
+- **Blocked:** nothing. GAP-172's own markup obligation (`.pp-guestexit` and the `.lbl` span) is built and the head is 127px at the owner's name.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.15
+
+## GAP-181 [open] The phone drawer's links still draw the browser's own focus ring, at 2.86:1 in dark
+- **Type:** missing state
+- **Found while:** verifying GAP-177 in the running app with the keyboard, both themes
+- **Where needed:** `components/bundle.css` (a `.pp-drawer a:focus-visible` rule beside the three GAP-177 added), `components/AppShell/README.md` 2.15
+- **What is missing or wrong:** AppShell 2.15 says the ring is now `outline: 2px solid var(--focus-ring)` "with a 2px offset on a **sidebar or drawer** link", and lists the drawer among the four places that were the exception. The CSS does not reach the drawer: the three new selectors are `.pp-nav a:focus-visible`, `.pp-bottomnav a:focus-visible` and `.pp-guestnav a:focus-visible`, and the phone drawer's links are **`.pp-drawer a`** — their own selector family since 1.2, not inside `.pp-nav` (the app's `nav` element there is `display: contents`, as the drawer's own CSS expects). Every `:focus-visible` selector in `bundle.css` was listed and none of them matches.
+
+  Measured by tabbing to a drawer link in the running app, both themes: computed outline **`1px auto rgb(0, 95, 204)` at offset 1px** — Chromium's own ring, not `--focus-ring` — against `2px solid var(--focus-ring)` at the specified offset on the sidebar, the bottom bar and the guest track. That browser ring measures **2.86:1 against `surface` in dark** (5.98 in light), under the 3:1 of WCAG 1.4.11, which is the fault GAP-177 was written to remove.
+- **Why it matters:** the drawer is the whole navigation on a phone, so this is the keyboard cue for every operator screen at phone width; and a missing or weak focus ring is the one accessibility fault axe cannot report, which is GAP-177's own argument. The 2.15 export reads as though all four places were fixed.
+- **Proposal:** add `.pp-drawer a:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px }` beside the three existing rules — the sidebar's values, because the drawer's links are a column on `surface` with room around them, not items inside a bar whose edge would clip an outset ring. No new token and no new pair: `focus-ring` on `surface` is already in the report and measures 8.65 dark / 7.82 light where the other three were verified. We have not built it: a focus ring is a visual value and `.pp-drawer` is the design system's selector.
+- **Blocked:** nothing; the drawer is navigable and focus is visible, just not in the token and not at 3:1 in dark.
+- **Temporary placeholder approved:** no
+- **Design system version:** 2.15
