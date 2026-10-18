@@ -31,13 +31,7 @@ type QueueState = (typeof STATES)[number];
  * so the record keeps the typed name until "Bestanden koppelen" points it at
  * a folder that exists by then.
  */
-export function AanvraagDialog({
-  onClose,
-  onDone,
-}: {
-  onClose: () => void;
-  onDone: () => void;
-}) {
+export function AanvraagDialog({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const id = useId();
   const [name, setName] = useState('');
   const [customer, setCustomer] = useState('');

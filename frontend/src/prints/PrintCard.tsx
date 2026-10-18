@@ -19,6 +19,8 @@ export function PrintCard({
   restore,
   selected,
   onSelect,
+  to,
+  reduced = false,
 }: {
   print: PrintSummary;
   flashing: boolean;
@@ -27,6 +29,14 @@ export function PrintCard({
   restore?: () => void;
   selected?: boolean;
   onSelect?: (selected: boolean) => void;
+  /** Where the name links; a session keeps its token in the URL. */
+  to?: string;
+  /**
+   * A visitor's card (ScreenShareSession §5): exactly the facts an Overzicht
+   * line carries and no more — no filament tint, no meta line, no tags and
+   * no "Ontbreekt" chip, which is a fact about the owner's folder.
+   */
+  reduced?: boolean;
 }) {
   const classes = ['pp-card', 'pp-print'];
   if (print.status === 'deleted') classes.push('is-deleted');
@@ -35,20 +45,20 @@ export function PrintCard({
   if (flashing) classes.push('flash');
   return (
     <article className={classes.join(' ')} onAnimationEnd={onFlashEnd}>
-      <Thumbnail print={print} />
+      <Thumbnail print={print} plain={reduced} />
       <div className="pp-info">
         <div>
           <h3>
-            <Link className="app-card-link" to={`/prints/${print.id}`}>
+            <Link className="app-card-link" to={to ?? `/prints/${print.id}`}>
               {print.name}
             </Link>{' '}
             {/* Behind the name, where the line was already empty (GAP-109). */}
-            <LacksChip lacks={print.lacks} />
+            {!reduced && <LacksChip lacks={print.lacks} />}
           </h3>
           <span className="sub">{subLine(print)}</span>
         </div>
-        <Meta print={print} />
-        {print.tags.length > 0 && (
+        {!reduced && <Meta print={print} />}
+        {!reduced && print.tags.length > 0 && (
           <div className="pp-tags">
             {print.tags.map((tag) => (
               <TagChip key={tag.id} tag={tag} />

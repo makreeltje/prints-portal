@@ -691,6 +691,9 @@ export const nl = {
     'Deze klant wordt niet gefactureerd. De link toont alleen de printlijst, zonder bedragen.',
   'share.createdOn': 'Gemaakt', // component copy: ShareLinkRow
   'share.revoke': 'Intrekken',
+  // An act whose consequence the operator cannot see: a visitor may be three
+  // screens into a session on this token (ScreenShareLinks 2.14).
+  'share.revoke.body': 'Wie de link nu open heeft, komt er na deze actie niet meer in.',
   'share.active': 'Actief',
   'share.expired': 'Verlopen',
   'share.revoked': 'Ingetrokken',
@@ -717,6 +720,22 @@ export const nl = {
   'share.notFound': 'Deze link is verlopen of ingetrokken',
   'share.askNew': 'Vraag degene die je de link stuurde om een nieuwe.',
   'share.notBilledIntro': 'Hier zie je de prints die voor je gemaakt zijn.',
+  // The visitor's session (ScreenShareSession 2.14, GAP-165). A deel-link is
+  // a key now: these are the only strings the session itself adds, because
+  // every screen inside it is a screen the portal already has.
+  'session.nav.overview': 'Overzicht',
+  'session.nav.prints': 'Prints',
+  'session.prints.title': 'Prints',
+  'session.prints.empty': 'Nog geen prints',
+  // Not `empty.customerNoPrints.body`: that one explains folders, which is
+  // the workshop's vocabulary and not the klant's (copy-deck 2.14).
+  'session.prints.emptyBody': 'Zodra er iets voor je geprint is, zie je het hier.',
+  'session.exit': 'Sessie afsluiten',
+  'session.exit.confirm': 'Sessie afsluiten?',
+  'session.exit.confirmBody': 'Je kunt daarna alleen terug met de link die je hebt gekregen.',
+  'session.exit.ok': 'Afsluiten',
+  'session.ended.title': 'Je bent afgemeld van dit overzicht',
+  'session.ended.body': 'Open de link opnieuw om je prints te bekijken.',
   'confirm.revokeLink': "Deel-link '{label}' intrekken?",
   'overview.for': 'Overzicht voor {customer}',
   'overview.download': 'Download overzicht',

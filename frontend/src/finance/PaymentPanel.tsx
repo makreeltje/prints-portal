@@ -39,6 +39,7 @@ export function PaymentPanel({
   notBilled,
   cost,
   role,
+  visitor = false,
   actions,
 }: {
   order: Order;
@@ -48,6 +49,13 @@ export function PaymentPanel({
   /** Totaalkosten, for the niet-factureren note. */
   cost: number | null;
   role: 'Admin' | 'Editor' | 'User';
+  /**
+   * A visitor in a deel-linksessie (PaymentPanel 2.14): the same badge and
+   * amount, without `pay.userNote`. "Je ziet alleen prijs en status" tells a
+   * klant that something is being withheld from them, which is true and none
+   * of their business; the share page has never said it.
+   */
+  visitor?: boolean;
   actions: PaymentActions;
 }) {
   const titleId = useId();
@@ -74,7 +82,7 @@ export function PaymentPanel({
           <PaymentBadge status={order.status} />
           {order.price === null ? null : <Money amount={order.price} />}
         </div>
-        <div className="pp-muted pp-text-sm">{t('pay.userNote')}</div>
+        {!visitor && <div className="pp-muted pp-text-sm">{t('pay.userNote')}</div>}
       </section>
     );
   }

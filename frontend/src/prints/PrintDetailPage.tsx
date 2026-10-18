@@ -26,6 +26,7 @@ import { placeTip } from '../components/tipPlacement';
 import { splitName, stemForRow } from './fileLabel';
 import { ApiError } from '../api/client';
 import { useCurrentUser } from '../auth/context';
+import { useShareSession } from '../sharing/session';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useToast } from '../components/toast-context';
 import { formatDate, formatDuration, formatGrams } from '../i18n/format';
@@ -76,7 +77,7 @@ import { LacksChip, RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList, type AssetControls } from './AssetList';
 import { OverflowMenu } from '../components/OverflowMenu';
 import { TagEditor } from './TagEditor';
-import { placeOf } from './filter';
+import { placeOf, squashName } from './filter';
 import { assetsForOrder, isSettled, newestFirst, orderLabels, unassignedAssets } from './orders';
 import type { Order, PrintDetail } from './types';
 
@@ -93,6 +94,13 @@ export function PrintDetailPage() {
   const { id = '' } = useParams();
   const user = useCurrentUser();
   const canManage = user.role === 'Admin' || user.role === 'Editor';
+  /*
+    A visitor with a deel-link is a User without an account
+    (ScreenShareSession). The role already withholds every number a klant may
+    not see; what the session changes is the chrome around it — no tags, no
+    "Ontbreekt", no archive badge, and the payment without its note.
+  */
+  const visitor = useShareSession() !== null;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const toast = useToast();
@@ -166,6 +174,7 @@ export function PrintDetailPage() {
       notBilled={detail.noBilling}
       cost={order.cost?.totalCost ?? null}
       role={user.role}
+      visitor={visitor}
       actions={{
         setSalePrice: (price) => change(() => setSalePrice(order.id, price)),
         addPayment: (amount) => change(() => addPayment(order.id, amount)),
@@ -236,16 +245,33 @@ export function PrintDetailPage() {
         </div>
         <div className="pp-tags">
           {detail.money !== null && <PaymentBadge status={detail.money.status} />}
-          <RecordBadge print={detail} />
-          {/* The same chip the card carries, in the header badge row (GAP-090). */}
-          <LacksChip lacks={detail.lacks} withText />
-          {detail.tags.map((tag) => (
-            <TagChip
-              key={tag.id}
-              tag={tag}
-              onRemove={canManage ? () => void removeTag(tag.id) : undefined}
-            />
-          ))}
+          {/*
+            "Gearchiveerd" is a word about the owner's disk, not about the
+            klant's print (ScreenShareSession §5, where the same rule keeps
+            the badge off a visitor's list).
+          */}
+          {!visitor && <RecordBadge print={detail} />}
+          {/*
+            The same chip the card carries, in the header badge row (GAP-090)
+            — and never for a User or a visitor: "Ontbreekt: 3MF" is a fact
+            about the owner's folder and reads to a klant as if something is
+            wrong with their print (ScreenPrintDetail 2.14, GAP-158).
+          */}
+          {canManage && <LacksChip lacks={detail.lacks} withText />}
+          {/*
+            No tags in a session (ScreenShareSession). For a signed-in role
+            User the two 2.14 files disagree — ScreenPrintDetail says no tags,
+            ScreenShareSession publishes the same question as a proposal — so
+            1.4 stands for that role until it is answered: GAP-166.
+          */}
+          {!visitor &&
+            detail.tags.map((tag) => (
+              <TagChip
+                key={tag.id}
+                tag={tag}
+                onRemove={canManage ? () => void removeTag(tag.id) : undefined}
+              />
+            ))}
           {canManage && <TagEditor printId={detail.id} current={detail.tags} />}
         </div>
       </div>
@@ -299,13 +325,10 @@ export function PrintDetailPage() {
           <div className="pp-col pp-gap-4">
             <ModelView detail={detail} />
             {/*
-              The reduced card, by the owner's decision (ds-gap: GAP-158).
-              PrintSource says a User sees the bron read-only "because the
-              klant sees it too" — and since 1.9 this branch had no card for
-              it to sit in, so the same klant saw the bron on the share page
-              and not when signed in. ThisPrint already gates its facts on
-              `canManage`, so a User gets klant, project, datum and bron, and
-              nothing that belongs to an order.
+              The reduced card, drawn by 2.14 (GAP-158) and now the main
+              screen of every klant who opens a deel-link: klant, project
+              when it differs, datum and bron, and nothing that belongs to an
+              order.
             */}
             <ThisPrint
               detail={detail}
@@ -359,6 +382,16 @@ const LACKS_KEY = { gcode: 'gcode', '3mf': 'threemf', stl: 'stl' } as const;
  * order, in the space the capped viewer leaves beside it. Nothing here repeats
  * PaymentPanel — no price, no payment, no status — because those belong to an
  * order, and that duplication is what made the 1.9 page read wrong.
+ *
+ * **The reduced card (ScreenPrintDetail 2.14, GAP-158 resolved).** For role
+ * User and for a visitor with a deel-link the card has an anatomy at last,
+ * and it is four rows at most: Klant, Project **only when it differs from the
+ * print's name** (GAP-072), Datum, and Bron when there is one — read-only,
+ * no chip, no folder name. Nothing else: no Materiaal, Tijd, Gewicht or
+ * Bestellingen, no spool row (a spool is a cost input and the owner's stock,
+ * which changes under a print that is finished), no note, and no "Ontbreekt"
+ * line. A card of two rows is still a card; padding it out with cost inputs
+ * would be inventing content for a layout.
  */
 function ThisPrint({
   detail,
@@ -391,7 +424,19 @@ function ThisPrint({
     0,
   );
   const facts: [string, ReactNode][] = [[t('filters.customer'), detail.customerFolder]];
-  if (detail.projectFolder !== null && detail.projectFolder !== '') {
+  /*
+    The project only when it says something the name does not — part of the
+    reduced card's anatomy in 2.14, through GAP-072's rule, with the same
+    `squashName` comparison the breadcrumb and the share page's line use. The
+    operator's card is specified by GAP-095 and keeps the row unconditionally;
+    measured in this library, that row repeats the print's name on **84 of 84**
+    prints, which is a question for the design system and not ours to decide.
+  */
+  if (
+    detail.projectFolder !== null &&
+    detail.projectFolder !== '' &&
+    (canManage || squashName(detail.projectFolder) !== squashName(detail.name))
+  ) {
     facts.push([t('print.project'), detail.projectFolder]);
   }
   if (detail.printDate !== null) facts.push([t('print.date'), formatDate(detail.printDate)]);
@@ -414,10 +459,22 @@ function ThisPrint({
     }
   }
   return (
-    <section className="pp-card pp-sec pp-gap-3" aria-labelledby={titleId}>
-      <b id={titleId} className="pp-strong">
-        {t('print.this')}
-      </b>
+    <section
+      className={canManage ? 'pp-card pp-sec pp-gap-3' : 'pp-card pp-sec'}
+      aria-labelledby={titleId}
+    >
+      {/*
+        The reduced card is drawn with a real heading (ScreenPrintDetail 2.14
+        and ScreenShareSession's preview, which agree); the operator's card
+        keeps the `b.pp-strong` its own preview still shows.
+      */}
+      {canManage ? (
+        <b id={titleId} className="pp-strong">
+          {t('print.this')}
+        </b>
+      ) : (
+        <h2 id={titleId}>{t('print.this')}</h2>
+      )}
       <dl className="pp-kv tight">
         {facts.map(([label, value]) => (
           <Fragment key={label}>
@@ -469,12 +526,13 @@ function ThisPrint({
       {canManage && <SourceEditor detail={detail} quiet={quiet} />}
       {/*
         The note sits at the foot of the card, under the facts and the spool
-        control (PrintNote). A User never sees the block at all, which the
-        backend already guarantees by sending null.
+        control (PrintNote). A User never sees the block at all — the backend
+        guarantees it by sending null, and 2.14 says it in the anatomy too.
       */}
-      {detail.note !== null && <NoteBlock note={detail.note} />}
+      {canManage && detail.note !== null && <NoteBlock note={detail.note} />}
       {canManage && <NoteEditor detail={detail} quiet={quiet} />}
-      {detail.lacks.length > 0 && (
+      {/* "Ontbreekt: 3MF" is about the owner's folder, so never on a klant's card. */}
+      {canManage && detail.lacks.length > 0 && (
         <span className="pp-help">
           {t('print.lacks.aria', {
             types: detail.lacks

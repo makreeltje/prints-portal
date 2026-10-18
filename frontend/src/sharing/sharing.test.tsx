@@ -113,6 +113,14 @@ describe('ShareLinksPage', () => {
     const joey = await screen.findByRole('region', { name: 'Joey' });
     await userEvent.click(within(joey).getByRole('button', { name: 'Intrekken' }));
     const dialog = screen.getByRole('alertdialog', { name: "Deel-link 'Q2 overzicht' intrekken?" });
+    /*
+      The link is a key now, so Intrekken ends a visit as well as a page
+      (ScreenShareLinks 2.14): an act whose consequence the operator cannot
+      see is at least stated to him.
+    */
+    expect(
+      within(dialog).getByText('Wie de link nu open heeft, komt er na deze actie niet meer in.'),
+    ).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Intrekken' }));
     await waitFor(() => {
       expect(calls.some((c) => c.path === '/api/share-links/l1/revoke')).toBe(true);
@@ -281,6 +289,36 @@ describe('SharePage', () => {
     renderShare();
     await screen.findByRole('heading', { level: 1 });
     expect(screen.queryByText(/verloopt/)).toBeNull();
+  });
+
+  /*
+    2.14: at 0 or 1 day the notice turns `warning`. The strings and the clock
+    glyph are unchanged — the words already carry the fact.
+  */
+  it('turns the expiry notice warning on its last day and keeps info before that', async () => {
+    stubFetch({
+      [`GET /api/share/${TOKEN}`]: () => ({ json: { ...billed, expiresAt: inDays(1) } }),
+    });
+    const view = renderShare();
+    expect((await screen.findByText(/verloopt morgen/)).closest('.pp-badge')).toHaveClass(
+      'warning',
+    );
+    view.unmount();
+
+    stubFetch({
+      [`GET /api/share/${TOKEN}`]: () => ({ json: { ...billed, expiresAt: inDays(0) } }),
+    });
+    const today = renderShare();
+    expect((await screen.findByText(/verloopt vandaag/)).closest('.pp-badge')).toHaveClass(
+      'warning',
+    );
+    today.unmount();
+
+    stubFetch({
+      [`GET /api/share/${TOKEN}`]: () => ({ json: { ...billed, expiresAt: inDays(2) } }),
+    });
+    renderShare();
+    expect((await screen.findByText(/over 2 dagen/)).closest('.pp-badge')).toHaveClass('info');
   });
 
   it('leaves the totals out while no print has a price', async () => {

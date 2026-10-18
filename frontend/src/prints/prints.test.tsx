@@ -984,6 +984,61 @@ describe('PrintDetailPage', () => {
     expect(screen.queryByRole('button', { name: 'cadeau verwijderen' })).toBeNull();
   });
 
+  /*
+    GAP-158, resolved in 2.14: the reduced card finally has an anatomy —
+    `pp-kv tight` with Klant, Project only when it differs, Datum and Bron,
+    and nothing else at all.
+  */
+  it('gives a User a card of four rows at most, with a heading and no cost inputs', async () => {
+    stubFetch({
+      'GET /api/prints/p1': () => ({
+        json: detail({
+          assets: null,
+          lacks: ['3mf'],
+          sources: [
+            { url: 'https://makerworld.com/models/1', label: 'makerworld.com', fileName: null },
+          ],
+        }),
+      }),
+    });
+    renderDetail('User');
+    const card = (await screen.findByRole('heading', { level: 2, name: 'Deze print' })).closest(
+      'section',
+    );
+    if (!(card instanceof HTMLElement)) throw new Error('no card');
+    expect(card).toHaveClass('pp-card', 'pp-sec');
+    expect(card.querySelector('dl')).toHaveClass('pp-kv', 'tight');
+    // The project repeats the name here, so it is not a row (GAP-072).
+    expect([...card.querySelectorAll('dt')].map((dt) => dt.textContent)).toEqual([
+      'Klant',
+      'Datum',
+      'Bron',
+    ]);
+    expect(card.querySelector('.pp-srcs')).not.toBeNull();
+    // And nothing else: no spool row, no note, no missing-files line.
+    expect(card.querySelector('.pp-spoolbtn')).toBeNull();
+    expect(card.querySelector('.pp-note')).toBeNull();
+    expect(within(card).queryByText(/Ontbreekt/)).toBeNull();
+    // The header loses the chip too: that is a fact about the owner's folder.
+    expect(document.querySelector('.pp-lacks')).toBeNull();
+  });
+
+  it('names the project in that card only when it says something the name does not', async () => {
+    stubFetch({
+      'GET /api/prints/p1': () => ({ json: detail({ assets: null, projectFolder: 'Kerst 2026' }) }),
+    });
+    renderDetail('User');
+    const card = (await screen.findByRole('heading', { level: 2, name: 'Deze print' })).closest(
+      'section',
+    );
+    if (!(card instanceof HTMLElement)) throw new Error('no card');
+    expect([...card.querySelectorAll('dt')].map((dt) => dt.textContent)).toEqual([
+      'Klant',
+      'Project',
+      'Datum',
+    ]);
+  });
+
   it('shows the 403 state for another customer', async () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ status: 403, json: { error: 'no_access' } }) });
     renderDetail('User');

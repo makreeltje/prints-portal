@@ -261,6 +261,43 @@ describe.each(TEST_DATABASES)('Deel-links on $name', ({ url }) => {
       expect(withHeader.statusCode).toBe(403);
       expect(withHeader.json<{ error: string }>().error).toBe('forbidden');
     });
+
+    /*
+      "Sessie afsluiten" (ScreenShareSession §1): deel-links are opened on
+      borrowed phones and in family group chats, so the visitor needs a way
+      out that is not clearing the browser. It drops the session cookie, not
+      an account — there is none.
+    */
+    it('ends when the visitor closes it, and the link still works afterwards', async () => {
+      await start();
+      const { token } = await create('Joey');
+      const visitor = await enter(token);
+      if (visitor === null) throw new Error('no session');
+      expect((await t.as(visitor, { url: '/api/prints?limit=100' })).statusCode).toBe(200);
+
+      const out = await t.as(visitor, { method: 'POST', url: '/api/auth/logout' });
+      expect(out.statusCode).toBe(204);
+      expect((await t.as(visitor, { url: '/api/prints?limit=100' })).statusCode).toBe(401);
+
+      // The link is a key, not a one-shot: opening it again mints a new one.
+      const again = await enter(token);
+      expect(again).not.toBeNull();
+      expect((await t.as(again, { url: '/api/prints?limit=100' })).statusCode).toBe(200);
+    });
+
+    /*
+      "Download overzicht" is the use the link was serving before it became a
+      key, and the PDF hangs off the Overzicht (changelog 2.14, warning 1).
+    */
+    it('keeps the Overzicht PDF working for a visitor who is inside', async () => {
+      await start();
+      const { token } = await create('Joey');
+      const visitor = await enter(token);
+      if (visitor === null) throw new Error('no session');
+      const pdf = await t.as(visitor, { url: `/api/share/${token}/overview.pdf` });
+      expect(pdf.statusCode).toBe(200);
+      expect(pdf.headers['content-type']).toBe('application/pdf');
+    });
   });
 
   it('shows one line per order with the customer price only, never cost', async () => {
