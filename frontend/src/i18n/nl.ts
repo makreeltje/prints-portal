@@ -145,6 +145,9 @@ export const nl = {
   'spool.forPrintHelp': 'Bestanden en slots met een eigen spoel gaan hierboven voor.', // component copy: ScreenPrintDetail
   'spool.searchLabel': 'Zoeken', // component copy: SpoolPicker preview (aria-label)
   'spool.unreachable': 'Niet bereikbaar', // component copy: ScreenSettings
+  'spool.remaining': '{grams} g over', // ds-gap: GAP-161
+  'spool.archived': 'archief', // ds-gap: GAP-161
+  'spool.archivedAria': 'Gearchiveerd in Spoolman', // ds-gap: GAP-161
 
   'cost.title': 'Totaalkosten',
   'cost.titleNotBilled': 'Kosten', // component copy: CostBreakdown (niet factureren)

@@ -8,12 +8,20 @@ import type { Spool } from '../prints/types';
 import { fetchSpools, financeKeys, refreshSpoolman } from './api';
 import { SpoolSwatch } from './money';
 
+/** "294 g over", or nothing when Spoolman does not say (ds-gap: GAP-161). */
+function remainingLabel(spool: Spool): string | null {
+  const grams = spool.remainingWeight;
+  if (grams === null || grams === undefined) return null;
+  return t('spool.remaining', { grams: String(Math.round(grams)) });
+}
+
 /**
  * SpoolPicker: a trigger (swatch, name, chevron) and a popover with a search
  * field and a listbox of Spoolman spools, "Geen spoel" last. Combobox
  * keyboard: arrows move, Enter picks, Esc closes and returns focus. The
  * popover floats under the trigger in `.pp-anchor` (Popover, z-popover).
  */
+
 export function SpoolPicker({
   value,
   onChange,
@@ -170,6 +178,8 @@ export function SpoolPopover({
       spool.colour ?? '',
       ...spool.colours,
       spool.pricePerKg === null ? '' : formatMoney(spool.pricePerKg),
+      // So "archief" finds them: the word is on screen, it should be typeable.
+      spool.archived === true ? t('spool.archived') : '',
     ]
       .join(' ')
       .toLocaleLowerCase('nl-NL');
@@ -266,9 +276,31 @@ export function SpoolPopover({
             <SpoolSwatch spool={spool} large />
             <span>
               <b>{spool?.name ?? t('spool.none')}</b>
+              {/*
+                What is left on the spool, and the archive. Two physical
+                spools of the same filament are one name and one colour in
+                Spoolman, so the grams are the only thing that tells them
+                apart — and they are what you choose on anyway: a small print
+                goes on the spool that is nearly empty. SpoolPicker specifies
+                neither (ds-gap: GAP-161), so both reuse the meta line and the
+                hint chip this list already has rather than inventing a shape.
+              */}
               {spool !== null && (
                 <small>
-                  {[spool.material, spool.vendor].filter((v) => v !== null).join(' · ')}
+                  {/*
+                    A row inside the line, because `.pp-picker li small` is
+                    `display: block` and a chip glued to the text has no gap.
+                  */}
+                  <span className="pp-row pp-gap-1">
+                    {[spool.material, spool.vendor, remainingLabel(spool)]
+                      .filter((part) => part !== null && part !== '')
+                      .join(' · ')}
+                    {spool.archived === true && (
+                      <span className="pp-hintchip" title={t('spool.archivedAria')}>
+                        {t('spool.archived')}
+                      </span>
+                    )}
+                  </span>
                 </small>
               )}
             </span>

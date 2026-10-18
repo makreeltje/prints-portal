@@ -15,6 +15,8 @@ import type { SpoolSnapshot } from './spools.js';
  */
 export interface SpoolOption extends Omit<SpoolSnapshot, 'takenAt'> {
   remainingWeight: number | null;
+  /** Archived in Spoolman: used up, or retired. Still choosable here. */
+  archived: boolean;
 }
 
 export interface SpoolmanStatus {
@@ -70,15 +72,26 @@ export class SpoolmanClient {
     return this.options.url !== null;
   }
 
-  /** Active spools, cached for `cacheMs`; throws when Spoolman cannot be reached. */
+  /**
+   * Every spool Spoolman knows, cached for `cacheMs`; throws when Spoolman
+   * cannot be reached.
+   *
+   * Archived spools are asked for on purpose. A spool is archived when it is
+   * used up, which is exactly the spool an old print was made with — and
+   * costing a print afterwards is the one moment the owner needs to pick it.
+   * They come last, so the list still opens on today's stock.
+   */
   async listSpools(): Promise<SpoolOption[]> {
     const now = this.now().getTime();
     if (this.cache !== null && now - this.cache.at < this.options.cacheMs) {
       return this.cache.spools;
     }
-    const raw = await this.get<RawSpool[]>('/api/v1/spool?allow_archived=false');
+    const raw = await this.get<RawSpool[]>('/api/v1/spool?allow_archived=true');
     if (!Array.isArray(raw)) throw new SpoolmanUnavailableError('unexpected answer from Spoolman');
-    const spools = raw.map(toOption);
+    const spools = raw
+      .map(toOption)
+      // Stable within each half: Spoolman's own order is kept.
+      .sort((a, b) => Number(a.archived) - Number(b.archived));
     this.cache = { at: now, spools };
     this.lastSync = this.now().toISOString();
     return spools;
@@ -104,7 +117,9 @@ export class SpoolmanClient {
         configured: true,
         url: this.options.url,
         reachable: true,
-        spoolCount: spools.length,
+        // The stock, not the archive: this number answers "is Spoolman
+        // giving us anything", and an archived spool is not stock.
+        spoolCount: spools.filter((spool) => !spool.archived).length,
         lastSync: this.lastSync,
       };
     } catch {
@@ -202,6 +217,7 @@ export function toOption(spool: RawSpool): SpoolOption {
         : null,
     pricePerKg: pricePerKg(spool),
     remainingWeight: spool.remaining_weight ?? null,
+    archived: spool.archived === true,
   };
 }
 

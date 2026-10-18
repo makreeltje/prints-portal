@@ -1845,3 +1845,18 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** nothing. Openstaand's phone layout is correct as measured and no placeholder is in the code, so there is no `ds-gap` marker for this.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.12
+
+## GAP-161 [open] SpoolPicker shows neither what is left on a spool nor that it is archived
+- **Type:** missing state
+- **Found while:** making archived Spoolman spools choosable again (the owner's request)
+- **Where needed:** SpoolPicker's listbox option; `frontend/src/finance/SpoolPicker.tsx:283`
+- **What is missing or wrong:** an option is swatch, name, "materiaal · leverancier" and the price per kg. Two things it cannot say:
+
+  **1. Which of two identical spools this is.** Measured against the owner's own Spoolman: 31 spools, 29 active, and only **24 distinct names**. Three names cover several physical spools — one covers three, of which two are identical in *every* field Spoolman has (same filament, both unopened at 1000 g, no lot number, no location). The list draws them as two identical rows and the owner reported them as "double entries". They are not duplicates; they are two spools, and nothing on screen tells them apart.
+
+  **2. That a spool is archived.** The client asked Spoolman for the active stock only, so a spool archived after being used up could not be chosen — which is exactly the spool an old print was made with. The backend now asks for the archive too and sorts it last; the list needs to say which rows those are.
+- **Why it matters:** the grams are also what you choose *on*: a small print goes on the spool that is nearly empty. And without a mark, an archived spool is indistinguishable from stock, so the picker would quietly suggest filament the owner no longer has.
+- **Proposal:** the remaining weight as a third part of the existing meta line — "PETG · Sunlu · 294 g over" — and, for an archived spool, the `pp-hintchip` this list already uses for provenance, reading "archief", with `title` "Gearchiveerd in Spoolman". Built that way now from existing classes and no invented values. Two things for the design system to decide: whether a state (archived) may use the chip that has so far only carried provenance ("uit de map", "slicer", "van de print"), and whether the 200px trigger still holds now that an option line is longer — a spool name is already clipped there today ("Creality Skin Hype…").
+- **Blocked:** nothing. Marked `ds-gap: GAP-161`; the gap stays open until the option's anatomy is specified.
+- **Temporary placeholder approved:** yes — the owner asked for both ("altijd zichtbaar onderaan, en zet het gewicht erbij"), 2026-10-18
+- **Design system version:** 2.12

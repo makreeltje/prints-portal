@@ -343,28 +343,29 @@ describe('CostBreakdown', () => {
   });
 });
 
-const SPOOLS: Spool[] = [
-  {
-    id: 7,
-    name: 'eSun PLA+ Zwart',
-    vendor: 'eSun',
-    material: 'PLA',
-    colour: '#1a1a1a',
-    colours: [],
-    multiColourDirection: null,
-    pricePerKg: 22.5,
-  },
-  {
-    id: 9,
-    name: 'Polymaker PETG Oranje',
-    vendor: 'Polymaker',
-    material: 'PETG',
-    colour: '#ff7a1a',
-    colours: [],
-    multiColourDirection: null,
-    pricePerKg: 24,
-  },
-];
+const ESUN: Spool = {
+  id: 7,
+  name: 'eSun PLA+ Zwart',
+  vendor: 'eSun',
+  material: 'PLA',
+  colour: '#1a1a1a',
+  colours: [],
+  multiColourDirection: null,
+  pricePerKg: 22.5,
+};
+
+const POLY: Spool = {
+  id: 9,
+  name: 'Polymaker PETG Oranje',
+  vendor: 'Polymaker',
+  material: 'PETG',
+  colour: '#ff7a1a',
+  colours: [],
+  multiColourDirection: null,
+  pricePerKg: 24,
+};
+
+const SPOOLS: Spool[] = [ESUN, POLY];
 
 describe('SpoolPicker', () => {
   it('filters as you type and picks with the keyboard', async () => {
@@ -385,6 +386,48 @@ describe('SpoolPicker', () => {
     // Polymaker first, then "Geen spoel".
     await userEvent.keyboard('{Enter}');
     expect(onChange).toHaveBeenCalledWith(9);
+  });
+
+  it('tells two spools of the same filament apart, and marks the archive', async () => {
+    const twins: Spool[] = [
+      { ...ESUN, id: 13, remainingWeight: 1000 },
+      { ...ESUN, id: 11, remainingWeight: 294.35 },
+      { ...ESUN, id: 4, remainingWeight: 0, archived: true },
+    ];
+    stubFetch({ 'GET /api/spools': () => ({ json: { configured: true, spools: twins } }) });
+    const onChange = vi.fn(() => Promise.resolve());
+    renderWithAuth(<SpoolPicker value={null} onChange={onChange} />, {
+      state: signedIn('Editor'),
+      path: '/',
+    });
+    await userEvent.click(screen.getByRole('button', { name: /Kies een spoel/ }));
+    // Same name and colour three times: the grams are what tells them apart.
+    expect(await screen.findByRole('option', { name: /1000 g over/ })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /294 g over/ })).toBeInTheDocument();
+    const archived = screen.getByRole('option', { name: /archief/ });
+    expect(archived).toHaveTextContent('0 g over');
+    // It is choosable: that is the whole point of asking for the archive.
+    await userEvent.click(archived);
+    expect(onChange).toHaveBeenCalledWith(4);
+  });
+
+  it('finds the archive by typing its own word', async () => {
+    stubFetch({
+      'GET /api/spools': () => ({
+        json: {
+          configured: true,
+          spools: [ESUN, { ...POLY, archived: true }] satisfies Spool[],
+        },
+      }),
+    });
+    renderWithAuth(<SpoolPicker value={null} onChange={() => Promise.resolve()} />, {
+      state: signedIn('Editor'),
+      path: '/',
+    });
+    await userEvent.click(screen.getByRole('button', { name: /Kies een spoel/ }));
+    await userEvent.type(screen.getByRole('combobox'), 'archief');
+    expect(screen.queryByRole('option', { name: /eSun/ })).toBeNull();
+    expect(screen.getByRole('option', { name: /Polymaker/ })).toBeInTheDocument();
   });
 
   it('says when Spoolman cannot be reached', async () => {

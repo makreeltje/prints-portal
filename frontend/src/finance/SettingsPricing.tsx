@@ -336,7 +336,12 @@ export function PrintersSection({ printers }: { printers: PrinterProfile[] }) {
   };
 
   return (
-    <section className="pp-card pp-sec" aria-labelledby={`${id}-title`}>
+    /*
+      Printers takes both columns (ScreenSettings 2.0): a printer card has a
+      two-field row of its own and two chip lists, which wrap badly in a 320px
+      column. It is the only section the spec names for this.
+    */
+    <section className="pp-card pp-sec span-2" aria-labelledby={`${id}-title`}>
       <h2 id={`${id}-title`}>{t('settings.printers')}</h2>
       <span className="pp-help">{t('settings.printersHelp')}</span>
       {drafts.length === 0 && <span className="pp-muted">{t('settings.printersEmpty')}</span>}

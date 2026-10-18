@@ -22,6 +22,8 @@ export interface Spool {
   multiColourDirection: 'coaxial' | 'longitudinal' | null;
   pricePerKg: number | null;
   remainingWeight?: number | null;
+  /** Archived in Spoolman: used up or retired. Absent on an older snapshot. */
+  archived?: boolean;
   takenAt?: string;
 }
 

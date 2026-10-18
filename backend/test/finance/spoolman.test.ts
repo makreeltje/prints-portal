@@ -44,6 +44,7 @@ describe('Spoolman v0.27.0 mapping', () => {
       multiColourDirection: null,
       pricePerKg: 25,
       remainingWeight: 100,
+      archived: false,
     });
     const multi = toOption(
       spool({
@@ -91,6 +92,33 @@ describe('SpoolmanClient', () => {
       reachable: true,
       spoolCount: 1,
     });
+  });
+
+  it('asks for the archive too, puts it last, and leaves it out of the count', async () => {
+    let asked = '';
+    const client = new SpoolmanClient({
+      url: 'http://spoolman.test',
+      timeoutMs: 100,
+      cacheMs: 0,
+      fetch: (input) => {
+        asked = input instanceof Request ? input.url : String(input);
+        return Promise.resolve(
+          Response.json([
+            spool({ id: 7, archived: true, remaining_weight: 0 }),
+            spool({ id: 8 }),
+            spool({ id: 9, archived: false }),
+          ]),
+        );
+      },
+    });
+    const spools = await client.listSpools();
+    expect(asked).toContain('allow_archived=true');
+    // An empty spool is still the one an old print was made with.
+    expect(spools.map((one) => one.id)).toEqual([8, 9, 7]);
+    expect(spools.map((one) => one.archived)).toEqual([false, false, true]);
+    expect(spools.map((one) => one.remainingWeight)).toEqual([100, 100, 0]);
+    // The status card counts stock, and an archived spool is not stock.
+    expect(await client.status()).toMatchObject({ spoolCount: 2 });
   });
 
   it('turns a timeout or an error status into SpoolmanUnavailableError', async () => {
