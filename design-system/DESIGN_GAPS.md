@@ -2148,6 +2148,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.15
 
+- **Built in 2.15:** the `canManage ||` disjunct is gone from `ThisPrint`'s condition in `frontend/src/prints/PrintDetailPage.tsx`, so one `squashName` comparison decides for every role. Checked both ways in the suite and in the running app on the owner's real library. **Flagged, because this is the one change this round that touches a screen he uses daily without his having asked:** on his data the row simply disappears from every print's card, and the only thing that replaces it is the breadcrumb, which has carried the same comparison since 1.9. If he liked that row as a check that a print is filed in the right project folder, nothing else on the page tells him so.
 ## GAP-177 [resolved in v2.15] No nav link draws `--focus-ring`: the shell's keyboard cue was the browser's own
 - **Type:** missing state
 - **Found while:** the 2.15 round; raised and resolved by the design system in the same version

@@ -995,7 +995,19 @@ describe('PrintDetailPage', () => {
   it('puts the payment in the header for a User and renders no pp-pay card', async () => {
     stubFetch({
       'GET /api/prints/p1': () => ({
-        json: detail({ assets: null, money: { status: 'open', price: 24.5, remaining: 24.5 } }),
+        json: detail({
+          assets: null,
+          money: {
+            status: 'open',
+            price: 24.5,
+            priceSuggested: false,
+            paid: 0,
+            writtenOff: 0,
+            remaining: 24.5,
+            orderCount: 1,
+            cost: null,
+          },
+        }),
       }),
     });
     renderDetail('User');
@@ -1021,7 +1033,18 @@ describe('PrintDetailPage', () => {
   it('keeps the operator the PaymentPanel and its own badge row', async () => {
     stubFetch({
       'GET /api/prints/p1': () => ({
-        json: detail({ money: { status: 'open', price: 24.5, remaining: 24.5 } }),
+        json: detail({
+          money: {
+            status: 'open',
+            price: 24.5,
+            priceSuggested: false,
+            paid: 0,
+            writtenOff: 0,
+            remaining: 24.5,
+            orderCount: 1,
+            cost: null,
+          },
+        }),
       }),
     });
     renderDetail('Admin');
@@ -1083,6 +1106,30 @@ describe('PrintDetailPage', () => {
       'Project',
       'Datum',
     ]);
+  });
+
+  /*
+    GAP-176, resolved in 2.15: the same condition in every role. GAP-095
+    specified the operator's card before GAP-072's rule existed, so it drew
+    Project unconditionally and repeated the `<h1>` on 84 of 84 prints in this
+    library.
+  */
+  it('applies the same project condition to the operator, both ways', async () => {
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: detail() }) });
+    const same = renderDetail('Editor');
+    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    const rows = () =>
+      [...screen.getByRole('region', { name: 'Deze print' }).querySelectorAll('dt')].map(
+        (dt) => dt.textContent,
+      );
+    // projectFolder equals the print's name here, so it is not a row.
+    expect(rows()).not.toContain('Project');
+    same.unmount();
+
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: detail({ projectFolder: 'Kerst 2026' }) }) });
+    renderDetail('Editor');
+    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    expect(rows()).toContain('Project');
   });
 
   it('shows the 403 state for another customer', async () => {

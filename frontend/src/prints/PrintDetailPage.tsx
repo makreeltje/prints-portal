@@ -445,17 +445,17 @@ function ThisPrint({
   );
   const facts: [string, ReactNode][] = [[t('filters.customer'), detail.customerFolder]];
   /*
-    The project only when it says something the name does not — part of the
-    reduced card's anatomy in 2.14, through GAP-072's rule, with the same
-    `squashName` comparison the breadcrumb and the share page's line use. The
-    operator's card is specified by GAP-095 and keeps the row unconditionally;
-    measured in this library, that row repeats the print's name on **84 of 84**
-    prints, which is a question for the design system and not ours to decide.
+    The project only when it says something the name does not — **one condition
+    for every role** since 2.15 (GAP-176), through GAP-072's rule and with the
+    same `squashName` comparison the breadcrumb has used since 1.9. GAP-095
+    specified the operator's card before GAP-072 existed, so it drew the row
+    unconditionally; measured in this library that repeated the `<h1>` above it
+    on **84 of 84** prints, and a fact identical to the heading is not a fact.
   */
   if (
     detail.projectFolder !== null &&
     detail.projectFolder !== '' &&
-    (canManage || squashName(detail.projectFolder) !== squashName(detail.name))
+    squashName(detail.projectFolder) !== squashName(detail.name)
   ) {
     facts.push([t('print.project'), detail.projectFolder]);
   }
