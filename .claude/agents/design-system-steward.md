@@ -67,10 +67,18 @@ Claims about the UI are measured in the running app, never reasoned about:
 - Drive the browser with Playwright from `~/.claude-tools` (it is installed
   outside the repo on purpose). Measure geometry, contrast and behaviour.
 - `@axe-core/playwright` against WCAG 2.1 A and AA, in **both themes** at
-  **desktop and phone** width. A violation that only appears at 360px is the
-  normal case, not the exception.
+  **desktop and phone** width — on the screens this round touched, plus any
+  screen that renders a component you changed. Not the whole portal: fifty-odd
+  browser runs to re-prove untouched screens is most of an hour, and the ones
+  that matter are the ones you just edited. A violation that only appears at
+  360px is the normal case, not the exception.
 - Run `scripts/check-design-tokens.sh`, the formatter, the linter, the
-  typechecker and both test suites before saying anything is done.
+  typechecker, the frontend suite and the backend suite **on sqlite only**
+  before saying anything is done. The sweep across PostgreSQL and MariaDB is
+  the orchestrator's, once, before the pull request — spinning those two
+  containers up and down inside a round doubles work that is redone anyway.
+  If you write SQL that could differ per engine, say so in your report so that
+  sweep is read with attention.
 
 Three mistakes already made here, worth not repeating:
 
@@ -92,13 +100,15 @@ not a chat to paste into:
 
     https://claude.ai/artifact/VDJ58ezfNxqJwBgV8ogXJ5
 
-**Inbound** is the import above. **Outbound** is one file of ours published
-into that artifact: `project/implementation.md`, which the system shows as a
-section beside `changelog.md` and `contrast.md`. Keep its source in the repo at
+**Inbound** is the import above, and it is the only direction you travel
+yourself. **Outbound** is one file of ours that ends up in that artifact:
+`project/implementation.md`, which the system shows as a section beside
+`changelog.md` and `contrast.md`. You write its source in the repo at
 `docs/design-feedback/implementation.md`, so it has history and can be reviewed
-in a pull request, and publish that file.
+in a pull request — and there you stop. **You never publish.** The session that
+started you does that, after your report.
 
-Rewrite and republish it at the end of every round. It holds the implementer's
+Rewrite it whole at the end of every round. It holds the implementer's
 half and nothing else:
 
 - every open gap, and **what is actually built** for it — including a gap that
@@ -119,23 +129,20 @@ taken on the wrong case, our export checker caught a class we wrongly called
 missing and a gap we wrongly marked resolved. If a change to their files looks
 necessary, that is a gap entry and a question, not a publish.
 
-### Publishing it
+### Handing it over
 
-1. `Artifact action:"read"` on the artifact first. A publish without it is
-   refused — that refusal is the protection against overwriting an edit someone
-   made in the chat, so never reach for `force`.
-2. Stage under one folder as `<dir>/project/implementation.md`, and the index
-   as `<dir>/project/design-system.json`: read the index immediately before,
-   change **only** `lastChange` (`by` the owner, `at` now, `via` "Claude Code",
-   `note` what changed), and keep every other key and the `createdOnFiles`
-   marker.
-3. One publish: `url`, `root` = that folder, `file_path` = the index's absolute
-   path, `files` = `{"project/implementation.md": "project/implementation.md"}`.
-   Files you do not send are kept.
-4. Read both files back from the service afterwards. The result line is not
-   evidence that the content landed.
-5. Refused because someone saved meanwhile: read again, redo the edit on what
-   came back, publish once more. A second refusal stops and goes to the owner.
+Your last act on that file is a commit, not a publish:
+
+1. Write `docs/design-feedback/implementation.md` whole, and commit it.
+2. Name it in your report as the file that still has to go out, with one line
+   on what changed in it.
+
+Do not stage a `design-system.json`, do not read the artifact "for the publish",
+and do not try `Artifact action:"publish"` once to see whether it is allowed
+this time. It is not: the permission system refuses an outbound write from a
+subagent, and retrying it has burned whole rounds of wall-clock for nothing.
+The orchestrator reads the artifact, edits the index's `lastChange` and
+publishes both files in one call.
 
 A separate `docs/design-feedback/vX.Y-prompt.md` is only needed when the owner
 wants to ask for a round explicitly; the section carries the standing state.
