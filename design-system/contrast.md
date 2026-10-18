@@ -266,3 +266,58 @@ its row. So: measured, named, and deliberately left.
 **Nothing else this round has ink.** A grid track, a row shape, a named wrapper, a slot that moved
 and a sentence written once instead of twelve times: no new colour, no new token, no changed value.
 
+
+## Added in 2.15
+
+**One new ground, and three boundaries that moved token (GAP-169, GAP-172).** The guest head's nav
+became a bordered track with the current destination as a `primary-tint` pill **inside** it, so for
+the first time a tint is composited over `surface-2` and carries `text-strong`. Everything else this
+round is an existing pair measured against a ground the report already holds.
+
+| Theme | Use | Pair | Ground | Ratio | Needed | Result |
+|---|---|---|---|---|---|---|
+| dark | text | `text-strong` on `primary-tint` (current nav item) | `primary-tint` over `surface-2` | 10.02 | 4.5 | pass |
+| light | text | `text-strong` on `primary-tint` (current nav item) | `primary-tint` over `surface-2` | 12.16 | 4.5 | pass |
+| dark | text | `text` on `primary-tint-soft` (nav item hover) | `primary-tint-soft` over `surface-2` | 8.19 | 4.5 | pass |
+| light | text | `text` on `primary-tint-soft` (nav item hover) | `primary-tint-soft` over `surface-2` | 9.77 | 4.5 | pass |
+| dark | control border | `border-strong` track of `.pp-guestnav` / `.pp-seg`, outer edge | `surface` | 3.75 | 3 | pass |
+| light | control border | `border-strong` track of `.pp-guestnav` / `.pp-seg`, outer edge | `surface` | 4.29 | 3 | pass |
+| dark | control border | `border-strong` track of `.pp-guestnav` / `.pp-seg`, inner edge | `surface-2` | 3.32 | 3 | pass |
+| light | control border | `border-strong` track of `.pp-guestnav` / `.pp-seg`, inner edge | `surface-2` | 3.69 | 3 | pass |
+| dark | control border | `border-strong` resting edge of `.pp-modelbtn` | `surface` | 3.75 | 3 | pass |
+| light | control border | `border-strong` resting edge of `.pp-modelbtn` | `surface` | 4.29 | 3 | pass |
+
+The two `text`/`text-strong` rows on a tint over `surface-2` are the first table's values read off the
+*Translucent tokens over every ground* column for `surface-2`, so they were already approved for
+`text`; what is new is `text-strong` on `primary-tint` there, and the use.
+
+**What `border` measures, so this is on the record once (GAP-169).** The app measured it and it is
+the reason three selectors changed token this round:
+
+| Theme | Use | Pair | Ground | Ratio | Needed | Result |
+|---|---|---|---|---|---|---|
+| dark | hairline | `border` (decorative) | `surface` | 1.37 | — (3 if it identifies a control) | decorative only |
+| light | hairline | `border` (decorative) | `surface` | 1.42 | — (3 if it identifies a control) | decorative only |
+
+`border` is **not** a failing control border; it is a divider, and a divider has no ratio to meet. It
+becomes a failure only when it is asked to be the boundary of a control, which is what `.pp-seg`'s
+track, `.pp-modelbtn`'s edge and 2.14's guest nav were doing. The rule is in `README.md` *Colour* and
+in both tokens' own `usage`.
+
+**The outline the app shipped as an approved placeholder, measured (GAP-169).** A `border-strong`
+hairline drawn around **each** nav item puts that hairline against the current item's own tinted
+ground on the inside:
+
+| Theme | Use | Pair | Ground | Ratio | Needed | Result |
+|---|---|---|---|---|---|---|
+| dark | control border | `border-strong` around the current item | `primary-tint` over `surface` | **2.94** | 3 | **under** |
+| light | control border | `border-strong` around the current item | `primary-tint` over `surface` | 3.50 | 3 | pass |
+
+Its outer edge is on `surface` and passes (3.75 / 4.29), so the box is perceivable — but the shape
+this round chose needs **one** border, and that border sits between `surface` and `surface-2`, where
+both edges clear 3:1 in both themes. That is why the track won on the numbers as well as on the
+drawing.
+
+**Nothing else this round has ink.** A page boundary removed, a card removed from one role, an
+amount moved beside a badge it already matched, a label hidden on the phone, a restored README
+section and one `min-width`: no new token, no changed value, no new text pair beyond the rows above.

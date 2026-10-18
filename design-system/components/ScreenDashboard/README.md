@@ -32,3 +32,25 @@ Two things this does **not** do. It does not hide a *declined* print: that print
 **No FilterBar, and it is a judgement about numbers I would like checked.** 84 prints over 12 klanten is about seven per klant, and a filter bar above seven cards is chrome. The number that decides it is the *largest* klant, not the average, and the app has the library: see *What I need measured* in `changelog.md` 2.14. If one klant has thirty prints, the visitor gets the search field and nothing else from the bar.
 
 **The archived rule, so the two screens agree.** Archived prints stay in a visitor's list without a badge and without a toggle, which is what this klant's Overzicht has done since 1.6. "Gearchiveerd" is a word about the owner's disk, not about the klant's print.
+
+**2.15.** (2026-10-18) **The visitor's Prints: no filter bar, no search field, and no page boundary
+(GAP-171 rejected, GAP-178 resolved).** 2.14 made the "no FilterBar" decision against an average of
+seven prints per klant and asked for the **largest** klant. It is **36**, and the full distribution
+is 36, 23, 10, 4, 2, 2, 2, 2, 1, 1, 1, 0.
+
+- **The search field is refused.** My own conditional ("if one klant has thirty, the visitor gets the
+  search field") fired on the maximum, and the distribution is what I did not have when I wrote it:
+  **eleven of twelve klanten have ten prints or fewer.** A control that earns its place in one
+  session of twelve is the chrome this screen's reduced form exists to remove, and the words it would
+  search are the owner's own folder names, which a klant has never seen. Newest first answers the
+  common question — *is my print done* — without a control.
+- **The page boundary goes instead.** A session's Prints renders the klant's whole list: no
+  "Meer laden", no "{shown} van {total} prints". The Overzicht one tap away lists every print of this
+  klant on one page, and ScreenShareSession's rule is that the two screens never disagree about which
+  print is the last one — a page size of 24 against a klant with 36 is exactly that disagreement. The
+  operator's dashboard keeps LoadMore and its count line unchanged: 84 prints over 12 klanten is a
+  different list with a different question.
+
+**What would overturn the first half:** a klant whose own list passes about 60 prints, or the owner
+being asked by a klant where a particular print is. Then it is one field labelled "Zoeken", and still
+nothing else from the bar.

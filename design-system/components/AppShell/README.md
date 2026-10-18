@@ -39,3 +39,47 @@ AppShell is the frame around every operator page: sidebar on desktop, a 56px ico
 **Still the User role's, and not decided here (proposed, needs your confirmation).** Role **User** sees Dashboard, Openstaand and **API-docs**. I believe API-docs is wrong for a User for the same reason it is absent from a share session — a klant has nothing to call — but a User is an account holder and may have been given the docs deliberately. Say the word and the item goes behind the same role check as Facturen; **do not build it yet**.
 
 **Dutch copy (new).** Overzicht | Prints | Sessie afsluiten.
+
+**2.15.** (2026-10-18) **The guest head bar, after the owner used it (GAP-169, GAP-172, resolved).**
+Two changes to the head this file drew in 2.14, both from his walk through a real session and the
+app's measurements of it. Nothing about the operator's sidebar, rail, drawer or bottom bar changes.
+
+**The nav is a track, because marking the current item marked nothing else.** `.pp-guestnav` is a
+pill track — `surface-2`, `radius-pill`, `1px solid var(--border-strong)`, 2px padding — with the
+two `<a>` items inside it and the current one a `primary-tint` pill. In a sidebar, `aria-current`'s
+tint is enough; in a two-item head bar it leaves the unvisited destination without ink, and
+`:hover` is not a cue on a phone. The items stay **links** with `aria-current="page"` inside one
+`<nav aria-label="Hoofdmenu">` — no `aria-pressed`, no `role="group"`, no `role="tablist"`,
+whatever the track looks like. Reasoning and the full markup: ScreenShareSession 2.15.
+
+**The exit button is icon-only at 480px and below, and the brand keeps one line.** Measured in the
+app: the head is 121px at a 16-character studio name, **153px from about 20** (the exit button
+leaves the first line) and **177px at 48** (the brand wraps as well). So on the phone
+`.pp-guesthead > .pp-brand` clips to one line with an ellipsis — the full name stays in the DOM and
+in the accessibility tree, and a studio with a long name uploads a logo, which this head has drawn
+since 2.14 — and **"Sessie afsluiten"** becomes a `--pp-tap` square with its label in a visually
+hidden `<span class="lbl">`, exactly as the icon rail names its own footer buttons. Above 480px the
+words stay. The head is then one height at every name length.
+
+**New class** `.pp-guestexit` (on the exit button; `flex: none`, and what hides its `.lbl` on the
+phone). **Changed classes** `.pp-guestnav`, `.pp-guestnav a`, `.pp-guesthead > .pp-brand` (phone).
+**New markup obligation:** the exit button carries `.pp-guestexit` and a `<span class="lbl">` at
+every width.
+
+**Every nav link now draws the focus ring in the token (GAP-177, resolved).** `.pp-nav a`,
+`.pp-bottomnav a` and `.pp-guestnav a` are plain `<a>` elements and were in none of `bundle.css`'s
+focus-visible selectors, so the one visible keyboard cue in the whole shell was whatever the browser
+drew — which is not `--focus-ring`, is not measured in `contrast.md`, and is the one thing axe cannot
+report. `tokens.json` has said since 1.0 that the ring is drawn on **every** interactive element;
+the sidebar, the drawer, the bottom bar and the guest head were the exception. Now:
+`outline: 2px solid var(--focus-ring)` with a 2px offset on a sidebar or drawer link, and `-2px`
+inside the bottom bar and inside the guest nav's track, where an outset ring would be clipped by the
+bar's edge or the track's. No new token and no new colour pair (`focus-ring` on `surface` and on
+`surface-2` are both in the report).
+
+**Role User's nav and API-docs now has a number (GAP-173), and it is still his call.** 2.14 put it
+as a proposal with no id, so it could not be tracked: **GAP-173, proposed, needs your confirmation.
+Do not build it.** My opinion is unchanged — a klant has nothing to call — but a User is an account
+holder, and ScreenApiDocs is explicit that the page needs no credential because *"de documentatie
+gebruikt je sessie"*: a User's own session therefore works on it, which is a reason the owner may
+have meant to give it. One sentence from him closes it either way.

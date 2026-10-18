@@ -159,3 +159,13 @@ control in that band can be clipped the same way at 360px. The spool trigger is 
 the one that showed; see *What I need measured* in `changelog.md` 2.14.
 
 **Both themes.** No new token, no new colour pair. New classes: `.pp-fname.sans`, `.pp-spoolbtn > .nm`.
+
+**2.15 — a split name needs an explicit label.** The app's own correction from building 2.14, and it
+belongs here: splitting the trigger's name into `.a` and `.b` breaks its **accessible name**, because
+name computation joins element children without the space that lives inside them — "Creality Rainbow
+Wild Blossom Hyper" was announced as one word. The answer was already in the system (ModelPicker
+labels its split file names explicitly) and it is now written where the split is specified: **wherever
+`.pp-fname` cuts a name into two elements, the control carries an `aria-label` built from its own
+visible words**, the hint chip ("van de print", "archief") included, in the order they are read. This
+holds for the trigger, for a listbox option and for anything else that borrows the middle cut. The
+visible text is unchanged; what changes is that the name is stated rather than inferred.

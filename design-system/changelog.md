@@ -1,3 +1,213 @@
+# Changelog 2.15
+
+**The owner used the thing and found the one fault no measurement was looking for**, and it turned
+out to be a sentence this system has carried since 1.0 rather than a mistake in building it. He
+walked the merged deel-link session, passed the Overzicht, the Prints list and a print, and stopped
+at the head bar: *"het is niet duidelijk genoeg dat je ook naar prints kan gaan"*. It was built
+exactly as ScreenShareSession 2.14 specified — `primary-tint`/`text-strong` on the item with
+`aria-current="page"`, the pair `.pp-nav a[aria-current=page]` has used since 1.0 — and that pair
+dresses **only the destination you are already on**. In a sidebar that is enough; in a bar of two
+items it leaves the screen the visitor has never seen with no ink at all. **The nav is a track
+now**, both items inside one `border-strong` boundary, and the pill idiom is borrowed **without**
+its ARIA: these are routes, so they stay links. Ten more gaps come with it, one of them the
+system-wide question the app attached to it: `--border` cannot draw a boundary that carries meaning,
+in this head bar or anywhere else. Version 2.14 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-166 | ScreenPrintDetail says "no tags" for role User while ScreenShareSession publishes the same question as a proposal and names 1.4 as standing | **The strict half wins: role User sees no tags, anywhere** — not in a print's header, not on a card, not as a filter. The owner's own answer to GAP-129 settles it (he does not use tags at all), so there is no case in this library where his filing word helps a klant. 1.4's "name, price, status, thumbnail, 3D model **and tags** only" is superseded and marked so in place, and role User's print page is now exactly a visitor's — one reduced form instead of two that drift | **resolved** |
+| GAP-167 | ScreenQueue's README lost its whole `## 2.12` section in the 2.14 export, with three sentences reverted to their 2.11 wording, while `bundle.css` kept every 2.12 declaration | **Restored, verbatim, and 2.11's shape was not right after all.** The `.ttl` block's second muted line with an empty `.amt` (GAP-155), 44px row actions made true in `bundle.css` (GAP-156), and the rule against an `aria-label` that repeats the summary's own visible text are all back, plus the *Tokens* sentence that claimed no CSS change. The app changed nothing and was right not to | **resolved** |
+| GAP-168 | 2.14's GAP-163 rules are correct and reach nothing: the trigger sits in the `.pp-lift` wrapper rule 9 requires, which sets no `min-width`, so `max-width: 100%` resolved against a content-width flex item — 28px outside the card after the import | **`.pp-lift { min-width: 0 }`, one declaration on the wrapper.** Not a fourth selector naming `.pp-lift` in the GAP-163 rules: *every* window-placed panel in this system has a `.pp-lift` wrapper by rule 9, so they all had the same hidden floor. The app's `pp-minw-0` on the wrapper was the right fix with the wrong owner and **can come off** | **resolved** |
+| GAP-169 | The guest head marks where the visitor is and never that the other screen exists; built to spec, found by the owner, on the one screen whose user visits once | **Shape 1's clarity with 1.0's ink: `.pp-guestnav` is a pill track** (`surface-2`, `radius-pill`, `1px solid var(--border-strong)`, 2px padding) holding both items, the current one a `primary-tint` pill. **The links stay links** — `<nav aria-label>` with `<a aria-current="page">`, never `aria-pressed`, `role="group"` or `role="tablist"`: that is the blessing the app asked for and it is explicit in three files. `.pp-seg` is **not** reused (its `surface` selected pill would vanish into a `surface` head bar), `.pp-tabs` is rejected (an underline plus `muted` text is 2.14's defect with a thinner line), and the approved outline-on-both placeholder can go — measured, its hairline is 2.94:1 against the current item's own tint in dark | **resolved** |
+| GAP-170 | The whole payment card is below the fold on a visitor's print page at 390×844, badge 89px under it, while the status is already on screen at y=201 | **The payment becomes one line in the header badge row** — status badge plus amount, wrapped together so they stay a pair when `.pp-ph` wraps — and `pp-card pp-pay` is **not rendered for role User or a visitor**. The card repeated a visible fact and added one number for 98px below the fold. The operator's PaymentPanel is untouched, and the pairing is the one the Overzicht's own lines have used since 1.0 | **resolved** |
+| GAP-171 | Does a visitor's Prints need a search field now that the largest klant has 36 prints and the screen pages at 24? | **Rejected (the distribution, not the maximum, decides a permanent control).** My 2.14 conditional fired on 36 — and eleven of the twelve klanten have ten prints or fewer, so the field would be chrome in eleven sessions of twelve, which is what the "no FilterBar" decision refused on this screen. It would also search the owner's folder names, which a klant has never seen. Newest first answers *is my print done* without a control. Overturned by a klant list past about 60 prints, or by a klant asking him where a print is | **rejected (chrome for eleven of twelve klanten; the words searched are the owner's, not the klant's)** |
+| GAP-172 | The guest head is 121px at a 16-character studio name, 153px from about 20 (the exit button leaves the first line) and 177px at 48 (the brand wraps too) | **At 480px and below the head is one height at every name length.** The brand keeps one line and ellipsises when it must — the full name stays in the DOM, so nothing is lost to a screen reader, and a long name is drawn whole by uploading a logo — and the exit button becomes icon-only, `--pp-tap` square, named by its own visually hidden `<span class="lbl">`, the way the icon rail has named its footer buttons since 1.0. The ConfirmDialog still says the act in words. Above 480px nothing changes | **resolved** |
+| GAP-173 | Role User's nav still offers API-docs (2.14 raised it as a proposal with no id) | Numbered so it can be tracked, and **still the owner's**. My opinion is unchanged — a klant has nothing to call — but ScreenApiDocs is explicit that the page needs no credential because *"de documentatie gebruikt je sessie"*, so a User's own session works on it, which is a reason he may have meant to give it. **Do not build it** | **proposed, needs your confirmation** |
+| GAP-174 | Materiaal and Gewicht in a visitor's "Deze print" card and card meta line | Numbered, unchanged, **his call**: it is a decision about what a klant reads. The invoice already prints Gram, so it is defensible; *Tijd* stays out either way. **Do not build it** | **proposed, needs your confirmation** |
+| GAP-175 | The timelapse in a visitor's media strip | Numbered, unchanged, **his call**: 60% of prints have one and it is a film of the klant's own print, but it is also a surface no customer has ever had, and the network-tab threshold applies to it as to the model. Until he says yes: models only, which the app has now made true in the data rather than in the view. **Do not build it** | **proposed, needs your confirmation** |
+| GAP-176 | The operator's "Deze print" card draws Project unconditionally, repeating the `<h1>` on 84 of 84 prints in this library | **One condition for every role: Project is a row only when it differs from the print name, case and spaces ignored (GAP-072).** GAP-095 specified this card before GAP-072 existed; a fact identical to the heading above it is not a fact. The reduced card already had it (GAP-158), and the breadcrumb has had it since 1.9 | **resolved** |
+| GAP-177 | `.pp-nav a`, `.pp-bottomnav a` and `.pp-guestnav a` are plain links and appear in none of `bundle.css`'s focus-visible selectors, so the shell's only keyboard cue was the browser's own ring | **The ring is the token's on every nav link**: `2px solid var(--focus-ring)` at a 2px offset in the sidebar and drawer, `-2px` inside the bottom bar and inside the guest nav's track, where an outset ring is clipped by the bar's edge. `tokens.json` has said "every interactive element" since 1.0 and these were the exception — and a missing focus ring is the one thing axe cannot report | **resolved** |
+| GAP-178 | A session's Prints pages at 24 while the Overzicht one tap away lists every print of the klant | **The page boundary goes: a visitor's Prints renders the klant's whole list**, newest first, with no "Meer laden" and no "{shown} van {total} prints". ScreenShareSession's own rule is that the two screens never disagree about which print is the last one, and a page size of 24 against a klant with 36 is exactly that disagreement. One klant's prints are a bounded set; if the Overzicht ever has to be paged, both get it in the same round. The operator's dashboard is unchanged | **resolved** |
+| — | **`--border` for boundaries that carry meaning** (the app's §7.2, no gap id of its own; decided inside GAP-169 and system-wide) | **Both tokens keep their values and their names. The rule gets a name and three selectors change.** `border` is a hairline between content and content (1.37:1 dark, 1.42:1 light on `surface` — a divider has no ratio to meet); `border-strong` is every boundary that identifies a control, its extent or one of its states (3:1 or more on all three grounds, both themes). The test is what the line is doing, not what the element is called. Changed: **`.pp-seg`** (track), **`.pp-modelbtn`** (resting edge, with its hover cue moved to `surface-2`), and the guest nav, which 2.14 built with `border`. **Not changed, deliberately:** `.pp-tabs`' rail (a divider; the selected tab is `primary` text and a 2px `primary` underline), `.pp-badge.neutral`, `.pp-progress`, `.pp-cust`, `.pp-order`/`.pp-ogrp` summaries, `.pp-viewer`, `.pp-video`, `.pp-plate`, `.pp-share-thumb`, `.pp-scroll`, `.pp-filters` and every card, dialog, popover, divider and chrome edge | **resolved** |
+
+## New and changed
+
+- **Tokens:** none. `tokens.json` `version` is **2.15**. No token added, renamed, changed or
+  removed. Two `usage` strings are rewritten — `border` and `border-strong` — because the rule they
+  carried was an example list (*"input, checkbox, radio, toggle"*) and two controls outside that list
+  were drawing their only boundary in `border`.
+- **New classes** `.pp-guestexit`. **Changed classes** (all in `bundle.css`): `.pp-guestnav` (the
+  track), `.pp-guestnav a` (centred, `radius-pill`, equal halves at phone width),
+  `.pp-guestnav a:focus-visible` (new rule), `.pp-guesthead > .pp-brand` (one line at 480px and
+  below), `.pp-seg` (`border-strong`), `.pp-modelbtn` (`border-strong`), `.pp-modelbtn:hover`
+  (ground instead of border), `.pp-lift` (`min-width: 0`), `.pp-nav a:focus-visible` and
+  `.pp-bottomnav a:focus-visible` (new rules). Every phone rule has its `.pp-device.phone` twin, as
+  2.11 requires. **No class is removed and nothing is renamed.**
+- **Copy:** none. No key is added, changed or removed, so `copy-deck.md` has no *Added in 2.15*
+  section. "Sessie afsluiten" keeps its key and its words; what changes on the phone is that the
+  words are visually hidden inside the button instead of being dropped.
+- **Components changed:** AppShell (README, preview), ScreenShareSession (README, preview),
+  ScreenPrintDetail (README), ScreenDashboard (README), ScreenQueue (README — the restoration),
+  SegmentedControl (README), Tabs (README), ModelPicker (README), Popover (README), SpoolPicker
+  (README), ScreenSharePage (README — one key name).
+- **Screens changed:** the guest head bar in every frame that draws it (the nav is a track, the exit
+  button carries `.pp-guestexit` and a `.lbl`); a visitor's print page (the payment is a header line
+  and the "Betaling" card is gone); a visitor's Prints (no page boundary); role User's print page
+  (no tags); the operator's "Deze print" (Project only when it differs).
+- **Pages changed:** `README.md` (*Colour*, *Roles*, two rules, the version note), `do-dont.md`,
+  `contrast.md`, `changelog.md`, `tokens.json`.
+- **Contrast report:** one new ground pair (`text-strong` on `primary-tint` over `surface-2`: 10.02
+  dark, 12.16 light) plus the rows that record what `border` measures, what the three moved
+  boundaries measure, and what the placeholder outline measured. All pass; the only value under 3:1
+  in the section is the placeholder's, which is why it is not the shape that shipped.
+- **Breaking changes: none.** No token, class or key is removed or renamed. Five obligations are
+  added to the app: give the exit button `.pp-guestexit` and a `<span class="lbl">`; stop rendering
+  `pp-pay` for role User and a visitor and put the amount beside the header badge; stop rendering
+  tags for role User; drop the page boundary on a session's Prints; and apply the Project comparison
+  on the operator's "Deze print". Two things come **off**: the `ds-gap: GAP-169` marker with its
+  outline, and `pp-minw-0` from the spool trigger's wrapper.
+
+## GAP-169: why a track, and why it is not a SegmentedControl
+
+The app offered the owner three shapes and he took the dullest as a placeholder, which was the right
+way round: a placeholder should be the one you least mind living with. The shape that ships is the
+first one, with one change.
+
+**What the defect actually is.** Not "the current item is too quiet" — the current item is the only
+thing that is loud. The visitor sees one filled pill reading "Overzicht" and the word "Prints" in
+body text beside it, between a brand and a ghost button, and reads the pill as a **heading for the
+page**. Nothing in the bar says *there are two of these*. That is why raising the other item's
+contrast would not have fixed it either: the fault is that the **set** is invisible, not that one
+member is.
+
+**So the track is the fix and the filled pill is the detail.** One boundary around both items makes
+them the same kind of thing and bounds the set; the tint inside it says which one you are on. That
+is exactly what `.pp-seg` is for — "two to four exclusive views, pick one" — and it is what the app
+called the clearest of the three.
+
+**One change from `.pp-seg`, and it is about this surface.** A segmented control marks its selection
+with a `surface` pill on a `surface-2` track. The guest head's own ground **is** `surface`, so that
+pill would be the same colour as the bar it sits in and the selection would be left to `shadow-sm`.
+The current item therefore keeps 1.0's current-page pair, `primary-tint` with `text-strong` — which
+also keeps the whole session on colours the report already approves, with one new composite
+(`text-strong` on a tint over `surface-2`, 10.02 / 12.16).
+
+**And the ARIA does not travel.** The app wrote *"we are not reusing a button pattern for navigation
+on our own"* and that instinct is the one worth writing into the system: a pill track is a visual
+idiom, `aria-pressed` is a claim about what the control is. These two items change the URL, so they
+are links with `aria-current="page"` inside one `<nav aria-label="Hoofdmenu">`. No `role="group"`, no
+`role="tablist"`, no `<button>` that navigates. They also keep their own class, `.pp-guestnav`,
+rather than borrowing `.pp-seg`'s — one CSS block each, so a future change to the dashboard's view
+switch cannot silently restyle a klant's navigation.
+
+**The placeholder's own number, which decided the last detail.** An outline around **each** item
+puts that hairline against the current item's `primary-tint` ground on the inside: **2.94:1 in dark**
+(3.50 light), under the 3:1 the same argument used to reject `--border`. Its outer edge is on
+`surface` and passes, so it was not a failure — but a shape that needs one border instead of two,
+with both of its edges clear in both themes, is the better answer on the numbers as well as on the
+drawing.
+
+## The `--border` question, answered once
+
+The app asked for a system-wide decision rather than a per-component one, and it is right that this
+is bigger than the head bar. The answer is not a new token and not a new value:
+
+**`border` is a divider. `border-strong` is a boundary that carries meaning.** A divider has no
+contrast requirement — 1.4.11 is about the information a boundary carries, and a line between a
+table row and the next one carries none. The moment a line is the only thing telling you where a
+control is, how far it reaches, or which state it is in, it needs 3:1 and takes `border-strong`.
+
+**Why two selectors were wrong and are now fixed.** `.pp-seg`'s track was the only thing bounding
+that control: its selected segment is `surface` on `surface-2`, two grounds **1.13:1** apart, so with
+a 1.4:1 track the control had no perceivable edge at all and the selection rested entirely on text
+colour and a shadow. `.pp-modelbtn` is an `aria-pressed` button on its own `surface` ground whose
+resting edge was that same hairline; its hover cue *was* `border-strong`, which is now its resting
+state, so hover moves to the ground (`surface-2`, the hover `.pp-btn-secondary` has had since 1.0)
+and the three states stay three.
+
+**Why `.pp-tabs` is deliberately not in that list.** Its `border-bottom` divides the tab row from the
+panel under it, and the component's state is drawn in `primary` — a 2px underline and the label's
+colour, 6.79 dark / 5.66 light on `surface`. Remove the rail and you can still see which tab is
+selected; remove `.pp-seg`'s track and you cannot see that there is a control. That is the test, and
+it is now in `README.md` *Colour*, in `do-dont.md` and in both tokens' `usage`, so the next reader
+does not have to re-derive it from an example list.
+
+**Everything else that uses `border` stays**, and the list is in the table above so you can grep for
+it rather than guess: cards, dialogs, popovers, alerts, panels, row and cell dividers, the page
+chrome's edges, media frames, the neutral badge, the progress rail, the klant tile (whose control is
+the heading link inside it), and the `<details>` summaries of an order and a group (whose control is
+the heading and the chevron).
+
+## What I rejected
+
+- **The search field for a visitor's Prints** (GAP-171), on the distribution rather than the
+  maximum: eleven of twelve klanten have ten prints or fewer.
+- **`.pp-tabs` for the guest nav**, and `.pp-seg` reused literally: the first is 2.14's defect with a
+  thinner line, the second puts a `surface` pill on a `surface` bar.
+- **Keeping the outline-on-both placeholder**, whose inner edge is 2.94:1 in dark against the current
+  item's own tint.
+- **A fourth selector naming `.pp-lift` in the GAP-163 rules** (GAP-168): it would have fixed the
+  spool trigger and left the same floor under every other panel wrapper in the system.
+- **Changing `--border`'s value, or renaming either token.** The values are right for what they are;
+  what was wrong was two selectors and a rule written as a list of examples. Raising `--border`
+  would have put a heavier hairline on every card, table row and divider in the app to fix two
+  controls.
+- **Tags for role User** (GAP-166), and with it my own 2.14 proposal to keep the question open: the
+  owner answered the underlying question in GAP-129 and there was nothing left to ask him.
+
+## What I want measured
+
+1. **The guest head's two heights with the track in place**, at 360px and 1400px, both themes: I
+   expect about **127px** and **67px** where you measured 121px and 61px, because the track adds 1px
+   of border and 2px of padding on each side of the nav's own line. If it is more than that,
+   something else in the head is growing and I want to know before it is called a design.
+2. **The head at your five studio-name lengths again** (16, 20, 30, 33, 48 characters) at 360px: it
+   should now be **one** height at all five, with the brand on one line and the exit button a
+   `--pp-tap` square. And the character count at which the ellipsis starts, which I have not
+   computed.
+3. **A visitor's print page at 390×844 after GAP-170**: the y of the amount beside the `<h1>`, and
+   the page height now that the card is gone. The fold is 844; I expect the whole page to end around
+   860 and "Deze print" to be the last thing on it.
+4. **The largest klant's Prints with no page boundary**: 36 cards at 360px — the page height, whether
+   the thumbnails still load lazily, and whether anything about it feels worse than one "Meer laden".
+   This is the one decision this round that trades a click for a scroll, and the scroll is the part I
+   have not seen.
+5. **Keyboard focus on every nav link** in the sidebar, the drawer, the bottom bar and the guest
+   track, both themes, after GAP-177 — specifically whether the `-2px` ring inside the track is
+   clearly visible on the current (tinted) item as well as on the other one.
+6. **Still owed, unchanged:** whether design jobs dominate the queue (GAP-143's overturning
+   measurement), the age thresholds on a queue row (GAP-145, still 30/90 borrowed from money), and
+   how often a Wachtrij group carries no "waarvan" line at all.
+
+## Where I was unsure
+
+- **The ellipsis on a studio's name.** On the phone a long company name is now cut, and a company
+  name is not a label — it is the only thing on that screen that says who made the print. The
+  alternatives were a head that is 177px on a 844px phone, or two lines at some name lengths and one
+  at others, which is the thing 2.12 refused for a different reason (*one block order, phone and
+  desktop*). I took the fixed head and said out loud that the logo is how a long name is drawn whole.
+  If the owner disagrees, the rule is one media query.
+- **The icon-only exit button.** Hiding words is something this system does in the icon rail and
+  nowhere a klant goes, and this is the first time a visitor meets an unlabelled control. It is
+  `log-out`, it is the only button in the head, and it opens a ConfirmDialog that spells the act out
+  before anything happens — but if a klant ever closes a session by accident, this is where it
+  happened and I would rather hear that than defend it.
+- **Removing the "Betaling" card for a visitor** rather than moving it above "Deze print". Moving it
+  keeps a heading that says the word "Betaling", which has some value on a page about money; it also
+  keeps a card whose content is two facts, one of which was already in the header. I took the
+  removal because the Overzicht is where paying happens and this page's job is the print — but the
+  amount is now the only thing on this page that is about money, and if that reads as thin on a real
+  phone, the card comes back above the card of facts and not below it.
+- **Giving ids to things that were proposals.** GAP-173, GAP-174 and GAP-175 are numbered here and
+  deliberately **not** decided, so they can be tracked instead of being rediscovered every round.
+  If your register wants its own numbering for those, renumber them and tell me; what matters is that
+  they stop being four nameless paragraphs.
+- **GAP-176, the operator's Project row.** I decided it on your measurement (84 of 84) and on
+  GAP-072's rule, and it is the one change this round that touches a screen the owner uses daily
+  without him having asked. It removes a row that repeats the page's own title; if he liked that row
+  as a check that a print is filed in the right project folder, say so and it comes back — with the
+  folder named, which is at least a different fact.
+
 # Changelog 2.14
 
 **A deel-link stopped being a page you send and became a key, and that is one decision with five

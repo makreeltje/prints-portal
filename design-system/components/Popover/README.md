@@ -89,3 +89,23 @@ the app's own note, and the argument for a rule rather than a fourth patch. The 
 
 **No new class, no new token, no CSS change.** `.pp-pop.at` and `.pp-tip.at` are unchanged; what
 changes is where the app puts them.
+
+**2.15.** (2026-10-18) **`.pp-lift` carries `min-width: 0`, which fixes a class of bug rather than
+a case (GAP-168, resolved).** 2.14's GAP-163 rules were correct and reached nothing: they target the
+trigger (`.pp-spoolbtn`, `.pp-minw-200`) with `min-width: 0; max-width: 100%`, but rule 9 requires
+that trigger to sit in a `.pp-lift` wrapper, and `.pp-lift` was `position: relative; z-index:
+var(--z-raised)` and nothing else. A flex item's `min-width` is `auto`, so the wrapper kept its
+content width and the child's `max-width: 100%` resolved against a box as wide as the name — the
+trigger was still **28px outside the card** after the import, under a heading that said resolved.
+
+**So the wrapper, not the rule, gets the one declaration:** `.pp-lift { min-width: 0 }`. It changes
+nothing where `.pp-lift` is not a flex or grid item (there `min-width` is already 0), and where it
+is one it lets the wrapper shrink so the trigger inside it can obey its own `max-width`. That is the
+whole class of this bug: **every** window-placed panel in this system has a `.pp-lift` wrapper by
+rule 9, so every one of them had the same hidden floor. The app's `pp-minw-0` on the wrapper was the
+right fix with the wrong owner — it is a published utility doing its documented job, but a reader
+would not expect a layout utility to be load-bearing on a wrapper whose job is stacking. **It can
+come off**, and nothing else in that markup changes.
+
+**Rule 9 gains one sentence:** a `.pp-lift` wrapper is a stacking context *and* a shrinkable box —
+it never imposes its content's width on the row it sits in.
