@@ -2080,6 +2080,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.15
 
+- **Built in 2.15:** the badge and the amount sit in `.pp-ph` beside the `<h1>`, wrapped together in `span.pp-row.pp-gap-2`, exactly as ScreenShareSession's preview draws them; `pp-pay` is not rendered for `!canManage` at all. Two consequences we took rather than left: the reduced body was a `pp-detail` grid whose second column held that card, and is now the `pp-pdtop` media row 2.14 specified, so "Deze print" is the last thing on the page; and the `.pp-tags` badge row is no longer drawn when it would be empty, because an empty flex child still costs the column its `space-2` and this page is measured against a fold. The dead `role === 'User'` branch and the `visitor` prop are out of `PaymentPanel.tsx` — see **GAP-179**, which is what that leaves in the spec.
 ## GAP-171 [wontfix] A search field on a visitor's Prints, now the largest klant has 36 prints
 - **Type:** improvement idea
 - **Found while:** answering ScreenDashboard 2.14's own measurement request (our 2.14 feedback §2.1); numbered here by the design system in 2.15

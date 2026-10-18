@@ -279,23 +279,13 @@ describe('PaymentPanel', () => {
     expect(screen.queryByLabelText('Verkoopprijs')).toBeNull();
   });
 
-  it('is read-only for Users', () => {
-    renderPanel(
-      {
-        id: 'o1',
-        number: 1,
-        createdAt: '',
-        date: '',
-        status: 'open',
-        requestState: null,
-        price: 11.89,
-      },
-      'User',
-    );
-    expect(screen.getByText('Je ziet alleen prijs en status.')).toBeInTheDocument();
-    expect(screen.queryByRole('textbox')).toBeNull();
-    expect(screen.queryByRole('button')).toBeNull();
-  });
+  /*
+    There is no "read-only for Users" case here any more: GAP-170 (2.15) took
+    the whole `pp-pay` card off role User's and a visitor's print page and put
+    the badge and the amount in the header instead, so this component is the
+    operator's. The replacement assertion is on the page, in prints.test.tsx
+    and session.test.tsx.
+  */
 });
 
 describe('CostBreakdown', () => {

@@ -987,6 +987,50 @@ describe('PrintDetailPage', () => {
   });
 
   /*
+    GAP-170, resolved in 2.15: the payment is one line beside the `<h1>` and
+    the "Betaling" card is not rendered for this role. Measured at 390×844,
+    that card began 29px below the fold and its badge 89px below it, while the
+    status was already on screen in the header.
+  */
+  it('puts the payment in the header for a User and renders no pp-pay card', async () => {
+    stubFetch({
+      'GET /api/prints/p1': () => ({
+        json: detail({ assets: null, money: { status: 'open', price: 24.5, remaining: 24.5 } }),
+      }),
+    });
+    renderDetail('User');
+    const head = (await screen.findByRole('heading', { level: 1, name: 'Babybox locks' })).closest(
+      '.pp-ph',
+    );
+    if (!(head instanceof HTMLElement)) throw new Error('no header');
+    // Badge and amount wrapped together, so they stay a pair when .pp-ph wraps.
+    const pair = head.querySelector('.pp-row.pp-gap-2');
+    expect(pair).not.toBeNull();
+    expect(pair?.querySelector('.pp-badge')?.textContent).toContain('Open');
+    // formatMoney joins the sign and the figure with a non-breaking space.
+    expect(pair?.querySelector('.pp-money.pp-text-xl')?.textContent).toMatch(/^€\s24,50$/u);
+    expect(document.querySelector('.pp-pay')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Betaling' })).toBeNull();
+    // And the amount is said once: the card is gone, not duplicated.
+    expect(screen.getAllByText(/24,50/u)).toHaveLength(1);
+    // The media row is `pp-pdtop` and "Deze print" is the last card on it.
+    expect(document.querySelector('.pp-pdtop')).not.toBeNull();
+    expect(document.querySelector('.pp-detail')).toBeNull();
+  });
+
+  it('keeps the operator the PaymentPanel and its own badge row', async () => {
+    stubFetch({
+      'GET /api/prints/p1': () => ({
+        json: detail({ money: { status: 'open', price: 24.5, remaining: 24.5 } }),
+      }),
+    });
+    renderDetail('Admin');
+    await screen.findByRole('heading', { level: 1, name: 'Babybox locks' });
+    expect(document.querySelector('.pp-ph .pp-money')).toBeNull();
+    expect(document.querySelector('.pp-tags .pp-badge')).not.toBeNull();
+  });
+
+  /*
     GAP-158, resolved in 2.14: the reduced card finally has an anatomy —
     `pp-kv tight` with Klant, Project only when it differs, Datum and Bron,
     and nothing else at all.
