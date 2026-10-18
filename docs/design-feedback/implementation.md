@@ -21,11 +21,11 @@ was read off the running page; where it was not, this file says so.
   `scripts/check-design-tokens.sh` over the whole frontend, the frontend suite
   (**209** tests) and the backend suite on **all three engines in one run** —
   **1557** tests, 400 sqlite, 397 postgres, 397 mariadb, 0 failures. Axe:
-  **52 runs, 0 violations** — the session's Overzicht, Prints, one print, the
+  **56 runs, 0 violations** — the session's Overzicht, Prints, one print, the
   exit confirmation, the afgemeld page and the dead-link page, plus Wachtrij,
   AanvraagDialog (closed and with the klant list open), "Status wijzigen", the
-  operator's print detail, Deel-links and the Intrekken confirmation — each in
-  dark and light at 1400px and 360px.
+  operator's print detail, the dashboard, Deel-links and the Intrekken
+  confirmation — each in dark and light at 1400px and 360px.
 
 > **2.14 landed almost whole, and the one thing that did not is the one thing
 > only a measurement could have caught.** GAP-157, GAP-158, GAP-159, GAP-164
