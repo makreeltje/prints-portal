@@ -270,6 +270,40 @@ export function registerPrintRoutes(app: FastifyInstance, deps: PrintRouteDepend
     },
   );
 
+  /**
+   * The viewer's timelapse: that video of this print, played in place. Every
+   * role that may see the print may watch it (GAP-175, the owner's answer);
+   * `/api/assets/:id/download` stays MANAGE, so a klant watches the film of
+   * their own print without being able to save anything from the folder.
+   */
+  app.get<{ Params: { id: string }; Querystring: { asset?: string } }>(
+    '/api/prints/:id/video',
+    {
+      schema: {
+        params: idParams,
+        querystring: { type: 'object', properties: { asset: UUID_PARAM } },
+      },
+    },
+    async (request, reply) => {
+      if ((await authorise(request, reply, request.params.id)) === null) return reply;
+      let query = db
+        .selectFrom('print_assets')
+        .select(['relative_path', 'file_name'])
+        .where('print_record_id', '=', request.params.id)
+        .where('type', '=', 'video');
+      query =
+        request.query.asset === undefined
+          ? query.orderBy('file_name')
+          : query.where('id', '=', request.query.asset);
+      const video = await query.executeTakeFirst();
+      if (video === undefined) return reply.code(404).send({ error: 'no_video' });
+      return sendPrintFile(request, reply, deps.printsRoot, video.relative_path, {
+        download: false,
+        fileName: video.file_name,
+      });
+    },
+  );
+
   app.get<{ Params: { id: string } }>(
     '/api/assets/:id/download',
     { config: { auth: MANAGE }, schema: { params: idParams } },

@@ -110,6 +110,13 @@ export interface PrintDetail extends PrintSummary {
   hasModel: boolean;
   /** Every viewable model, file order; the viewer's picker uses it. */
   models: { id: string; fileName: string; hasPicture: boolean }[];
+  /**
+   * The timelapses, file order. Every role gets them (GAP-175, the owner's
+   * answer): a klant may watch the film of their own print. They are their own
+   * field and not part of `assets`, because a visitor has no file list at all
+   * and these are the one thing from it they may see.
+   */
+  videos: { id: string; fileName: string }[];
   /** Null for Users. */
   assets: AssetDto[] | null;
   /** "Niet factureren" klant: cost only, no price or payment. */

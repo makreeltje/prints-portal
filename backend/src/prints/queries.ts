@@ -517,6 +517,16 @@ export async function getPrintDetail(
       hasPicture: asset.type === 'stl' || asset.type === '3mf',
     }))
     .sort((a, b) => a.fileName.localeCompare(b.fileName, 'nl'));
+  /*
+    The timelapses, for every role (GAP-175, the owner's answer: "klant mag
+    timelapse zien"). They sit in their own field rather than in `assets`,
+    which stays null for a User: a visitor has no file list and no downloads,
+    and this is the one entry from the folder they may watch.
+  */
+  const videos = assets
+    .filter((asset) => asset.type === 'video')
+    .map((asset) => ({ id: asset.id, fileName: asset.file_name }))
+    .sort((a, b) => a.fileName.localeCompare(b.fileName, 'nl'));
   const settings = await readSettings(db);
   const [money, tints, finance] = await Promise.all([
     ordersWithMoney(db, [row.id], settings),
@@ -538,6 +548,8 @@ export async function getPrintDetail(
     archivedAt: row.archived_at,
     hasModel: hasModel && row.status !== 'archived',
     models: row.status === 'archived' ? [] : models,
+    // An archived print has no files on disk, so it has nothing to play either.
+    videos: row.status === 'archived' ? [] : videos,
     assets: null,
     noBilling: finance.noBilling,
     markupPercent: options.withAssets ? finance.markupPercent : null,

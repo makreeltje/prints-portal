@@ -92,6 +92,13 @@ export const modelUrl = (print: { id: string; version: string }, assetId?: strin
     assetId === undefined ? '' : `&asset=${encodeURIComponent(assetId)}`
   }`;
 export const downloadUrl = (assetId: string) => `/api/assets/${assetId}/download`;
+/**
+ * The timelapse, played in place. Not `downloadUrl`: that route is Admin and
+ * Editor only, while a klant may watch the film of their own print and may not
+ * save the folder's files (GAP-175).
+ */
+export const videoUrl = (printId: string, assetId: string) =>
+  `/api/prints/${printId}/video?asset=${encodeURIComponent(assetId)}`;
 
 export const deletePrint = (id: string) => api(`/api/prints/${id}`, { method: 'DELETE' });
 export const restorePrint = (id: string) => api(`/api/prints/${id}/restore`, { method: 'POST' });

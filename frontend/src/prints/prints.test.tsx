@@ -531,8 +531,13 @@ describe('bron and notitie on a print', () => {
       the share page and not when signed in.
     */
     expect(document.querySelector('.pp-srcs')).not.toBeNull();
-    // Still nothing that belongs to an order, and nothing editable.
-    expect(screen.queryByText('Materiaal')).toBeNull();
+    /*
+      Still nothing that belongs to an order, and nothing editable. Materiaal
+      is a row of the card since GAP-174 and no longer stands for "a fact this
+      role may not read"; the cost breakdown it used to stand for is the thing
+      to look for, and it has its own heading.
+    */
+    expect(screen.queryByRole('heading', { name: 'Kosten' })).toBeNull();
     expect(screen.queryByRole('textbox', { name: 'Bron' })).toBeNull();
   });
 
@@ -573,6 +578,7 @@ function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
     printerModel: 'Creality K1 Max',
     archivedAt: null,
     hasModel: false,
+    videos: [],
     models: [],
     sources: [],
     note: null,
@@ -1055,10 +1061,33 @@ describe('PrintDetailPage', () => {
 
   /*
     GAP-158, resolved in 2.14: the reduced card finally has an anatomy —
-    `pp-kv tight` with Klant, Project only when it differs, Datum and Bron,
-    and nothing else at all.
+    `pp-kv tight` with Klant, Project only when it differs, Datum and Bron.
+    GAP-174, answered by the owner in the 2.15 round, adds Materiaal and
+    Gewicht to it: more detail about what a klant is paying for. Tijd is not
+    among them, machine time being the one input a klant cannot check.
   */
-  it('gives a User a card of four rows at most, with a heading and no cost inputs', async () => {
+  it('plays a klant the timelapse, from the print and not from the download route', async () => {
+    stubFetch({
+      'GET /api/prints/p1': () => ({
+        json: detail({
+          assets: null,
+          hasModel: false,
+          models: [],
+          videos: [{ id: 'v1', fileName: 'timelapse_2026-10-20.mp4' }],
+        }),
+      }),
+    });
+    renderDetail('User');
+    /*
+      GAP-175, the owner's answer: a klant watches the film of their own print.
+      It comes from the print's own route — `/api/assets/:id/download` is
+      Editor and Admin only, and a visitor downloads nothing.
+    */
+    const player = await screen.findByLabelText('Timelapse van timelapse_2026-10-20.mp4');
+    expect(player).toHaveAttribute('src', '/api/prints/p1/video?asset=v1');
+  });
+
+  it('gives a User the reduced card, with Materiaal and Gewicht but no cost inputs', async () => {
     stubFetch({
       'GET /api/prints/p1': () => ({
         json: detail({
@@ -1082,7 +1111,12 @@ describe('PrintDetailPage', () => {
       'Klant',
       'Datum',
       'Bron',
+      'Materiaal',
+      'Gewicht',
     ]);
+    // Tijd and the Nabestellingen count stay with the operator (GAP-174).
+    expect(within(card).queryByText('Tijd')).toBeNull();
+    expect(within(card).queryByText('Nabestellingen')).toBeNull();
     expect(card.querySelector('.pp-srcs')).not.toBeNull();
     // And nothing else: no spool row, no note, no missing-files line.
     expect(card.querySelector('.pp-spoolbtn')).toBeNull();
@@ -1105,6 +1139,8 @@ describe('PrintDetailPage', () => {
       'Klant',
       'Project',
       'Datum',
+      'Materiaal',
+      'Gewicht',
     ]);
   });
 

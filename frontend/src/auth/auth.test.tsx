@@ -26,7 +26,9 @@ describe('routing by sign-in state and role', () => {
   });
 
   it.each([
-    ['User', ['Dashboard', 'Openstaand', 'API-docs']],
+    // No API-docs for a User (GAP-173, the owner's answer): a klant has
+    // nothing to call, and the page goes behind Facturen's role check.
+    ['User', ['Dashboard', 'Openstaand']],
     // Wachtrij for Admin and Editor, not for a User (AppShell 2.10).
     ['Editor', ['Dashboard', 'Wachtrij', 'Openstaand', 'Facturen', 'Tags', 'API-docs']],
     [
@@ -51,7 +53,7 @@ describe('routing by sign-in state and role', () => {
     expect(within(aside).queryAllByText('Beheer')).toHaveLength(role === 'Admin' ? 1 : 0);
   });
 
-  it.each(['/gebruikers', '/toegang', '/instellingen', '/deel-links', '/facturen'])(
+  it.each(['/gebruikers', '/toegang', '/instellingen', '/deel-links', '/facturen', '/api-docs'])(
     'sends a User away from %s',
     (path) => {
       renderApp(path, signedIn('User'));

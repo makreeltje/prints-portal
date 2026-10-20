@@ -63,7 +63,19 @@ export const NAV_ITEMS: readonly NavItem[] = [
     group: 'manage',
     roles: ADMIN,
   },
-  { path: '/api-docs', label: 'nav.apiDocs', icon: BookOpen, group: 'footer' },
+  /*
+    Admin and Editor only (GAP-173, the owner's answer: "api docs niet nodig
+    voor rol User"). The same role check as Facturen, which is also the route
+    guard: `App.tsx` builds the routes from this list and sends a role that
+    may not see an item back to the dashboard.
+  */
+  {
+    path: '/api-docs',
+    label: 'nav.apiDocs',
+    icon: BookOpen,
+    group: 'footer',
+    roles: ['Admin', 'Editor'],
+  },
 ];
 
 export function canSee(item: NavItem, role: Role): boolean {

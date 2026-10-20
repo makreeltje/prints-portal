@@ -123,6 +123,13 @@ const ENDPOINTS: {
     allowed: ['Editor', 'Admin'],
   },
   {
+    // A klant may watch the film of their own print (GAP-175); the download
+    // route below stays Editor and Admin, so nothing can be saved.
+    name: 'GET /api/prints/:id/video',
+    request: () => ({ url: `/api/prints/${UNKNOWN}/video` }),
+    allowed: ['User', 'Editor', 'Admin'],
+  },
+  {
     name: 'GET /api/assets/:id/download',
     request: () => ({ url: `/api/assets/${UNKNOWN}/download` }),
     allowed: ['Editor', 'Admin'],
