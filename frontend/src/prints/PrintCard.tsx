@@ -33,17 +33,18 @@ export function PrintCard({
   /** Where the name links; a session keeps its token in the URL. */
   to?: string;
   /**
-   * A visitor's card (ScreenShareSession §5): exactly the facts an Overzicht
-   * line carries and no more — no filament tint, no meta line, no tags and
-   * no "Ontbreekt" chip, which is a fact about the owner's folder.
+   * A visitor's card (ScreenShareSession §5): no filament tint, no tags and
+   * no "Ontbreekt" chip, which is a fact about the owner's folder. The meta
+   * line is no longer among them — since GAP-174 it carries Materiaal and
+   * Gewicht here as well, without Tijd.
    */
   reduced?: boolean;
   /**
    * Off for role User (ScreenPrintDetail 2.15, GAP-166 and README *Roles*):
    * **no tags, anywhere** — not in a print's header, not on a card, not as a
    * filter. Separate from `reduced` on purpose: a signed-in User's card keeps
-   * its meta line, and whether a klant ever reads Materiaal and Gewicht is
-   * GAP-174, which the design system has deliberately left open.
+   * its whole meta line, Tijd included, while a visitor's carries Materiaal
+   * and Gewicht only (GAP-174).
    */
   showTags?: boolean;
 }) {
@@ -66,7 +67,12 @@ export function PrintCard({
           </h3>
           <span className="sub">{subLine(print)}</span>
         </div>
-        {!reduced && <Meta print={print} />}
+        {/*
+          A visitor reads Materiaal and Gewicht too (GAP-174, the owner's
+          answer), from the same line an operator gets; Tijd is the one fact
+          that stays behind, machine time being what a klant cannot check.
+        */}
+        <Meta print={print} withTime={!reduced} />
         {!reduced && showTags && print.tags.length > 0 && (
           <div className="pp-tags">
             {print.tags.map((tag) => (
@@ -171,11 +177,18 @@ export function PriceBlock({ print }: { print: PrintSummary }) {
 }
 
 /** materiaal · tijd · gram, each only when known. */
-export function Meta({ print }: { print: PrintSummary }) {
+export function Meta({
+  print,
+  withTime = true,
+}: {
+  print: PrintSummary;
+  /** Off on a visitor's card: Materiaal and Gewicht, not Tijd (GAP-174). */
+  withTime?: boolean;
+}) {
   return (
     <div className="pp-meta">
       {print.material !== null && <span>{print.material}</span>}
-      {print.printSeconds !== null && (
+      {withTime && print.printSeconds !== null && (
         <span>
           <Clock className="pp-ico" aria-hidden="true" />
           {formatDuration(print.printSeconds)}

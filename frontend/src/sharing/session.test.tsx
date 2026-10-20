@@ -118,14 +118,21 @@ describe('a deel-linksessie (GAP-165)', () => {
       'href',
       `/share/${TOKEN}/prints/p1`,
     );
-    // Gone: the FilterBar, the tags, the tint, the checkbox, the meta line and
-    // the "Ontbreekt" chip — exactly the facts an Overzicht line carries.
+    // Gone: the FilterBar, the tags, the tint, the checkbox and the
+    // "Ontbreekt" chip, which is a fact about the owner's folder.
     expect(screen.queryByRole('searchbox')).toBeNull();
     expect(document.querySelectorAll('.pp-tag')).toHaveLength(0);
     expect(document.querySelectorAll('.pp-thumb.tinted')).toHaveLength(0);
     expect(document.querySelectorAll('.pp-print input[type="checkbox"]')).toHaveLength(0);
-    expect(document.querySelectorAll('.pp-print .pp-meta')).toHaveLength(0);
     expect(document.querySelectorAll('.pp-lacks')).toHaveLength(0);
+    /*
+      Kept since GAP-174, the owner's answer: the meta line carries Materiaal
+      and Gewicht so a klant reads what they are paying for. Tijd is not on it
+      — the fixture's print is an hour long and the line says so nowhere.
+    */
+    const meta = [...document.querySelectorAll('.pp-print .pp-meta')];
+    expect(meta).toHaveLength(2);
+    expect(meta[0]?.textContent).toBe('PLA42 g');
     // Kept: the price and the status badge.
     expect(screen.getAllByText(/11,89/u)).toHaveLength(2);
   });

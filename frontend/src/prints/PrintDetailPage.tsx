@@ -468,15 +468,20 @@ function ThisPrint({
   if (detail.sources.length > 0) {
     facts.push([t('print.source'), <SourceList key="src" sources={detail.sources} />]);
   }
-  if (canManage) {
-    if (detail.material !== null) facts.push([t('print.material'), detail.material]);
-    if (detail.printSeconds !== null) {
-      facts.push([t('print.time'), formatDuration(detail.printSeconds)]);
-    }
-    if (detail.grams !== null) facts.push([t('print.weight'), formatGrams(detail.grams)]);
-    if (detail.orders.length > 0) {
-      facts.push([t('print.orders'), String(detail.orders.length)]);
-    }
+  /*
+    Materiaal and Gewicht for every role (GAP-174, the owner's answer: a klant
+    reading more detail about what they are paying for). The invoice already
+    prints Gram, so the facts were his anyway. **Tijd stays with the operator**
+    — machine time is the one input a klant cannot check — and so does the
+    Nabestellingen count, which is about the owner's bookkeeping.
+  */
+  if (detail.material !== null) facts.push([t('print.material'), detail.material]);
+  if (canManage && detail.printSeconds !== null) {
+    facts.push([t('print.time'), formatDuration(detail.printSeconds)]);
+  }
+  if (detail.grams !== null) facts.push([t('print.weight'), formatGrams(detail.grams)]);
+  if (canManage && detail.orders.length > 0) {
+    facts.push([t('print.orders'), String(detail.orders.length)]);
   }
   return (
     <section
