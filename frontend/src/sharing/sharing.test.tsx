@@ -357,7 +357,7 @@ describe('SharePage', () => {
           expiresAt: null,
           // No `source` and no `printId` on purpose: a payload from before
           // this field existed must still render.
-          lines: [{ id: 'o1', description: 'Cable organizer', project: null, date: '2026-10-02' }],
+          lines: [{ id: 'o1', description: 'Kabelgoot', project: null, date: '2026-10-02' }],
         },
       }),
     });

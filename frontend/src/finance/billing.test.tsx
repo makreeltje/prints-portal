@@ -386,7 +386,7 @@ describe('InvoicesPage', () => {
           lines: [
             { id: 'l1', description: 'Bloembak clips', amount: 11.89, credited: true },
             { id: 'l2', description: 'Kerstversiering 2026', amount: 24.5, credited: false },
-            { id: 'l3', description: 'Cable organizer', amount: 9.28, credited: false },
+            { id: 'l3', description: 'Kabelgoot', amount: 9.28, credited: false },
           ],
           creditNotes: [{ id: 'c1', number: '2026-009' }],
           nextNumber: '2026-010',
@@ -426,7 +426,7 @@ describe('InvoicesPage', () => {
     ).toBeChecked();
     expect(within(dialog).queryByRole('checkbox', { name: 'Bloembak clips' })).toBeNull();
     expect(within(dialog).getByText('2026-010')).toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Cable organizer' }));
+    await userEvent.click(within(dialog).getByRole('checkbox', { name: 'Kabelgoot' }));
     expect(text(within(dialog).getByText(/-24,50/).textContent)).toBe('€ -24,50');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Creditnota maken' }));
     await waitFor(() => {
