@@ -1,5 +1,4 @@
 {
- "v": 3,
  "assetGroups": {},
  "blobs": {},
  "createdOnFiles": {
@@ -12,14 +11,15 @@
  },
  "groups": [],
  "lastChange": {
-  "by": "Rick",
-  "at": "2026-10-18T19:20:00Z",
-  "via": "Claude Code",
-  "note": "Design system 2.15: thirteen gaps decided. GAP-169 (the owner's): the guest nav becomes a pill track so both destinations carry ink, and it stays links with aria-current, never aria-pressed. The --border question answered once and system-wide: border is a divider, border-strong is any boundary that carries meaning; .pp-seg's track and .pp-modelbtn's resting edge move, .pp-tabs' rail deliberately does not. GAP-168: .pp-lift takes min-width 0. GAP-167: ScreenQueue's 2.12 section restored verbatim. GAP-166: role User sees no tags. New: GAP-170 (the visitor's payment is a header line), GAP-171 rejected (no search field), GAP-172 (the guest head is one height at every studio name), GAP-176, GAP-177, GAP-178; GAP-173/174/175 numbered and left to the owner. No token, class or copy key removed or renamed; one new class, .pp-guestexit."
+  "at": "2026-10-20T15:05:00Z",
+  "by": "Design system",
+  "note": "Version 2.17, names only. Your library scan found three real strings 2.16 had not been told about and all three are gone: the fixture print in six previews is now Vitrinekast inzet, the near-miss invoice line in eleven files is now Kabelgoot bureau, and the worked example in the file-name-truncation argument (AssetListItem 2.6 and the GAP-133 row) is now Bloembak clip corner 22, where the trailing number is a width. Both replacements were already in this export and cleared by the same scan, so no new name enters the system. Nothing else changes: no token, class or copy key, bundle.css byte-identical to 2.16, no breaking change. Confirmed with nothing to change: Algemeen is not a folder in his library, GAP-182's Map row may replace the conditional Project row, and the mkv count is 2 of 121 so the unsupported-format state stays as specified (VideoPlayer 2.17). The rule left behind is in the changelog: a fixture name is either already in the export or checked against the library before it ships, near-misses count, and the sweep covers prose and not only previews.",
+  "via": "Claude Code"
  },
  "layout": "files",
  "libraries": [],
  "namespace": "PrintsPortal",
  "sections": {},
- "title": "3D Prints Portal"
+ "title": "3D Prints Portal",
+ "v": 3
 }

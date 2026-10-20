@@ -161,7 +161,7 @@ Components are plain HTML plus `components/bundle.css` (classes prefixed `pp-`);
 
 ## Roles
 
-Admin sees everything, including Deel-links, Toegang, Gebruikers, Instellingen, Verwijderde prints with Herstellen, and the undo actions. Editor sees every klant (no grants needed, so Editor rows in Toegang are disabled and checked), Dashboard, Openstaand, Facturen, print detail with costs and payment, and can export and "Definitief maken", but cannot credit, delete users or change settings. User only sees the klanten an Admin granted. **A visitor with a deel-link is a User without an account (2.14):** a valid token mints an anonymous read-only session scoped to one klant, with the same screens and a head bar instead of the sidebar — no theme control, no "Uitloggen", no API-docs, and the URL as the only credential (ScreenShareSession, AppShell). User sees customer price and status only: no internal cost, breakdown, notes or file controls, no Facturen page and **no tags (2.15, GAP-166 — a tag is the owner's own filing word, and he does not use them)**. Never render a control a role cannot use.
+Admin sees everything, including Deel-links, Toegang, Gebruikers, Instellingen, Verwijderde prints with Herstellen, and the undo actions. Editor sees every klant (no grants needed, so Editor rows in Toegang are disabled and checked), Dashboard, Openstaand, Facturen, print detail with costs and payment, and can export and "Definitief maken", but cannot credit, delete users or change settings. User only sees the klanten an Admin granted. **A visitor with a deel-link is a User without an account (2.14):** a valid token mints an anonymous read-only session scoped to one klant, with the same screens and a head bar instead of the sidebar — no theme control, no "Uitloggen", no API-docs, and the URL as the only credential (ScreenShareSession, AppShell). User sees customer price and status only: no internal cost, breakdown, notes or file controls, no Facturen page, **no API-docs (2.16, GAP-173 — the item and the route both, so it is removed and not hidden)** and **no tags (2.15, GAP-166 — a tag is the owner's own filing word, and he does not use them)**. **What a User and a visitor do read, since 2.16:** materiaal and gewicht, on the card's meta line and in "Deze print" (GAP-174), and **the timelapse** in the media strip (GAP-175) — viewing, never downloading. **Where a print lives on disk (the `Map` row, GAP-182) is the operator's alone:** the library's shape is the workshop's. Never render a control a role cannot use.
 
 ## Screens and documents
 
@@ -197,7 +197,7 @@ No logo has been supplied. Show the studio name in `heading-lg` type in the app 
 
 - Write Dutch, informal "je" on the share page, neutral and short in the operator UI. Use the exact vocabulary: Klant, Project, Print, Bestand, Openstaand, Betaald/Open, Markeer als betaald, Alles als betaald, Afschrijven, Verkoopprijs, Voorstel uit marge, Kosten/Totaalkosten, Materiaal, Stroom, Spoel, Factuur, Concept, Definitief maken, Creditnota, Herinnering, Overzicht, Deel-link, Intrekken, Verloopt, Toegang, Gebruikers, Instellingen, Opnieuw indexeren, Verwijderen, Herstellen, Gearchiveerd, Deels betaald, Niet factureren, Toon verwijderde, Aantal keer geprint, Plaat, Slot, Mogelijk dubbel, Op factuur, Reden, Telt niet mee in kosten, Tags.
 - Format with nl-NL: money `€ 1.234,56`, dates `5 okt 2026` (with "12 dagen open" where useful), durations `1 u 20 min`, units `87 g`, `0,42 kWh`.
-- Name the object in destructive confirmations: "Print 'Babybox locks' verwijderen?" and say that deleting hides the print but keeps its financials.
+- Name the object in destructive confirmations: "Print 'Bloembak clips' verwijderen?" and say that deleting hides the print but keeps its financials.
 - Show where a cost value came from (Spoolman, handmatig, geschat). A print without a price shows "Prijs volgt" on the share page.
 - There is no VAT anywhere: no BTW toggle, rate or number, and no KvK, on screens or documents. Company details on documents are name, address, IBAN and optional e-mail and phone, plus an optional uploaded logo (PNG or SVG) that replaces the studio name.
 - Documents: an unnumbered **Concept** invoice; a final **Factuur** numbered `YYYY-NNN` (yearly reset) created with "Definitief maken"; a **Creditnota** (negative, "Betreft factuur {nummer}", same number sequence); a **Herinnering** (unpaid lines only, no number); and the share-page **Overzicht** (no number, customer price only). Invoice table columns are Print · Project · Datum · Gram · Bedrag · Status; status is Betaald, Open or Deels betaald, and prints without a customer price are left out.
@@ -207,7 +207,7 @@ No logo has been supplied. Show the studio name in `heading-lg` type in the app 
 
 ## Sample values for previews
 
-Customers Joey, Denise, Wouter (and Rick, niet factureren); project "Babybox locks"; PLA, 87 g, 1 u 20 min; material € 2,18, electricity € 0,12, total € 2,30; suggested price € 11,89 from a 400% markup; printer Creality K1 Max at about 350 W. These price, markup and wattage figures are illustrative layout data, not business rules.
+Customers Koen, Esmee, Veerle (and Algemeen, niet factureren); project "Bloembak clips"; PLA, 87 g, 1 u 20 min; material € 2,18, electricity € 0,12, total € 2,30; suggested price € 11,89 from a 400% markup; printer Creality K1 Max at about 350 W. These price, markup and wattage figures are illustrative layout data, not business rules.
 - Deel-links: Verloopt offers Over 7, 30 or 90 dagen and **Nooit**; a link without expiry shows "Verloopt niet" in `muted`.
 - Sign-in: local sign-in with e-mail address or name plus password (at least 12 characters), or Authentik (OIDC) when configured; members of the Authentik admin group become Admin. A temporary password must be replaced at the first sign-in. A session ends after 60 minutes without activity or 12 hours after signing in; login is limited to 5 attempts per minute. The last Admin can never be removed or demoted.
 - A credited print (whole invoice or chosen lines) becomes Afgeschreven.
@@ -445,3 +445,61 @@ the token (**GAP-177**); the operator's "Deze print" stops repeating the print's
 and **ScreenQueue's 2.12 section is restored** after the 2.14 export dropped it (**GAP-167**). **No
 token added, renamed or removed; no copy key added, changed or removed; one new class
 (`.pp-guestexit`); no breaking change.** Details: `changelog.md`.
+
+## Versie 2.16 (2026-10-20)
+
+**The owner answered the three questions 2.15 published as proposals, and all three went the way
+the reasoning leaned.** *"api docs niet nodig voor rol User"* (**GAP-173**): the item goes behind
+the same role check as Facturen, and because the app builds its routes from the same list that
+check is also the route guard — the page is **removed** for that role, not hidden from its menu.
+*"materiaal en gewicht is handig voor een gebruiker, dan hebben ze meer detail waarvoor ze moeten
+betalen"* (**GAP-174**): a klant's "Deze print" gains two rows and their card gains a meta line of
+**two** items — which also settles a contradiction this system published, because
+ScreenShareSession §5 said a visitor's card has *no meta line* while the same export proposed
+putting these two facts on it; **the sentence is withdrawn and the line stays**, carrying nothing
+about the workshop (no print time, no order count). *"klant mag timelapse zien"* (**GAP-175**): the
+media strip holds the models **and** the timelapse for every role, the strip's entries become a
+field of the print rather than a reading of the file list — a role with no files card may not have
+a control that depends on one — and the film is served for **viewing only**, because the owner's
+rule for a deel-link is viewer yes, downloads no.
+
+**And one new row, the only thing designed from scratch this round. GAP-182:** after GAP-176 took
+the repeated name off the operator's print page, he asked for the project folder back **as a
+path**. It returns as `Map` — one mono string, `klant / project`, the last row of "Deze print",
+**always drawn** (the comparison that hides *Project* is a squashed one, so the path is the only
+place the literal folder spelling is readable), **operator only**, and "Nog geen map" for a record
+that has no folder at all. It **replaces** the conditional Project row on that card, because two
+rows about where a print lives is the fault GAP-176 was about; GAP-176 itself is unchanged for the
+reduced card and the breadcrumb.
+
+Also: PaymentPanel's *Rol User* state is **struck**, since GAP-170 already took the card off that
+role's page, and `pay.userNote` is **retired** rather than removed (**GAP-179**); the guest head is
+one height at **every** studio name now that the brand is the item that gives way
+(**GAP-180**); and the drawer's links draw the focus ring in the token — the fourth place GAP-177
+named and the one it never wrote (**GAP-181**). **One new class (`.pp-path`), two new copy keys
+(`print.folder`, `print.folder.none`), one key retired, no token added, renamed or removed, no new
+colour pair, no breaking change.** The previews, the READMEs and this file also stop using three
+customer names and one print name that are real folders in the owner's library. Details:
+`changelog.md`.
+
+## Versie 2.17 (2026-10-20)
+
+**A names-only version, published because the owner's library is the only authority on what a safe
+fixture name is and this system cannot read it.** A full scan of 2.16 against his twelve klant
+folders and eighty-four project folders found three real strings 2.16's sweep had not been told
+about: a project name used as a fixture print in six previews (now **Vitrinekast inzet**), a
+project name used as the worked example in the argument against reading a version out of a file
+name (now **Bloembak clip corner 22** — three sizes of one part, where the trailing number is a
+width a regex reads as a version), and a fixture print name whose **first fifteen characters match
+a sixteen-character real folder** (now **Kabelgoot bureau**). Both replacements are strings this
+export already carried and the same scan cleared, so **no new name enters the system**. The rule
+that follows is in `changelog.md`: a fixture name is either already in the export or checked
+against the library before it ships, near-misses count as real names, and the sweep covers prose
+examples and not only previews — both survivors were sentences, not fixtures.
+
+**Also confirmed by the owner in this round, with nothing to change:** `Algemeen` is not a folder
+in his library; GAP-182's `Map` row may replace the conditional `Project` row, which was the one
+thing 2.16 changed rather than added; and the `.mkv` question is **answered at 2 of 121** (119
+`.mp4`, 98%), so the unsupported-format state stays as specified and conversion is not urgent
+(VideoPlayer 2.17). **No token, class or copy key changes; `bundle.css` is byte-identical to 2.16;
+no breaking change.** Details: `changelog.md`.

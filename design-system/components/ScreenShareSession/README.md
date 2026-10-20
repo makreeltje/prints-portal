@@ -48,15 +48,15 @@ The visitor sees the expiry notice on the screen they land on, every time they o
 
 ## 5. Prints, and one print
 
-**Prints** is ScreenDashboard with the klant axis removed: no klant strip and no overview dialog (there is one klant), no "Factuur", no selection and no BulkActionBar, no "Toon verwijderde" and no "Gearchiveerd tonen" (archived prints stay in the list, as they do on the Overzicht since 1.6), **no tags** and **no FilterBar**. A card carries exactly the facts an Overzicht line carries — thumbnail, name, project and date, price, status badge — and no more:
+**Prints** is ScreenDashboard with the klant axis removed: no klant strip and no overview dialog (there is one klant), no "Factuur", no selection and no BulkActionBar, no "Toon verwijderde" and no "Gearchiveerd tonen" (archived prints stay in the list, as they do on the Overzicht since 1.6), **no tags** and **no FilterBar**. A card carries the facts an Overzicht line carries — thumbnail, name, project and date, price, status badge — plus, since 2.16, two of the owner's own meta items:
 
 - **no filament tint** on the thumbnail, the rule GAP-079 set for the share page: on a customer's screen a dark filament hides the model, and the tint is operator information;
-- **no meta line** (material, time, weight): see *What the owner still decides* below;
+- **a meta line of two items — Materiaal and Gewicht — and no more** (2.16, GAP-174: *"dan hebben ze meer detail waarvoor ze moeten betalen"*). No print time and no order count; the sentence that stood here until 2.16, *"no meta line"*, is **withdrawn** — see below;
 - **no checkbox**: nothing here is selectable.
 
 Order: newest first, the same order as the Overzicht's list, so the two screens never disagree about which print is "the last one". **Empty** (a klant whose folder has nothing in it — one of the twelve klanten in the owner's library): `.pp-empty` with `session.prints.empty` "Nog geen prints" and `session.prints.emptyBody` "Zodra er iets voor je geprint is, zie je het hier." The deck's existing `empty.customerNoPrints.body` is **not** reused here: it explains folders, which is the workshop's vocabulary and not the klant's.
 
-**One print** is ScreenPrintDetail in its *Rol User* variant, now drawn: viewer, the reduced "Deze print" card (**GAP-158**, see ScreenPrintDetail 2.14), the bron, and the payment as a **state** — badge and amount, no fields, no history, no note, no files card, no "⋯" menu, no spool control. Paying is not done per print anywhere in this system, so the print page carries no payment instruction; the Overzicht is one tap away and is where the amount is the total.
+**One print** is ScreenPrintDetail in its *Rol User* variant, now drawn: viewer, the media strip with the models **and the timelapse** (2.16, GAP-175), the reduced "Deze print" card (**GAP-158**, see ScreenPrintDetail 2.14 and 2.16), the bron, and the payment as a **state** — badge and amount, no fields, no history, no note, no files card, no "⋯" menu, no spool control. Paying is not done per print anywhere in this system, so the print page carries no payment instruction; the Overzicht is one tap away and is where the amount is the total.
 
 ## Both themes, phone and desktop
 
@@ -64,9 +64,11 @@ Everything above is existing tokens and existing components; the one new piece o
 
 **Dutch copy.** Overzicht | Prints | Sessie afsluiten | Sessie afsluiten? | Je kunt daarna alleen terug met de link die je hebt gekregen. | Afsluiten | Je bent afgemeld van dit overzicht | Open de link opnieuw om je prints te bekijken. | Nog geen prints | Zodra er iets voor je geprint is, zie je het hier. — plus everything ScreenSharePage, ScreenDashboard and ScreenPrintDetail already carry.
 
-## What the owner still decides (do not build these yet)
+## What the owner still decides (all three are decided — see 2.16)
 
-Three things widen what a klant can see. Each is **proposed, needs his confirmation**, and the session is complete without them:
+*Kept as written, because the reasoning is what he answered. All three are **yes** and all three are built: Materiaal and Gewicht (GAP-174), the timelapse (GAP-175), and API-docs removed for role User (GAP-173). Tags stay refused. Read 2.16 below for what each one became.*
+
+Three things widen what a klant can see. Each was **proposed, needs his confirmation**, and the session is complete without them:
 
 1. **Materiaal and Gewicht** (**GAP-174**, still proposed) in the visitor's "Deze print" card and in the card's meta line. 2.0 wrote "Klant, Project and Datum" for role User and the invoice already prints Gram, so this is a small, defensible addition — but it is his call what a klant reads, not mine.
 2. **The timelapse** (**GAP-175**, still proposed) in the media strip. 60% of prints have one and it is a film of the klant's own print; it is also a surface no customer has ever had, and the same network-tab threshold applies to it as to the model. Until he says yes, a visitor's media strip shows **models only**.
@@ -177,7 +179,7 @@ reasons ("cadeau" on a present is the example that has been in TagChip since 1.0
 role User and a session the same screen, which is what keeps the reduced form from drifting. 1.4's
 clause "name, price, status, thumbnail, 3D model and tags only" is **superseded**.
 
-**The two proposals that are still his, now numbered so they stop being nameless.** Both stay
+**The two proposals that are still his, now numbered so they stop being nameless.** *(Both answered yes in 2.16; this paragraph is superseded.)* Both stay
 **proposed, needs his confirmation** — do not build either:
 
 1. **GAP-174 — Materiaal and Gewicht** in the visitor's "Deze print" card and in the card's meta
@@ -192,3 +194,19 @@ clause "name, price, status, thumbnail, 3D model and tags only" is **superseded*
 composite — `text-strong` on `primary-tint` **over `surface-2`** (10.02 / 12.16). All in
 `contrast.md` under *Added in 2.15*. That section's sentence "no new colour pair, so no new
 row in `contrast.md`" is withdrawn with it.
+
+## 2.16 (2026-10-20)
+
+**He answered all three, and all three widen what a klant sees. The section above — *What the owner still decides* — is closed: nothing in it is a proposal any more.**
+
+**§5's "no meta line" is withdrawn, and this is the conflict the app was right to raise (GAP-174, resolved).** 2.14 wrote the visitor's card as *"exactly the facts an Overzicht line carries and no more — no filament tint, no meta line, no tags and no 'Ontbreekt' chip"*, and in the same export proposed putting Materiaal and Gewicht in "the existing `Meta` on the card". Those cannot both hold: the facts have to be read somewhere, and the card's only line for them is the meta line. **The sentence loses, the line stays.** A klant's card now carries `.pp-meta` with **two items, Materiaal and Gewicht** — measured in the app at 20px and one line on 36 cards at 1400px and at 360px, in both themes, with the grid unchanged. What §5 refused and still refuses: the filament tint, the clock and the print time, the order count, the checkbox, the tags and the "Ontbreekt" chip. The rule the sentence was reaching for survives in a better form: **a klant's card carries what a klant is paying for, and nothing that is about the workshop.**
+
+**The timelapse is in the media strip, and a visitor's strip has a different source (GAP-175, resolved).** *"klant mag timelapse zien."* The strip on a visitor's print page is ModelPicker exactly as the operator has it: the models and the timelapse in one control, the group named "Modellen en timelapse". Three things follow, and the middle one is the reason this cost more than the proposal predicted:
+
+1. **The strip's entries are a field of the print, not the file list.** An operator's strip could be read off the files card; this role has no files card (ScreenPrintDetail 2.0), so the models and the timelapse travel with the print for **every** role. A control may not depend on a surface its page does not have.
+2. **Viewing is not downloading, and the player must not be the hole in that rule.** The video is served for viewing, inline and seekable; **no download link appears anywhere on a visitor's print page**. The app's own implementation note is worth keeping: the only route that served these bytes was the download route, and opening *that* to this role would have traded the owner's rule for a `<video src>`.
+3. **The threshold is unchanged.** §1 says it of the model and it is just as true of the film: a visitor who can watch it can save its bytes from the network tab. The absent download button is a threshold, not a boundary, and no copy tells the klant the file is protected.
+
+**API-docs is gone for role User (GAP-173, resolved; AppShell and ScreenApiDocs).** Not a session change — a session never had it — but it closes the row of three: *"api docs niet nodig voor rol User"*. The item now sits behind the same role check as Facturen, and because the app builds its routes from the same list, that check is also the route guard. Role User's nav is Dashboard and Openstaand.
+
+**Both themes, phone and desktop.** No new token, no new class and no new copy key for any of the three: `.pp-meta` is PrintCard's own line and the strip is ModelPicker's own control. No new colour pair, so no new row in `contrast.md`.

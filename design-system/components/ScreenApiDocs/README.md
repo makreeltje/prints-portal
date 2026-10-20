@@ -64,3 +64,11 @@ Loading and error states keep their card: they are ours, they are short, and a f
 **Rule for third-party renderers, point 6 (new).** A renderer that draws its own frame (sidebar, panels, borders) is given the full content area and bleeds through the page padding with `.pp-bleed`; only the page heading keeps the padding. A renderer with no frame of its own keeps the padding and may have a `border` or a `radius-lg`, never both (point 5, 1.9).
 
 **Changed classes.** `.pp-main` and `.pp-phone-main` (padding through `--pp-pad`, same computed value), new `.pp-bleed`.
+
+**2.16.** (2026-10-20) **This page is Admin's and Editor's (GAP-173, resolved — the owner: *"api docs niet nodig voor rol User"*).**
+
+**Role User has no nav item and no route.** `/api-docs` is guarded by the same check as Facturen and a User who types the path lands on the dashboard; the page is removed for that role, not hidden from its menu (AppShell 2.16). A deel-link session never had it.
+
+**Which closes the one argument that kept it open.** This README says the document needs no credential field because *"de documentatie gebruikt je sessie"* — true, and it means a User's own session would have worked on it. It does not mean a User has anything to call: every endpoint behind these six tags is the operator's workshop, and the three a User could legitimately reach return their own prints, which the portal already shows them. The page is a tool for the person who runs the instance.
+
+**Nothing on the page changes:** the frame, the Scalar mapping, the loading and error states, the scroll-region rule and the bleed are all as 2.0 left them. No new token, class or copy key; `nav.apiDocs` and `api.title` keep their words.

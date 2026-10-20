@@ -1087,6 +1087,32 @@ describe('PrintDetailPage', () => {
     expect(player).toHaveAttribute('src', '/api/prints/p1/video?asset=v1');
   });
 
+  /*
+    VideoPlayer 2.16: both alert bodies read "Download het bestand…", which is
+    advice a role with no downloads cannot follow, so role User and a visitor
+    read the title alone. The owner's library holds 2 such files in 121, so
+    this is a rare dead end rather than a normal state — and for that role the
+    one sentence is the whole answer. An operator keeps both lines.
+  */
+  it('drops the "download het bestand" hint for a klant, and keeps it for an operator', async () => {
+    const mkv = {
+      assets: null,
+      hasModel: false,
+      models: [],
+      videos: [{ id: 'v1', fileName: 'timelapse_2026-10-20.mkv' }],
+    };
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: detail(mkv) }) });
+    const klant = renderDetail('User');
+    expect(await screen.findByText('Dit formaat speelt niet in de browser.')).toBeInTheDocument();
+    expect(screen.queryByText('Download het bestand om het af te spelen.')).toBeNull();
+    klant.unmount();
+
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: detail(mkv) }) });
+    renderDetail('Editor');
+    expect(await screen.findByText('Dit formaat speelt niet in de browser.')).toBeInTheDocument();
+    expect(screen.getByText('Download het bestand om het af te spelen.')).toBeInTheDocument();
+  });
+
   it('gives a User the reduced card, with Materiaal and Gewicht but no cost inputs', async () => {
     stubFetch({
       'GET /api/prints/p1': () => ({
@@ -1106,14 +1132,20 @@ describe('PrintDetailPage', () => {
     if (!(card instanceof HTMLElement)) throw new Error('no card');
     expect(card).toHaveClass('pp-card', 'pp-sec');
     expect(card.querySelector('dl')).toHaveClass('pp-kv', 'tight');
-    // The project repeats the name here, so it is not a row (GAP-072).
+    /*
+      The project repeats the name here, so it is not a row (GAP-072), and
+      Bron is last: the reduced card's order is Klant, Project, Datum,
+      Materiaal, Gewicht, Bron (ScreenPrintDetail 2.16).
+    */
     expect([...card.querySelectorAll('dt')].map((dt) => dt.textContent)).toEqual([
       'Klant',
       'Datum',
-      'Bron',
       'Materiaal',
       'Gewicht',
+      'Bron',
     ]);
+    // No Map: where a print lives on disk is the operator's fact (GAP-182).
+    expect(within(card).queryByText('Map')).toBeNull();
     // Tijd and the Nabestellingen count stay with the operator (GAP-174).
     expect(within(card).queryByText('Tijd')).toBeNull();
     expect(within(card).queryByText('Nabestellingen')).toBeNull();
@@ -1145,27 +1177,52 @@ describe('PrintDetailPage', () => {
   });
 
   /*
-    GAP-176, resolved in 2.15: the same condition in every role. GAP-095
-    specified the operator's card before GAP-072's rule existed, so it drew
-    Project unconditionally and repeated the `<h1>` on 84 of 84 prints in this
-    library.
+    GAP-182: the operator's card has no Project row at all any more. GAP-176
+    removed it when it repeated the `<h1>`, which was 84 of 84 prints in this
+    library; the owner then asked for the folder back, and `Map` carries the
+    project whenever there is one. Two rows about where a print lives is the
+    fault GAP-176 was about, so the path replaces the row rather than joining
+    it. The reduced card keeps the conditional Project row, tested above.
   */
-  it('applies the same project condition to the operator, both ways', async () => {
+  it('gives the operator Map instead of Project, with or without a project folder', async () => {
     stubFetch({ 'GET /api/prints/p1': () => ({ json: detail() }) });
     const same = renderDetail('Editor');
     await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
-    const rows = () =>
-      [...screen.getByRole('region', { name: 'Deze print' }).querySelectorAll('dt')].map(
-        (dt) => dt.textContent,
-      );
-    // projectFolder equals the print's name here, so it is not a row.
+    const card = () => screen.getByRole('region', { name: 'Deze print' });
+    const rows = () => [...card().querySelectorAll('dt')].map((dt) => dt.textContent);
+    const path = () => card().querySelector('.pp-path');
+    // The project squashes equal to the print name, and the path says so anyway:
+    // this row is the only place the literal spelling of both folders is read.
     expect(rows()).not.toContain('Project');
+    expect(rows().at(-1)).toBe('Map');
+    expect(path()?.textContent).toBe('Koen / Bloembak clips');
+    expect(path()?.querySelector('.sep')?.textContent).toBe(' / ');
     same.unmount();
 
     stubFetch({ 'GET /api/prints/p1': () => ({ json: detail({ projectFolder: 'Kerst 2026' }) }) });
+    const other = renderDetail('Editor');
+    await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
+    expect(rows()).not.toContain('Project');
+    expect(path()?.textContent).toBe('Koen / Kerst 2026');
+    other.unmount();
+
+    // No project folder: the files sit in the klant's folder and the path says that.
+    stubFetch({ 'GET /api/prints/p1': () => ({ json: detail({ projectFolder: null }) }) });
+    const bare = renderDetail('Editor');
+    await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
+    expect(path()?.textContent).toBe('Koen');
+    expect(path()?.querySelector('.sep')).toBeNull();
+    bare.unmount();
+
+    // No folder at all: a sentence, not a path, so `muted` and not mono.
+    stubFetch({
+      'GET /api/prints/p1': () => ({ json: detail({ customerFolder: '', projectFolder: null }) }),
+    });
     renderDetail('Editor');
     await screen.findByRole('heading', { level: 1, name: 'Bloembak clips' });
-    expect(rows()).toContain('Project');
+    expect(rows()).toContain('Map');
+    expect(card().querySelector('.pp-path')).toBeNull();
+    expect(within(card()).getByText('Nog geen map')).toHaveClass('pp-muted');
   });
 
   it('shows the 403 state for another customer', async () => {

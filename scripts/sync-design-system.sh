@@ -19,6 +19,13 @@
 # took the token checker down with it. When tokens change, the new tokens.css
 # has to come from the design system's page; this script only stops it being
 # lost, and the import verifies it still matches tokens.json.
+#
+# implementation.md is DROPPED, which is the opposite case: it is our own
+# outbound half of the feedback round, it lives at docs/design-feedback/, and
+# the artifact carries a copy of it inside project/ only so the design system
+# can read it. Copying that copy back in would put a duplicate of a file we
+# own inside a folder that is read-only, where it would go stale the moment
+# the next round rewrites the original.
 set -euo pipefail
 
 SRC="${1:-}"
@@ -35,6 +42,8 @@ fi
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEST="$ROOT/design-system"
 KEEP=(DESIGN_GAPS.md FEEDBACK_PROMPT.md IMPORTING.md tokens.css)
+# Ours, not theirs: never copied in (see the note above).
+DROP=(implementation.md)
 
 version="$(node -e "process.stdout.write(String(JSON.parse(require('fs').readFileSync('$SRC/tokens.json','utf8')).version))")"
 if [[ -z "$version" || "$version" == "undefined" ]]; then
@@ -47,6 +56,7 @@ keep_args=()
 for name in "${KEEP[@]}"; do keep_args+=(! -name "$name"); done
 find "$DEST" -mindepth 1 -maxdepth 1 "${keep_args[@]}" -exec rm -rf {} +
 cp -R "$SRC/." "$DEST/"
+for name in "${DROP[@]}"; do rm -f "$DEST/$name"; done
 printf '%s\n' "$version" > "$DEST/VERSION"
 
 echo "design-system: $before -> $version"

@@ -1,3 +1,151 @@
+# Changelog 2.17
+
+**A name sweep is only as good as the list it is given, and 2.16's list was four strings against a
+library of ninety-six.** The implementer scanned all 162 files of 2.16 against the owner's actual
+folders on disk — twelve klanten and eighty-four projects, a check neither of us can do from the
+names alone — and three real strings were still in the export: a project name used as a fixture
+print in six files, a project name used as the worked example inside an argument about file-name
+truncation, and a fixture print name whose **first fifteen characters match a sixteen-character
+real folder**, which the owner has decided to treat as a leak rather than a coincidence. All three
+are replaced here, and **no new name enters the system**: both replacements are strings this export
+already carried and that the same scan cleared, and the prose example becomes this library's own
+case instead of an invented product. 2.17 changes nothing else by design — every decision in 2.16
+stands, and three of them are confirmed below. Version 2.16 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| — | A real project name used as a fixture print in `PrintCard`, `ScreenDashboard`, `ScreenOutstanding`, `PrintRow`, `BulkDialogs` and `TextInput` (13 occurrences, 6 files) | **Replaced by `Vitrinekast inzet`**, a print name this system already used in `PrintSource`, `ScreenQueue` and `PrintNote` and that the library scan cleared. Same length, so no layout moves; the derived second card ("… onderstuk links") follows it | **resolved** |
+| — | A real project name as the worked example in the argument against reading a version out of a file name (`AssetListItem` 2.6, and the GAP-133 row of the 2.9 changelog) | **The example becomes `Bloembak clip corner 22`** — three sizes of one part whose trailing number is a **width**, which a regex over names reads as three versions. It is the same argument on this library's own files instead of an invented product, and the approved print name is its root | **resolved** |
+| — | A fixture print name whose first 15 characters reproduce a 16-character real folder exactly (38 occurrences, 11 files; the invoice line description in `DocInvoice`) | **Replaced by `Kabelgoot bureau`**, also already in this export and cleared. The owner's call was to treat a near-miss as a leak, and the rule this sets is the right one: **a fixture name does not have to match a real folder to be a problem; it has to be close enough that a reader would think it did** | **resolved** |
+| — | `Algemeen` as the klant that used to carry the owner's own name (2.16) | Verified against the library by the implementer: it is not a folder there | **confirmed as built** |
+| GAP-182 | May the `Map` row replace the conditional `Project` row on the operator's "Deze print"? | The owner agrees. It was the one thing 2.16 changed rather than added, and it stays as designed | **confirmed as built** |
+| — | How many of the 121 timelapses are `.mkv` (asked in 1.9, 2.0 and 2.16) | **Measured: 2 of 121** — 119 `.mp4` (98%), 2 `.mkv` (1%), in 50 folders. The unsupported state is the exception it was specified as, so `video.unsupported.title` keeps its words and conversion on upload is not urgent. Written into VideoPlayer 2.17, where the cost is also recorded: for a klant those two files have no download to fall back on | **confirmed as built** |
+
+## New and changed
+
+- **Tokens:** none. `tokens.json` `version` is **2.17**. No token added, renamed, changed or removed.
+- **Classes:** none. No class is added, changed, renamed or removed; `bundle.css` is **byte-identical to 2.16**.
+- **Copy:** none. No key is added, changed, retired or removed.
+- **Components changed (fixture names only):** BulkDialogs, DocInvoice, DocOverview, DocReminder,
+  OutstandingGroup, PrintCard, PrintRow, ScreenDashboard, ScreenInvoices, ScreenOutstanding,
+  ScreenSharePage, ScreenShareSession, TextInput (previews), AssetListItem (README, the prose
+  example). **VideoPlayer (README)** gains the measured `.mkv` answer — the only content change in
+  this version.
+- **Pages changed:** `changelog.md` (this entry and the GAP-133 example), `README.md` (the version
+  note), `tokens.json`.
+- **Breaking changes: none.** Nothing an app imports changes: no token, class or key moves, and the
+  only strings that change are fixture data inside previews.
+
+## The rule this round leaves behind
+
+Three sweeps have now been run on these names and each found what the previous one was not told to
+look for. The reason is structural, so it is worth writing down rather than apologising for again:
+**this system cannot check a name against the owner's library, and the app can.** So the division
+is fixed from here:
+
+1. **A fixture name in this system is either already in the export or checked before it ships.** If
+   a round needs a new one, the design system names the exact strings it wants and the implementer
+   runs them against the library first. Inventing a plausible Dutch object name is the one thing
+   that cannot be made safe from here.
+2. **Near-misses count.** A string that shares fifteen of sixteen characters with a real folder is
+   treated as a real name, because a reader cannot tell the difference and the owner should not
+   have to argue about it.
+3. **The sweep is the whole tree, not the previews.** Prose examples inside an argument are the
+   ones that survive a sweep, because nobody greps a paragraph for a product name. Both strings
+   that survived 2.16's sweep in prose were in exactly that position.
+
+# Changelog 2.16
+
+**Three questions this system published as proposals came back answered, and the one that looked
+smallest cost a route.** The owner said no to API-docs for role User, yes to Materiaal and Gewicht
+for a klant (*"dan hebben ze meer detail waarvoor ze moeten betalen"* — a better reason than the
+one the proposal gave), and yes to the timelapse. The third carried two corrections with it: a
+visitor's media strip cannot be read off a file list the role does not get, so its entries are a
+field of the print for every role; and the only route that served those bytes was the download
+route, so viewing had to be separated from downloading rather than the rule bent. GAP-174 also
+settled a contradiction of our own making — §5 of ScreenShareSession said a visitor's card has *no
+meta line* while the same export proposed putting two facts on it; the sentence is withdrawn.
+**One thing is designed from scratch:** where a print lives on disk comes back to the operator's
+page as a **path** (**GAP-182**), which is a different fact from the row GAP-176 removed and is
+shaped like one. Three small ones close with it, and the previews, the READMEs and this file stop
+carrying four names that are real folders in the owner's library. Version 2.15 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-173 | Role User's nav still offers API-docs | **Behind the same role check as Facturen — and the check is the route guard, not only the menu.** The app builds its routes from the same list, so `/api-docs` sends a User to the dashboard instead of leaving a page that is hidden but reachable. A role's page is removed or it is not; "removed from the nav" is not a third state. Role User's nav is Dashboard and Openstaand | **resolved** |
+| GAP-174 | Materiaal and Gewicht for a klant — and `ScreenShareSession` §5 says a visitor's card has "no meta line" while the same export proposes putting them on it | **The line stays, the sentence goes.** A klant's card carries `.pp-meta` with **two items, Materiaal and Gewicht**, and the reduced "Deze print" gains the same two rows after Datum. **Tijd stays out** (a klant cannot check machine time and it only means something next to a cost) and so does the order count (the owner's bookkeeping; GAP-170 already gives this role one amount). The rule §5 was reaching for survives in a better form: a klant's card carries what a klant is paying for and nothing about the workshop | **resolved** |
+| GAP-175 | The timelapse in a visitor's media strip | **In, for every role, as one control — and two things the entry did not foresee are now spec.** (1) The strip's entries are **a field of the print, not the file list**: this role has no files card, so a strip read off one would be empty for exactly the role the owner just opened it to. (2) **Viewing is not downloading:** the video is served inline and seekable and a visitor's print page carries no download affordance anywhere, which is why the app's new view-only route is the right shape and opening the download route to role User would not have been. The network-tab threshold of ScreenShareSession §1 is unchanged and no copy claims the file is protected | **resolved** |
+| GAP-176 | (not reopened) | **Stays resolved and stays built.** GAP-182 is a different row with a different value; what changes on the operator's card is that the conditional *Project* row is replaced by the path, because two rows about where a print lives is the fault GAP-176 was about | **merged into GAP-182** |
+| GAP-179 | PaymentPanel still specifies a *Rol User* state that GAP-170 took off the page, and `pay.userNote` has no caller | **Struck in place in three spots** (anatomy, states list, the 2.14 section), nothing rewritten — 2.14's reasoning about what may be said to a klant is still the rule that keeps the header line wordless. **`pay.userNote` is retired, not removed:** it stays in `copy-deck.md` with its string under *Retired in 2.16* so nothing breaks and nobody re-invents the sentence; the app should stop rendering it. The operator's panel is untouched | **resolved** |
+| GAP-180 | The guest head is one height up to 29 characters of studio name and 32px taller from 30: the bar wraps before the brand shrinks | **`flex: 1 1 0` on `.pp-guesthead > .pp-brand` in the phone block, with its `.pp-device.phone` twin.** 2.15 gave the brand its ellipsis and never made it the item that gives way, so a content-width item with `margin-right:auto` took the whole first line and pushed the exit button down. One declaration finishes what GAP-172 wrote | **resolved** |
+| GAP-181 | `.pp-drawer a:focus-visible` is the last of the four places GAP-177 names, still drawing Chromium's own ring at 2.86:1 in dark | **The rule is written: `outline: 2px solid var(--focus-ring)` at a 2px offset**, the sidebar's form, because the drawer has `space-2` of side padding and an outset ring is not clipped. GAP-177 said "the sidebar, the drawer, the bottom bar and the guest head" and shipped three selectors; this is the fourth, and it is the whole menu on a phone | **resolved** |
+| GAP-182 | The owner wants the project folder back on the operator's print page, as a path | **A row `Map` at the foot of "Deze print": one mono string, `klant / project`, `muted` separator, new class `.pp-path`, new key `print.folder`.** One path, not two facts — it is an address he reads to find the folder. **Always drawn when the print has a folder, including the 84 of 84 whose tail equals the print name**, because the value is not the heading again: it carries the klant level and the **literal spelling** of both folders, where the comparison that hides *Project* is a squashed one (case, spaces and punctuation ignored). Text, selectable, **no copy button and no link**. No project folder: the klant folder alone. No folder at all (a typed request): `print.folder.none` **"Nog geen map"** in `muted`, not in mono. **Role User and a visitor never see it** — the library's shape is the workshop's. It **replaces** the conditional *Project* row on this card | **resolved** |
+| — | **The fixture names** (the app's §4, asked three rounds running, no gap id) | **Done, and it is the whole tree, not the previews only.** Three klant names and one print name that are real folders in the owner's library are replaced everywhere in `project/` — in previews, READMEs, the copy deck, this changelog and `README.md`'s *Sample values* — by **Koen, Esmee, Veerle** and **Bloembak clips**; **62 files**. The owner's own name is no longer one of his own customers either: the klant called "Rick" becomes **Algemeen**, a folder name this system already uses as the fourth column of AccessMatrix, so no new name enters the system and ScreenAccess and AccessMatrix now agree. `Anouk` and `Bas` were already in use and stay | **resolved** |
+| — | A klant whose folder was gone stayed a klant (the app's §5; `CustomerCard` 2.13 §2) | **No spec change, as the round says.** The measured sentence was true of the design and not of the app, and the app is fixed. Recorded here so the next reader of §2 knows the sentence was checked rather than assumed | **confirmed as built** |
+
+## New and changed
+
+- **Tokens:** none. `tokens.json` `version` is **2.16**. No token added, renamed, changed or
+  removed, and no `usage` string is touched.
+- **New classes** `.pp-path` (and `.pp-path .sep`). **Changed classes** (all in `bundle.css`):
+  `.pp-guesthead > .pp-brand` in the phone block and its `.pp-device.phone` twin (`flex: 1 1 0`),
+  `.pp-drawer a:focus-visible` (new rule). **No class is removed and nothing is renamed.** The
+  classes the new markup uses and that already existed: `.pp-kv.tight`, `.pp-meta`, `.pp-models`,
+  `.pp-modelbtn`, `.pp-modelbtn.video`, `.pp-model-cap`, `.pp-fname`, `.pp-ph`, `.pp-badge`,
+  `.pp-money`, `.pp-text-xl`.
+- **Copy** `print.folder` ("Map"), `print.folder.none` ("Nog geen map") — both added to
+  `copy-deck.md` under *Added in 2.16*. **Retired:** `pay.userNote`, kept in the deck with its
+  string under *Retired in 2.16*; it is not removed and nothing is renamed.
+- **Components changed:** ScreenPrintDetail (README, preview), ScreenShareSession (README,
+  preview), PrintCard (README), ModelPicker (README), VideoPlayer (README), AppShell (README),
+  ScreenApiDocs (README), PaymentPanel (README, preview).
+- **Screens changed:** the operator's print page ("Deze print" loses the *Project* row and gains
+  `Map`); a visitor's and role User's print page (two more facts in the card, the timelapse in the
+  strip); a visitor's Prints (a two-item meta line on every card); role User's nav and routes (no
+  API-docs); the phone's guest head (one height at every name) and the phone drawer (a visible
+  focus ring).
+- **Pages changed:** `README.md` (*Roles*, *Sample values*, the version note), `copy-deck.md`,
+  `changelog.md`, `tokens.json`, and 62 files for the fixture names.
+- **Contrast report: no new pair, so `contrast.md` is unchanged.** `.pp-path` is `text-strong` on
+  `surface` with a `muted` separator, and both pairs are already in the report (6.84 / 6.03 for
+  `muted`; `text-strong` on `surface` well above it). The focus ring on `surface` is in it too.
+- **Breaking changes: none.** No token, class or key is removed or renamed. Six obligations are
+  added to the app, and it has already built the first three: put API-docs behind the role check
+  **and the route guard**; render Materiaal and Gewicht for role User and a visitor (card meta line
+  and "Deze print"); render the timelapse in the strip from the print's own field and never a
+  download link for that role; **stop rendering `pay.userNote`**; add `flex: 1 1 0` and the drawer's
+  focus rule from `bundle.css`; and draw the `Map` row — which also means **removing** the
+  conditional *Project* row from the operator's "Deze print".
+
+## The one that was designed rather than written down: GAP-182
+
+GAP-176 removed a row labelled *Project* whose value was the `<h1>` again on 84 of 84 prints, and
+it took with it the last mention of where a print lives on disk. That was the right removal and the
+wrong consequence, which is a normal way for a system to be wrong: the row was answering a question
+("which folder is this?") in a form that could not answer it.
+
+**Why a path and not two facts.** He reads it to find the folder. A labelled *Klant* row and a
+labelled *Project* row make him reassemble the address himself, and the card already has a *Klant*
+row for the other purpose. One value, one label, mono — the family this system has used for file
+names, G-code names and paths since 1.0, so it reads as an address rather than as a sentence.
+
+**Why it is drawn even when the tail equals the name.** This is the question the whole gap turns
+on, and the answer is not the same as GAP-176's because the value is not the same. The comparison
+that hides *Project* is `squashName`, which the owner confirmed ignores case, spaces **and**
+punctuation: `Bloembak clips` and a folder called `bloembak_clips` are "equal" to it and are two
+different strings on disk. The path is the only place in the portal where the literal spelling of
+both folders is readable, and a row that appears on some prints is a row you have to look for.
+
+**Why the klant never sees it.** The reduced card already refuses the folder name inside Bron
+(2.14), the klant's empty state was written so a klant is not told about folders
+(`session.prints.emptyBody`, 2.14), and `queue.add.customerHelp` says the portal reads `/prints`
+and never writes it. The tree is the workshop's shape. A klant reads a print.
+
+**What I did not do.** No copy button on the row (the card is facts; a control there is a third
+job for it), no link (the portal cannot open his file manager and should not pretend), and no path
+on the card, the row or the queue — the subtitle there is `klant / project` already and has been
+since GAP-072.
+
 # Changelog 2.15
 
 **The owner used the thing and found the one fault no measurement was looking for**, and it turned
@@ -872,7 +1020,7 @@ This is also **the design catching up with its own preview**: OutstandingGroup h
 "3 prints" in that slot since 1.9. The deck was the only place the age clause still lived.
 
 **`outstanding.groupLabel` is added rather than corrected**, because the deck never had it. 1.9
-specified the accessible name in prose — "Joey, 18 prints, oudste 741 dagen, € 640,12" — and gave
+specified the accessible name in prose — "Koen, 18 prints, oudste 741 dagen, € 640,12" — and gave
 it no key, so the app wrote the sentence itself, without plurals, and a screen reader heard "1
 prints, oudste 1 dagen" on the very component whose visible badge 2.11 had just fixed. **A string
 the deck does not carry is a string nobody proofreads**, and that is the rule this round adds to
@@ -1316,7 +1464,7 @@ No gap was raised this round. The owner asked whether the tag system earns its p
 | GAP-128 | How a record created before its files meets those files | **Not mine to choose.** It is a data decision and the owner and implementer own it. What I can give is the UI cost of each of the four, below, and one constraint it must satisfy | **rejected (not ours: a data decision — UI costs given below)** |
 | GAP-129 | Whether a tag set really does hold two stages at once in the real library | My central argument in GAP-121 is mechanical and I have not seen it happen. If **no** print carries two of the four stage tags, the argument is sound but theoretical, and I want that on the record rather than implied. **Production only** — the local build has 0 tags, so this is the owner's to answer, not the implementer's | **needs your measurement** |
 | GAP-132 | Is **revision** — v1…v5 of one design, where the later supersedes the earlier — a fourth thing, or is it what *in progress* looks like? | **A fourth thing, and the answer is a rule rather than a feature.** It is not a stage: the three request states are about the **job**, revision is about the **files**, and a job sitting in `Mee bezig` is exactly where versions accumulate — so the stages do not cover it and do not conflict with it either. Supersession is the **third relation** between two files of one print and the only one carrying a direction. The rule: **a direction between two files may be drawn only where it is observed or recorded, never where it is read out of the file's name.** Nothing is drawn until it is recorded | **resolved** |
-| GAP-133 | Making the model strip version-aware: v5 first, v1–v4 collapsed, one marked "huidige" | **No.** The direction would be inferred from the middle of a long file name — the exact zone 2.4–2.6 proved unreadable (`v10` sorts before `v9`; `Fidget Clicking Wheel 2.0` is a product name) — off a figure its own author calls a regex. Hiding four buttons on that basis is GAP-115's fault with a worse consequence: the operator cannot reach a file. The sort stays the file name and every button stays an equal | **rejected (the direction would be inferred from the one zone of a name this system cannot read)** |
+| GAP-133 | Making the model strip version-aware: v5 first, v1–v4 collapsed, one marked "huidige" | **No.** The direction would be inferred from the middle of a long file name — the exact zone 2.4–2.6 proved unreadable (`v10` sorts before `v9`; the `22` in `Bloembak clip corner 22` is a width, not a version) — off a figure its own author calls a regex. Hiding four buttons on that basis is GAP-115's fault with a worse consequence: the operator cannot reach a file. The sort stays the file name and every button stays an equal | **rejected (the direction would be inferred from the one zone of a name this system cannot read)** |
 | GAP-134 | How much of 2.6's accepted residue is version pairs rather than distinct parts | **Zero of 55 — my hypothesis is falsified and 2.6 was right.** The pair that prompted it is two files with the byte-identical name (the GAP-120 case), not `v1` against `v2`; versions in this library never collide. 2.6's residue is exactly what 2.6 called it. **It strengthens GAP-132** rather than weakening it: supersession is a relation the label never meets, not a special case of one it does | **confirmed as built** |
 | GAP-135 | The label rule had two floors and no ceiling, so a sweep derived from it can propose a tail longer than its own window | **The ceiling is stated as arithmetic, and the spec hole was mine.** The tail never exceeds `W - 1 - 2` characters **including the extension** — **12** at the strip's 15-character window — the head is `W - 1 - tail`, and the sweep runs over the tail from `extension + 3` up to 12 and back down to the bare extension (stem at most 8 for a four-character extension). 2.5 wrote the floors and not the bound, and an implementation grew the *stem* to `W - 1 - 2` and added the extension, proposing a 16-character tail in a 15-character box. Latent, not live, in this library; the code fix is the implementer's. Same shape of fault as GAP-130 | **resolved** |
 | GAP-136 | The split I derived by subtraction, and what class of figure any of these counts are | **16 separated, not the 19 I derived — and the split is three buckets, not two: 55 = 3 byte-identical + 16 separated + 36 unreachable.** `55 - 36` counts the byte-identical pairs as separated; they are **neither**, because the rule never runs where there is nothing to tell apart. That is the rule's **domain**, not a failure of it, and it is now stated as such. Second half, and it is a rule: **a figure counted from a re-implementation of a spec is "as specified", not "as rendered"**, and may not be quoted as the latter | **resolved** |
@@ -1500,7 +1648,7 @@ Three measurements, again before anything is built. Two of them change the rule 
 - **Classes: none new, none changed. No CSS changed this round either** — 2.4, 2.5 and 2.6 are **one import**, and nothing from 2.4 or 2.5 is withdrawn except the one sentence named above.
 - **Copy:** none.
 - **Components changed:** ModelPicker (README and preview).
-- **Previews changed:** ModelPicker, two blocks added, both of them cases the system does **not** solve: the `Babybox lock corner 20/21/22` trio, one picture between them and three identical labels (`Babybox…dth.stl`, and `Ba…er width.stl` at the longest tail), and a print holding the same file name twice with its bubble showing that name twice.
+- **Previews changed:** ModelPicker, two blocks added, both of them cases the system does **not** solve: the `Bloembak clip corner 20/21/22` trio, one picture between them and three identical labels (`Bloembak…dth.stl`, and `Ba…er width.stl` at the longest tail), and a print holding the same file name twice with its bubble showing that name twice.
 - **Pages changed:** `README.md` (*Typography* — the rule becomes symmetric and the blind zone is stated as a formula; the 2.4 rule's uniqueness premise corrected; *Versie 2.6*), `changelog.md`, `components/ModelPicker/README.md`, `components/ModelPicker/preview.html`, `tokens.json`.
 - **Contrast report:** unchanged, no new pair.
 - **Breaking changes: none.** Relative to 2.5 the app's obligation changes in one clause: grow whichever end reaches the difference, not only the tail.
@@ -1528,7 +1676,7 @@ I checked all three alternatives arithmetically instead of ranking them by feel.
 
 ## Where I was unsure
 
-- **The head floor of two characters is still a guess**, now load-bearing in the symmetric rule: nobody has measured whether `Ba…` plus a long tail reads better than `Babybox…` plus a short one. It only fires on a collision, so the cost of being wrong is bounded, but it is a preference stated as a rule.
+- **The head floor of two characters is still a guess**, now load-bearing in the symmetric rule: nobody has measured whether `Ba…` plus a long tail reads better than `Bloembak…` plus a short one. It only fires on a collision, so the cost of being wrong is bounded, but it is a preference stated as a rule.
 - **Whether the 40 are concentrated or spread.** 40 pairs could be three families of six or twenty scattered pairs, and that changes how the owner will experience it. I did not ask, because it would not change the decision — but it would change how I would present it to them.
 - **How often `d` lands in the head's new reach** (index 7 to 9), which is all the symmetric half of the rule buys over 2.5. I specified it because the asymmetry was unjustified rather than because it was measured to pay.
 
@@ -2145,7 +2293,7 @@ None.
 
 - An `info` notice "Je sessie is verlopen. Log opnieuw in." on the login card.
 - A ghost button "Uitloggen" on the new-password card, so the user is never stuck.
-- The user Denise added to the sample data (a second User row).
+- The user Esmee added to the sample data (a second User row).
 
 ## Breaking changes
 

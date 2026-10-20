@@ -96,17 +96,19 @@ which the 1.9 and 2.0 measurements are still waiting on.
 | **Klant** | always |
 | **Project** | only when it differs from the print name, case and spaces ignored (GAP-072) |
 | **Datum** | always |
+| **Materiaal** | when the record has one (2.16, GAP-174) |
+| **Gewicht** | when the record has one (2.16, GAP-174) |
 | **Bron** | only when the print has one: `div.pp-srcs` with PrintSource's entries, read-only, **no chip** and no folder name — the klant has no use for the library's shape, which is the share page's rule since 2.11 |
 
-**And nothing else.** No Materiaal, Tijd, Gewicht or Bestellingen (see the proposal below); **no SpoolPicker trigger and no spool row at all** — the spool is a cost input, nothing here can override it, and a spool's name is the owner's stock, which changes under a print that is finished; **no `pp-note`** (the 1.1 rule, literal since 2.11); **no missing-files line and no `pp-lacks` chip** — "Ontbreekt: 3MF" is a fact about the owner's folder and reads to a klant as if something is wrong with their print.
+**And nothing else.** No Tijd and no Bestellingen (2.16 added Materiaal and Gewicht, GAP-174; this sentence named them because they were still a proposal); **no SpoolPicker trigger and no spool row at all** — the spool is a cost input, nothing here can override it, and a spool's name is the owner's stock, which changes under a print that is finished; **no `pp-note`** (the 1.1 rule, literal since 2.11); **no missing-files line and no `pp-lacks` chip** — "Ontbreekt: 3MF" is a fact about the owner's folder and reads to a klant as if something is wrong with their print.
 
 **A card of two or three rows is still a card, not a frame.** The shortest honest case — a print whose project equals its name, with no bron — is Klant and Datum. That is two facts beside a viewer, and it is what the page has to say; padding it out with the cost inputs would be inventing content for a layout.
 
-**The rest of the page for role User and for a visitor.** Header with the breadcrumb (klant, and the project when it differs), the name as `<h1>`, the payment badge — **no tags, no `pp-lacks`, no "⋯" menu**. Then `pp-pdtop`: the viewer with the media strip (**models only**; the timelapse is a proposal, see ScreenShareSession) and this card. Then the payment as a **state**: a `pp-card pp-pay` with `<h3>` "Betaling", the status badge and the amount, and nothing else — no fields, no history, no write-off, and **no payment instruction** (paying per print does not exist in this system; the Overzicht is where the amount is the total). **No `pp-pdfiles`** at all, as 2.0 already said. A print with several orders shows one badge and the summed price, as 1.4 specified for this role.
+**The rest of the page for role User and for a visitor.** Header with the breadcrumb (klant, and the project when it differs), the name as `<h1>`, the payment badge — **no tags, no `pp-lacks`, no "⋯" menu**. Then `pp-pdtop`: the viewer with the media strip (models **and the timelapse** since 2.16, GAP-175) and this card. Then the payment as a **state**: a `pp-card pp-pay` with `<h3>` "Betaling", the status badge and the amount, and nothing else — no fields, no history, no write-off, and **no payment instruction** (paying per print does not exist in this system; the Overzicht is where the amount is the total). **No `pp-pdfiles`** at all, as 2.0 already said. A print with several orders shows one badge and the summed price, as 1.4 specified for this role.
 
 **Both themes, phone and desktop.** `pp-pdtop` is one column below 901px with the viewer first, exactly as for an operator; no new class and no new colour pair.
 
-**Proposed, needs the owner's confirmation (do not build).** **Materiaal** and **Gewicht** as two more `pp-kv` rows, and the same two facts as the card's meta line in a visitor's print card. The invoice already prints Gram, so this is defensible — and it is a decision about what a klant reads, which is his. **Tijd stays out either way**: machine time is the one input on that list a klant cannot check and the one that only means something next to a cost.
+**Proposed, needs the owner's confirmation (do not build).** *(Answered: he said yes. See 2.16 — the two rows are in the card and this paragraph is superseded.)* **Materiaal** and **Gewicht** as two more `pp-kv` rows, and the same two facts as the card's meta line in a visitor's print card. The invoice already prints Gram, so this is defensible — and it is a decision about what a klant reads, which is his. **Tijd stays out either way**: machine time is the one input on that list a klant cannot check and the one that only means something next to a cost.
 
 **2.15.** (2026-10-18) **Three decisions about this page, one of them a contradiction of my own making.**
 
@@ -154,3 +156,35 @@ fact. The breadcrumb's own rule is unchanged (it has had this comparison since 1
 **Both themes, phone and desktop.** No new class, no new token, no new colour pair: `.pp-ph`,
 `.pp-row`, `.pp-gap-2`, `.pp-badge`, `.pp-money` and `.pp-text-xl` all exist, and `text-strong` on
 `bg` is in the report. **No copy key changes** — `pay.title` stays for the operator's panel.
+
+**2.16.** (2026-10-20) **Three answers from the owner and one new row: what a klant reads, and where a print lives on disk.**
+
+**Materiaal and Gewicht are in the reduced card (GAP-174, resolved — the owner's answer, and his reason is better than mine).** He said *"materiaal en gewicht is handig voor een gebruiker, dan hebben ze meer detail waarvoor ze moeten betalen"*. 2.14's proposal is built: the `dl.pp-kv.tight` of the reduced card is now **Klant, Project (only when it differs from the name), Datum, Materiaal, Gewicht, Bron (when there is one)**, in that order — the two new rows sit after Datum, so the card still opens with who and when. The shortest honest case is no longer two rows but four, which does not change the rule that a short card is a card.
+
+- **Tijd stays out**, as 2.14 reasoned: machine time is the one input on that list a klant cannot check and it only means something next to a cost.
+- **Bestellingen stays out** too, and for a sharper reason than "it was not proposed": the count is the owner's bookkeeping. A klant reads one print and one amount, which is what GAP-170 put in the header.
+- **No new row for a missing value.** No material and no grams on the record: no row, as for Project and Bron. A klant is never shown "—".
+- **No new token, class or copy key**: `Materiaal` and `Gewicht` are the operator card's own labels and have been in the deck since 1.0.
+
+**The timelapse is in the media strip for every role (GAP-175, resolved — the owner's answer, and it cost a route).** *"klant mag timelapse zien."* The visitor's and role User's `pp-pdtop` now holds the same strip the operator has: **the models and the timelapse**, one control, ModelPicker's own anatomy. The group label follows ModelPicker's rule ("Modellen en timelapse", "Timelapse" for a video-only print).
+
+- **Where the strip's entries come from changes, and this is the sentence that matters.** For an operator the strip was read off the file list; a visitor has no file list at all (2.0: no `pp-pdfiles` for this role), so the timelapse is **a field of the print** in the payload beside the models, for every role. The strip no longer depends on a card that this role does not get.
+- **Playing is not downloading.** The player streams the file for viewing, with ranges so seeking works, and the print page of this role contains **no download link anywhere** — the owner's rule for a deel-link is viewer yes, downloads no, and the player must not be the hole in it. (The app found this the hard way: the only route that served the bytes was the download route, so it built a view-only one. The design's part is the rule; the route is theirs.)
+- **The threshold is still a threshold.** A visitor who can watch a video can save its bytes from the network tab, exactly as §1 of ScreenShareSession says of the model. Nothing in the copy claims otherwise.
+- **An archived print has no files on disk, so it has no strip** — unchanged, and it is now one rule for models and the timelapse together.
+
+**Where the print lives on disk is back, as a path (GAP-182, resolved — the owner asked for it after GAP-176 took the last mention away).** GAP-176 removed a row labelled *Project* whose value was the `<h1>` again on 84 of 84 prints. It stays removed and it stays right. What he wants back is a different fact — *which folder is this?* — and a different shape.
+
+- **The operator's "Deze print" gains a row `Map`**, the **last** row of the `dl.pp-kv.tight` (after Bestellingen, before the spool control): one value, `<dd><span class="pp-path">Koen<span class="sep"> / </span>Bloembak clips</span></dd>` — the klant folder, a `muted` separator and the project folder, in mono. **New class `.pp-path`**, new key `print.folder` ("Map").
+- **One path, not two facts.** It is an address: he reads it to find the folder, and two labelled rows would make him reassemble it. It is text, selectable, **no copy button and no link** — the card is facts, and the portal has never pretended it can open his file manager.
+- **It is drawn on every print that has a folder, including the 84 of 84 whose tail equals the print name.** This is the whole question GAP-176 turned on, and the answer is different here because the value is different. The row GAP-176 removed repeated the heading under a label that promised another fact; this row carries the klant level and the **literal spelling** of both folders, which is what you need on disk — the comparison that hides Project is a *squashed* one (case, spaces and punctuation ignored, GAP-072), so `Bloembak clips` and a folder called `bloembak_clips` squash equal and read differently. A row that is only there on some prints is also a row you have to look for; this one is always in the same place.
+- **So the `Map` row replaces the conditional `Project` row on the operator's card.** Two rows about where a print lives is the fault GAP-176 was about, and the path carries the project name whenever there is one. **GAP-176's rule is unchanged where it still applies:** the reduced card (role User and a visitor) keeps its conditional **Project** row, and the breadcrumb keeps the comparison it has had since 1.9.
+- **No project folder:** the value is the klant folder alone (`Koen`) — the print's files sit directly in the klant's folder and the path says so. **No folder at all** (a request typed in AanvraagDialog, which creates nothing on disk): the row reads `print.folder.none` **"Nog geen map"** in `muted`, not in mono — it is a sentence, not a path.
+- **An archived or deleted print keeps the row.** The path is a record of where the print was filed, like Bron and Notitie (2.11); it does not need the disk to be true.
+- **Role User and a visitor never see it.** The library's shape is the workshop's, which is why the reduced card already refuses the folder name in Bron (2.14) and why a klant's empty state talks about prints and not about folders (ScreenShareSession §5). This is the operator's fact.
+- **Phone.** `.pp-kv.tight` is `1fr auto`; `.pp-path` carries `overflow-wrap: anywhere`, so at 360px a long path wraps inside its own column instead of widening the card. `Koen / Bloembak clips` is one line at that width; `Koen / Nog te ontwerpen kastje voor de meterkast` is two.
+- **No new colour pair:** `text-strong` and `muted` on `surface` are both in `contrast.md`.
+
+**Dutch copy (new).** Map | Nog geen map
+
+**Both themes, phone and desktop.** One new class (`.pp-path`), two new keys, no new token and no new colour pair.

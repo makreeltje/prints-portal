@@ -346,7 +346,7 @@ export function PrintDetailPage() {
           last thing on the page.
         */
         <div className="pp-pdtop">
-          <ModelView detail={detail} />
+          <ModelView detail={detail} canManage={false} />
           {/*
             The reduced card, drawn by 2.14 (GAP-158) and now the main screen
             of every klant who opens a deel-link: klant, project when it
@@ -403,16 +403,45 @@ const LACKS_KEY = { gcode: 'gcode', '3mf': 'threemf', stl: 'stl' } as const;
  * PaymentPanel — no price, no payment, no status — because those belong to an
  * order, and that duplication is what made the 1.9 page read wrong.
  *
- * **The reduced card (ScreenPrintDetail 2.14, GAP-158 resolved).** For role
- * User and for a visitor with a deel-link the card has an anatomy at last,
- * and it is four rows at most: Klant, Project **only when it differs from the
- * print's name** (GAP-072), Datum, and Bron when there is one — read-only,
- * no chip, no folder name. Nothing else: no Materiaal, Tijd, Gewicht or
- * Bestellingen, no spool row (a spool is a cost input and the owner's stock,
- * which changes under a print that is finished), no note, and no "Ontbreekt"
- * line. A card of two rows is still a card; padding it out with cost inputs
- * would be inventing content for a layout.
+ * **The reduced card (ScreenPrintDetail 2.16).** For role User and for a
+ * visitor with a deel-link the rows are Klant, Project **only when it differs
+ * from the print's name** (GAP-072), Datum, Materiaal, Gewicht and Bron last
+ * when there is one — read-only, no chip, no folder name. Materiaal and
+ * Gewicht are the owner's answer to GAP-174: more detail about what the klant
+ * is paying for. Nothing else: no Tijd (machine time is the one input a klant
+ * cannot check), no Bestellingen (the owner's bookkeeping), no Map (the
+ * library's shape is the workshop's, GAP-182), no spool row, no note and no
+ * "Ontbreekt" line. A card of two rows is still a card; padding it out with
+ * cost inputs would be inventing content for a layout.
  */
+/**
+ * "Map": where the print lives on disk, as **one** value (GAP-182). It is an
+ * address the owner reads to find the folder, so it is one mono string with a
+ * `muted` separator and not two labelled facts he would have to reassemble —
+ * and it is text: no copy button, no link, the card is facts and the portal
+ * cannot open his file manager. No project folder means the files sit in the
+ * klant's folder and the path says exactly that. No folder at all — a request
+ * typed in AanvraagDialog, which creates nothing on disk — is a sentence
+ * rather than a path, so it is `muted` and not mono.
+ */
+function FolderPath({ print }: { print: Pick<PrintDetail, 'customerFolder' | 'projectFolder'> }) {
+  if (print.customerFolder === '') {
+    return <span className="pp-muted">{t('print.folder.none')}</span>;
+  }
+  const project = print.projectFolder;
+  return (
+    <span className="pp-path">
+      {print.customerFolder}
+      {project !== null && project !== '' && (
+        <>
+          <span className="sep"> / </span>
+          {project}
+        </>
+      )}
+    </span>
+  );
+}
+
 function ThisPrint({
   detail,
   spoolmanOn,
@@ -445,14 +474,14 @@ function ThisPrint({
   );
   const facts: [string, ReactNode][] = [[t('filters.customer'), detail.customerFolder]];
   /*
-    The project only when it says something the name does not — **one condition
-    for every role** since 2.15 (GAP-176), through GAP-072's rule and with the
-    same `squashName` comparison the breadcrumb has used since 1.9. GAP-095
-    specified the operator's card before GAP-072 existed, so it drew the row
-    unconditionally; measured in this library that repeated the `<h1>` above it
-    on **84 of 84** prints, and a fact identical to the heading is not a fact.
+    The project only when it says something the name does not (GAP-072's rule,
+    the `squashName` comparison the breadcrumb has used since 1.9) — and since
+    2.16 **on the reduced card only** (GAP-182). The operator reads the folder
+    in `Map` at the foot instead, which carries the project whenever there is
+    one; two rows about where a print lives is the fault GAP-176 was about.
   */
   if (
+    !canManage &&
     detail.projectFolder !== null &&
     detail.projectFolder !== '' &&
     squashName(detail.projectFolder) !== squashName(detail.name)
@@ -461,13 +490,17 @@ function ThisPrint({
   }
   if (detail.printDate !== null) facts.push([t('print.date'), formatDate(detail.printDate)]);
   /*
-    "Bron" is a fact like the others and sits among them, read-only here — a
-    User sees it too, because the klant sees it on the share page (PrintSource).
-    Editing is the separate control below.
+    "Bron" is a fact like the others, read-only here — a User sees it too,
+    because the klant sees it on the share page (PrintSource). The two cards
+    order it differently (ScreenPrintDetail 2.16): the operator reads it among
+    the facts, the reduced card last, after Gewicht. Editing is the separate
+    control below.
   */
-  if (detail.sources.length > 0) {
-    facts.push([t('print.source'), <SourceList key="src" sources={detail.sources} />]);
-  }
+  const source: [string, ReactNode] | null =
+    detail.sources.length > 0
+      ? [t('print.source'), <SourceList key="src" sources={detail.sources} />]
+      : null;
+  if (canManage && source !== null) facts.push(source);
   /*
     Materiaal and Gewicht for every role (GAP-174, the owner's answer: a klant
     reading more detail about what they are paying for). The invoice already
@@ -483,6 +516,17 @@ function ThisPrint({
   if (canManage && detail.orders.length > 0) {
     facts.push([t('print.orders'), String(detail.orders.length)]);
   }
+  if (!canManage && source !== null) facts.push(source);
+  /*
+    "Map", the operator's last fact (GAP-182, the owner asked for it back after
+    GAP-176 took the last mention of the folder away). Always drawn, including
+    the 84 of 84 whose project squashes equal to the print name: the comparison
+    that hides Project is the squashed one, so this row is the only place the
+    literal spelling of both folders is readable, and a row that is only
+    sometimes there is a row you have to look for. A klant never sees it — the
+    library's shape is the workshop's.
+  */
+  if (canManage) facts.push([t('print.folder'), <FolderPath key="folder" print={detail} />]);
   return (
     <section
       className={canManage ? 'pp-card pp-sec pp-gap-3' : 'pp-card pp-sec'}
@@ -804,7 +848,7 @@ const UNPLAYABLE = /\.(mkv|avi|wmv|flv)$/i;
  * The media row's left half: the viewer, or the inline player when a timelapse
  * is chosen (GAP-096), with the strip under it.
  */
-function ModelView({ detail }: { detail: PrintDetail }) {
+function ModelView({ detail, canManage }: { detail: PrintDetail; canManage: boolean }) {
   // The choice is not stored (ModelPicker 1.9); the first picture opens.
   const [chosen, setChosen] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
@@ -850,12 +894,19 @@ function ModelView({ detail }: { detail: PrintDetail }) {
     return (
       <div className="pp-col pp-gap-2">
         <div className="pp-video">
+          {/*
+            Both bodies read "Download het bestand…", which is advice a role
+            with no downloads cannot follow, so role User and a visitor get the
+            title alone (VideoPlayer 2.16, GAP-175). No new key: the hint keeps
+            its own and is simply not rendered. For an operator both states are
+            unchanged — the file list is one click away.
+          */}
           {unsupported ? (
             <div className="pp-alert info">
               <TriangleAlert className="pp-ico" aria-hidden="true" />
               <div>
                 <b>{t('video.unsupported.title')}</b>
-                <div>{t('video.unsupported.body')}</div>
+                {canManage && <div>{t('video.unsupported.body')}</div>}
               </div>
             </div>
           ) : failed ? (
@@ -863,7 +914,7 @@ function ModelView({ detail }: { detail: PrintDetail }) {
               <TriangleAlert className="pp-ico" aria-hidden="true" />
               <div>
                 <b>{t('video.error.title')}</b>
-                <div>{t('video.error.body')}</div>
+                {canManage && <div>{t('video.error.body')}</div>}
               </div>
             </div>
           ) : (
@@ -971,7 +1022,7 @@ function ManagedOrders({
       {/* The media row: the viewer takes what it needs, the facts take the rest
           (GAP-095). The dead space of 1.9 was this card's missing half. */}
       <div className="pp-pdtop">
-        <ModelView detail={detail} />
+        <ModelView detail={detail} canManage={true} />
         {/* The Admin-and-Editor branch; a User gets the reduced card above. */}
         <ThisPrint
           detail={detail}
