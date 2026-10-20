@@ -773,7 +773,7 @@ new key, one changed value, one row removed, one key reused in a new slot.
 | outstanding.groupLabel | {customer}, {count, plural, one {# print} other {# prints}}, {days, plural, =0 {alles van vandaag} one {oudste # dag} other {oudste # dagen}}, {amount} |
 
 **`outstanding.groupLabel` is the `aria-label` of an Openstaand group summary.** 1.9 specified that
-string in prose — "Joey, 18 prints, oudste 741 dagen, € 640,12" — and never gave it a key, so the
+string in prose — "Koen, 18 prints, oudste 741 dagen, € 640,12" — and never gave it a key, so the
 app wrote its own without plurals and a screen reader heard "1 prints, oudste 1 dagen" on the one
 component whose visible badge 2.11 had just fixed. A string the deck does not carry is a string
 nobody proofreads. Its day arms are `outstanding.oldestDays`' arms word for word, because the
@@ -905,7 +905,7 @@ dialog itself invents are new.
 | key | text |
 |---|---|
 | queue.add.name | Naam |
-| queue.add.namePlaceholder | Bijvoorbeeld: Babybox locks |
+| queue.add.namePlaceholder | Bijvoorbeeld: Bloembak clips |
 | queue.add.nameError | Vul een naam in. |
 | queue.add.customer | Klant |
 | queue.add.customerPlaceholder | Zoek of typ een klant |
@@ -947,3 +947,37 @@ quietly.
 gave it in 2.13; the key `settings.customer.payLink.only`, which ScreenSharePage 2.0.1 invented in
 prose and which was never in this deck, is withdrawn in that file (GAP-164) and was never a row
 here.
+
+## Added in 2.16
+
+**Where a print lives on disk, said in two strings (GAP-182).** **Two new keys**, nothing renamed
+and nothing removed.
+
+| key | text |
+|---|---|
+| print.folder | Map |
+| print.folder.none | Nog geen map |
+
+`print.folder` labels the path row on the operator's "Deze print" (`klant / project`, in mono —
+ScreenPrintDetail 2.16). The value is folder names the indexer read, so it is **data, never a
+string in this deck**; only the label is. `print.folder.none` is the value for a record that has no
+folder at all — a request typed in AanvraagDialog, which creates nothing on disk — and it is the
+plainest form of the sentence `queue.add.customerHelp` already uses: *a name is only a name until
+there is a folder with files*. Neither key is ever rendered for role User or a visitor: a klant has
+never been told that the portal is a tree of folders, and `session.prints.emptyBody` exists
+precisely so they are not told now.
+
+**Why not `print.project`.** The row GAP-176 removed was labelled "Project" and this one is not the
+same row, so it does not get the same word: *Project* is a level in the library and *Map* is where
+this print's files are. One word per fact.
+
+**Retired in 2.16**
+
+| key | text | why |
+|---|---|---|
+| pay.userNote | Je ziet alleen prijs en status. | GAP-170 removed the whole payment card for role User and a visitor (2.15), so the only form that rendered this line no longer exists (PaymentPanel 2.16, GAP-179) |
+
+**Retired is not removed.** The row stays in this deck with its string intact: an app that still
+ships it is not broken by the export, nobody re-invents the sentence under a new name, and if a
+read-only payment form ever returns for an account holder this is the key it uses. **The app should
+stop rendering it.** No key is deleted in this version.

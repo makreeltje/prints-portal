@@ -178,9 +178,9 @@ d >= len - 12       (the tail, with the head at its floor of two)
 so **every name longer than 22 characters has a zone in between that no split can reach.** The median name is 25. Measured in this library: 55 of 1682 within-print pairs share both ends (3.3%), the extension rule separates **15**, and **40 fall in the blind zone** — the dominant shape being a number in the middle of a long name:
 
 ```
-Babybox lock corner 20 inner width.stl     ->  Babybox…dth.stl
-Babybox lock corner 21 inner width.stl     ->  Babybox…dth.stl     the number is at index 20 of 38
-Babybox lock corner 22 inner width.stl     ->  Babybox…dth.stl     longest tail: Ba…er width.stl, still identical
+Bloembak clip corner 20 inner width.stl     ->  Bloembak…dth.stl
+Bloembak clip corner 21 inner width.stl     ->  Bloembak…dth.stl     the number is at index 20 of 38
+Bloembak clip corner 22 inner width.stl     ->  Bloembak…dth.stl     longest tail: Ba…er width.stl, still identical
 ```
 
 **I am choosing to accept those 40 deliberately, which is your option four.** What carries the strip there is not the label: it is the **picture** (which distinguishes 66 of 74 multi-picture prints), the **order** — file name ascending, so a numbered family stands in numeric order and position is monotone — the **caption**, which names the selected model in full at all times, and the **bubble**. The label's job in a picker is to let you choose, not to identify; identification is one hover or one click away and a click costs 60ms cold, 1ms cached, and is reversible. Both of the alternatives that would reach the number cost more than that:
@@ -197,11 +197,11 @@ Babybox lock corner 22 inner width.stl     ->  Babybox…dth.stl     longest tai
 
 **Unchanged:** 120px, 112px of picture, the two forms and the switch rule, the order, the caption, the bubble's `.at` form and its mount outside `.pp-models`, every class, every token. **2.6 changes no CSS either** — 2.4, 2.5 and 2.6 are one import.
 
-**Drawn in the preview (the two cases the system does not solve, drawn rather than omitted):** the `Babybox lock corner 20/21/22` trio with three identical labels and one picture between them, and a print holding the same file name twice with its bubble showing that name twice.
+**Drawn in the preview (the two cases the system does not solve, drawn rather than omitted):** the `Bloembak clip corner 20/21/22` trio with three identical labels and one picture between them, and a print holding the same file name twice with its bubble showing that name twice.
 
 **Nothing left to measure here that changes the answer.** The one open question was the `Mogelijk dubbel` badge above, which is about AssetListItem; it is measured and answered in 2.7, at the end of this file.
 
-**2.7 — the open question is answered, and the answer was no (GAP-120).** 2.6 asked whether the 3 duplicate-name pairs raise "Mogelijk dubbel" in the file list, and said that if they did not, that was a gap about the file list. They do not: both rows come back `possibleDuplicate: null`, measured on the print that holds `Babybox lock corner 2.stl` twice. The badge is for a duplicate *file* as the indexer decides it — same content — and these are two real files sharing a name across folders.
+**2.7 — the open question is answered, and the answer was no (GAP-120).** 2.6 asked whether the 3 duplicate-name pairs raise "Mogelijk dubbel" in the file list, and said that if they did not, that was a gap about the file list. They do not: both rows come back `possibleDuplicate: null`, measured on the print that holds `Bloembak clip corner 2.stl` twice. The badge is for a duplicate *file* as the indexer decides it — same content — and these are two real files sharing a name across folders.
 
 **AssetListItem 2.7 carries it, and not with that badge.** The file list gets one neutral `.pp-reason` line on **both** rows, "Twee verschillende bestanden met dezelfde naam. Dit is het bestand in map {map}." The `warning` badge was deliberately not widened: its hint tells you to delete one file and raise the other's count, which would drop a real file from the invoice.
 
@@ -220,3 +220,11 @@ is now the resting state: `.pp-modelbtn:hover { background: var(--surface-2) }`,
 `primary-tint-soft` ground, `text-strong` label — so the three states are now a ground change, a
 border colour change and a label change, each distinct from the other two. No new token, no new
 colour pair, no change to the 120px, the picture, the labels, the order or the bubble.
+
+**2.16.** (2026-10-20) **The strip is the same control for a klant, and its entries stop coming from the file list (GAP-175, resolved — the owner's answer: *"klant mag timelapse zien"*).**
+
+- **Role User and a visitor get the whole strip**: every model and the timelapse, one control, the same order (file name ascending, the timelapse last), the same group labels ("Modellen", "Modellen en timelapse", "Timelapse"), the same square or compact form by the same rule. Nothing about the strip is reduced for this role — what is reduced is the page around it (ScreenPrintDetail 2.14, 2.15).
+- **The entries are a field of the print, not the print's file list.** This was implicit and is now wrong to leave implicit: an operator's page has a files card and this role's page has none at all, so a strip read off the file list would be empty for exactly the role the owner just opened it to. The models and the timelapse belong to the print record and travel with it for every role.
+- **The timelapse button plays a view-only stream.** The file is served inline and seekable; the strip and the player draw **no download affordance** for a role that has no downloads, and the "Downloaden" button in VideoPlayer's dialog belongs to the file list, which this role does not get. The network-tab threshold of ScreenShareSession §1 applies to the film as it does to the model, and no copy claims otherwise.
+- **Unchanged:** the 120px square and the compact form, the `film` glyph with the `pp-play` badge, no duration, no poster frame (GAP-089), the caption, and the archived print with no files, which draws no strip for any role.
+- **No new class, token or copy key.**

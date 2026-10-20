@@ -8,4 +8,4 @@ WriteOffDialog writes off the open remainder of a print; it is the only place an
 
 **Accessibility.** `role="alertdialog"`; initial focus on Annuleren; the textarea has its own label.
 
-**Dutch copy.** Afschrijven (€ 6,89)? | De rest van 'Babybox locks' (€ 6,89) wordt afgeschreven. | Al betaald: € 5,00. Alleen de rest wordt afgeschreven. | Reden | Optioneel. Zichtbaar voor beheerders. | Afschrijven
+**Dutch copy.** Afschrijven (€ 6,89)? | De rest van 'Bloembak clips' (€ 6,89) wordt afgeschreven. | Al betaald: € 5,00. Alleen de rest wordt afgeschreven. | Reden | Optioneel. Zichtbaar voor beheerders. | Afschrijven

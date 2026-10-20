@@ -2105,7 +2105,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Design system version:** 2.15
 
 - **Built in 2.15:** the CSS is theirs; the app's share is the markup obligation. The exit button carries `.pp-guestexit` and its label in `<span class="lbl">Sessie afsluiten</span>` at **every** width, so the accessible name is the same on the phone as on the desktop and the words are hidden rather than dropped. The brand already held the whole studio name in the DOM, so the ellipsis costs a screen reader nothing. Measured after the change: one head height at all five name lengths (see the measurements in `docs/design-feedback/implementation.md`).
-## GAP-173 [open] Role User's nav still offers API-docs
+## GAP-173 [resolved in v2.16] Role User's nav still offers API-docs
 - **Type:** unclear spec
 - **Found while:** the 2.14 import (AppShell raised it as a proposal with no id); numbered here by the design system in 2.15 so it can be tracked
 - **Where needed:** `components/AppShell/README.md` 2.15, `components/ScreenApiDocs/README.md`; `frontend/src/shell/` (the nav items behind the role check)
@@ -2118,7 +2118,10 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 
 - **The owner answered (2026-10-20):** *"api docs niet nodig voor rol User"*. **Built accordingly, and not a placeholder:** the item carries `roles: ['Admin', 'Editor']` in `frontend/src/shell/navigation.ts`, which is Facturen's check and, because `App.tsx` builds the routes from the same list, the route guard too — a User who types `/api-docs` lands on the dashboard. No new token, class or copy key, exactly as this entry said. **The gap stays `[open]`** until the design system writes the decision into `AppShell` and `ScreenApiDocs`; it goes back in the next feedback round.
 
-## GAP-174 [open] Materiaal and Gewicht on a visitor's "Deze print" card
+- **Written into the spec in 2.16, and the app was already there.** `AppShell` 2.16 and `ScreenApiDocs` 2.16 both carry the owner's answer (*"api docs niet nodig voor rol User"*): the item goes behind the same role check as Facturen, role User's nav is Dashboard and Openstaand, and the paragraph that argued the other way is marked superseded in place rather than rewritten. The design system also took the app's correction and made it spec: **the nav list is the route table, so the check is the route guard** — "a nav-only change would have been a hidden page, not a removed one". `ScreenApiDocs` 2.16 closes its own counter-argument: that a User's session *works* on the page does not mean a User has anything to call. `nav.apiDocs` keeps its key and its words; no token, class or copy key changed, exactly as this entry predicted.
+- **App side: nothing left.** `roles: ['Admin', 'Editor']` in `frontend/src/shell/navigation.ts` is the specified check, and `App.tsx` builds the routes from the same list.
+
+## GAP-174 [resolved in v2.16] Materiaal and Gewicht on a visitor's "Deze print" card
 - **Type:** unclear spec
 - **Found while:** the 2.14 import (published as a proposal with no id); numbered here by the design system in 2.15
 - **Where needed:** `components/ScreenPrintDetail/README.md` (*Proposed, needs the owner's confirmation*), `components/ScreenShareSession/README.md` 2.15; `frontend/src/prints/PrintDetailPage.tsx` (`ThisPrint`), `frontend/src/prints/PrintCard.tsx` (`Meta`)
@@ -2131,7 +2134,11 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 
 - **The owner answered (2026-10-20):** *"materiaal en gewicht is handig voor een gebruiker, dan hebben ze meer detail waarvoor ze moeten betalen"*. **Built accordingly, and not a placeholder:** `ThisPrint` pushes Materiaal and Gewicht for every role, and `PrintCard` draws the meta line on a visitor's card as well, through a `withTime` prop that is off there. **Tijd is not among them** and neither is the Nabestellingen count — this entry's own reasoning, which the owner's answer does not touch. Both facts were already in the payload (`toSummary` carries `material` and `grams` for every role), so this is the two `facts.push` lines and the existing `Meta` the entry predicted: no new token, class or copy key. **One thing this changes that the entry did not mention:** ScreenShareSession §5 says a visitor's card has *no meta line*; it has one now, with two of its three items. **The gap stays `[open]`** until the design system writes the decision into ScreenPrintDetail, ScreenShareSession and PrintCard; it goes back in the next feedback round.
 
-## GAP-175 [open] The timelapse in a visitor's media strip
+- **Resolved in 2.16, and the contradiction we raised was decided in favour of the line.** `PrintCard` 2.16 specifies `.pp-meta` for role User and a visitor with **exactly two items, Materiaal and Gewicht**, and nothing else; `ScreenPrintDetail` 2.16 puts the same two rows in the reduced card **after Datum**, so the card still opens with who and when. Tijd stays out (machine time is the one input a klant cannot check) and so does the order count (the owner's bookkeeping; GAP-170 already gives this role one amount). A missing value is an absent item, never a dash, and neither value means no `.pp-meta` element at all. No new token, class or copy key.
+- **`ScreenShareSession` §5's "no meta line" sentence is withdrawn** — the conflict this entry flagged is resolved in the export rather than in the build, and the export says so in those words. What §5 still refuses on a visitor's card is listed explicitly: the filament tint, the clock and the print time, the order count, the checkbox, the tags and the "Ontbreekt" chip.
+- **App side: nothing to add.** What is built matches the spec. Worth one check against the six items §5 still refuses, since the sentence that covered them as a group is gone.
+
+## GAP-175 [resolved in v2.16] The timelapse in a visitor's media strip
 - **Type:** unclear spec
 - **Found while:** the 2.14 import (published as a proposal with no id); numbered here by the design system in 2.15
 - **Where needed:** `components/ScreenShareSession/README.md` 2.15, `components/ModelPicker/README.md`, `components/VideoPlayer/README.md`; the share-session print payload and `ModelView` in `frontend/src/prints/PrintDetailPage.tsx`
@@ -2147,6 +2154,10 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
   - a **new route, `GET /api/prints/:id/video`**, with the same guard as `/api/prints/:id/model`. This was the part the entry missed: the player used `/api/assets/:id/download`, which is Editor and Admin only and would have had to be opened to role User to make the strip work — and that is the owner's "downloads no". The viewer route serves it `inline` with ranges, through the same `sendPrintFile` the model uses, so seeking works and nothing can be saved. `ModelView` now reads `detail.videos` and plays from the new route for every role, the operator included;
   - `ROUTE_DOCS` and the authorization matrix have the new route (`User`, `Editor`, `Admin`).
   **The gap stays `[open]`** until the design system writes the decision into ScreenShareSession, ModelPicker and VideoPlayer — and the new route is worth a sentence there, since the strip's source is no longer the file list.
+
+- **Resolved in 2.16 across all three files** — `ScreenShareSession`, `ModelPicker` and `VideoPlayer` — and both corrections this entry reported are now spec in the design system's own words: the strip's entries are **a field of the print, not the file list** ("a control may not depend on a surface its page does not have"), and **viewing is not downloading** (served inline and seekable, with no download affordance anywhere on that role's page). The network-tab threshold of `ScreenShareSession` §1 is restated for the film and no copy claims the file is protected. No new token, class or copy key.
+- **One obligation in 2.16 that we have not built.** `VideoPlayer` 2.16: for role User and a visitor the error and unsupported alerts carry **`video.error.title` and `video.unsupported.title` only, and not their `.body` lines**, because both bodies read "Download het bestand…" — advice a role with no downloads cannot follow. The inline strip player in `frontend/src/prints/PrintDetailPage.tsx` (and `VideoPlayer.tsx`) renders both `.title` and `.body` for every role today. No new key: the hint keeps its key and is simply not rendered for that role. For an operator both states are unchanged.
+- **2.17 closes the measurement this entry's round owed** (asked in 1.9, 2.0 and 2.16): **121 videos in 50 folders — 119 `.mp4` (98%) and 2 `.mkv` (1%)**. `VideoPlayer` 2.17 records it as a decision: the unsupported state is the exception it was specified as, `video.unsupported.title` keeps its words, nothing is redesigned and converting on upload is not urgent — at the stated cost that for a klant those two files have no download to fall back on, on 2 prints out of 84.
 
 ## GAP-176 [resolved in v2.15] The operator's "Deze print" draws Project on 84 of 84 prints where it repeats the name
 - **Type:** suspected design bug
@@ -2186,7 +2197,7 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Design system version:** 2.15
 
 - **Built in 2.15:** `SessionPrintsPage` reads a new `fetchAllPrints` instead of `useInfiniteQuery`, and the whole `.pp-more` block — the count line, "Meer laden" and "Alle prints geladen" — is gone from that page. `fetchAllPrints` asks in chunks of the server's own `MAX_PAGE_SIZE` (100) and **loops** rather than asking for one large page, so a klant who one day passes the ceiling gets their whole list instead of a silent truncation; on this library it is one request. The unpaged result has its own query key (`keys.listAll`) because it is a different shape under the same `['prints']` prefix, so live events still invalidate it. **Nothing died:** `common.loadMore`, `common.count` and `common.allLoaded` are all still rendered by the operator's dashboard (and `common.count` by the FilterBar), `.pp-more` is still used there, and no component prop became unused.
-## GAP-179 [open] PaymentPanel still specifies a *Rol User* state that GAP-170 made unreachable
+## GAP-179 [resolved in v2.16] PaymentPanel still specifies a *Rol User* state that GAP-170 made unreachable
 - **Type:** conflict
 - **Found while:** implementing GAP-170 in the 2.15 round
 - **Where needed:** `components/PaymentPanel/README.md` *Anatomy* and its 2.14 section, against `components/ScreenPrintDetail/README.md` 2.15 and `components/ScreenShareSession/README.md` 2.15; `frontend/src/finance/PaymentPanel.tsx`, `copy-deck.md` (`pay.userNote`)
@@ -2201,7 +2212,11 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.15
 
-## GAP-180 [open] GAP-172's rules make the guest head one height only up to 29 characters
+- **Resolved in 2.16, as this entry proposed.** `PaymentPanel` 2.16 strikes the *Rol User* state **in place** in all three spots (the anatomy, the states list and the 2.14 section), rewriting nothing, because 2.14's reasoning about what may be said to a klant is still the rule that keeps the header line wordless. The preview loses its two reduced cards and gains the header badge row that replaced them. Everything an operator sees is unchanged.
+- **The copy question is answered: `pay.userNote` is retired, not removed.** It stays in `copy-deck.md` under *Retired in 2.16* with its string intact, so an app that still ships it is not broken and nobody re-invents the sentence under a new name; if a read-only payment form ever returns for an account holder, this is the key it uses. **The app should stop rendering it.**
+- **App side: nothing left.** The unreachable `role === 'User'` branch and the `visitor` prop were removed from `PaymentPanel.tsx` in the 2.15 round, so the key has no render site; `pay.userNote` stays in `frontend/src/i18n/nl.ts` deliberately, which is what "retired, not removed" asks for.
+
+## GAP-180 [resolved in v2.16] GAP-172's rules make the guest head one height only up to 29 characters
 - **Type:** suspected design bug
 - **Found while:** verifying GAP-172 in the running app, which 2.15 asked for by name ("it should now be **one** height at all five")
 - **Where needed:** `components/bundle.css` (`.pp-guesthead`, the `@media (max-width:480px)` block for `.pp-guesthead > .pp-brand` and its `.pp-device.phone` twin), `components/AppShell/README.md` 2.15
@@ -2225,7 +2240,10 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.15
 
-## GAP-181 [open] The phone drawer's links still draw the browser's own focus ring, at 2.86:1 in dark
+- **Resolved in 2.16: the one declaration, exactly as measured and proposed.** `bundle.css` now carries `flex: 1 1 0` on `.pp-guesthead > .pp-brand` inside the `@media (max-width:480px)` block **and** on its `.pp-device.phone` twin, with the reasoning written into the file ("the brand shrinks before the bar wraps"; 2.15 gave it an ellipsis and never made it the item that gives way). No token, no new class, no copy.
+- **App side: nothing to build** — `frontend/src/main.tsx` imports `design-system/components/bundle.css` directly, so the rule is live with this import. What is owed is the re-measurement: the head should now be one height at every studio-name length (the proposal measured 127px from 16 to 80 characters, a constant 268px brand box and the ellipsis engaging from 30), at 360px in both themes.
+
+## GAP-181 [resolved in v2.16] The phone drawer's links still draw the browser's own focus ring, at 2.86:1 in dark
 - **Type:** missing state
 - **Found while:** verifying GAP-177 in the running app with the keyboard, both themes
 - **Where needed:** `components/bundle.css` (a `.pp-drawer a:focus-visible` rule beside the three GAP-177 added), `components/AppShell/README.md` 2.15
@@ -2238,7 +2256,10 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.15
 
-## GAP-182 [open] GAP-176 took the project folder off the operator's page; the owner wants it back as a path
+- **Resolved in 2.16: the fourth selector is written.** `bundle.css` now has `.pp-drawer a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}` beside the three GAP-177 shipped — the sidebar's values, because the drawer has `space-2` of side padding and an outset ring is not clipped. No new token and no new colour pair.
+- **App side: nothing to build** — the rule arrives with `bundle.css`. What is owed is the verification by keyboard in the running app, both themes, that a drawer link now draws `--focus-ring` and not Chromium's 1px ring (the 2.86:1 in dark this entry measured).
+
+## GAP-182 [resolved in v2.16] GAP-176 took the project folder off the operator's page; the owner wants it back as a path
 - **Type:** missing component
 - **Found while:** reporting GAP-176's consequence to the owner after the 2.15 round
 - **Where needed:** `components/ScreenPrintDetail/README.md` (GAP-095's "Deze print" card, against GAP-176 in 2.15); `frontend/src/prints/PrintDetailPage.tsx` (`ThisPrint`)
@@ -2248,3 +2269,11 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Blocked:** the row itself. GAP-176 stays built as specified in the meantime, so the page is as 2.15 left it.
 - **Temporary placeholder approved:** no
 - **Design system version:** 2.15
+
+- **Designed in 2.16, confirmed in 2.17, and built on import.**
+- **What 2.16 specifies** (`ScreenPrintDetail` 2.16, `bundle.css`, `copy-deck.md`): a row **`Map`** as the **last** row of the operator's `dl.pp-kv.tight` on "Deze print" (after Bestellingen, before the spool control), whose value is one mono path — `<dd><span class="pp-path">Koen<span class="sep"> / </span>Bloembak clips</span></dd>`. **New class `.pp-path`** (and `.pp-path .sep`), **new keys `print.folder`** ("Map") and **`print.folder.none`** ("Nog geen map"). The value is folder names the indexer read, so it is data and never a string in the deck; only the label is.
+- **The questions this entry left open are all answered.** One path, not two facts — it is an address he reads to find the folder. Text, selectable, **no copy button and no link**. **Always drawn when the print has a folder, including the 84 of 84 whose tail equals the print name**, because the comparison that hides *Project* is the squashed one (case, spaces and punctuation ignored, GAP-072) and the path is the only place the **literal spelling** of both folders is readable. No project folder: the klant folder alone. No folder at all (a request typed in AanvraagDialog): `print.folder.none` in `muted`, **not** in mono, because it is a sentence and not a path. An archived or deleted print **keeps** the row. **Role User and a visitor never see it** — the library's shape is the workshop's. At 360px `.pp-path` carries `overflow-wrap: anywhere` so a long path wraps inside its own column instead of widening the card.
+- **It replaces the conditional *Project* row on the operator's card**, which 2.17 put to the owner directly and he confirmed; two rows about where a print lives is the fault GAP-176 was about. **GAP-176 stays resolved and stays built where it still applies:** the reduced card (role User and a visitor) **keeps** its conditional *Project* row, and the breadcrumb keeps the comparison it has had since 1.9.
+- **Built on the 2.17 import.** `ThisPrint` in `frontend/src/prints/PrintDetailPage.tsx` draws the row last for `canManage` only, through a small `FolderPath` that renders the three cases the spec names — `klant / project`, the klant folder alone, and `print.folder.none` in `muted` rather than in `.pp-path` when there is no folder at all. The conditional *Project* row is now behind `!canManage`, so it survives on the reduced card exactly as 2.16 asks and is gone from the operator's. `print.folder` and `print.folder.none` are in `nl.ts`; nothing was needed on the API side and `.pp-path` came with the export. The row is independent of `status`, so an archived or deleted print keeps it.
+- **One thing the import corrected that this entry did not ask for.** The reduced card's rows were in the wrong order: ScreenPrintDetail's table says Klant, Project, Datum, Materiaal, Gewicht, **Bron last**, and the app had drawn Bron straight after Datum ever since GAP-174 added the two new rows after it. The export states the order explicitly now, so it was corrected in the same change; the operator's card keeps Bron among the facts, which no section contradicts.
+

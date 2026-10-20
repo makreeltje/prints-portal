@@ -6,7 +6,7 @@ AanvraagDialog captures a request before it has files: the dialog behind ScreenQ
 
 | # | field | required | form |
 |---|---|---|---|
-| 1 | **Naam** | yes | `input.pp-input`, placeholder "Bijvoorbeeld: Babybox locks". Holds focus when the dialog opens |
+| 1 | **Naam** | yes | `input.pp-input`, placeholder "Bijvoorbeeld: Bloembak clips". Holds focus when the dialog opens |
 | 2 | **Klant** | yes | a combobox — `span.pp-anchor > span.pp-iwrap > input.pp-input[role=combobox]` with the `pp-pop pp-picker` listbox, SpoolPicker's pattern exactly. Options are the klanten the library knows, each with `customers.printCount` as its `small` line; the **last** option is the typed name, `queue.add.customerNew` "Nieuwe klant: {klant}". Help line underneath: "Een nieuwe klant is alleen een naam, tot er een map met bestanden is." |
 | 3 | **Status** | yes (defaulted) | two radios in a `role="group"`: **Nog niet besloten** (default) and **Mee bezig** — the two queue states and no others, see below |
 | 4 | **Bron** | no | `input.pp-input[type=url]`, placeholder `https://…`. PrintSource's field and PrintSource's one validation: it must parse as an absolute `http(s)` URL, error `print.source.invalid` |
@@ -32,4 +32,4 @@ AanvraagDialog captures a request before it has files: the dialog behind ScreenQ
 
 **Tokens.** No new token. Dialog, FormField, Radio, Popover and Alert tokens; classes `pp-dialog`, `pp-field`, `pp-input`, `pp-radio`, `pp-opt`, `pp-anchor`, `pp-iwrap`, `pp-picker`, `pp-err`, `pp-help`, `pp-spin`, `pp-alert`. **No new class.**
 
-**Dutch copy.** Aanvraag toevoegen | Naam | Bijvoorbeeld: Babybox locks | Vul een naam in. | Klant | Zoek of typ een klant | Nieuwe klant: {klant} | Een nieuwe klant is alleen een naam, tot er een map met bestanden is. | Kies of typ een klant. | Status | Nog niet besloten | Mee bezig | Bron | https://… | Vul een volledige link in, met https:// ervoor. | Notitie | Wat moet er nog gemaakt worden? | Alleen voor jou. Niet zichtbaar op de deel-link. | Toevoegen | Annuleren | Toevoegen mislukt. Wat je hebt ingevuld staat er nog; probeer het opnieuw. | Aanvraag toegevoegd.
+**Dutch copy.** Aanvraag toevoegen | Naam | Bijvoorbeeld: Bloembak clips | Vul een naam in. | Klant | Zoek of typ een klant | Nieuwe klant: {klant} | Een nieuwe klant is alleen een naam, tot er een map met bestanden is. | Kies of typ een klant. | Status | Nog niet besloten | Mee bezig | Bron | https://… | Vul een volledige link in, met https:// ervoor. | Notitie | Wat moet er nog gemaakt worden? | Alleen voor jou. Niet zichtbaar op de deel-link. | Toevoegen | Annuleren | Toevoegen mislukt. Wat je hebt ingevuld staat er nog; probeer het opnieuw. | Aanvraag toegevoegd.

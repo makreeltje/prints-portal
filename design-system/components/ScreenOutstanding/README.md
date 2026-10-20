@@ -8,7 +8,7 @@ Openstaand (`/openstaand`) lists everything still owed, grouped per klant, with 
 
 **Accessibility.** Groups are headings with lists; amounts and days are text; every destructive action confirms.
 
-**Dutch copy.** Openstaand | Totaal openstaand | Aantal klanten | Oudste openstaande print | Herinnering (PDF) | Alles als betaald | Markeer als betaald | Afschrijven | Niets openstaand | Alle prints zijn betaald. | Alles als betaald markeren voor Joey (3 prints)?
+**Dutch copy.** Openstaand | Totaal openstaand | Aantal klanten | Oudste openstaande print | Herinnering (PDF) | Alles als betaald | Markeer als betaald | Afschrijven | Niets openstaand | Alle prints zijn betaald. | Alles als betaald markeren voor Koen (3 prints)?
 
 **Inline values (1.4).** The preview no longer uses `style` attributes for layout: widths, gaps, alignment and weights come from `pp-w-*`, `pp-gap-*`, `pp-between`, `pp-end`, `pp-nowrap`, `pp-setrow`, `pp-kv tight`, `pp-bg-2`, `pp-sheetframe` and the other helpers listed in `changelog.md`. Spool and print colours remain the data properties `--c1` and `--c2`.
 

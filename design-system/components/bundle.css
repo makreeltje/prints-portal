@@ -390,6 +390,13 @@ textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:v
 .pp-drawer a{display:flex;align-items:center;gap:var(--space-3);min-height:48px;padding:0 var(--space-3);border-radius:var(--radius-md);color:var(--text);text-decoration:none}
 .pp-drawer a:hover{background:var(--primary-tint-soft)}
 .pp-drawer a[aria-current=page]{background:var(--primary-tint);color:var(--text-strong);font-weight:600}
+/* GAP-181 THE FOURTH PLACE GAP-177 NAMED. 2.15 wrote the ring for `.pp-nav a`,
+   `.pp-bottomnav a` and `.pp-guestnav a` and said "the sidebar, the drawer, the
+   bottom bar and the guest head" -- the drawer never got its selector, so the
+   phone's whole menu still drew the browser's own ring (2.86:1 in dark). Same
+   ring as the sidebar, same 2px offset: the drawer has `space-2` of side padding,
+   so an outset ring is not clipped. */
+.pp-drawer a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
 .pp-drawer .grp{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted);padding:var(--space-4) var(--space-3) var(--space-1)}
 .pp-drawer .foot{margin-top:auto;display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-3)}
 /* ===== v1.2 auth card, state pages, compact select, small dialog (GAP-017) ===== */
@@ -551,6 +558,15 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
 .pp-setrow:last-child{border-bottom:0}
 .pp-kv.narrow{grid-template-columns:110px 1fr}
 .pp-kv.tight{grid-template-columns:1fr auto;gap:var(--space-2) var(--space-4)}
+/* GAP-182 A FOLDER PATH IS ONE VALUE, NOT TWO FACTS. The operator's "Deze print"
+   says where the print lives on disk as one string, `klant / project`, in mono --
+   the family this system has used for file names, G-code names and paths since 1.0,
+   so it reads as an address and not as a sentence. `overflow-wrap:anywhere` is what
+   lets the `auto` track shrink: without it the row's min-content width is the whole
+   path and a long project pushes the card sideways at 360px. The separator is
+   `muted` so the two folder names are the ink; both pairs are in the report. */
+.pp-path{font-family:var(--font-mono);font-size:var(--text-sm);line-height:var(--leading-sm);color:var(--text-strong);min-width:0;overflow-wrap:anywhere}
+.pp-path .sep{color:var(--muted)}
 .pp-progress{height:var(--space-2);border-radius:var(--radius-pill);background:var(--surface-2);border:1px solid var(--border);overflow:hidden}
 .pp-progress>.pp-bar{display:block;height:100%;width:var(--v,0%);background:var(--primary)}
 .pp-logo-box{width:72px;height:40px;border:1px dashed var(--border-strong);border-radius:var(--radius-md);display:grid;place-content:center;color:var(--muted)}
@@ -1332,16 +1348,24 @@ button.pp-tag{appearance:none;font-family:var(--font-sans)}
    lost to a screen reader) and the exit button is icon-only, named by its own
    visually hidden `.lbl`, exactly as the icon rail names its footer buttons. */
 .pp-guestexit{flex:none}
+/* GAP-180 THE BRAND SHRINKS BEFORE THE BAR WRAPS. 2.15 gave the brand one line
+   and an ellipsis, which is only reached once the flex item is allowed to be
+   narrower than its text. It is a content-width item with `margin-right:auto`,
+   so up to 29 characters of studio name the head is one height and from 30 the
+   exit button drops to a second line and the head is 32px taller (measured by
+   the app at 360px). `flex:1 1 0` makes the brand the item that gives way, so
+   the ellipsis fires instead of the wrap and the head is one height at every
+   name -- which is what GAP-172 wrote down and did not finish. */
 @media (max-width:480px){
 .pp-guestnav{order:3;width:100%}
 .pp-guestnav a{flex:1 1 0;min-width:0}
-.pp-guesthead>.pp-brand{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pp-guesthead>.pp-brand{flex:1 1 0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .pp-guestexit{width:var(--pp-tap);min-width:var(--pp-tap);padding:0}
 .pp-guestexit .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 }
 .pp-device.phone .pp-guestnav{order:3;width:100%}
 .pp-device.phone .pp-guestnav a{flex:1 1 0;min-width:0}
-.pp-device.phone .pp-guesthead>.pp-brand{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pp-device.phone .pp-guesthead>.pp-brand{flex:1 1 0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .pp-device.phone .pp-guestexit{width:var(--pp-tap);min-width:var(--pp-tap);padding:0}
 .pp-device.phone .pp-guestexit .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
