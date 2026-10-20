@@ -21,6 +21,9 @@ import { Scanner, type ProjectRef, type ScannedFile } from './scanner.js';
  *     order has no price, payment or write-off (owner decision, M6).
  *   - A folder that disappeared makes its record Archived: files go, the
  *     record (and later its financials) stays. It returns when the folder does.
+ *   - A klant folder that disappeared is forgotten as soon as the indexer
+ *     walks it, by a full pass or by one customer: `seen_at` is cleared, the
+ *     row and its billing settings stay.
  *   - Records with status Deleted are skipped entirely: never re-created,
  *     never flipped back to Indexed.
  *
@@ -106,11 +109,20 @@ export class Indexer {
     return this.enqueue(async () => {
       const summary = emptySummary();
       const refs = new Map<string, ProjectRef>();
-      const onDisk = await this.scanner.listProjects(customerFolder).catch(() => null);
+      const onDisk = await this.scanner.listProjectsOrNull(customerFolder);
       for (const ref of onDisk ?? []) refs.set(recordKey(ref), ref);
-      // Null means the folder itself is gone; [] means it is there and empty,
-      // which is a klant with nothing in it and not a klant to forget.
-      if (onDisk !== null) await this.rememberCustomers([customerFolder], false);
+      /*
+        Null means the folder itself is gone, so the klant is forgotten right
+        here and not only by the next full scan. Leaving it to the sweep left a
+        folder removed while the portal was running listed as a klant with no
+        prints until the next restart, which is the portal contradicting the
+        disk — and the disk is the record (CustomerCard 2.13).
+
+        `[]` means the folder is there and empty, which is a klant with nothing
+        in it and not a klant to forget.
+      */
+      if (onDisk === null) await this.forgetCustomer(customerFolder);
+      else await this.rememberCustomers([customerFolder], false);
       for (const ref of await this.knownRecords(customerFolder)) refs.set(recordKey(ref), ref);
       for (const ref of refs.values()) await this.indexOne(ref, summary, false);
       return summary;
@@ -156,6 +168,20 @@ export class Indexer {
         .where('customer_folder', 'in', gone)
         .execute();
     }
+  }
+
+  /**
+   * The folder is not on disk any more. Exactly what the full pass's sweep
+   * does to one klant: `seen_at` is cleared and the row stays, with its "niet
+   * factureren" and its betaallink, so a folder that comes back comes back
+   * with its settings.
+   */
+  private async forgetCustomer(folder: string): Promise<void> {
+    await this.options.db
+      .updateTable('customers')
+      .set({ seen_at: null })
+      .where('customer_folder', '=', folder)
+      .execute();
   }
 
   indexProject(ref: ProjectRef, force = false): Promise<IndexSummary> {

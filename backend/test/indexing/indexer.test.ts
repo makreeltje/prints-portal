@@ -33,6 +33,13 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
       .where('record_key', '=', key)
       .executeTakeFirstOrThrow();
 
+  const customer = (folder: string) =>
+    db
+      .selectFrom('customers')
+      .selectAll()
+      .where('customer_folder', '=', folder)
+      .executeTakeFirstOrThrow();
+
   const lines = (key: string) =>
     db
       .selectFrom('print_lines as l')
@@ -238,12 +245,33 @@ describe.each(TEST_DATABASES)('indexer on $name', ({ url }) => {
     });
   });
 
-  it('archives every print of a customer folder that is removed', async () => {
+  it('archives every print of a customer folder that is removed, and forgets the klant', async () => {
     await indexer.indexAll();
+    await db
+      .updateTable('customers')
+      .set({ no_billing: 1 })
+      .where('customer_folder', '=', 'Koen')
+      .execute();
+    expect((await customer('Koen')).seen_at).not.toBeNull();
+
     await rm(path.join(root, 'Koen'), { recursive: true });
     const summary = await indexer.indexCustomer('Koen');
     expect(summary.archived).toBe(2);
     expect((await record('Koen/')).status).toBe('archived');
+    /*
+      Only `seen_at` goes, so the klant leaves the lists at once instead of at
+      the next full scan; the row and its "niet factureren" stay, so a folder
+      that comes back comes back with its settings.
+    */
+    expect(await customer('Koen')).toMatchObject({ seen_at: null, no_billing: 1 });
+  });
+
+  it('keeps a klant whose folder is still there with nothing in it', async () => {
+    await indexer.indexAll();
+    await rm(path.join(root, 'Veerle/Empty'), { recursive: true });
+    await indexer.indexCustomer('Veerle');
+    // An empty folder is a klant with nothing in it, not a klant who left.
+    expect((await customer('Veerle')).seen_at).not.toBeNull();
   });
 
   it('adds and removes files inside a print', async () => {
