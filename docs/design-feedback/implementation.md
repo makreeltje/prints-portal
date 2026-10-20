@@ -10,7 +10,9 @@ carries our own `lastChange` of 2026-10-18, so 2.15 is still the current
 version and nothing of yours has moved. What changed is on our side: the owner
 answered the three gaps you published as *proposed, needs his confirmation*,
 and we built all three. This file says what each answer was, what it cost, and
-what you now need to write into the specs.
+what you now need to write into the specs — plus one new gap he asked for,
+**GAP-182**, which is the only thing here we want designed rather than
+written down.
 
 Everything measured below was read off the running app against the owner's real
 library (84 indexed prints, 12 klanten), in Chromium, at **1400px** and
@@ -18,11 +20,13 @@ library (84 indexed prints, 12 klanten), in Chromium, at **1400px** and
 and AA.
 
 - App version **1.0.0**, built against design system **2.15**.
-- **181 gaps logged, 6 open.** GAP-173, GAP-174 and GAP-175 are **answered and
+- **182 gaps logged, 7 open.** GAP-173, GAP-174 and GAP-175 are **answered and
   built**, and stay `[open]` because the decision was the owner's and the spec
   is yours — they close when you write them in. GAP-179, GAP-180 and GAP-181
-  are unchanged and still with you. Numbering is unbroken, 001 to 181, and this
-  round logged no new gap.
+  are unchanged and still with you. **GAP-182 is new** and is the one piece of
+  design this round asks of you: the owner wants the project folder back on the
+  operator's print page as a path, after GAP-176 removed the row that repeated
+  the name (§3). Numbering is unbroken, 001 to 182.
 - **No `ds-gap` marker anywhere in the frontend.** `grep -rn "ds-gap"
   frontend/src` is still empty: nothing here is a placeholder.
 - Verification: prettier, eslint, both typechecks,
@@ -158,13 +162,36 @@ Unchanged since the last round, and all three are small:
 3. **GAP-179**, one mark-up-in-place: PaymentPanel's *Rol User* state
    superseded by GAP-170, and a word on whether `pay.userNote` is retired.
 
-## 3. Questions still with the owner, for your information
+## 3. Two more answers, one of which is a request for you
 
-- **GAP-176's consequence.** Nothing on the operator's print page names the
-  project folder on any of the 84 prints, because the breadcrumb applies the
-  same comparison. He has the question and has not answered it; we have built
-  nothing either way.
-- **The `squashName` width**: all punctuation, or case and spaces?
+Both arrived after the sections above were written. The first is **GAP-182**,
+and it is the only thing in this round we are asking you to design.
+
+**GAP-182 — GAP-176's consequence, answered: he wants the project folder
+back.** We flagged in 2.15 that removing the Project row took the last mention
+of where a print lives on disk off the operator's page, on all 84 prints. Asked
+directly, he said **yes, bring it back — as a path**. Not the row GAP-176
+removed, which was the print's name a second time: `klant / project`, which on
+his library is a different string on every print. **GAP-176 stays resolved and
+stays built as you wrote it**; this is a new row on the same card, and we have
+not guessed at its shape.
+
+What is open is yours: which card and under what label; one path string or two
+facts; whether a path whose tail equals the print name is still drawn — that is
+the 84-of-84 case and the whole reason GAP-176 exists, so the answer decides
+whether this quietly restores what you removed; whether a klant sees it or it
+is the operator's fact alone; and what it reads when a print has no project
+folder. Nothing is needed from the API: `customerFolder` and `projectFolder`
+are already in the detail payload for every role, and `placeOf` in
+`frontend/src/prints/filter.ts` already renders `klant / project` with GAP-072's
+comparison for the cards.
+
+**The `squashName` width, closed.** We asked whether it should ignore all
+punctuation or case and spaces; he answered *"ook hoofdletters en spaties"* —
+all three. That is what the function has done since 1.9
+(`toLocaleLowerCase('nl')` and every non-letter, non-digit stripped), so
+nothing changed in the code and GAP-072's wording matches it. No action for
+you; recorded so the question is not asked a third time.
 
 ## 4. The fixture names, again
 
