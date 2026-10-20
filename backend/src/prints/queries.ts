@@ -397,10 +397,27 @@ export async function listCustomers(
   /*
     Folders the indexer saw with nothing in them. They carry no prints, so no
     scope query reaches them; the same visibility rule is applied by hand.
-    An archived or deleted print still counts as "has prints", so a klant only
-    arrives here while their folder is genuinely empty.
+
+    "Has prints" is asked of every record, whatever its status, and not of
+    `rows`, which went through the status filter. Reading it off `rows` is what
+    made a klant whose prints were all archived or all deleted look like an
+    empty folder: "klant verwijderen" hid the prints and the klant came
+    straight back as a tile reading "Nog geen prints", which is false for a
+    klant who has prints the view is not showing (2.7), and which carries no
+    delete action at all, so it could not be undone from where it appeared.
+    An archived or a deleted print is still a print.
   */
-  const withPrints = new Set(rows.map((row) => row.customer_folder));
+  const withPrints = new Set(
+    (
+      await db
+        .selectFrom('print_records')
+        // A request is not a print; `applyScope` keeps it out of every view.
+        .where('origin', '=', 'indexed')
+        .select('customer_folder')
+        .distinct()
+        .execute()
+    ).map((row) => row.customer_folder),
+  );
   const empty = flags
     .filter((flag) => flag.seen_at !== null && !withPrints.has(flag.customer_folder))
     .filter((flag) => scopeAllows(scope, flag.customer_folder))

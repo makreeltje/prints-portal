@@ -40,9 +40,24 @@ export class Scanner {
 
   /** Project folders of a customer, plus null when files sit directly under the customer. */
   async listProjects(customerFolder: string): Promise<ProjectRef[]> {
-    const entries = (await this.readDir(customerFolder)).filter(
-      (entry) => !this.ignored(`${customerFolder}/${entry.name}`),
-    );
+    return this.projectsFrom(customerFolder, await this.readDir(customerFolder));
+  }
+
+  /**
+   * As `listProjects`, but null when the customer folder itself is gone.
+   *
+   * The difference is the caller's whole question: a folder that is missing
+   * means the klant left, while a folder that cannot be read (a permission or
+   * an I/O error on a network mount) means nothing of the sort, and that error
+   * is raised rather than passed off as a klant who left.
+   */
+  async listProjectsOrNull(customerFolder: string): Promise<ProjectRef[] | null> {
+    const entries = await this.readDirOrNull(customerFolder);
+    return entries === null ? null : this.projectsFrom(customerFolder, entries);
+  }
+
+  private projectsFrom(customerFolder: string, all: Dirent[]): ProjectRef[] {
+    const entries = all.filter((entry) => !this.ignored(`${customerFolder}/${entry.name}`));
     const projects: ProjectRef[] = entries
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
