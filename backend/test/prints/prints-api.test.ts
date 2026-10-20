@@ -383,6 +383,29 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
     expect((await customers(admin)).map((one) => one.folder)).not.toContain('Anouk');
   });
 
+  it('does not bring a klant back as an empty folder when its prints are hidden', async () => {
+    const customers = async (query = '') =>
+      (await t.as(admin, { url: `/api/customers${query}` })).json<{
+        customers: { folder: string; printCount: number; deleted: boolean }[];
+      }>().customers;
+
+    // Esmee's folder stays on disk, so the klant stays "seen"; the prints go.
+    await t.as(editor, { method: 'DELETE', url: '/api/customers/Esmee' });
+    expect((await customers()).map((one) => one.folder)).not.toContain('Esmee');
+    expect((await customers('?deleted=true')).find((one) => one.folder === 'Esmee')).toMatchObject({
+      printCount: 2,
+      deleted: true,
+    });
+
+    // The same for a klant whose folder is there and whose prints are archived.
+    await rm(path.join(root, 'Veerle', 'Empty'), { recursive: true });
+    await t.app.services.indexer.indexCustomer('Veerle');
+    expect((await customers()).map((one) => one.folder)).not.toContain('Veerle');
+    expect(
+      (await customers('?archived=true')).find((one) => one.folder === 'Veerle'),
+    ).toMatchObject({ printCount: 1, deleted: false });
+  });
+
   it('deletes and restores a whole customer', async () => {
     const response = await t.as(editor, { method: 'DELETE', url: '/api/customers/Esmee' });
     expect(response.json()).toEqual({ deleted: 2 });
