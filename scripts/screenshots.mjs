@@ -10,7 +10,7 @@
  * See DEVELOPMENT.md for the environment variables.
  */
 import { spawn } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -79,6 +79,9 @@ function stopAll() {
 }
 
 async function main() {
+  if (!existsSync(executablePath)) {
+    throw new Error(`Chromium not found at ${executablePath}; set CHROMIUM_PATH`);
+  }
   let baseUrl = externalUrl;
   if (!baseUrl) {
     dataDir = env.DATA_DIR ?? mkdtempSync(join(tmpdir(), 'prints-portal-screenshots-'));
@@ -129,8 +132,13 @@ async function main() {
         if (!login.ok()) throw new Error(`Sign-in failed (${login.status()}) for ${adminLogin}`);
 
         const list = await context.request.get('/api/prints?limit=1');
-        const printId = (await list.json()).prints?.[0]?.id;
-        if (!printId) throw new Error('/api/prints returned no print; is PRINTS_ROOT indexed?');
+        const body = await list.json();
+        const printId = body.items?.[0]?.id;
+        if (!printId) {
+          throw new Error(
+            `/api/prints returned no print (${list.status()} ${JSON.stringify(body).slice(0, 200)}); is PRINTS_ROOT indexed?`,
+          );
+        }
 
         const page = await context.newPage();
         for (const screen of SCREENS) {
