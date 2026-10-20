@@ -380,6 +380,9 @@ export const nl = {
   'print.project': 'Project',
   'print.date': 'Datum',
   'print.orders': 'Bestellingen',
+  // Where the print lives on disk, the operator's last fact (GAP-182).
+  'print.folder': 'Map',
+  'print.folder.none': 'Nog geen map',
   'order.filesInOrder': 'In deze bestelling',
   'asset.countsIn': 'Telt in {bestelling}',
   'print.userView': 'Je ziet alleen prijs en status.', // component copy: ScreenPrintDetail
