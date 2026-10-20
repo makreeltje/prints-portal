@@ -2116,6 +2116,8 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no — this is explicitly *proposed, needs the owner's confirmation*, so nothing is built and the gap stays open.
 - **Design system version:** 2.15
 
+- **The owner answered (2026-10-20):** *"api docs niet nodig voor rol User"*. **Built accordingly, and not a placeholder:** the item carries `roles: ['Admin', 'Editor']` in `frontend/src/shell/navigation.ts`, which is Facturen's check and, because `App.tsx` builds the routes from the same list, the route guard too — a User who types `/api-docs` lands on the dashboard. No new token, class or copy key, exactly as this entry said. **The gap stays `[open]`** until the design system writes the decision into `AppShell` and `ScreenApiDocs`; it goes back in the next feedback round.
+
 ## GAP-174 [open] Materiaal and Gewicht on a visitor's "Deze print" card
 - **Type:** unclear spec
 - **Found while:** the 2.14 import (published as a proposal with no id); numbered here by the design system in 2.15
