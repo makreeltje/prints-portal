@@ -22,6 +22,7 @@ export const ROUTE_DOCS: Record<RouteKey, { tag: ApiTag; summary: string }> = {
   'POST /api/prints/:id/restore': { tag: 'Prints', summary: 'Verwijderde print herstellen' },
   'GET /api/prints/:id/thumbnail': { tag: 'Prints', summary: 'Miniatuur van een print' },
   'GET /api/prints/:id/model': { tag: 'Prints', summary: '3D-model van een print' },
+  'GET /api/prints/:id/video': { tag: 'Prints', summary: 'Timelapse van een print' },
   'PUT /api/prints/:id/tags': { tag: 'Prints', summary: 'Tags van een print instellen' },
   'POST /api/prints/bulk': { tag: 'Prints', summary: 'Actie op meerdere prints tegelijk' },
   'POST /api/prints/:id/orders': { tag: 'Prints', summary: 'Nabestelling maken' },

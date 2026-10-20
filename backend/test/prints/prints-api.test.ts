@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { PrintDetail, PrintSummary } from '../../src/prints/types.js';
 import { startTestApp, type Session, type TestApp } from '../helpers/app.js';
 import { TEST_DATABASES } from '../helpers/databases.js';
-import { makePrintsTree } from '../helpers/prints-tree.js';
+import { makePrintsTree, putText } from '../helpers/prints-tree.js';
 
 interface ListBody {
   items: PrintSummary[];
@@ -381,6 +381,38 @@ describe.each(TEST_DATABASES)('prints API on $name', ({ url }) => {
     await rm(path.join(root, 'Anouk'), { recursive: true, force: true });
     await t.app.services.indexer.indexAll();
     expect((await customers(admin)).map((one) => one.folder)).not.toContain('Anouk');
+  });
+
+  it('lets a klant watch the timelapse and still not download it', async () => {
+    await putText(root, 'Koen/Bloembak clips/timelapse_2026-10-20.mp4', 'not really a video');
+    await t.app.services.indexer.indexProject({
+      customerFolder: 'Koen',
+      projectFolder: 'Bloembak clips',
+    });
+    const id = await idOf('Bloembak clips');
+    const detail = (await t.as(helper, { url: `/api/prints/${id}` })).json<PrintDetail>();
+    /*
+      GAP-175, the owner's answer. A User has no file list at all, so the
+      timelapse travels in its own field; and it is watched through the print's
+      own route, never through the download one.
+    */
+    expect(detail.assets).toBeNull();
+    expect(detail.videos.map((video) => video.fileName)).toEqual(['timelapse_2026-10-20.mp4']);
+    const videoId = detail.videos[0]?.id ?? '';
+
+    const played = await t.as(helper, { url: `/api/prints/${id}/video?asset=${videoId}` });
+    expect(played.statusCode).toBe(200);
+    expect(played.headers['content-disposition']).toContain('inline');
+    // Seeking in the player needs ranges.
+    expect(played.headers['accept-ranges']).toBe('bytes');
+    // Without `asset`: the first by file name, as the model route does.
+    expect((await t.as(helper, { url: `/api/prints/${id}/video` })).statusCode).toBe(200);
+
+    expect((await t.as(helper, { url: `/api/assets/${videoId}/download` })).statusCode).toBe(403);
+    // A klant of another folder gets nowhere near it.
+    expect(
+      (await t.as(helper, { url: `/api/prints/${await idOf('Keychain')}/video` })).statusCode,
+    ).toBe(403);
   });
 
   it('does not bring a klant back as an empty folder when its prints are hidden', async () => {

@@ -2142,6 +2142,12 @@ Only `[open]` gaps may be referenced with a `ds-gap: GAP-###` comment in code.
 - **Temporary placeholder approved:** no — explicitly *proposed, needs the owner's confirmation*; nothing is built and the gap stays open.
 - **Design system version:** 2.15
 
+- **The owner answered (2026-10-20):** *"klant mag timelapse zien"*. **Built accordingly, and not a placeholder.** Measured in his library first, because the entry's "60%" was worth checking: **50 project folders hold a video, 121 files in all**, against 84 prints. What it cost, which is more than this entry predicted:
+  - the payload carries a **`videos` field for every role** (`id` and `fileName`), beside `models` rather than inside `assets` — `assets` stays null for a User, and the timelapse is the one entry from the folder a klant may see. Empty for an archived print, which has no files on disk;
+  - a **new route, `GET /api/prints/:id/video`**, with the same guard as `/api/prints/:id/model`. This was the part the entry missed: the player used `/api/assets/:id/download`, which is Editor and Admin only and would have had to be opened to role User to make the strip work — and that is the owner's "downloads no". The viewer route serves it `inline` with ranges, through the same `sendPrintFile` the model uses, so seeking works and nothing can be saved. `ModelView` now reads `detail.videos` and plays from the new route for every role, the operator included;
+  - `ROUTE_DOCS` and the authorization matrix have the new route (`User`, `Editor`, `Admin`).
+  **The gap stays `[open]`** until the design system writes the decision into ScreenShareSession, ModelPicker and VideoPlayer — and the new route is worth a sentence there, since the strip's source is no longer the file list.
+
 ## GAP-176 [resolved in v2.15] The operator's "Deze print" draws Project on 84 of 84 prints where it repeats the name
 - **Type:** suspected design bug
 - **Found while:** building the reduced card for GAP-158 in the 2.14 round, where the same comparison was specified for role User only; numbered here by the design system in 2.15

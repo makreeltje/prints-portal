@@ -20,6 +20,7 @@ function detail(): PrintDetail {
   return {
     sources: [],
     note: null,
+    videos: [],
     id: 'p1',
     name: 'Bloembak clips',
     customerFolder: 'Koen',

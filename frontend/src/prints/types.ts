@@ -190,6 +190,8 @@ export interface PrintDetail extends PrintSummary {
   hasModel: boolean;
   /** Every viewable model, file order (ModelPicker 1.9). */
   models: { id: string; fileName: string; hasPicture: boolean }[];
+  /** The timelapses, file order; every role gets them (GAP-175). */
+  videos: { id: string; fileName: string }[];
   assets: Asset[] | null;
   noBilling: boolean;
   markupPercent: number | null;

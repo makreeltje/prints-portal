@@ -578,6 +578,7 @@ function detail(overrides: Partial<PrintDetail> = {}): PrintDetail {
     printerModel: 'Creality K1 Max',
     archivedAt: null,
     hasModel: false,
+    videos: [],
     models: [],
     sources: [],
     note: null,
@@ -1065,6 +1066,27 @@ describe('PrintDetailPage', () => {
     Gewicht to it: more detail about what a klant is paying for. Tijd is not
     among them, machine time being the one input a klant cannot check.
   */
+  it('plays a klant the timelapse, from the print and not from the download route', async () => {
+    stubFetch({
+      'GET /api/prints/p1': () => ({
+        json: detail({
+          assets: null,
+          hasModel: false,
+          models: [],
+          videos: [{ id: 'v1', fileName: 'timelapse_2026-10-20.mp4' }],
+        }),
+      }),
+    });
+    renderDetail('User');
+    /*
+      GAP-175, the owner's answer: a klant watches the film of their own print.
+      It comes from the print's own route — `/api/assets/:id/download` is
+      Editor and Admin only, and a visitor downloads nothing.
+    */
+    const player = await screen.findByLabelText('Timelapse van timelapse_2026-10-20.mp4');
+    expect(player).toHaveAttribute('src', '/api/prints/p1/video?asset=v1');
+  });
+
   it('gives a User the reduced card, with Materiaal and Gewicht but no cost inputs', async () => {
     stubFetch({
       'GET /api/prints/p1': () => ({

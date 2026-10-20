@@ -63,7 +63,6 @@ import { PaymentPanel } from '../finance/PaymentPanel';
 import { SpoolPicker } from '../finance/SpoolPicker';
 import {
   deletePrint,
-  downloadUrl,
   fetchPrint,
   keys,
   modelUrl,
@@ -72,6 +71,7 @@ import {
   modelThumbnailUrl,
   setPrintNote,
   setPrintSource,
+  videoUrl,
 } from './api';
 import { LacksChip, RecordBadge, TagChip, Thumbnail } from './bits';
 import { AssetList, type AssetControls } from './AssetList';
@@ -808,14 +808,17 @@ function ModelView({ detail }: { detail: PrintDetail }) {
   // The choice is not stored (ModelPicker 1.9); the first picture opens.
   const [chosen, setChosen] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
-  const videos: Picture[] = (detail.assets ?? [])
-    .filter((asset) => asset.type === 'video')
-    .map((asset) => ({
-      id: asset.id,
-      fileName: asset.fileName,
-      kind: 'video' as const,
-      hasPicture: false,
-    }));
+  /*
+    From the payload's own field since GAP-175, not out of `assets`: a visitor
+    has no file list, and the timelapse is the one thing from the folder they
+    may see. An operator's strip is built from the same field.
+  */
+  const videos: Picture[] = detail.videos.map((video) => ({
+    id: video.id,
+    fileName: video.fileName,
+    kind: 'video' as const,
+    hasPicture: false,
+  }));
   // Ordered by file name with the timelapse last (2.3): the strip is a list of
   // names now, so it needs the order a list of names has.
   const items: Picture[] = [
@@ -871,7 +874,7 @@ function ModelView({ detail }: { detail: PrintDetail }) {
               key={current.id}
               controls
               preload="metadata"
-              src={downloadUrl(current.id)}
+              src={videoUrl(detail.id, current.id)}
               aria-label={t('models.viewerVideo', { naam: current.fileName })}
               onError={() => {
                 setFailed(true);
