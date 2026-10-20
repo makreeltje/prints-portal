@@ -101,7 +101,10 @@ Frontend: `react`, `react-dom`, `react-router`, `@tanstack/react-query`,
 `lucide-react` (the icon set the design system names), `three` (the 3D
 viewer), `@scalar/api-reference-react` (the API docs page).
 
-Licences: MIT throughout, except `lucide-react` (ISC) and `@resvg/resvg-js`
-(MPL-2.0). MPL-2.0 is file-level copyleft: using the library unchanged in a
+Development only: `playwright-core` (Apache-2.0, checked 2026-10-20) drives the system
+Chromium for `npm run screenshots`; it downloads no browser and is not in the image.
+
+Licences: MIT throughout, except `lucide-react` (ISC), `@resvg/resvg-js`
+(MPL-2.0) and the development-only `playwright-core` (Apache-2.0). MPL-2.0 is file-level copyleft: using the library unchanged in a
 larger work is fine, and only changes to its own files would have to be
 published.

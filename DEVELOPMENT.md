@@ -46,6 +46,30 @@ npm run build         # frontend, then backend
 `scripts/check-design-tokens.sh` also runs after every Claude Code edit and in CI. It resolves paths
 relative to the current directory, so run it from the repository root.
 
+## Screenshots
+
+```bash
+PRINTS_ROOT=/opt/prints-fixtures npm run screenshots
+```
+
+Starts the backend (development mode, a throw-away `DATA_DIR`) and the Vite dev server, signs in
+as the development Admin and writes 20 PNGs, `<screen>-<light|dark>-<phone|desktop>.png`, for
+dashboard, printdetail (the first print the API returns), wachtrij, facturen and instellingen.
+Phone is 390x844, desktop 1440x900. The browser is the system Chromium; `npm ci` downloads none.
+
+| Variable                                                | Default                               | What it does                                                           |
+| ------------------------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------- |
+| `PRINTS_ROOT`                                           | `.local/prints`                       | Prints folder the backend indexes.                                     |
+| `DATA_DIR`                                              | a temporary folder                    | Backend data folder. A temporary one is removed afterwards.            |
+| `SCREENSHOTS_DIR`                                       | `.local/screenshots`                  | Output folder.                                                         |
+| `CHROMIUM_PATH`                                         | `/usr/bin/chromium`                   | Browser executable.                                                    |
+| `BASE_URL`                                              | unset                                 | Use this running app instead of starting one (no servers are started). |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD`                         | `admin@localhost`, `development-only` | Sign-in used.                                                          |
+| `SCREENSHOTS_BACKEND_PORT`, `SCREENSHOTS_FRONTEND_PORT` | `18080`, `15173`                      | Ports for the servers the script starts.                               |
+
+The screenshots show real customer names when `PRINTS_ROOT` is a real folder. `.local/` is
+git-ignored: never commit them, attach them to a PR or upload them anywhere.
+
 ## Database tests
 
 Database tests always run on SQLite. Set `TEST_POSTGRES_URL` and/or `TEST_MYSQL_URL` to run them on
