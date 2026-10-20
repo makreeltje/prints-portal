@@ -73,7 +73,7 @@ export function renderApp(path: string, state: AuthState = signedIn()) {
 
 /** A fetch stub answering by "METHOD path"; unknown requests fail the test loudly. */
 export function stubFetch(
-  routes: Record<string, (body: unknown) => { status?: number; json?: unknown }>,
+  routes: Record<string, (body: unknown) => { status?: number; json?: unknown; noBody?: boolean }>,
 ) {
   const calls: { method: string; path: string; body: unknown; headers: Record<string, string> }[] =
     [];
@@ -88,11 +88,18 @@ export function stubFetch(
     });
     const route = routes[`${method} ${input}`] ?? routes[`${method} ${input.split('?')[0] ?? ''}`];
     if (route === undefined) throw new Error(`unexpected request ${method} ${input}`);
-    const { status = 200, json } = route(body);
+    const { status = 200, json, noBody = false } = route(body);
+    /*
+      `noBody` is an answer that carries nothing at all, which Fastify sends
+      for `reply.code(2xx).send()` with no payload. The harness could not say
+      this before: every status but 204 was given a `{}` body, so a route that
+      answered this way passed in tests and failed in the browser.
+    */
+    const empty = noBody || status === 204;
     return Promise.resolve(
-      new Response(status === 204 ? null : JSON.stringify(json ?? {}), {
+      new Response(empty ? null : JSON.stringify(json ?? {}), {
         status,
-        headers: { 'content-type': 'application/json' },
+        headers: empty ? {} : { 'content-type': 'application/json' },
       }),
     );
   });

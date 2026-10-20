@@ -402,7 +402,7 @@ describe.each(TEST_DATABASES)('invoices and Openstaand on $name', ({ url }) => {
           payload: { amount: 18.85 },
         })
       ).statusCode,
-    ).toBe(201);
+    ).toBe(204);
 
     // The register lists both, newest first.
     const register = (await t.as(editor, { url: '/api/invoices' })).json<{

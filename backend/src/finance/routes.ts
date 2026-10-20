@@ -517,7 +517,16 @@ export function registerFinanceRoutes(app: FastifyInstance, deps: FinanceRouteDe
       }
       await touch(print.id);
       broadcast('print:updated', print.id, print.customer_folder);
-      return reply.code(201).send();
+      /*
+        204, not 201: a payment is recorded and nothing is returned, which is
+        what every other no-body answer in this app says (sale-price,
+        write-off, undo, delete). 201 with an empty body was the one exception,
+        and it broke "Markeer als betaald" in the browser every single time:
+        the client parses the body of anything but a 204, an empty body is not
+        JSON, and the panel showed its error while the payment was in fact
+        saved. The id is not needed; the panel re-reads the order.
+      */
+      return reply.code(204).send();
     },
   );
 

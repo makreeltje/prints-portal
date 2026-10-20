@@ -299,7 +299,14 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       t.as(session, { method: method as 'POST', url: `/api/orders/${order.id}${path}`, payload });
 
     expect((await call(editor, 'PUT', '/sale-price', { salePrice: 11.89 })).statusCode).toBe(204);
-    expect((await call(editor, 'POST', '/payments', { amount: 5 })).statusCode).toBe(201);
+    /*
+      204 with nothing in it. A browser parses the body of every answer that is
+      not a 204, so an empty 201 here made "Markeer als betaald" report an
+      error on a payment it had just saved.
+    */
+    const first = await call(editor, 'POST', '/payments', { amount: 5 });
+    expect(first.statusCode).toBe(204);
+    expect(first.body).toBe('');
     let now = await firstOrder('Bloembak clips');
     expect(now).toMatchObject({ status: 'partial', price: 11.89, paid: 5, remaining: 6.89 });
 
@@ -310,7 +317,7 @@ describe.each(TEST_DATABASES)('finance API on $name', ({ url }) => {
       error: 'price_below_paid',
     });
 
-    expect((await call(editor, 'POST', '/payments', { amount: 6.89 })).statusCode).toBe(201);
+    expect((await call(editor, 'POST', '/payments', { amount: 6.89 })).statusCode).toBe(204);
     now = await firstOrder('Bloembak clips');
     expect(now).toMatchObject({ status: 'paid', remaining: 0 });
     expect(now.payments?.map((p) => p.amount)).toEqual([5, 6.89]);

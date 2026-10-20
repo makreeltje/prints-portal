@@ -24,6 +24,18 @@ describe('api', () => {
     });
   });
 
+  it('accepts an answer with no body whatever its status', async () => {
+    stubFetch({
+      // What "Markeer als betaald" answered: created, nothing in it.
+      'POST /api/paid': () => ({ status: 201, noBody: true }),
+      'PUT /api/saved': () => ({ status: 204 }),
+    });
+    await expect(
+      api('/api/paid', { method: 'POST', body: { amount: 5 } }),
+    ).resolves.toBeUndefined();
+    await expect(api('/api/saved', { method: 'PUT', body: {} })).resolves.toBeUndefined();
+  });
+
   it('turns failures into ApiError with the error code and reports 401', async () => {
     stubFetch({
       'GET /api/a': () => ({ status: 409, json: { error: 'last_admin' } }),
