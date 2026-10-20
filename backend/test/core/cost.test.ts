@@ -361,13 +361,13 @@ describe('duplicates', () => {
 
   it('groups identical copies', () => {
     const items = [
-      { id: 'puzzle_tray.gcode', fingerprint: duplicateFingerprint(meta) },
-      { id: 'puzzle_tray copy.gcode', fingerprint: duplicateFingerprint(meta) },
-      { id: 'puzzle_tray copy 2.gcode', fingerprint: duplicateFingerprint({ ...meta }) },
+      { id: 'bloembak_clips.gcode', fingerprint: duplicateFingerprint(meta) },
+      { id: 'bloembak_clips copy.gcode', fingerprint: duplicateFingerprint(meta) },
+      { id: 'bloembak_clips copy 2.gcode', fingerprint: duplicateFingerprint({ ...meta }) },
       { id: 'other.gcode', fingerprint: duplicateFingerprint({ ...meta, totalGrams: 52.7 }) },
     ];
     expect(findDuplicateGroups(items)).toEqual([
-      ['puzzle_tray.gcode', 'puzzle_tray copy.gcode', 'puzzle_tray copy 2.gcode'],
+      ['bloembak_clips.gcode', 'bloembak_clips copy.gcode', 'bloembak_clips copy 2.gcode'],
     ]);
   });
 

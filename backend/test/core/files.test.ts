@@ -112,7 +112,7 @@ describe('autoExcludeFolder', () => {
 describe('parseGcodeFileName', () => {
   it.each([
     ['lock_v3_PLA_1h20m.gcode', 'lock_v3', 'PLA', 4800],
-    ['Cable Organizer-Cable Clip_PLA_37m0s.gcode', 'Cable Organizer-Cable Clip', 'PLA', 2220],
+    ['Kabelgoot-Cable Clip_PLA_37m0s.gcode', 'Kabelgoot-Cable Clip', 'PLA', 2220],
     ['cableclip-30mm_PLA_31m55s.gcode', 'cableclip-30mm', 'PLA', 1915],
     ['dopper stabilizer v2_+2.5%_PLA_1h17m.gcode', 'dopper stabilizer v2_+2.5%', 'PLA', 4620],
     [
@@ -122,7 +122,7 @@ describe('parseGcodeFileName', () => {
       11_040,
     ],
     ['tray1_PLA_3h27m.gcode', 'tray1', 'PLA', 12_420],
-    ['Puzzle tray_skin_PLA_2h38m.gcode', 'Puzzle tray_skin', 'PLA', 9480],
+    ['Bloembak clips_skin_PLA_2h38m.gcode', 'Bloembak clips_skin', 'PLA', 9480],
     ['auslass 4_PETG_58m0s.gcode', 'auslass 4', 'PETG', 3480],
     ['frame_ABS_1h.gcode', 'frame', 'ABS', 3600],
     ['part_pla_2H5M.GCODE', 'part', 'pla', 7500],
@@ -132,8 +132,8 @@ describe('parseGcodeFileName', () => {
 
   it.each([
     ['Haakjes lang_PLA_5h17m_2.gcode', 'Haakjes lang', 19_020],
-    ['puzzle_tray_PLA_2h38m copy.gcode', 'puzzle_tray', 9480],
-    ['puzzle_tray_PLA_2h38m copy 2.gcode', 'puzzle_tray', 9480],
+    ['bloembak_clips_PLA_2h38m copy.gcode', 'bloembak_clips', 9480],
+    ['bloembak_clips_PLA_2h38m copy 2.gcode', 'bloembak_clips', 9480],
     ['IkeaAlexSewing_PLA_2h9m-2.gcode', 'IkeaAlexSewing', 7740],
     ['IkeaAlexSewing_PLA_2h9m - Copy.gcode', 'IkeaAlexSewing', 7740],
     ['body_PLA_44m56s4.gcode', 'body', 2696],
@@ -165,10 +165,10 @@ describe('parseGcodeFileName', () => {
 describe('parseVideoFileName', () => {
   it('reads printer prefix, print and recording time from a timelapse name', () => {
     expect(
-      parseVideoFileName('k1_Cable Organizer-Cable Clip_PLA_1h1m.gcode_18-11-2025_15h58.mp4'),
+      parseVideoFileName('k1_Kabelgoot-Cable Clip_PLA_1h1m.gcode_18-11-2025_15h58.mp4'),
     ).toEqual({
       printerPrefix: 'k1',
-      print: { partName: 'Cable Organizer-Cable Clip', material: 'PLA', printTimeSeconds: 3660 },
+      print: { partName: 'Kabelgoot-Cable Clip', material: 'PLA', printTimeSeconds: 3660 },
       // 15:58 in Amsterdam in November (CET, UTC+1)
       recordedAt: new Date('2025-11-18T14:58:00Z'),
     });
