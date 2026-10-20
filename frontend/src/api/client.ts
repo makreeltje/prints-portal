@@ -70,6 +70,14 @@ export async function api<T>(
     if (response.status === 401 && options.quiet401 !== true) onUnauthorized?.();
     throw new ApiError(response.status, code);
   }
-  if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
+  /*
+    An empty body is not JSON, and `response.json()` throws a SyntaxError on
+    it that a caller cannot tell apart from a failed request. That is how
+    "Markeer als betaald" reported an error on every payment it had just
+    saved: the route answered 201 with `content-length: 0`, which is not the
+    204 this used to look for. A 204 is still the usual case; any other answer
+    without a body is read the same way.
+  */
+  const text = await response.text();
+  return (text === '' ? undefined : JSON.parse(text)) as T;
 }
