@@ -5,232 +5,217 @@ implementer's half: what is built, what the measurements say, what is still
 open, and where either of us got something wrong. The design system owns
 `tokens.json`, `components/` and `bundle.css`; nothing here changes them.
 
-**This round is not an import.** No new export has arrived — the index still
-carries our own `lastChange` of 2026-10-18, so 2.15 is still the current
-version and nothing of yours has moved. What changed is on our side: the owner
-answered the three gaps you published as *proposed, needs his confirmation*,
-and we built all three. This file says what each answer was, what it cost, and
-what you now need to write into the specs — plus one new gap he asked for,
-**GAP-182**, which is the only thing here we want designed rather than
-written down.
+**This round is an import and a pile of answers.** 2.16 and 2.17 are both in
+the repo, everything they resolved is built or verified, and the six
+`To measure (owner)` requests still standing in the specs are answered below —
+some of them asked since 1.9. One of the answers is not the one you wanted.
 
-Everything measured below was read off the running app against the owner's real
-library (84 indexed prints, 12 klanten), in Chromium, at **1400px** and
-**360px**, in **both themes**, with `@axe-core/playwright` against WCAG 2.1 A
-and AA.
+Everything was read off the running app against the owner's real library (84
+indexed prints, 12 klanten), in Chromium, in **both themes**, with
+`@axe-core/playwright` against WCAG 2.1 A and AA.
 
-- App version **1.0.0**, built against design system **2.15**.
-- **182 gaps logged, 7 open.** GAP-173, GAP-174 and GAP-175 are **answered and
-  built**, and stay `[open]` because the decision was the owner's and the spec
-  is yours — they close when you write them in. GAP-179, GAP-180 and GAP-181
-  are unchanged and still with you. **GAP-182 is new** and is the one piece of
-  design this round asks of you: the owner wants the project folder back on the
-  operator's print page as a path, after GAP-176 removed the row that repeated
-  the name (§3). Numbering is unbroken, 001 to 182.
-- **No `ds-gap` marker anywhere in the frontend.** `grep -rn "ds-gap"
-  frontend/src` is still empty: nothing here is a placeholder.
+- App version **1.0.0**, built against design system **2.17**.
+- **182 gaps logged, 0 open.** Every one of GAP-173, GAP-174, GAP-175,
+  GAP-179, GAP-180, GAP-181 and GAP-182 closed with 2.16. This is the first
+  round since the log began with nothing open on either side.
+- **No `ds-gap` marker anywhere in the frontend**, and none was needed.
 - Verification: prettier, eslint, both typechecks,
-  `scripts/check-design-tokens.sh` over the whole frontend, the frontend suite
-  (**217** tests) and the backend suite on **sqlite** (**770** tests). GAP-175
-  writes SQL, so the backend suite also ran across **PostgreSQL and MariaDB**:
-  **1578** tests, 0 failures. Axe: **8 runs, 0 violations** — a session's Prints
-  and a session's print page with a timelapse, each in dark and light at 1400px
-  and 360px. Those are the two screens this round changes; the rest were
-  cleared in 2.14 and 2.15 and nothing here touches them.
-- **No new token, class or copy key.** `tokens.css`, `bundle.css` and
-  `copy-deck.md` are untouched, which is what two of the three gaps predicted
-  and what the third turned out to need as well.
-
-> **All three answers went the way your reasoning leaned, except one.** You
-> argued API-docs was wrong for a User and refused to decide it: he agrees, it
-> is gone. You thought Materiaal and Gewicht were defensible because the
-> invoice already prints Gram: he agrees, and his reason is better than ours —
-> *"dan hebben ze meer detail waarvoor ze moeten betalen"*. And the timelapse
-> is in, which is the one that cost more than the entry predicted. **§1.3 is
-> the part to read**: the gap said it was "a change to what the session's
-> payload carries, not a new component", and that was not enough. It needed a
-> route, because the only way to play a video was through the download route,
-> and opening that to role User would have broken the owner's own rule.
+  `scripts/check-design-tokens.sh`, the frontend suite (**218** tests) and the
+  backend suite on **sqlite** (**770** tests). No SQL changed this round, so
+  the three-engine run was CI's. Axe: **4 runs, 0 violations** on the
+  operator's print page, the screen this round changes.
+- **One new class and two new keys arrived with the export and are now used:**
+  `.pp-path`, `print.folder`, `print.folder.none`. No token moved —
+  `tokens.json` at 2.17 is byte-identical to 2.15 apart from `version`.
 
 ---
 
-## 1. The owner's three answers
+## 1. What landed
 
-### 1.1 GAP-173 — *"api docs niet nodig voor rol User"*
+**GAP-182 is built.** `Map` is the last row of the operator's "Deze print":
+one mono path, `muted` separator, drawn on every print that has a folder
+including the 84 of 84 whose project squashes equal to the print name. No
+project folder gives the klant folder alone; no folder at all gives
+`print.folder.none` in `muted` rather than in `.pp-path`, because that is a
+sentence. Archived and deleted prints keep it. It replaces the conditional
+`Project` row **on the operator's card only**; the reduced card and the
+breadcrumb are untouched. Measured on his library, both themes: the row is
+last, `ui-monospace`, value `text-strong` and separator `muted`; the card is
+552px at 1400px and 328px at 360px with **no sideways scroll**, and a long
+path wraps inside its own column exactly as 2.16 predicted.
 
-Built exactly as the entry said it would be: the item moves behind Facturen's
-role check, one condition, no new token, class or copy key. One thing the entry
-did not say and that makes the answer stronger: the app builds its **routes**
-from the same list, so the role check is also the route guard. A User who types
-`/api-docs` lands on the dashboard rather than on a page the nav no longer
-offers — the half of "removing a page" that a nav-only change would have left
-undone.
+**GAP-180 and GAP-181 came with `bundle.css` and were verified, not built.** A
+phone-drawer link now draws `2px solid var(--focus-ring)` at offset 2px where
+it drew Chromium's own `1px auto rgb(0, 95, 204)` at **2.86:1 in dark**. The
+guest brand computes `flex: 1 1 0px` with `text-overflow: ellipsis`, the brand
+box is **268px** and the head **127px** — your number. Said plainly: that is at
+a 16-character studio name. **We did not test 80 characters**, because that
+means writing to the owner's settings, so the top of your measured range is
+still yours and not ours.
 
-Covered by tests (a User's sidebar is Dashboard and Openstaand; `/api-docs`
-redirects), not re-measured in the browser: nothing about it is visual.
+**One obligation in 2.16 we had missed, now built.** VideoPlayer 2.16 says role
+User and a visitor get `video.error.title` and `video.unsupported.title`
+**without** their `.body` lines, both of which read "Download het bestand…".
+They did not; both lines rendered for every role. A klant was being told to do
+the one thing that role cannot. Fixed, with a test, and an operator still gets
+both.
 
-**For you:** `AppShell` and `ScreenApiDocs`, role User.
+**And one thing of ours that your table caught.** `ScreenPrintDetail`'s row
+table says the reduced card is Klant, Project, Datum, Materiaal, Gewicht,
+**Bron last**. We had drawn Bron straight after Datum ever since GAP-174 added
+the two new rows — we put them after Bron instead of before it. The 2.16 export
+states the order outright, which is how we found it. Corrected; two tests that
+asserted our order rather than yours were rewritten.
 
-### 1.2 GAP-174 — *"materiaal en gewicht is handig voor een gebruiker, dan hebben ze meer detail waarvoor ze moeten betalen"*
+---
 
-Both facts were already in every payload — `toSummary` carries `material` and
-`grams` whatever the role — so this really was two rows in `ThisPrint` and the
-existing `Meta` on the card. **Tijd is not among them**, as the entry
-reasoned, and neither is the Nabestellingen count, which is about the owner's
-bookkeeping rather than the klant's.
+## 2. The six standing measurements, answered
 
-**One thing the entry did not mention, and it is a conflict rather than a
-detail.** `ScreenShareSession` §5 specifies a visitor's card as *"exactly the
-facts an Overzicht line carries and no more — no filament tint, **no meta
-line**, no tags and no 'Ontbreekt' chip"*. A visitor's card has a meta line
-now, carrying two of its three items. We built it because the gap named "the
-existing `Meta` on the card" as the place, and a klant cannot read Materiaal
-and Gewicht on a card that has no line to read them on — but §5 and the build
-disagree until you change one of them.
+### 2.1 ModelPicker — models per print, and what the renderer makes
 
-Measured on a session's Prints, 36 cards, both themes:
+Across all 84 prints, **379 model files**:
 
-| width | card | meta line | items | wraps | clock icon | sideways scroll |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1400px | 246 × 312 | 220 × 20 | 2 | no | no | no |
-| 360px | 328 × 374 | 302 × 20 | 2 | no | no | no |
-
-The line is 20px and one line at both widths; the grid is unchanged and nothing
-overflows. Identical in dark and light.
-
-A visitor's reduced "Deze print" card now reads **Klant, Datum, Materiaal,
-Gewicht** on the print we measured — four rows. Project is absent because it
-repeats the print name (GAP-072, as specified), and Bron because this print has
-none. Tijd and Nabestellingen are absent at every width.
-
-**For you:** `ScreenPrintDetail`, `ScreenShareSession` (§5's "no meta line"
-sentence) and `PrintCard`.
-
-### 1.3 GAP-175 — *"klant mag timelapse zien"*
-
-**First, your 60% checks out.** Counted twice, on disk and in the index: **50
-project folders hold a video and 121 files in all**, against 84 prints. It is
-the most-filled surface a klant has never had.
-
-The entry said this was "a change to what the session's payload carries, not a
-new component". The payload half was right:
-
-- the payload carries a **`videos` field for every role** (`id`, `fileName`),
-  beside `models` and not inside `assets`. `assets` stays null for a User, and
-  the timelapse is the one entry from the folder a klant may see. Empty for an
-  archived print, which has no files on disk.
-
-The other half was missing, and it is the reason this took a route:
-
-- the player's `src` was **`/api/assets/:id/download`**, which is Admin and
-  Editor only. The only way to make the strip work for a klant through that
-  route is to open it to role User — and that is exactly the rule the owner
-  set when the deel-link became a session: **viewer yes, downloads no**. So
-  there is a new route, `GET /api/prints/:id/video`, with the same guard as
-  `/api/prints/:id/model`, serving the file `inline` with ranges through the
-  same sender the model uses. Seeking works and nothing can be saved.
-  `ModelView` reads `detail.videos` and plays from that route **for every
-  role**, the operator included.
-
-Measured on a session's print with 3 models and 2 timelapses, both themes, both
-widths — identical in all four:
-
-| what | measured |
+| | |
 | --- | --- |
-| strip buttons | **5** (3 models + 2 timelapses), one row, no overflow |
-| playing the last entry | `<video controls>` with `src="/api/prints/<id>/video?asset=<id>"` |
-| accessible name | "Timelapse van &lt;bestand&gt;" (`models.viewerVideo`, unchanged) |
-| links to `/download` anywhere on the page | **0** |
-| sideways scroll | none |
+| largest number of models on one print | **29** |
+| median | **3** |
+| prints with no model at all | **2** |
+| prints with both models and a timelapse | **48** of 84 |
 
-**For you:** `ScreenShareSession`, `ModelPicker` and `VideoPlayer`. The strip's
-source is worth a sentence of its own: it used to be the file list, and for a
-visitor there is no file list, so it is a field of the print now.
+The distribution is heavily front-loaded — 50 of 84 prints have three models
+or fewer, and 2 models is the single commonest case at 31 prints — but the
+tail is long and thin: one print each at 13, 16, 20, 25 and 29. **So the strip
+has to survive 29 and be unremarkable at 2.** On your question of whether to
+wrap above some count: a strip that wrapped above 7 would wrap for 7 prints
+out of 84.
+
+**Your renderer question has a clean answer: one PNG per model file.** 379
+models, **379 pictures**, and there is no print where some models have one and
+others do not — every model on every print has its own. The per-print branch of
+the spec is never taken here.
+
+### 2.2 ScreenPrintDetail — the price field, and the dead space
+
+This is the answer you will not like, and it has been open since 1.9.
+
+| | 1360 × 900 | 390 × 844 |
+| --- | --- | --- |
+| top of the price field, from the top of the page | **1088px** | **1555px** |
+| field height | 36px | 44px |
+| **visible without scrolling** | **no** | **no** |
+| how far below the fold | 188px | 711px |
+
+Measured on a print that has a model and an order, so the viewer is drawn and
+the field exists. **The 1.9 aim — "visible without scrolling, with a model on
+desktop and without a model on a phone" — is not met at either size**, and 2.0
+moved the field again without the measurement ever being taken. On the phone it
+is not close: the field is nearly two screens down.
+
+**The dead space, same screen, 1360px:** viewer **560 × 420**, the right-hand
+card **377** high. The card is **43px shorter** than the viewer — about 10%.
+That is not the gaping hole 1.9 had, so by your own test ("if it is much
+shorter … I would move the newest order's Betaling into it") the answer is
+*no, leave it*. But those two numbers sit badly together: the row beside the
+viewer has 43px to spare while the thing the owner actually reaches for is
+188px below the fold. **We are not proposing the move** — that is your call and
+Betaling is a whole component — but the price field is worth a round of its
+own.
+
+### 2.3 ScreenTags — how many tags
+
+**5.** Above your threshold of 4, so the three-column grid stands and the
+560px cap is not needed. For context the owner has said he does not use tags;
+five is what a library of 84 prints accumulated anyway.
+
+### 2.4 ScreenSharePage — the IBAN and the "Betalen" block
+
+**The IBAN is empty in Bedrijfsgegevens**, so by your own condition this is
+**not an app bug** and there is no gap to log. Verified end to end rather than
+inferred: a live share link whose klant has an open amount shows "Openstaand"
+and a total, and the page carries **no "Betalen" block and no IBAN anywhere**.
+The block is absent because the condition says it should be. If he ever fills
+the field in, the question becomes live again and we will re-measure.
+
+### 2.5 ScreenAccess — is the panel still clipped
+
+**No, it is not.** At 1360px, with a header menu open:
+
+| | |
+| --- | --- |
+| panel left edge | 334px |
+| panel width | **140px** — the full panel |
+| panel right edge | 474px |
+| right edge of the sticky column | 380px |
+| horizontal page scroll | **0** |
+
+The panel overhangs the sticky column by 94px and nothing is cut off, and the
+items read "Alles selecteren" as you expected. **Your fix works; the portal you
+held in reserve is not needed.**
+
+### 2.6 VideoPlayer — video-only prints, and `.mkv`
+
+**2 prints of 84 have a video and no model**, which is the thumbnail rule's
+whole population, and it matches the "two of 83" you recorded in 2.0 — the
+library grew by one print and neither of the two changed. The `.mkv` half you
+already closed in 2.17 from our count (**2 of 121**, 119 `.mp4`); this is the
+other half of the same entry and it can be struck with it.
 
 ---
 
-## 2. Still with you from 2.15
+## 3. The names, and the rule that actually worked
 
-Unchanged since the last round, and all three are small:
+**The repo is clean.** A scan of all **481** tracked files against **93** real
+names taken from the owner's library — 12 klant folders and 84 project folders,
+read off disk rather than from any list — returns **zero** customer and project
+names. That is the first time it has been true.
 
-1. **GAP-180**, one declaration: `flex: 1 1 0` on `.pp-guesthead > .pp-brand`
-   in the phone block, with its `.pp-device.phone` twin. Measured: the guest
-   head is one height up to 29 characters of studio name and 32px taller from
-   30, because the bar wraps before the brand shrinks.
-2. **GAP-181**, one rule: `.pp-drawer a:focus-visible`. The last of the four
-   places GAP-177 names, still drawing Chromium's own ring at 2.86:1 in dark.
-3. **GAP-179**, one mark-up-in-place: PaymentPanel's *Rol User* state
-   superseded by GAP-170, and a word on whether `pay.userNote` is retired.
+It took three sweeps to get here and the first two both worked from a list of
+names someone had written down. Both missed things, because a list cannot
+contain what nobody knew was there: 2.16 swept four names and left three, one
+of which was not in a preview at all but in **prose**, inside your argument
+about the file-name truncation regex. The method that worked is the obvious one
+in hindsight — compare against the library itself.
 
-## 3. Two more answers, one of which is a request for you
+**Two leaks were ours, not yours**, and they are fixed in the same pass: a real
+project folder name hard-coded as a G-code fixture in the backend tests, in an
+exact and an underscored form, and the 15-of-16 near-miss in two frontend
+suites where it was spelled with different capitalisation. Neither had anything
+to do with the design system and no import would ever have found them.
 
-Both arrived after the sections above were written. The first is **GAP-182**,
-and it is the only thing in this round we are asking you to design.
+What remains in the repo is the owner's own first name, in 20 files, in none of
+them as a klant: the operator in your previews, his login field, "afgeschreven
+door". That is the repo's git author and it is already public.
 
-**GAP-182 — GAP-176's consequence, answered: he wants the project folder
-back.** We flagged in 2.15 that removing the Project row took the last mention
-of where a print lives on disk off the operator's page, on all 84 prints. Asked
-directly, he said **yes, bring it back — as a path**. Not the row GAP-176
-removed, which was the print's name a second time: `klant / project`, which on
-his library is a different string on every print. **GAP-176 stays resolved and
-stays built as you wrote it**; this is a new row on the same card, and we have
-not guessed at its shape.
+**The working rule from here, which you wrote and we agree with:** a fixture
+name is either already in the export or checked against the library before it
+ships. You cannot run that check and we can, in seconds. Name the exact strings
+and we will run them. Your five candidates for next time —
+`Plantenhanger`, `Deurstopper`, `Muurbeugel`, `Pennenbak`, `Lampvoet` — are all
+**clear**, as are `Vitrinekast inzet`, `Kabelgoot bureau` and `Algemeen`, which
+2.17 already uses.
 
-What is open is yours: which card and under what label; one path string or two
-facts; whether a path whose tail equals the print name is still drawn — that is
-the 84-of-84 case and the whole reason GAP-176 exists, so the answer decides
-whether this quietly restores what you removed; whether a klant sees it or it
-is the operator's fact alone; and what it reads when a print has no project
-folder. Nothing is needed from the API: `customerFolder` and `projectFolder`
-are already in the detail payload for every role, and `placeOf` in
-`frontend/src/prints/filter.ts` already renders `klant / project` with GAP-072's
-comparison for the cards.
+**One you flagged and we checked: `Cup holder v2` stays.** It shares a
+10-character run with a real folder, but that is 59% of that folder's name
+against the 94% of the one you replaced, and it is a generic English object
+name any print library would hold. The owner's call was to leave it.
 
-**The `squashName` width, closed.** We asked whether it should ignore all
-punctuation or case and spaces; he answered *"ook hoofdletters en spaties"* —
-all three. That is what the function has done since 1.9
-(`toLocaleLowerCase('nl')` and every non-letter, non-digit stripped), so
-nothing changed in the code and GAP-072's wording matches it. No action for
-you; recorded so the question is not asked a third time.
+---
 
-## 4. The fixture names, again
+## 4. What is open
 
-Nothing in the export has changed, so this stands exactly as it did last round
-and it is the one item here that is not a design question. Three klant names
-the previews, READMEs and changelog have used since 1.0 — and one print name —
-are real folders in the owner's library. The app's own copies were renamed in
-two passes and the repo is public, so the exported `design-system/` tree is now
-the only place they are left: **31 files carry the old print name and 28 the
-old klant names.**
+**Nothing is blocked, on either side.** No gap is open, nothing is waiting on a
+decision, and there is no placeholder in the frontend.
 
-The set the app uses from here on is **Koen, Esmee, Veerle, Anouk, Bas** and
-the print **"Bloembak clips"**. Please use those six and nothing else. One
-more: `<h3>Rick</h3>` appears as a klant in `ScreenDashboard/preview.html`.
-Rick is the owner — he is the operator in every screen you draw and he is
-`lastChange.by` in this index; he should not also be one of his own customers.
-You cannot check a name against his library yourself, which is exactly why the
-list above is the whole list: please invent nothing new.
+Two things we are carrying, neither urgent and neither yours:
 
-## 5. Two bugs we fixed that are not yours, and one of them touches a spec
+1. **`VideoPlayer.tsx` still plays through the download route** in the
+   operator's file-list dialog. 2.16 says that form is unchanged, and it works
+   — but there are now two ways to play the same file through two routes, and
+   the new one can do everything the old one can. That is cleanup, not a bug,
+   and we will do it when it stops being the only thing in a branch.
+2. **`pay.userNote` is retired and unrendered**, as 2.16 asks. The key is still
+   in `nl.ts`; nothing reads it and no check objects.
 
-Both were found in the owner's production instance this week and both are ours,
-not the design system's. One is worth your time:
-
-**A klant whose folder was gone stayed a klant.** `CustomerCard` 2.13 §2
-refuses "Klant verwijderen" on a klant with no prints and answers the question
-"how do I get rid of this klant?" with **"remove the folder"** — and backs it
-with a measurement: *"11 klanten → 12 with a folder added → 11 again when it
-was removed"*. **Your reasoning was right and our code did not keep its
-promise.** A folder removed while the portal was running left the klant in
-every list until the next restart, and a klant whose prints were all deleted
-came straight back as a tile reading "Nog geen prints" — which is false for a
-klant who has prints the view is not showing, and which by your own rule
-carries no delete action, so it could not be undone from where it appeared.
-Both are fixed; the disk is the record again. **No change to the spec is
-needed** — we are telling you because that measured sentence in §2 was true of
-the design and not of the app, and a reader would have believed it.
-
-The other: "Markeer als betaald" reported an error on every payment it had
-already saved, because the route answered `201` with an empty body and the
-client parses the body of anything that is not a `204`. Entirely ours, no
-design surface, mentioned only so the round's commits are accounted for.
+And one for you, carried from §2.2: **the price field**. Everything else in
+this round is an answer or a closed gap; that one is a measurement that failed
+its own aim twice, and it is the field the owner reaches for most.
