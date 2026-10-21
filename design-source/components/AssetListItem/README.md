@@ -1,0 +1,153 @@
+AssetListItem is one file of a print (G-code, 3MF, STL, video, Fusion 360, PDF, URL or other) with its own weight, time, times printed and spool(s).
+
+**Anatomy.** **Row:** type icon (20px, `muted`), file name in `mono` truncated in the middle, meta line (size, grams, time; "× 2" when times printed is above 1), the compact NumberInput "Aantal keer geprint" (min 1, step 1, default 1, G-code and plate rows only), the toggle "Telt niet mee in kosten", download. A single-slot file keeps one spool picker trigger in the row. **Multi-colour G-code:** one indented `.pp-slot` sub-row per used slot: "Slot n", grams, SpoolSwatch and its own SpoolPicker trigger. A slot without an assigned spool shows the slicer colour swatch with the hint chip "slicer" and the trigger "Kies een spoel". **3MF with plates:** child rows (`.pp-asset.child`) named "Plaat n", with a 20px plate thumbnail instead of the type icon, the same controls as a G-code row and their own slot rows. The 3MF parent row itself has only the download. **Duplicates:** `warning` badge "Mogelijk dubbel" in the meta line plus the visible hint "Zelfde bestand als {bestand}. Gebruik liever Aantal keer geprint." **Excluded:** name struck through in `muted`; an automatic exclusion shows its reason line under the name with an info icon ("Telt niet mee: dubbel met G-code", "Telt niet mee: map Test"); a manual exclusion shows no reason line. At 480px and below the actions wrap to a second line and slot rows stack grams above the picker.
+
+**Tokens.** `border`, `surface-2` (children and slots), `muted`, `text-strong`, `font-mono`, `warning`, `warning-tint`, `space-8` (child indent).
+
+**States.** Default, hover (`primary-tint-soft`), excluded (manual / automatic with reason), duplicate, missing file (warning badge "Bestand ontbreekt"), no weight or time yet (dashes), saving (control busy, value kept).
+
+**Accessibility.** Full file name in `title`; the toggle and the count input have visible labels; duplicate hint and exclusion reason are real text, not tooltips only; slot and plate rows are a nested list (`role="list"` inside the parent item); download is a real link with `download`.
+
+**Dutch copy.** Aantal keer geprint | × {count} | Telt niet mee in kosten | Telt niet mee: dubbel met G-code | Telt niet mee: map Test | Mogelijk dubbel | Zelfde bestand als {bestand}. Gebruik liever Aantal keer geprint. | Plaat {n} | Slot {n} | slicer | Kies een spoel | Bestand ontbreekt
+
+**Orders (1.4).** A file that is in no order shows the badge "Niet in een bestelling" (`warning`) and the hint "Nieuw bestand. Voeg het toe aan een nabestelling." instead of the "Aantal keer geprint" field; it does not count in any cost or price. New files join the newest order automatically while that order has no price, payment or write-off; otherwise they wait until the owner makes a Nabestelling and ticks them in. Inside an order the "Aantal keer geprint" field belongs to that order; the same file can have a different count in another order.
+
+**1.6.** (2026-10-07) **Locked order (GAP-048), confirmed as built.** When the order is on a final invoice, the file list of that order opens with one visible help line (`.pp-lockhelp`: badge "Op factuur {nummer}" plus `pp-help` "Staat op een definitieve factuur en kan niet meer worden gewijzigd.", copy key `pay.lockedHelp`). Every locked control points at that line with `aria-describedby`. A disabled control gets no hover and no keyboard focus, so a tooltip could not reach it, and the Tooltip spec forbids a tooltip as the only place of an essential instruction. Per control: **"Aantal keer geprint"** is plain text "Aantal keer geprint × {n}" (as the role User sees it; `.pp-qty-text`, no input); the toggle **"Telt niet mee in kosten"** is disabled (existing disabled state, `opacity-disabled`, value kept); the **slot and file SpoolPicker triggers** are disabled (spool choices change the cost, so they lock too) and still show the current spool; download stays. Excluded and duplicate rows keep their reason lines. Files that join the order later are not possible (a locked order takes no new files; they wait as "Niet in een bestelling").
+
+**1.7.** (2026-10-07) **`.pp-lockhelp` wraps (GAP-054, resolved).** `flex-wrap: wrap` on all widths, and at 480px and below the badge "Op factuur {nummer}" sits above the sentence (`flex-direction: column; align-items: flex-start`), so the sentence has the full width (about 290px at 360px) instead of a 93px column. Checked at 360px in the phone frame: the help text is two lines at most.
+
+**1.9.** (2026-10-07) **Video rows (GAP-085, resolved with the new VideoPlayer component).** A `.mp4` or `.mkv` row (icon `film`) gets an icon button **"Afspelen {bestandsnaam}"** (`play`) before "Downloaden"; it opens VideoPlayer in a dialog (a bottom sheet on phones). The row itself is unchanged: file name split as before, size and duration in `pp-meta`, "Telt niet mee in kosten" (video never counts in cost). `.mkv` and other containers a browser cannot decode keep the button; the dialog then says "Dit formaat speelt niet in de browser." and offers Download. Locked rows (on an invoice) keep Afspelen (playing changes nothing). No play button without access to the klant or when the file is gone (archived). A print's thumbnail may come from a video: see VideoPlayer. **Dutch copy (new).** Afspelen {bestandsnaam}
+
+**2.0.** (2026-10-08) **The same row in two places (GAP-097).** A file row is now written in two contexts and the context decides what it carries.
+
+- **In the print's "Bestanden" card** (`pp-pdfiles`, one card per print): every file once. The row shows the type icon, the name, the meta line (size, grams, time, duplicate hint) and the download; in the meta line it also says **which order counts it** — `span.ord` "Telt in Bestelling 1" / "Telt in Nabestelling 2" (several orders: "Telt in Bestelling 1, Nabestelling 2"), or the `warning` badge "Niet in een bestelling" with the 1.4 hint for a file that waits. **No controls that change a cost here:** no "Aantal keer geprint", no "Telt niet mee in kosten", no spool trigger — those belong to an order and a locked order must keep its own. The play button of a video row stays here, and this is the only place a video, a PDF, an STL or a link row appears.
+- **In an order's "In deze bestelling" section**: only the items that order bills, with the controls exactly as 1.4 to 1.9 describe them (count, exclude toggle, slot rows, lock rules, `.pp-lockhelp` once per order).
+
+**Plate thumbnail (GAP-071).** `.pp-plate.tinted` is the neutral `surface-2` ground with a `border` hairline; the filament colour of a plate is the SpoolSwatch in its slot row, as it already was. No plate or model render sits on the filament colour any more.
+
+**Dutch copy (new).** Telt in {bestelling}
+
+**2.2.** (2026-10-08) **The name column keeps a floor; the controls column yields (GAP-111, resolved).** The grid was `auto minmax(0,1fr)` and, above the 760px container breakpoint, `auto minmax(0,1fr) auto`. An `auto` track takes max-content and gives nothing back: the controls measure **651px**, so just above the breakpoint the name column was left **75px**, and the nowrap "Mogelijk dubbel" badge (min-content **128px**) was drawn on top of "Aantal keer geprint" — the control its own warning text sends you to.
+
+- The third track is now **`minmax(0, auto)`** and the second **`minmax(var(--pp-name-min), 1fr)`**, with `--pp-name-min: 240px` in `bundle.css`. The controls keep max-content while there is room for it and **wrap** (`.acts` already wraps) when there is not; the name column never goes below 240px, which holds the widest badge with room for about thirty characters of file name.
+- **`minmax(0,auto)` on the controls alone is not the fix, and it is worse.** With a name column whose minimum is 0, grid gives the free space to the controls track first and the name collapses to nothing. The floor is the part that does the work; letting the controls shrink is what stops the row overflowing instead. I would not have taken the one-line override.
+- `.pp-asset .ord` ("Telt in Bestelling 1, Nabestelling 2") loses its `white-space: nowrap`: it is a sentence, not a badge, and at 36 characters it was the second thing in that column wider than the column. **Badges keep `nowrap`** — a badge that breaks mid-phrase is worse than a badge that is guaranteed room — and the floor is what guarantees them room.
+- The **breakpoint stays at 760px**. With the floor in place the three-column form fits there (760 − 24 padding − 24 gaps − 20 icon = 692, of which the name takes 240 and the controls wrap into the rest), so the widths that were already correct stay correct and nothing moves to the two-row form that was not already in it.
+- **Drawn** in the preview at a 900px and a 768px container, with the duplicate row that overflowed.
+- **There are two of these containers, and the rule is about the narrow one.** Since 2.0 a print detail holds **two** `.pp-assetlist` containers — the print's "Bestanden" card and the order's "In deze bestelling" section — and they carry different `.acts`. The print-level row has a download (and Afspelen on a video): a third column about 36px wide, so its name column is never short. The **order list** is the one with the count field, the exclude toggle and the spool triggers that measure 651px together, and it is the narrower of the two. The same breakpoint therefore means two different things on one page, which is what made the first account of this bug unreadable. 2.0 split the row into two contexts and never said that; it says it here now.
+- **Container widths, measured** (print-level / order-level): window 900 → **796 / 794**, 1400 → **1132 / 628**, 1700 → **1432 / 794**, 2000 → **1732 / 961**. *(An earlier 2.2 entry gave 780 / 572 / 1326 / 1620 as measurements; they were derived, not measured, and the implementer retracted them. They are wrong and so was the explanation that went with them — the list at 1400 does not fall below the breakpoint at print level, it is 1132. Only the figures above are measured.)*
+- **And they explain the whole sweep, exactly.** Order list at 794 (windows 900 *and* 1700): 794 − 24 padding − 24 gaps − 20 icon − 651 controls = **75px** of name column — the very number first reported for the collapsed column, to the pixel. Order list at 628 (window 1400): below the 760px breakpoint, so the two-row form, which cannot collide. Order list at 961 (window 2000): **242px**, two pixels clear of the floor this gap sets, which is why 2000 looked correct. The sweep was never non-monotone; it was monotone in a container nobody had measured. After the fix, 794 gives the name its 240px floor and the controls **486px** — the figure the implementer verified independently, which corroborates 794 and rules out the retracted 780 (that would give 472px).
+- **The 240px floor is close to the real distribution, not comfortably above it.** The widest working case before the fix was 242px, so nearly every real width now sits *on* the floor rather than above it. That is the floor doing its job, and it is also why I will not quietly raise it: a wider floor would start pushing the controls below their own min-content.
+- **The overflow risk this fix creates, exercised** (2.2): because the controls track may now shrink, a control that cannot shrink will overflow it, and `.pp-spoolbtn` shows a spool name in full with no truncation. Measured on a print with spools actually assigned (a print with none leaves every trigger on its 200px minimum and proves nothing): this library has 29 spools, longest name 35 characters, widest trigger **216px**, and **zero rows overflow their track at window 1700**. It holds analytically too: at the 760px breakpoint the controls track still gets 692 − 240 = **452px** and the widest single control is 216px, so the controls can always wrap into it. **Real in principle, unexercised rather than disproved** — a long enough name would still do it and nothing truncates. No gap logged for a number nobody can produce; if it ever bites, I would truncate the name in the trigger, not widen the track.
+
+**The floor, measured (2.2).** Every `nowrap` badge the name column can carry, measured at the widths where the column sits on its floor: "Mogelijk dubbel" **128px**, "Niet in een bestelling" **151px**, "Op factuur {nummer}" **134px** with a realistic number, and the asset status badge **139px** (there is no "Bestand ontbreekt" badge in the app; the spec names one, which is worth reconciling some round). All four are under **240px**, so `--pp-name-min` stays where it is. Verified after the change: in the order list at container 794 (windows 900 and 1700) the name column sits on its 240px floor and the controls take 486px instead of insisting on 651.
+
+**2.3.** (2026-10-08) **A spool trigger shows the spool that is in force (GAP-115, resolved).** The rule and its four states are in SpoolPicker's 2.3 note. Since 2.0 the spool triggers live in an order's "In deze bestelling" section and not in the print's "Bestanden" card, so this is about those rows:
+
+- A slot or file row with **no spool of its own, while the print has one**, reads *swatch + the print spool's name + the hint chip "van de print"* — never "Kies een spoel". Measured in the app: setting the whole-print spool moved a print's total from **EUR 7,05 to EUR 5,13** and clearing it moved it back, while the trigger said there was no spool the entire time. The name is in the trigger's normal ink, not `muted`: the value is real and it is costing money.
+- **The swatch cell loses the chip when a trigger is present.** `span.sw` shows the disc, and the trigger carries the provenance chip, because the chip belongs on the control that can override the value. Where there is no trigger — role User, a locked order — the chip stays in the cell, since then nothing can override it and the cell is the only place the fact can live. Today a slot shows the "slicer" chip in the cell *beside* a trigger that contradicts it; that is the duplication this removes.
+- A **slicer** colour keeps "Kies een spoel": no spool is in force and nothing is being overridden, so the trigger is telling the truth. That row is unchanged.
+- **Accessible name** of an inherited trigger: "Spoel van de print: {naam}. Kies hier een eigen spoel voor dit bestand." The chip is never the only carrier of the fact.
+
+Nothing about the row's grid, its name floor or its badges changes.
+
+**2.7.** (2026-10-09) **Two files of one print with the same name (GAP-120, resolved — marked, but not as a duplicate).** The model strip draws two buttons with the same picture and the same label where a print holds two files of the same name, and 2.6 accepted that on the understanding that the file list would explain it. Measured: it does not. On the print holding `Bloembak clip corner 2.stl` twice, both rows come back `possibleDuplicate: null`, `duplicateOf: null`, and no badge is rendered. The indexer raises "Mogelijk dubbel" for the same *content*; these are two distinct files that happen to share a name across folders. 3 pairs in 2 prints of 83.
+
+**"Mogelijk dubbel" must not widen to cover this, and that is the first decision.** The badge is `warning` ink and it carries `asset.duplicateHint`, "Zelfde bestand als {bestand}. Gebruik liever Aantal keer geprint." — which is advice to stop counting one of the two files and raise the other's count instead. Applied to two files with different content that is wrong advice, and following it drops a real file off the invoice. A `warning` badge also says *something is missing or needs your attention*, and here nothing is: the condition needs no action at all. A badge whose hint is false in the case it was widened to cover is worse than no badge.
+
+**What the row gets instead: one neutral line, on both rows.** `.pp-reason` as it already is — `muted`, `text-xs`, the info glyph, real text in the row — in the name column under the meta line:
+
+- **`asset.sameName`** — "Twee verschillende bestanden met dezelfde naam. Dit is het bestand in map {map}." The first sentence states the fact that distinguishes this from a duplicate; the second says which of the two this row is.
+- **`asset.sameNameNoFolder`** — "Twee verschillende bestanden met dezelfde naam in deze print." The fallback where the app has no folder for an asset. It states the fact and does not pretend to tell the two apart.
+
+**The rules around it.**
+
+- **Both rows carry it**, each naming **its own** folder. Neither file is the original, so marking one of the two would invent a culprit; and two rows naming their own folders are what actually tells the operator which is which. ("Mogelijk dubbel" marks the later file only, because there a first file genuinely is the one to keep.)
+- **`{map}` is the shortest form that separates the two**: the folder as `asset.excludedReason.folder` already names folders, extended leftwards along the path relative to the print root until the two rows differ. Two files of the same name cannot live in one directory, so a path that differs always exists; only the app's record of it may be missing, which is what the fallback is for.
+- **Both contexts.** The fact belongs to the file, not to an order, so the line is drawn in the print's "Bestanden" card (which always holds both) and in an order's "In deze bestelling" section (which may hold one or both). Where controls sit beside the row, the line is the difference between setting the right spool or count and the wrong one.
+- **Any file type**, not only the models the strip shows. The measured pairs are STL; a G-code pair would carry costs and is drawn in the preview as the case this library does not have.
+- **It changes nothing else.** No badge, no `warning`, no strike-through, no effect on cost, price, exclusion or the duplicate logic. A row can be both excluded and same-named: then two `.pp-reason` lines, **the exclusion first**, because that one changes the money.
+- **No new class and no new token.** `.pp-reason` without a colour override is exactly this: a statement of fact, not a warning.
+
+**Accessibility.** The line is real text inside the list item and is read before the row's controls, so no control needs its own copy of the fact; the full name stays in `title` as before. It is not a live region — the condition is a property of the print, not of anything the viewer does.
+
+**Both themes, no new pair.** `.pp-reason` is `muted` on `surface` and on `surface-2` for a child or slot row; both are in the contrast report at 4.5:1 or better.
+
+**The strip gets no new words (rejected).** ModelPicker's labels are a picker's labels; turning one into a sentence to explain a data condition is what the file list is for, and the strip's two identical labels stay as 2.6 specifies them. The cost of the answer is six muted lines in the whole library, in the one place the operator is already reading file names.
+
+**Drawn in the preview:** the measured STL pair at print level, a G-code pair with the order-level controls, the row at a 420px container where the line wraps and the controls drop to the second row, and the long case — one row both excluded and same-named, with the fallback form on the row beneath it.
+
+**2.8.** (2026-10-17) **A third relation between two files of one print, and it is the only one with a direction (GAP-132, resolved as a rule).** Nineteen percent of this library's prints (16 of 84, 84 of 379 model files) carry a version mark in a model file name — `v5.3mf`, `Case_A_v5.stl`, `Bloembak clip straight v3.3mf` — and 7 prints hold an editable source file (`.f3d`, `.step`, `.scad`), which is the subset the owner designed himself. His loop there is: model, print, let the user try it, change it on their feedback, send a final one. So a print's files are sometimes a **set** and sometimes a **history**.
+
+This row now knows three relations between two files of one print, and they are not variations of each other:
+
+| relation | what it means | direction? | how it is known | what the row draws |
+|---|---|---|---|---|
+| **duplicate** | the same content | **yes** — the first file is the one to keep | **observed**: same bytes, and which was indexed first | `warning` badge "Mogelijk dubbel" + `asset.duplicateHint`, on the later file only |
+| **same name** | different content, one name | **no** — neither is the original | **observed**: the names and the folders | `asset.sameName` / `asset.sameNameNoFolder`, `muted`, on **both** rows (2.7) |
+| **superseded** | one version replaced another | **yes** — and it is the whole content of the relation | **not known at all today** | **nothing**, by rule below |
+
+**The rule: a direction between two files may be drawn only where the direction is observed or recorded — never where it is read out of the file's name.** The first two relations pass: the duplicate's direction comes from identical bytes and an index order, and the same-name line claims no direction precisely because none is observable. Supersession fails, and it fails on this system's own findings rather than on caution:
+
+- The version mark sits **in or near the middle of a long name**, which 2.4, 2.5 and 2.6 established is the one zone this system cannot read reliably — and `v10` sorts before `v9` in the file-name order the strip and this list both use.
+- The implementer's own count is a regex over names and says so: the `22` in `Bloembak clip corner 22` is a width, not a revision — three sizes of one part read as three versions — and a version kept in a separate folder or marked another way is missed. **19% is the shape of the thing, not a count.**
+- Supersession is an **asserted** fact in the sense of `README.md` rule 1: that v5 replaced v1, and above all **which version the customer actually received**, is something only the owner knows. Nothing can re-check it, so it carries a date and an author or it is not shown.
+
+Until it is recorded, the row is **unchanged** and that is deliberate: a superseded file is a normal file, with its real name, its real size and its real place in an order. No dimming, no strike-through (that is exclusion, which changes money), no "oud" badge, no grouping, no reordering. **No new class, token, copy key or colour pair.** What is settled is only what the system may *claim*; nothing is claimed yet.
+
+**2.13.** (2026-10-18) **The row's three bands, measured again, and all three faults have one cause
+(GAP-111, reopened and resolved).** 2.2 gave the name column a floor and that half still holds. What
+it did not touch is that **the controls column takes the width of a single-line layout it never
+draws.** Measured in the app on an order with four G-code files, at a 917px row: tracks
+`20px / 240px / 608.656px`, `align-items: center`, the type icon's middle at **y=946** and the file
+name's at **y=902** — the 20px glyph sits **44px below the name it belongs to** — the duplicate
+warning's triangle centred on three wrapped lines beside the middle one, `.acts` sized at
+**max-content 609px** and then **wrapping to two lines anyway**, and the name clipped to its 240px
+floor to pay for it.
+
+**1. The slot that had no name is the slot that was misaligned.** `.body` and `.acts` were named and
+placed; the first cell — the type icon, or a plate's 40px thumbnail — had no class at all, so no
+rule could reach it and `align-items: center` centred a 20px glyph against a 171px block. The row is
+now **`align-items: start`** and the first cell is **`.lead`**: a box one `--leading-base` tall with
+its content centred *in that box*, so the glyph sits on the first line at any row height and a plate
+thumbnail still centres on itself. **`.pp-reason` becomes `align-items: flex-start`** for the same
+reason — an icon that labels a block of text belongs on the block's first line, which is where the
+duplicate triangle now is.
+
+**2. The band leaves the third column when it carries value controls.** `.acts` has two forms and
+the row says which, because CSS cannot see what a band holds:
+
+- **icon buttons only** — the print's "Bestanden" card (Downloaden, Afspelen): unchanged, the row's
+  third column, 36 to 80px beside a long name.
+- **value controls** — an order's "In deze bestelling" (the count, the exclude toggle, a spool
+  trigger): the row takes **`.pp-asset.band`** and `.acts` gets **a line of its own** under the name
+  block, left-aligned, starting at the name's left edge.
+
+At the measured container of 794px that turns `20 + 240 + 609` into a name block of about **738px**
+and a band of 738px holding 609px of controls **on one line**. The name stops being clipped and the
+controls stop wrapping — the row that wraps today gets *shorter*, not taller. **The cost is at the
+wide end:** at container 961 (a 2000px window) the controls fit beside the name today, so there the
+row grows by one control line, about **44px** per row. Measure the print detail's height at 1400px
+and 2000px before and after; the trade is the owner's to see. `--pp-name-min` stays at 240px and
+still floors the rows that keep three columns.
+
+**3. Rows agree when at most one control's width is data, and it is the last one.** `.acts` was a
+right-aligned flex, so only the right edge was fixed and "Aantal keer geprint" landed at a different
+x in every row — invisible in a library where the spool names happen to be the same length, which is
+why it took the owner's screenshot. The band's order is **count · exclude toggle · spool trigger ·
+`.end`**: the first two carry fixed words and start at the same x in every row, the trigger grows
+with the spool's name but *starts* at a fixed x, and `.end` (the icon buttons) is pinned to the
+row's right edge, so it *ends* at a fixed x. That is the general rule, and it is cheaper than giving
+each control a fixed width — which would have meant truncating spool names to make a toggle line up.
+
+**Slot rows are unchanged, and that is consistent rather than an omission.** `.pp-slot` pushes its
+trigger to the row's right edge with `margin-left: auto`, so slot triggers already *end* at one x;
+nothing in a slot row has been measured as misaligned.
+
+**Markup the app changes (four small things, no renames).** `class="lead"` on the row's first cell;
+`band` on the rows of an order's file list; the band's children in the order above; the trailing
+icon buttons wrapped in `<span class="end">`. The print-level list changes nothing. **Drawn in the
+preview:** the banded row at 900px and 760px containers, the duplicate row with its triangle on the
+first line, and the locked and excluded rows in band form.
+
+**Both themes, no new token, no new colour pair.**

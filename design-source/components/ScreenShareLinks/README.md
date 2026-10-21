@@ -1,0 +1,31 @@
+Deel-links (`/share-links`, admin only) manages the read-only links customers open on their phone.
+
+**Anatomy.** List grouped per klant with ShareLinkRow rows (label, created, expires relative and absolute, status, Intrekken). The primary button "Deel-link maken" opens the create dialog: Klant, Label, Verloopt (Over 7 dagen, Over 30 dagen, Over 90 dagen, Nooit). Choosing Nooit shows the help text "De link blijft werken tot je hem intrekt."; ShareLinkRow then shows "Verloopt niet" in `muted` instead of a date. A klant that is niet factureren may get a link as well: the Klant field shows the help text "Deze klant wordt niet gefactureerd. De link toont alleen de printlijst, zonder bedragen." and Maken stays enabled; the share page then uses the not-billed variant (see ScreenSharePage). There is no disabled state. After Maken the TokenReveal dialog shows the full URL once. Intrekken opens a ConfirmDialog naming the label. **Phone:** rows become cards with the button under the details; dialogs are sheets. **Empty:** "Nog geen Deel-links" with the create button.
+
+**Tokens.** ShareLinkRow, Dialog, TokenReveal, Alert tokens.
+
+**States.** Loading, default, empty, creating, creating with Nooit, creating for a niet-factureren klant, token shown, revoking, error.
+
+**Accessibility.** Status is text plus icon; token box is focusable and selectable; confirm before revoke.
+
+**Dutch copy.** Deel-links | Deel-link maken | Klant | Label | Verloopt | Maken | Nog geen Deel-links | Deel-link {label} intrekken? | Over 7 dagen | Over 30 dagen | Over 90 dagen | Nooit | Verloopt niet | De link blijft werken tot je hem intrekt. | Deze klant wordt niet gefactureerd. De link toont alleen de printlijst, zonder bedragen.
+
+**Inline values (1.5).** Lists use `pp-flush` and `pp-rule-t`.
+
+**1.9.** (2026-10-07) **Label is internal (GAP-077).** The create dialog says so under the field: "Alleen voor jezelf, de klant ziet dit niet." The label is never shown on the share page, the PDF or the tab title. **Filter (GAP-081, resolved).** Under the page title a SegmentedControl **Toon: Actief | Inactief | Alle** with counts; default **Actief**. *Inactief* = verlopen plus ingetrokken (dead links no longer fill the page; they are one click away and never deleted). With Actief and no active link: "Geen actieve Deel-links" with the line "Alle links zijn verlopen of ingetrokken. Maak een nieuwe link." and the create button. The filter is kept in the URL. **Duplicate labels.** Creating: a non-blocking `role="status"` line under the Label field when the klant already has a link with that label and it is still active: "Je hebt voor {klant} al een link met dit label. Je kunt hem toch maken." (Maken stays enabled). In the list: a quiet numbered suffix, muted, regular weight: "Q2 overzicht (1)", "Q2 overzicht (2)", numbered in order of creation, only for labels that occur more than once for the same klant in the visible list. **Shown once.** One line under the filter, not on every row (a repeated line on every row is noise): "De volledige link zie je alleen bij het maken. Kwijt? Maak een nieuwe link en trek de oude in." (Deviation from the proposal's "line on the row": the row's job is to tell links apart; the rule is the same for all of them.) **Dutch copy (new).** Toon | Actief | Inactief | Alle | Geen actieve Deel-links | Alle links zijn verlopen of ingetrokken. Maak een nieuwe link. | Alleen voor jezelf, de klant ziet dit niet. | Je hebt voor {klant} al een link met dit label. Je kunt hem toch maken. | De volledige link zie je alleen bij het maken. Kwijt? Maak een nieuwe link en trek de oude in.
+
+**2.14.** (2026-10-18) **The link is a key, so Intrekken ends a visit (GAP-165).** Nothing on this
+screen changes shape: the same rows, the same statuses, the same filter, the same create dialog,
+the same "shown once" line. What changes is what the operator is told when he revokes, because the
+act now has a consequence somewhere he cannot see — a visitor may be three screens into a session
+on this token. The Intrekken ConfirmDialog keeps its title "Deel-link {label} intrekken?" and
+gains one body line, `share.revoke.body`: **"Wie de link nu open heeft, komt er na deze actie niet
+meer in."** Honest about the mechanism, too: the session ends at the visitor's next action, not
+mid-sentence (ScreenSharePage 2.14).
+
+**"Verloopt" is still only a date and the create dialog is unchanged.** No new field for "may the
+klant walk the portal" — every link mints the same session, because a link that showed less than
+the role already shows would be the second portal the owner rejected. And the not-billed variant is
+untouched: that klant's session has no amounts, exactly as that klant's page has none.
+
+**Dutch copy (new).** Wie de link nu open heeft, komt er na deze actie niet meer in.

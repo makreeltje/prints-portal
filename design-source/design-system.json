@@ -1,0 +1,25 @@
+{
+ "assetGroups": {},
+ "blobs": {},
+ "createdOnFiles": {
+  "at": "2026-10-05T12:32:44Z",
+  "v": 1
+ },
+ "docs": {
+  "readme": "project/README.md",
+  "sections": []
+ },
+ "groups": [],
+ "lastChange": {
+  "at": "2026-10-20T15:05:00Z",
+  "by": "Design system",
+  "note": "Version 2.17, names only. Your library scan found three real strings 2.16 had not been told about and all three are gone: the fixture print in six previews is now Vitrinekast inzet, the near-miss invoice line in eleven files is now Kabelgoot bureau, and the worked example in the file-name-truncation argument (AssetListItem 2.6 and the GAP-133 row) is now Bloembak clip corner 22, where the trailing number is a width. Both replacements were already in this export and cleared by the same scan, so no new name enters the system. Nothing else changes: no token, class or copy key, bundle.css byte-identical to 2.16, no breaking change. Confirmed with nothing to change: Algemeen is not a folder in his library, GAP-182's Map row may replace the conditional Project row, and the mkv count is 2 of 121 so the unsupported-format state stays as specified (VideoPlayer 2.17). The rule left behind is in the changelog: a fixture name is either already in the export or checked against the library before it ships, near-misses count, and the sweep covers prose and not only previews.",
+  "via": "Claude Code"
+ },
+ "layout": "files",
+ "libraries": [],
+ "namespace": "PrintsPortal",
+ "sections": {},
+ "title": "3D Prints Portal",
+ "v": 3
+}

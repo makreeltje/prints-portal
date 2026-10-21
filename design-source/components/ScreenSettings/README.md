@@ -1,0 +1,121 @@
+Instellingen (`/settings`, admin only) holds the few global settings as section cards in one scrolling page, in two columns on a wide screen (2.0).
+
+**Anatomy.** Sections as cards inside `.pp-settings`: **Algemeen** (button "Opnieuw indexeren" with a progress bar and, when done, a result alert; Thema radio Systeem, Licht, Donker); **Prijzen** (NumberInput "Standaardmarge" in %; NumberInput "Stroomtarief" in €/kWh with the help "Gebruikt voor de stroomkosten van elke print: kWh × tarief."; the table "Materiaalprijzen" (`pp-mprices`: Materiaal, Prijs per kg, remove icon button per row; "Materiaal toevoegen" adds a row; a material name is unique, error "Dit materiaal staat er al."; the amounts are the estimated price per kg after Spoolman and a manual price) and its own "Opslaan"); **Printers** (one `pp-printer` card per profile: Naam, Vermogen in W, Aliassen and Timelapse-voorvoegsels as removable chips plus a small input, "Printer verwijderen"; "Printer toevoegen" adds an empty card; empty state "Nog geen printers. Zonder printerprofiel zijn stroomkosten niet meegerekend."; a watt value that is not a whole number gives "Vul een aantal watt in, bijvoorbeeld 350."; "Opslaan" saves the section, deleting a printer asks ConfirmDialog "Printer '{naam}' verwijderen?"); **Bedrijfsgegevens** (Naam, IBAN, Adres, optional E-mailadres and Telefoon, optional Logo upload for PNG or SVG that replaces the studio name; there is no BTW, KvK or VAT field); **Klanten** (one Toggle "Niet factureren" per klant; flagged klanten have no sale price, payment, Openstaand or invoice; they may get a Deel-link, which lists their prints only, without amounts, payment status or PDF buttons); **Spoolman** (status card: Verbonden or Niet bereikbaar with the URL, spool count and last sync). **Phone:** one column, two-field rows stack. Each section saves on its own button; toggles save immediately.
+
+**Tokens.** Card, FormField, NumberInput, Toggle, Radio, Alert tokens.
+
+**States.** Reindex idle, running, done, failed; logo empty and set; Spoolman connected and unreachable (warning alert with Opnieuw proberen).
+
+**Accessibility.** Sections are headings; the progress bar (`pp-progress` with `pp-bar`, width from the data property `--v`) has `role="progressbar"` with values; chip remove buttons carry `aria-label="{alias} verwijderen"`; errors are linked with `aria-describedby`; toggles have visible labels.
+
+**Dutch copy.** Instellingen | Stroomtarief | Materiaalprijzen | Materiaal | Prijs per kg | Materiaal toevoegen | Printers | Printer toevoegen | Printer verwijderen | Vermogen | Aliassen | Timelapse-voorvoegsels | Nog geen printers. Zonder printerprofiel zijn stroomkosten niet meegerekend. | Algemeen | Opnieuw indexeren | Indexeren… {n} van {totaal} bestanden | Klaar. | Thema | Prijzen | Standaardmarge | Bedrijfsgegevens | Naam | IBAN | Adres | E-mailadres (optioneel) | Telefoon (optioneel) | Logo uploaden | PNG of SVG. Vervangt de naam op het scherm en op documenten. | Klanten | Niet factureren | Spoolman | Verbonden
+
+**Logo (1.5)** *(the preview box is two boxes since 2.0)*. Uploading a logo changes the app too: it replaces the studio name in the AppShell (sidebar, phone top bar, drawer), on documents and on the share page; the icon rail keeps the initial. Allowed: PNG or SVG up to 1 MB, with the 2.0 file contract below. The preview boxes (`pp-logo-pair`, two `pp-logo-box` of 72×40px) show the stored file on the light and the dark ground.
+
+**1.9.** (2026-10-07) **Unsaved changes (GAP-083, resolved; your decision: per section, with a "changed" state).** Each section saves on its own (unchanged). A section whose fields differ from the saved values is *dirty*: its header shows an `info` badge **"Niet opgeslagen"**, **Opslaan** is enabled and next to it a ghost button **"Ongedaan maken"** puts the saved values back; a clean section has Opslaan **disabled** (`aria-disabled` via the disabled attribute, `opacity-disabled`) and no badge. Saving clears the state and shows the existing success toast. **Leaving with unsaved changes** (a menu link, back, closing the tab) asks first: ConfirmDialog "Wijzigingen niet opgeslagen" naming the sections ("In Standaardprijzen en Printers staan wijzigingen die nog niet zijn opgeslagen. Als je nu weggaat, gaan ze verloren.") with "Terug naar instellingen" (secondary, the default focus) and "Verlaten zonder opslaan" (danger); closing the tab uses the browser's own `beforeunload` prompt, whose text the browser controls. Switching between sections on the same page never asks (they are all on one page). The badge is text plus icon. **Printers (GAP-076):** a printer without Vermogen shows a `warning` badge **"Vermogen ontbreekt"** beside its name and the help line "Zonder vermogen kunnen de stroomkosten van prints op deze printer niet worden berekend." under the field; this is where the link "Vermogen instellen" from CostBreakdown lands (the field is focused and scrolled into view). **Dutch copy (new).** Niet opgeslagen | Ongedaan maken | Wijzigingen niet opgeslagen | In {secties} staan wijzigingen die nog niet zijn opgeslagen. Als je nu weggaat, gaan ze verloren. | Terug naar instellingen | Verlaten zonder opslaan | Vermogen ontbreekt | Zonder vermogen kunnen de stroomkosten van prints op deze printer niet worden berekend.
+
+**2.0.** (2026-10-08) **The page left most of its width empty (GAP-101, resolved).** Seven sections of short fields, each stretched across the full content width, with a 160px input and 900px of nothing beside it.
+
+**`.pp-settings`** wraps the sections: `repeat(auto-fit, minmax(320px, 1fr))`, `space-4` gap, `align-items: start`, capped at **1080px**. One column up to 800px of content, two above it, never three — a settings field is read, not scanned, and a third column would put a label 1000px from its heading. Order in the DOM is unchanged, so the columns fill Algemeen · Prijzen / Printers / Bedrijfsgegevens · Klanten / Spoolman. **Printers takes `span-2`** (`grid-column: 1/-1`): a printer card has a two-field row of its own and chip lists that wrap badly at 320px. Any section may take `span-2` when its content needs the width; nothing else does today. At 480px and below one column, as before.
+
+This is the same rule as the Tags grid: *a page of short rows or short fields lays them out in columns up to a 1080px measure, and never stretches one short row across the full width.*
+
+**No betaalinstructie without an IBAN (GAP-103).** **Bedrijfsgegevens** shows a `warning` line under the IBAN field while it is empty: **"Zonder IBAN staat er geen betaalinstructie op de deelpagina."** (`pp-help` with a `triangle-alert`, `pp-warnico`). It is a help line, not an error — an IBAN is optional for a studio that is never paid by transfer. The create dialog in ScreenShareLinks warns per link; see ScreenSharePage.
+
+**The logo must survive the rasteriser (GAP-104, resolved).** An uploaded SVG lost its text silently: the container ships no fonts (`fc-list` returns 0) and the rasteriser is given no font configuration, so a mark with one word rendered 1600 opaque pixels for the shape and **0 for the text**. A studio would find its own name missing from its invoices with no warning. The design system's answer is a contract on the file, checked at upload, not a promise about the renderer:
+
+- **An SVG may hold no text elements.** `<text>`, `<tspan>` and `textPath` are refused: **"Deze SVG bevat tekst. Zet de tekst om in contouren (outlines) of upload een PNG."** Lettering must be outlined to paths.
+- **An SVG may not depend on anything outside itself.** An external reference (`<image href>` to a URL, an `xlink:href` to another file, `@import`) is refused: **"Deze SVG verwijst naar een bestand buiten het logo. Upload een zelfstandig bestand."**
+- `currentColor` and CSS-dependent fills are refused for the same reason the asset rule says it: the logo is drawn in an `<img>` and in a PDF, where no CSS reaches it.
+- The field's help becomes: **"PNG of SVG, maximaal 1 MB. Vervangt de naam op het scherm en op documenten. Tekst in een SVG moet omgezet zijn in contouren."** A logo with lettering is better uploaded as a PNG at 3× the display size.
+- The preview box renders the stored file exactly as the app and the PDF will (`<img>`), so what the operator sees is what the invoice gets. Whether the container also gains fonts is the implementer's call; the file contract holds either way.
+
+**What a logo must satisfy (GAP-105, resolved).** One file is shown in both themes with no adaptation, and nothing said what that requires. It does now:
+
+1. **Both grounds, one file.** Every ink in the mark reaches **3:1 against both `#ffffff` and `#1a1b26`** (the two `surface` values) — a logo is a non-text graphic, WCAG 2.2 1.4.11. So: mid-tones only, no pure white, no near-black, no large flat area that disappears in one theme. Your `#5878d6` measures **4.14:1 on white and 4.13:1 on `#1a1b26`** and is a good example; the system's own `primary` cannot do it (6.12/2.79 light, 2.52/6.79 dark) and must not be used as a logo colour.
+2. **Legible at 32px.** The sidebar and drawer cap the logo at `--space-7` (32px) and the phone top bar at `--space-6` (24px). **No tagline and no second line** — at 32px a second line lands at about 4px, which is what you found when you drew one and removed it.
+3. **Between about 1:1 and 4:1 wide.** The sidebar is 220px with `space-3` padding, so a wider mark is scaled down until it is unreadable at the capped height. The icon rail and the `has-logo` rules keep the initial instead of the logo below 900px, as in 1.5.
+4. **Readable without colour.** Invoices are printed in black and white: no information in hue alone.
+5. **The preview shows both grounds at once** (`pp-logo-pair`: `pp-logo-box on-light` and `pp-logo-box on-dark`, 72×40px each) with the line **"Het logo wordt in beide thema's ongewijzigd getoond."** and, under it, **"Gebruik middentonen: elke kleur in het logo moet op wit én op donkergrijs te zien zijn."** The two grounds are the literal hex values of the two themes' `surface`, because a theme-aware variable can only show the theme you are in.
+
+No validator can measure point 1 for an arbitrary file, so the app does not refuse on contrast; the pair of previews lets the operator see it in one glance, which is the point of the gap.
+
+**Dutch copy (new).** Zonder IBAN staat er geen betaalinstructie op de deelpagina. | Deze SVG bevat tekst. Zet de tekst om in contouren (outlines) of upload een PNG. | Deze SVG verwijst naar een bestand buiten het logo. Upload een zelfstandig bestand. | PNG of SVG, maximaal 1 MB. Vervangt de naam op het scherm en op documenten. Tekst in een SVG moet omgezet zijn in contouren. | Het logo wordt in beide thema's ongewijzigd getoond. | Gebruik middentonen: elke kleur in het logo moet op wit én op donkergrijs te zien zijn. | Op licht | Op donker
+
+**2.0.1.** (2026-10-08) **Betaallink per klant (GAP-103, re-decided).** The **Klanten** section gets a second control per klant, beside the "Niet factureren" toggle: one optional field **"Betaallink (optioneel)"** (a URL; `pp-field` inside the klant's `pp-setrow`, full width under the toggle on a phone). It is per klant because a pasted payment link carries one klant's amount.
+
+- Help under the field: **"Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert."**
+- Once set, the field shows **"Toegevoegd op {datum}"** in `muted` `text-xs`, so a link pasted months ago is visibly old without the app having to guess at expiry.
+- A klant flagged **Niet factureren** has no Betaallink field (nothing is owed), and the field is hidden for the role Editor and below with the rest of the section.
+- The **missing-IBAN warning of 2.0** still shows under the IBAN field in Bedrijfsgegevens, with one addition: a klant that has a Betaallink but the studio has no IBAN gets the line **"Deze klant heeft wel een betaallink."** under its field, so the warning is not read as "this klant cannot pay".
+- Where it is shown to the customer, and why it is a secondary control that never quotes an amount: ScreenSharePage.
+
+**Dutch copy (new).** Betaallink (optioneel) | Een betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag verandert. | Toegevoegd op {datum} | Deze klant heeft wel een betaallink.
+
+**2.13.** (2026-10-18) **The page the owner called *walgelijk* (GAP-101, reopened and resolved).**
+2.0 wrote "One column up to 800px of content, two above it, **never three**" and then shipped
+`repeat(auto-fit, minmax(320px, 1fr))` capped at 1080px, which makes **three** from 992px up. The
+prose and the CSS disagreed and the CSS won. Measured in the app at 1400px, against the owner's own
+library: three columns of 349px, a page **3714px** tall, Algemeen **194px** with **1402px** of
+nothing under it, Prijzen 450 with 1146 under it, Printers 1580, Klanten 2018.
+
+**The column count was the smaller half.** The fault is the **row**: in one grid with
+`align-items: start`, the next row begins where the tallest card of this row ends, so every section
+that grows with the owner's data punches a hole beside the short ones. Three answers, and the first
+two are rejected:
+
+- **Rejected: `column-count`, or two explicit column stacks the app fills.** Both ask the layout to
+  balance heights. `column-count` also reads down-then-across and may split a card; two stacks make
+  the app decide which section goes where, which means the page's order depends on today's data.
+  A settings page has a reading order and it should not change with the number of printers.
+- **Rejected: `align-items: stretch`.** It removes the *hole* by inflating a 194px card to 1580px of
+  empty `surface`. A tall card of air is worse than air.
+- **Taken: the grid keeps one row rule, and the long sections stop sharing a row.**
+
+**1. Three columns are now impossible by construction.** A track is `max(320px, 50% - space-2)`: at
+least 320px *and* at least half the row, so two tracks fill it exactly and a third cannot fit at any
+width. Below 656px the 320px floor still wins and the grid is one column, exactly as before — this
+changes one thing only, the third column.
+
+**2. A section whose height is set by the owner's data takes the whole row.** `span-2` stops being
+an exception ("Any section may take `span-2` when its content needs the width") and becomes the
+rule for the two sections that hold **a list of records**: **Printers** (one card per printer) and
+**Klanten** (one row per klant, and that number grows with the business). The test for a future
+section: does it draw one card or row per thing the owner has? Prijzen's Materiaalprijzen table is
+the near case and stays paired — a studio has a handful of filament types, where Klanten is one row
+per customer, for ever.
+
+**3. The four fixed sections are paired by what they are, which is also how their heights pair.**
+DOM order is now **Algemeen · Spoolman / Prijzen · Bedrijfsgegevens / Printers (span-2) / Klanten
+(span-2)**: the two that are about the system itself, then the two that are about the studio, then
+the two lists, longest last — a long card costs nothing when nothing follows it (`README.md`, 2.3).
+At the measured heights the holes fall from **1402px and 1146px to about 50px and 170px**, and the
+page should get shorter, because Klanten at 532px (and at 1080px) is not the 2018px it is at 349px.
+**Measure the new page height and the two holes at 1400px**; I am giving the construction, not the
+number.
+
+**The betaallink help moves to the section (your question, and the answer is yes).** *"Een
+betaallink bevat vaak een vast bedrag en een vervaldatum. Controleer hem als het openstaande bedrag
+verandert."* is written **once**, directly under the Klanten heading, beside the existing
+niet-factureren help. **A label belongs to its control; an explanation belongs to the section.**
+Twelve copies of one sentence are not twelve facts. What stays **per klant**: the field's own label
+"Betaallink (optioneel)", `settings.payLink.added` ("Toegevoegd op {datum}") and
+`settings.payLink.noIban` ("Deze klant heeft wel een betaallink.") — each of those is about that
+klant.
+
+**The klant row has a shape now: `.pp-setrow.cust`.** Name and print count on the left, the "Niet
+factureren" toggle on the right, and the Betaallink field on a second line across the full row
+(`pp-w-420`, because a URL field as wide as a 1080px card is a thousand pixels for sixty
+characters). The row is the same at 360px and at 1080px, so there is nothing to reflow. A klant
+flagged **Niet factureren** has no field, as 2.0.1 says. A klant with **no prints** appears here
+like any other, with "Nog geen prints" as its count (GAP-162, CustomerCard).
+
+**Three things 2.0.1 specified and never delivered, which is my fault and is fixed in this
+export:** the Betaallink is not drawn in this preview, its four strings were never in
+`copy-deck.md`, and the app built them from this README's prose. They are keyed now —
+`settings.payLink`, `settings.payLink.help`, `settings.payLink.added`, `settings.payLink.noIban` —
+and the preview draws the field, the "Toegevoegd op" line and the no-IBAN line. *A string the deck
+does not carry is a string nobody proofreads* (2.12) applies to the design system too.
+
+**Both themes, no new pair, no new token.** Nothing here has ink: a grid track, a row shape and a
+sentence that moved.

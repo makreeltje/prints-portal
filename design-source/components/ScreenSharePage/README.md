@@ -1,0 +1,110 @@
+The share page (`/share/:token`) is what a customer sees when opening a Deel-link, usually on a phone from WhatsApp; it is read-only and needs no login.
+
+**Anatomy.** Lighter and more spacious than the operator UI: no sidebar, single centred column (max 560px on desktop, full width on phones), text at `text-md` or larger, `radius-xl` panels. Top: studio name or logo, heading "Overzicht voor {klant}" and the expiry notice — **never the link label**, which is internal (GAP-077, repaired here in 2.0 by GAP-088). Then the switch "Alleen openstaand", the list of prints (name, project and date, price, status badge, "Nog € x open" for partial payments, "Prijs volgt" when there is no price), a totals card (Totaal, Betaald, Openstaand; prints without price excluded) and the primary button "Download overzicht" (PDF titled "Overzicht"; with the switch on it contains only open lines). Never shown: internal cost, margin, notes, file names or other klanten. **Link without expiry (Nooit):** the expiry notice is left out. **Not-billed variant** (klant flagged Niet factureren): same head, no "Alleen openstaand" switch, no totals card, no payment badges, no amounts, no PDF button, no footnote; below the heading an intro line "Hier zie je de prints die voor je gemaakt zijn." and only the fields Print, Project and Datum, as a real table on desktop and as a list on phones; the backend returns no prices for these links. **Expired or revoked:** friendly page "Deze link is verlopen of ingetrokken" with a link icon and one explanatory sentence; no navigation. Dark theme follows the visitor's system setting.
+
+**Tokens.** `bg`, `surface`, `border`, `text-md`, `radius-xl`, badge tokens, Button (48px primary).
+
+**States.** Default, only open, empty ("Er staat niets open."), expired or revoked, loading.
+
+**Accessibility.** One `<h1>`; list semantics for the prints; status in text plus icon; the switch has a visible label.
+
+**Dutch copy.** Overzicht voor {klant} | Deze link verloopt over {dagen} dagen ({datum}) | Alleen openstaand | Prijs volgt | Totaal | Betaald | Openstaand | Download overzicht | Prijzen in euro. Prints zonder prijs staan niet in de totalen. | Er staat niets open. | Deze link is verlopen of ingetrokken | Vraag degene die je de link stuurde om een nieuwe. | Hier zie je de prints die voor je gemaakt zijn.
+
+**Inline values (1.5).** The share page uses only classes: `pp-share-line`, `pp-share-amt`, `pp-share-card`, `pp-share-body`, `pp-share-col`, `pp-share-cta`, `pp-illus-box`, `pp-share-h404` plus the helpers `pp-text-sm`, `pp-text-md`, `pp-center-t`, `pp-p4`, `pp-r-xl`, `pp-m0` and `pp-maxch`. Billed and niet-factureren variants share these classes.
+
+**1.6.** (2026-10-07) **No prices yet (GAP-053).** When no line has a price, the totals card is left out of the page (and the totals block out of the PDF): the list stays with "Prijs volgt" on every line, the footnote stays, and "Download overzicht" stays. Zeros are never shown for Totaal, Betaald or Openstaand. With the switch "Alleen openstaand" on and nothing priced, the empty state **"Er staat niets open."** wins, because without a price there is nothing to pay. **Expiry notice (GAP-051), confirmed as built.** ICU plurals: "Deze link verloopt over {days} dagen ({datum})", "Deze link verloopt morgen ({datum})" for 1 and "Deze link verloopt vandaag ({datum})" for 0; a link without expiry (Nooit) shows no notice. **Header (1.6).** The uploaded logo (as on documents), else the company name from Bedrijfsgegevens, else "3D Prints Portal". **Lines.** One line per order, as in the PDF, Openstaand and the invoices: Bestelling 1 shows the print name, a Nabestelling "{print} (nabestelling {n})"; archived prints stay, written-off orders and deleted prints never appear. **Same page for every dead link.** Unknown, malformed, expired and revoked links all show "Deze link is verlopen of ingetrokken", so a visitor cannot tell them apart.
+
+**1.9.** (2026-10-07) **Header (GAP-077, resolved).** The link label ("Q2 overzicht") is internal and no longer appears on the page, in the PDF title or in the tab title. The head is: studio (logo, else company name, else "3D Prints Portal"), heading "Overzicht voor {klant}", expiry notice. The create dialog in ScreenShareLinks says the label is only for you: helper text under the field "Alleen voor jezelf, de klant ziet dit niet." **Payment block (GAP-078, resolved).** A card "Betalen" between the totals card and "Download overzicht", only while the page has an open amount (Openstaand > 0) and the studio has an IBAN. Rows: IBAN (mono, groups of four), T.n.v. (company name), Bedrag (the open amount, the same as Openstaand, with "Alleen openstaand" on or off), Kenmerk (the klant name). Each row has a ghost icon button 48px high (`pp-btn-icon`) with the accessible name "Kopieer IBAN", "Kopieer naam", "Kopieer bedrag", "Kopieer kenmerk"; after a press the icon is a check for 2 seconds and a `role="status"` region says "IBAN gekopieerd" (etc.). Below the rows: "Vermeld bij je betaling het kenmerk." plus the studio e-mail (mailto link) or phone number (tel link) when set; neither set: the line is the first sentence only. **Not shown:** no IBAN set, everything paid, or a not-billed klant: no block and no empty frame. The amount copies as `40,67` (no currency sign, comma decimal) so it pastes into a banking app; the IBAN copies without spaces. **Thumbnails (GAP-079, resolved).** Each line leads with a 48px square (`.pp-share-thumb`) on `surface-2` with a 1px border, `radius-md`, model preview `object-fit: contain`, **no filament tint** (the tint belongs to the operator UI; on the customer page it made dark filaments hide the model). No preview: a muted box icon, no text (the image is decorative, `alt=""`, the print name is the line's name). Thumbnails load lazily and the line keeps its height without them. **Line subtitle (GAP-072, proposed).** The second line shows project and date; when the project equals the print name (case and spaces ignored) it shows the date only, so "Bloembak clips / Bloembak clips · 12 sep 2026" becomes "Bloembak clips / 12 sep 2026". Not-billed variant: unchanged (it is a table). **Colour.** The thumbnail ground is `surface-2` with `muted` on it for the icon; the icon is decorative (non-text), so no contrast pair applies; the rows keep the pairs already in `contrast.md`. **Dutch copy (new keys).** Betalen | IBAN | T.n.v. | Bedrag | Kenmerk | Kopieer IBAN | Kopieer naam | Kopieer bedrag | Kopieer kenmerk | {veld} gekopieerd | Vermeld bij je betaling het kenmerk. | Alleen voor jezelf, de klant ziet dit niet. **To measure (owner):** nothing for this part.
+
+**2.0.** (2026-10-08) **The contradiction in this file (GAP-088, resolved).** 1.9 dropped the internal link label from the head (GAP-077) but the Anatomy paragraph above still listed it, so the file disagreed with itself and DocOverview still specified it as the PDF's sub-line. Both are corrected: the label appears nowhere a customer can see — not on the page, not in the PDF (title or sub-line), not in the tab title, not in a downloaded file name. It stays in ScreenShareLinks for the operator, with the helper text that says so.
+
+**A way to pay (GAP-103, resolved — and one reading of it rejected).** The page says what is owed and the **"Betalen"** block from 1.9 (GAP-078) is how you pay it: IBAN, T.n.v., Bedrag and Kenmerk with copy buttons. Two things change so it cannot be silently absent, which is the likeliest reason the gap was written at all:
+
+- The block needs an IBAN in Bedrijfsgegevens. Without one it is not drawn — correctly, since an empty frame is worse — but until now nothing told the operator. Instellingen now warns, and the create dialog in ScreenShareLinks warns per link: **"Deze klant ziet geen betaalinstructie: er is nog geen IBAN ingevuld bij Bedrijfsgegevens."** with the link "Naar Bedrijfsgegevens". See ScreenSettings.
+- The block's position is confirmed: between the totals card and "Download overzicht" — what you owe, then how to pay it, then the paperwork.
+
+**Rejected:** an online payment button (iDEAL, a payment request, a provider's checkout). That needs a payment provider, an account, webhooks and a reconciliation story in a self-hosted app that deliberately has no VAT handling and no accounting; and a generic payment link cannot carry the amount, so it would show a different number from the page. A bank transfer with a copyable amount and reference is the honest answer for this product. If you want it anyway, say so and I will design the slot — see *Proposals* in the changelog; it is a product decision, not a design one.
+
+**To measure (owner):** is an IBAN filled in in Bedrijfsgegevens in the running install, and does the "Betalen" block appear on a link whose klant has an open amount? If the IBAN is set and the block is missing, this gap is an app bug, not a design gap, and should be logged as one.
+
+**2.0.1.** (2026-10-08) **The per-klant pasted payment link (GAP-103, re-decided; my rejection answered a question you had not asked).** You are right: I rejected a provider integration, and the gap proposes a URL the studio pastes per klant, which carries its own amount and needs no provider. Of my four reasons, three do not apply to that. **Accepted, with the rank and the staleness made explicit**, because the one reason that does still apply is the serious one.
+
+**What is still true.** A pasted link freezes an amount and often an expiry at the moment it is pasted, while the klant's Openstaand moves with every payment, every new order and every write-off. A customer paying a stale amount creates exactly the partial-payment state the rest of this app works hardest to explain, and a Tikkie link that expired is a dead button on a page the studio cannot see. So the link is a convenience, never the authority.
+
+**The design.**
+
+- **Where it is stored:** per klant, in Instellingen → Klanten, beside "Niet factureren" — one optional field **"Betaallink"** (a URL). Not in Bedrijfsgegevens: it is per klant by nature. See ScreenSettings.
+- **Where it appears:** inside the existing **"Betalen"** block, **below** the IBAN, T.n.v., Bedrag and Kenmerk rows, as a **secondary** full-width control 48px high (`pp-btn pp-btn-secondary pp-share-cta pp-fill`), labelled **"Betalen via {studio}"** — and **the label never carries an amount**, because the amount in the link is not ours to quote. Under it, in `muted` `text-sm`: **"Deze link is door {studio} gemaakt en kan een ander bedrag bevatten dan hierboven staat."**
+- **Rank, which is the whole point:** the IBAN rows come first and are always correct; the link comes second and is merely quick. The transfer details are never hidden behind it, and the link is never the primary action on the page.
+- **When it is not drawn:** no link set; Openstaand is 0 (nothing to pay, so no stale button is left behind); a not-billed klant; or no IBAN *and* no link (then there is no "Betalen" block at all, as in 1.9).
+- **A link with no IBAN** still gets the block: the heading, Bedrag, Kenmerk and the link, without the IBAN and T.n.v. rows. The Instellingen warning about a missing IBAN then changes to "Deze klant heeft wel een betaallink." (`settings.payLink.noIban`; this line named `settings.customer.payLink.only` until 2.15, a key that was never in the deck — GAP-164).
+- **Accessibility.** A real link (`<a>`), `rel="noopener noreferrer"`, `target="_blank"` with "(opent in een nieuw tabblad)" in its accessible name; the note under it is plain text, linked with `aria-describedby`, not a tooltip.
+- **Colour.** A secondary button on `surface` inside `pp-sharepay`: existing pairs, no new row in `contrast.md`.
+
+**What I am not doing:** no expiry tracking, no amount in the label, no check that the URL is reachable, and no primary styling. If the owner wants the amount to be right, the IBAN rows are where it is right.
+
+**Dutch copy (new).** Betalen via {studio} | Deze link is door {studio} gemaakt en kan een ander bedrag bevatten dan hierboven staat.
+
+**And the correction to my own row:** GAP-103's "the share page offers no way to pay" is false — you verified the block renders with heading, IBAN and the owed amount on a live share page. The 2.0 warning for a missing IBAN stays (it is still a real hole, just not this one), and nothing about it was wrong; only my reading of why the gap was written was.
+
+**2.11.** (2026-10-17) **The klant sees where the model came from (GAP-152, the owner's decision).**
+A print's **bron** — the page the model came from — appears under the print's name as the host,
+linked: `span.pp-src` with the `external-link` glyph and `a.pp-link`, at `text-sm`, with the
+accessible name "{host}, opent in een nieuw tabblad", `rel="noopener noreferrer"` and
+`target="_blank"`. **Once per print**, on the first line that print has in the list, so a
+nabestelling does not repeat it. Several links: all of them, one per line. No link: nothing is
+drawn — no label, no empty row, the rule this page has followed since 1.6 for totals and since 1.9
+for the payment block. In the **not-billed** variant the link sits under the print name in the
+first cell of the table, not in a column of its own: a column of URLs cannot survive a 360px
+table.
+
+**Never the provenance chip and never the notitie.** The "uit de map" chip is internal — the klant
+has no use for the library's shape — and the **note is internal by the owner's decision**: it does
+not appear on this page, in the Overzicht PDF, on an invoice, in a file name or in the tab title.
+That is the same rule the link label got in 1.9 and 2.0 (GAP-077, GAP-088), and it is now written
+down for the second field, before it can be forgotten.
+
+**Colour and contrast.** `primary` on `surface` for the link (6.12 light / 6.79 dark, already in
+`contrast.md`); the glyph is `muted` and `aria-hidden`, so colour carries nothing on its own. No
+new pair.
+
+**2.14.** (2026-10-18) **This page survives, and it becomes the session's landing screen (GAP-165).**
+The deel-link is a key now (ScreenShareSession): a valid token mints an anonymous read-only session
+for one klant. The app's instinct was to keep this page as the landing screen and that instinct is
+right — *"stuur me even het overzicht"* is a real request, the Overzicht PDF hangs off it, and
+nothing that works today stops working. Four things change, all of them small:
+
+- **The studio head moves up into the shell.** `.pp-share-head` no longer draws `.pp-brand`: the
+  logo or company name is in `.pp-guesthead`, one line above, and drawing it twice on the landing
+  screen would be the only place in the portal where the studio is named twice. The `<h1>`
+  "Overzicht voor {klant}" stays and is the one place the session says whose prints these are.
+- **The page keeps its own column inside the session.** `.pp-share-col` (560px, centred) sits in
+  `.pp-main`; everything inside it — the switch, the list, the totals card, the "Betalen" block,
+  "Download overzicht" and the footnote — is unchanged, in that order.
+- **The expiry notice gains a tone step.** At **0 or 1 day** left the badge is `warning` instead of
+  `info`. The strings (`share.expiresToday`, `share.expiresTomorrow`) and the clock glyph are
+  unchanged: the words already carry the fact and the tint only reinforces it. No expiry (Nooit)
+  still shows no notice.
+- **A dead link is still one page, and now it is also the end of a session.** Unknown, malformed,
+  expired and revoked all show "Deze link is verlopen of ingetrokken" — the 1.6 rule, untouched —
+  and that page is drawn **without the session shell**. It appears at the visitor's **next
+  action**, never on a timer: a page already on screen was true when it loaded and the visitor
+  cannot change anything on it. Closing the session yourself is a different fact and has its own
+  page (`session.ended.*`, ScreenShareSession §4).
+
+**The link's facts stay here, and a persistent bar is rejected.** The expiry notice and the
+"Betalen" block are read where they mean something — beside the totals they belong to — not
+repeated as chrome on a print's page where nothing can be done with either. That is GAP-101's rule
+in a second place: a label belongs to its control, an explanation belongs to the section.
+
+**GAP-164, resolved: one sentence, one key.** 2.0.1 called the "no IBAN but a betaallink" sentence
+`settings.customer.payLink.only` in this file's prose while `copy-deck.md` carries it as
+**`settings.payLink.noIban`** ("Deze klant heeft wel een betaallink."). The deck's key is the key;
+the name in this file was never in the deck and is withdrawn. The app has it right at both call
+sites. **This is my mistake, not an app bug** — the second time in two rounds that this file
+invented a key name in prose (GAP-088 was the first), which is why 2.13's rule about keying every
+string belongs to the design system as much as to the app.
+
+**Nothing on the page is widened for a session.** No cost, no margin, no notes, no file names, no
+other klant, no tags — the list from 1.0, unchanged. The session adds screens; it does not add
+facts to this one.
