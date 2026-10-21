@@ -21,6 +21,7 @@
     "test": "npm run test --workspaces",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "build:ds-viewer": "node scripts/build-ds-viewer.mjs",
     "check:design": "scripts/check-design-tokens.sh",
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run test:tokens && npm run check:design",
     "test:tokens": "node --test scripts/generate-tokens-css.test.mjs"
