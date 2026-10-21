@@ -1,0 +1,1400 @@
+/* 3D Prints Portal components. Uses only tokens from tokens.css. Prefix pp-. */
+:root{--pp-control-h:36px;--pp-tap:36px}
+body{margin:0;background:var(--bg);color:var(--text);font:400 var(--text-base)/var(--leading-base) var(--font-sans)}
+@media (max-width:480px){:root{--pp-control-h:44px;--pp-tap:44px}}
+@media (prefers-reduced-motion:reduce){:root{--motion-fast:0ms;--motion-base:0ms}}
+.pp-stage{box-sizing:border-box;padding:var(--space-4);background:var(--bg);color:var(--text);font:400 var(--text-base)/var(--leading-base) var(--font-sans);display:flex;flex-direction:column;gap:var(--space-4)}
+.pp-stage *,.pp-stage *::before,.pp-stage *::after{box-sizing:border-box}
+.pp-row{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center}
+.pp-col{display:flex;flex-direction:column;gap:var(--space-3)}
+.pp-label{font-size:var(--text-xs);line-height:var(--leading-xs);font-weight:500;color:var(--muted)}
+.pp-num{font-variant-numeric:tabular-nums;text-align:right}
+.pp-mono{font-family:var(--font-mono);font-size:13px}
+.pp-muted{color:var(--muted)}
+.pp-ico{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.pp-ico-20{width:20px;height:20px}.pp-ico-24{width:24px;height:24px}
+.pp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg)}
+/* focus */
+.pp-focus,.pp-btn:focus-visible,.pp-input:focus-visible,.pp-check:focus-visible,.pp-tab:focus-visible,.pp-seg button:focus-visible,.pp-switch:focus-visible,.pp-select:focus-visible,.pp-radio:focus-visible,.pp-link:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+/* button */
+.pp-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:var(--pp-control-h);padding:0 var(--space-4);border:1px solid transparent;border-radius:var(--radius-md);font:500 var(--text-base)/1 var(--font-sans);cursor:pointer;transition:background var(--motion-fast) var(--motion-ease),border-color var(--motion-fast) var(--motion-ease);text-decoration:none;white-space:nowrap}
+.pp-btn-primary{background:var(--primary);color:var(--on-primary)}
+.pp-btn-primary:hover,.pp-btn-primary.is-hover{background:var(--primary-hover)}
+.pp-btn-primary:active,.pp-btn-primary.is-active{background:var(--primary-hover);filter:brightness(.95)}
+.pp-btn-secondary{background:var(--surface);color:var(--text-strong);border-color:var(--border-strong)}
+.pp-btn-secondary:hover,.pp-btn-secondary.is-hover{background:var(--surface-2)}
+.pp-btn-secondary:active,.pp-btn-secondary.is-active{background:var(--primary-tint)}
+.pp-btn-ghost{background:transparent;color:var(--text-strong)}
+.pp-btn-ghost:hover,.pp-btn-ghost.is-hover{background:var(--primary-tint-soft)}
+.pp-btn-ghost:active,.pp-btn-ghost.is-active{background:var(--primary-tint-strong)}
+.pp-btn-danger{background:var(--surface);color:var(--unpaid);border-color:var(--unpaid)}
+.pp-btn-danger:hover,.pp-btn-danger.is-hover{background:var(--unpaid-tint)}
+.pp-btn-danger-solid{background:var(--unpaid);color:var(--on-primary)}
+.pp-btn-sm{min-height:32px;padding:0 var(--space-3);font-size:var(--text-sm)}
+/* GAP-156 (2.12): THE TAP FLOOR APPLIES TO .pp-btn-sm TOO. `do-dont` has called 44px a hard floor
+   on a phone since 1.2 and ScreenQueue's *Phone* note says "at 44px", but this rule pinned 32px as
+   a literal, so every row action in the app was a 32px target at a 360px viewport (measured, both
+   screens). 32px stays the DESKTOP size -- a dense table row is a pointer target, not a thumb one;
+   only the phone gets the floor, through the same token the default button uses. The
+   .pp-device.phone twin writes 44px as a literal because no media query fires inside a preview
+   frame, so --pp-tap is still its 36px desktop value there (README, *Responsive*). */
+@media (max-width:480px){.pp-btn-sm{min-height:var(--pp-tap)}}
+.pp-device.phone .pp-btn-sm{min-height:var(--pp-tap)}
+.pp-btn-icon{width:var(--pp-tap);min-width:var(--pp-tap);padding:0}
+.pp-btn:disabled,.pp-btn[aria-disabled=true]{opacity:var(--opacity-disabled);cursor:not-allowed}
+.pp-btn[aria-busy=true]{cursor:progress}
+.pp-spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:pp-spin 800ms linear infinite}
+@keyframes pp-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.pp-spin{animation-duration:2.4s}}
+/* fields */
+.pp-field{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
+.pp-field>label,.pp-field>.pp-flabel{font:500 var(--text-sm)/var(--leading-sm) var(--font-sans);color:var(--text-strong)}
+.pp-help{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted)}
+.pp-err{display:flex;gap:var(--space-1);align-items:center;font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--unpaid)}
+.pp-input{width:100%;min-height:var(--pp-control-h);padding:0 var(--space-3);background:var(--surface);color:var(--text-strong);border:1px solid var(--border-strong);border-radius:var(--radius-md);font:400 var(--text-base)/var(--leading-base) var(--font-sans)}
+@media (max-width:480px){.pp-input,.pp-select{font-size:var(--text-md)}}
+textarea.pp-input{padding:var(--space-2) var(--space-3);min-height:88px;resize:vertical}
+.pp-input::placeholder{color:var(--muted)}
+.pp-input:hover,.pp-input.is-hover{border-color:var(--muted)}
+.pp-input:focus,.pp-input.is-focus{outline:2px solid var(--focus-ring);outline-offset:1px;border-color:var(--focus-ring)}
+.pp-input[aria-invalid=true]{border-color:var(--unpaid)}
+.pp-input:disabled{background:var(--surface-2);color:var(--muted);cursor:not-allowed}
+.pp-affix{display:flex;align-items:stretch}
+.pp-affix .pp-input{border-radius:var(--radius-md) 0 0 var(--radius-md);text-align:right;font-variant-numeric:tabular-nums}
+.pp-affix .pp-suffix{display:flex;align-items:center;padding:0 var(--space-3);background:var(--surface-2);color:var(--muted);border:1px solid var(--border-strong);border-left:0;border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:var(--text-sm)}
+.pp-affix.pre .pp-input{border-radius:0 var(--radius-md) var(--radius-md) 0;text-align:right}
+.pp-affix.pre .pp-suffix{order:-1;border:1px solid var(--border-strong);border-right:0;border-radius:var(--radius-md) 0 0 var(--radius-md)}
+.pp-iwrap{position:relative;display:flex;align-items:center}
+.pp-iwrap>.pp-ico{position:absolute;left:var(--space-3);color:var(--muted);pointer-events:none}
+.pp-iwrap>.pp-input{padding-left:36px}
+.pp-iwrap>.pp-ico.r{left:auto;right:var(--space-3)}
+.pp-iwrap>.pp-input.has-r{padding-right:36px}
+.pp-kbd{position:absolute;right:var(--space-2);font:500 var(--text-xs)/var(--leading-xs) var(--font-mono);color:var(--muted);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:0 6px;background:var(--surface-2)}
+@media (max-width:900px){.pp-kbd{display:none}}
+.pp-select{appearance:none;padding-right:36px}
+.pp-iwrap>.pp-input.pp-select,.pp-iwrap>.pp-input.nl{padding-left:var(--space-3)}
+/* check / radio / toggle */
+.pp-opt{display:inline-flex;vertical-align:top;align-items:center;gap:var(--space-2);min-height:var(--pp-tap);cursor:pointer;color:var(--text)}
+.pp-check,.pp-radio{appearance:none;margin:0;width:20px;height:20px;flex:none;background:var(--surface);border:1.5px solid var(--border-strong);cursor:pointer;display:inline-grid;place-content:center}
+.pp-check{border-radius:var(--radius-sm)}.pp-radio{border-radius:50%}
+.pp-check:checked,.pp-check:indeterminate{background:var(--primary);border-color:var(--primary)}
+.pp-check:checked::after{content:"";width:10px;height:5px;border-left:2px solid var(--on-primary);border-bottom:2px solid var(--on-primary);transform:translateY(-1px) rotate(-45deg)}
+.pp-check:indeterminate::after{content:"";width:10px;height:2px;background:var(--on-primary)}
+.pp-radio:checked{border-color:var(--primary)}
+.pp-radio:checked::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--primary)}
+.pp-check:disabled,.pp-radio:disabled{opacity:var(--opacity-disabled);cursor:not-allowed}
+.pp-switch{appearance:none;margin:0;width:40px;height:24px;flex:none;border-radius:var(--radius-pill);background:var(--surface-2);border:1.5px solid var(--border-strong);position:relative;cursor:pointer;transition:background var(--motion-fast) var(--motion-ease)}
+.pp-switch::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:var(--text-strong);transition:transform var(--motion-fast) var(--motion-ease)}
+.pp-switch:checked{background:var(--primary);border-color:var(--primary)}
+.pp-switch:checked::after{transform:translateX(16px);background:var(--on-primary)}
+.pp-switch:disabled{opacity:var(--opacity-disabled);cursor:not-allowed}
+/* dialog / popover / tooltip / toast */
+.pp-scrim{background:var(--overlay);padding:var(--space-6);display:flex;align-items:center;justify-content:center;border-radius:var(--radius-lg)}
+.pp-dialog{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);display:flex;flex-direction:column}
+.pp-dialog>header{display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-5) var(--space-5) var(--space-2)}
+.pp-dialog h2{margin:0;font:600 var(--text-lg)/var(--leading-lg) var(--font-sans);color:var(--text-strong);flex:1}
+.pp-dialog .pp-body{padding:var(--space-2) var(--space-5) var(--space-4);color:var(--text)}
+.pp-dialog>footer{display:flex;justify-content:flex-end;gap:var(--space-2);padding:var(--space-3) var(--space-5) var(--space-5)}
+@media (max-width:480px){.pp-dialog.sheet{max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0}}
+.pp-pop{position:relative;z-index:var(--z-popover);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
+.pp-tip{display:inline-block;max-width:240px;padding:var(--space-1) var(--space-2);background:var(--text-strong);color:var(--bg);border-radius:var(--radius-sm);font-size:var(--text-xs);line-height:var(--leading-xs);box-shadow:var(--shadow-md)}
+.pp-alert{display:flex;gap:var(--space-3);align-items:flex-start;padding:var(--space-3) var(--space-4);border-radius:var(--radius-lg);border:1px solid var(--border);font-size:var(--text-sm);line-height:var(--leading-sm)}
+.pp-alert strong{color:var(--text-strong);font-weight:600}
+.pp-alert.paid{background:var(--paid-tint);color:var(--text);border-color:var(--paid)}.pp-alert.paid>.pp-ico{color:var(--paid)}
+.pp-alert.unpaid{background:var(--unpaid-tint);color:var(--text);border-color:var(--unpaid)}.pp-alert.unpaid>.pp-ico{color:var(--unpaid)}
+.pp-alert.warning{background:var(--warning-tint);color:var(--text);border-color:var(--warning)}.pp-alert.warning>.pp-ico{color:var(--warning)}
+.pp-alert.info{background:var(--info-tint);color:var(--text);border-color:var(--info)}.pp-alert.info>.pp-ico{color:var(--info)}
+.pp-toast{box-shadow:var(--shadow-md);background:var(--surface);max-width:420px}
+/* tabs / segmented / load more */
+.pp-tabs{display:flex;gap:var(--space-1);border-bottom:1px solid var(--border)}
+.pp-tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;min-height:var(--pp-tap);padding:0 var(--space-3);color:var(--muted);font:500 var(--text-base)/1 var(--font-sans);cursor:pointer}
+.pp-tab:hover{color:var(--text-strong)}
+.pp-tab[aria-selected=true]{color:var(--primary);border-bottom-color:var(--primary)}
+.pp-seg{display:inline-flex;padding:2px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius-pill)}
+.pp-seg button{appearance:none;border:0;background:none;display:inline-flex;align-items:center;gap:var(--space-1);min-height:calc(var(--pp-control-h) - 6px);padding:0 var(--space-3);border-radius:var(--radius-pill);color:var(--muted);font:500 var(--text-sm)/1 var(--font-sans);cursor:pointer}
+.pp-seg button[aria-pressed=true]{background:var(--surface);color:var(--text-strong);box-shadow:var(--shadow-sm)}
+.pp-more{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);color:var(--muted);font-size:var(--text-sm)}
+/* skeleton / empty / error / avatar */
+.pp-skel{background:var(--skeleton);border-radius:var(--radius-sm);animation:pp-pulse 1.4s ease-in-out infinite}
+@keyframes pp-pulse{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.pp-skel{animation:none}}
+.pp-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-2);padding:var(--space-7) var(--space-5);border:1px dashed var(--border-strong);border-radius:var(--radius-lg);background:var(--surface)}
+.pp-empty .pp-illus{width:56px;height:56px;border-radius:var(--radius-xl);background:var(--surface-2);display:grid;place-content:center;color:var(--muted);margin-bottom:var(--space-2)}
+.pp-empty h3{margin:0;font:600 var(--text-lg)/var(--leading-lg) var(--font-sans);color:var(--text-strong)}
+.pp-empty p{margin:0 0 var(--space-3);max-width:44ch;color:var(--muted)}
+.pp-avatar{display:inline-flex;align-items:center;gap:var(--space-2)}
+.pp-avatar .pp-ini{width:32px;height:32px;border-radius:var(--radius-pill);background:var(--primary-tint-strong);color:var(--text-strong);display:grid;place-content:center;font:600 var(--text-xs)/1 var(--font-sans)}
+.pp-avatar b{display:block;font-weight:600;color:var(--text-strong);line-height:var(--leading-xs);font-size:var(--text-sm)}
+.pp-avatar small{display:block;color:var(--muted);font-size:var(--text-xs);line-height:var(--leading-xs)}
+/* badges, money, tags, spool */
+.pp-badge{display:inline-flex;align-items:center;gap:var(--space-1);padding:2px var(--space-2);border-radius:var(--radius-sm);font:500 var(--text-xs)/var(--leading-xs) var(--font-sans);white-space:nowrap}
+.pp-badge.paid{background:linear-gradient(var(--paid-tint),var(--paid-tint)),var(--surface);color:var(--paid)}
+.pp-badge.unpaid{background:linear-gradient(var(--unpaid-tint),var(--unpaid-tint)),var(--surface);color:var(--unpaid)}
+.pp-badge.warning{background:linear-gradient(var(--warning-tint),var(--warning-tint)),var(--surface);color:var(--warning)}
+.pp-badge.info{background:linear-gradient(var(--info-tint),var(--info-tint)),var(--surface);color:var(--info)}
+.pp-badge.neutral{background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.pp-money{font-variant-numeric:tabular-nums;color:var(--text-strong);font-weight:600;white-space:nowrap}
+.pp-money s{color:var(--muted);font-weight:400;margin-right:var(--space-2)}
+.pp-money .pp-hint{display:inline-block;margin-left:var(--space-2);font-weight:500;font-size:var(--text-xs);color:var(--info);background:linear-gradient(var(--info-tint),var(--info-tint)),var(--surface);padding:0 var(--space-2);border-radius:var(--radius-sm)}
+.pp-tag{display:inline-flex;align-items:center;gap:var(--space-1);min-height:22px;padding:0 var(--space-2);border-radius:var(--radius-sm);font:500 var(--text-xs)/var(--leading-xs) var(--font-sans);background:var(--tag,var(--surface-2));color:var(--tag-ink,var(--text));border:1px solid var(--tag-border,transparent)}
+.pp-tag.none{--tag-border:var(--border-strong)}
+.pp-tag button{appearance:none;border:0;background:none;color:inherit;padding:0;display:grid;place-content:center;width:16px;height:16px;border-radius:var(--radius-sm);cursor:pointer}
+.pp-tag.add{background:transparent;color:var(--muted);border:1px dashed var(--border-strong);cursor:pointer}
+.pp-spool{display:inline-block;width:16px;height:16px;border-radius:50%;flex:none;background:var(--c1);box-shadow:inset 0 0 0 1.5px var(--border-strong)}
+.pp-spool.multi{background:conic-gradient(var(--c1) 0 50%,var(--c2) 0 100%)}
+.pp-spool.grad{background:linear-gradient(135deg,var(--c1),var(--c2))}
+.pp-spool.none{background:repeating-linear-gradient(45deg,transparent 0 3px,var(--border-strong) 3px 4px)}
+.pp-spool.lg{width:24px;height:24px}
+/* spool picker */
+.pp-picker{width:320px;max-width:100%;padding:var(--space-2);display:flex;flex-direction:column;gap:var(--space-2)}
+.pp-picker ul{list-style:none;margin:0;padding:0;max-height:240px;overflow:auto}
+.pp-picker li{display:grid;grid-template-columns:24px 1fr auto;gap:var(--space-2);align-items:center;padding:var(--space-2);border-radius:var(--radius-md);min-height:var(--pp-tap);cursor:pointer}
+.pp-picker li small{display:block;color:var(--muted);font-size:var(--text-xs);line-height:var(--leading-xs)}
+.pp-picker li b{font-weight:500;color:var(--text-strong);font-size:var(--text-sm);line-height:18px}
+.pp-picker li[aria-selected=true]{background:var(--primary-tint)}
+.pp-picker li.active{background:var(--primary-tint-soft);outline:2px solid var(--focus-ring);outline-offset:-2px}
+/* print card / row */
+.pp-print{position:relative;display:flex;flex-direction:column;overflow:hidden;width:260px;max-width:100%;transition:box-shadow var(--motion-fast) var(--motion-ease)}
+.pp-print:hover{box-shadow:var(--shadow-sm)}
+.pp-print.is-selected{border-color:var(--primary);background:var(--primary-tint-soft)}
+.pp-print.flash{animation:pp-flash 1.6s var(--motion-ease)}
+@keyframes pp-flash{0%{background:var(--primary-tint-strong)}100%{background:var(--surface)}}
+@media (prefers-reduced-motion:reduce){.pp-print.flash{animation:none;background:var(--primary-tint)}}
+.pp-thumb{aspect-ratio:4/3;display:grid;place-content:center;background:var(--surface-2);color:var(--muted);position:relative}
+.pp-print .pp-sel{position:absolute;top:var(--space-2);left:var(--space-2);background:var(--surface);border-radius:var(--radius-sm);padding:2px}
+.pp-print .pp-sel .pp-opt{min-height:0}
+.pp-print .pp-info{padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2)}
+.pp-print h3{margin:0;font:600 var(--text-md)/var(--leading-base) var(--font-sans);color:var(--text-strong)}
+.pp-meta{display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-3);font-size:var(--text-sm);line-height:var(--leading-sm);color:var(--muted)}
+.pp-meta span{display:inline-flex;align-items:center;gap:var(--space-1)}
+.pp-print .pp-foot{flex-wrap:wrap;display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)}
+.pp-table{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--text-sm);line-height:var(--leading-sm)}
+.pp-table th{position:sticky;top:0;background:var(--surface-2);color:var(--muted);font-weight:500;text-align:left;padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--border)}
+.pp-table td{padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.pp-table th.r,.pp-table td.r{text-align:right;font-variant-numeric:tabular-nums}
+.pp-table tr:hover td{background:var(--primary-tint-soft)}
+.pp-table tr.is-selected td{background:var(--primary-tint)}
+.pp-table td.name{color:var(--text-strong);font-weight:500}
+.pp-scroll{overflow:auto;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface)}
+.pp-scroll.edge{background:linear-gradient(to right,var(--surface) 30%,transparent) left,linear-gradient(to left,var(--surface) 30%,transparent) right,linear-gradient(to right,rgba(0,0,0,.18),transparent) left,linear-gradient(to left,rgba(0,0,0,.18),transparent) right;background-repeat:no-repeat;background-size:24px 100%,24px 100%,10px 100%,10px 100%;background-attachment:local,local,scroll,scroll;background-color:var(--surface)}
+/* filter bar / bulk bar */
+.pp-filters{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center;padding:var(--space-3);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg)}
+.pp-filters .grow{flex:1 1 200px;min-width:160px}
+.pp-chip-and{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted);display:inline-flex;gap:var(--space-1);align-items:center}
+.pp-bulk{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center;padding:var(--space-3) var(--space-4);background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)}
+.pp-bulk .count{font-weight:600;color:var(--text-strong);margin-right:auto}
+.pp-bulk{position:sticky;bottom:var(--space-4);z-index:var(--z-sticky)}
+@media (max-width:480px){.pp-bulk{bottom:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0}}
+/* asset item, cost, payment */
+.pp-assetlist{container-type:inline-size}
+.pp-asset{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--space-2) var(--space-3);align-items:start;padding:var(--space-3);border-bottom:1px solid var(--border)}
+.pp-asset .acts{grid-column:2/-1;justify-content:flex-start}
+@container (min-width:760px){.pp-asset{grid-template-columns:auto minmax(0,1fr) auto}.pp-asset .acts{grid-column:auto;justify-content:flex-end}}
+.pp-asset .fn{font-family:var(--font-mono);font-size:13px;color:var(--text-strong);display:flex;min-width:0}
+.pp-asset .fn .a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto;min-width:0}
+.pp-asset .fn .b{flex:none;white-space:nowrap}
+.pp-asset.is-excluded .fn{color:var(--muted);text-decoration:line-through}
+.pp-cost{width:100%;border-collapse:collapse;font-size:var(--text-sm);line-height:var(--leading-sm)}
+.pp-cost th,.pp-cost td{padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--border);text-align:left;font-weight:400}
+.pp-cost thead th{color:var(--muted);font-weight:500;background:var(--surface-2)}
+.pp-cost td.r,.pp-cost th.r{text-align:right;font-variant-numeric:tabular-nums}
+.pp-cost tr.sub td{color:var(--muted);padding-left:var(--space-6)}
+.pp-cost tr.total td{font-weight:700;color:var(--text-strong);border-top:2px solid var(--border-strong);border-bottom:0}
+.pp-pay{padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-4);max-width:420px}
+.pp-pay h3{margin:0;font:600 var(--text-lg)/var(--leading-lg) var(--font-sans);color:var(--text-strong)}
+.pp-pay .sep{border:0;border-top:1px solid var(--border);margin:0}
+/* viewer */
+.pp-viewer{aspect-ratio:4/3;max-width:520px;width:100%;border-radius:var(--radius-lg);border:1px solid var(--border);background:radial-gradient(circle at 50% 40%,var(--surface),var(--surface-2));position:relative;display:grid;place-content:center;color:var(--muted);text-align:center;gap:var(--space-2)}
+.pp-viewer{padding-bottom:36px}
+.pp-viewer .hint{position:absolute;left:var(--space-3);bottom:var(--space-3);font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:2px var(--space-2)}
+.pp-model{width:120px;height:120px;border-radius:var(--radius-xl);background:linear-gradient(135deg,rgba(255,255,255,.3),rgba(255,255,255,0) 55%),var(--c1);transform:rotate(-8deg);box-shadow:var(--shadow-md);justify-self:center}
+/* outstanding */
+.pp-group{overflow:hidden}
+.pp-group>header{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);background:var(--surface-2);border-bottom:1px solid var(--border)}
+.pp-group h3{margin:0;font:600 var(--text-md)/var(--leading-base) var(--font-sans);color:var(--text-strong);margin-right:auto}
+.pp-line{display:grid;grid-template-columns:1fr auto auto auto;gap:var(--space-3);align-items:center;padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border);font-size:var(--text-sm)}
+.pp-line:last-child{border-bottom:0}
+/* GAP-151 (2.11): THE PHONE ROW IS THREE BANDS, NOT TWO COLUMNS. Measured in the app at a 360px
+   viewport: the badge "118 dagen geleden gevraagd" took 192px of the 326px row and left the name
+   column 90px, so a three-word name broke over three lines beside a one-line badge. The name block
+   now owns the full width; the age badge and the figure share the second band -- the same pairing
+   `.pp-ogrp>summary` already uses on the phone (.age left, .amt right) -- and the actions keep the
+   third. The row copy is NOT shortened: "geleden gevraagd" is what makes the badge a wait rather
+   than a debt. The .pp-device.phone twin below is the preview frame's copy of the same rule: a
+   frame is a 360px CONTAINER at the page's own viewport width, so no media query fires inside it
+   (README, *Responsive*). The app still never sets .phone (do-dont, 1.2). */
+/* GAP-156 (2.12): the actions WRAP in that third band. Measured at 360px: the band is 294px and a
+   fileless queue row's two actions ("Bestanden koppelen", "Status wijzigen") need 308px, so the
+   right gutter was gone on exactly the rows that carry two. `.pp-row` wraps by default; the
+   preview markup turned that off with `pp-nowrap`, which this rule overrides on the phone (and the
+   previews no longer set it on `.acts`). Two 44px buttons then stack, which is what ScreenQueue's
+   *Phone* note has always described. */
+@media (max-width:480px){.pp-line{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-2)}.pp-line>:first-child{grid-column:1/-1}.pp-line>.pp-badge,.pp-line>.pp-badges{grid-column:1;grid-row:2;justify-self:start}.pp-line>.pp-right{grid-column:2;grid-row:2;justify-self:end}.pp-line .acts{grid-column:1/-1;flex-wrap:wrap}}
+.pp-device.phone .pp-line{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-2)}
+.pp-device.phone .pp-line>:first-child{grid-column:1/-1}
+.pp-device.phone .pp-line>.pp-badge,.pp-device.phone .pp-line>.pp-badges{grid-column:1;grid-row:2;justify-self:start}
+.pp-device.phone .pp-line>.pp-right{grid-column:2;grid-row:2;justify-self:end}
+.pp-device.phone .pp-line .acts{grid-column:1/-1;flex-wrap:wrap}
+/* share link, token */
+.pp-share{--pp-share-act:88px;display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr)) var(--pp-share-act);gap:var(--space-3);align-items:center;padding:var(--space-3) var(--space-4);font-size:var(--text-sm)}
+.pp-share b{color:var(--text-strong);font-weight:600;display:block}
+.pp-share small{color:var(--muted);display:block;font-size:var(--text-xs);line-height:var(--leading-xs)}
+@media (max-width:900px){.pp-share{grid-template-columns:minmax(0,1fr) var(--pp-share-act)}}
+.pp-token{display:flex;gap:var(--space-2);align-items:stretch}
+.pp-token code{flex:1;min-width:0;padding:var(--space-2) var(--space-3);background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius-md);font:13px/20px var(--font-mono);color:var(--text-strong);overflow-wrap:anywhere}
+/* access matrix */
+.pp-matrix{border-collapse:separate;border-spacing:0;font-size:var(--text-sm);min-width:100%}
+.pp-matrix th,.pp-matrix td{padding:var(--space-1) var(--space-3);border-bottom:1px solid var(--border);text-align:center;background:var(--surface)}
+.pp-matrix thead th{position:sticky;top:0;background:var(--surface-2);color:var(--text-strong);font-weight:600;z-index:var(--z-raised)}
+.pp-matrix th:first-child,.pp-matrix td:first-child{position:sticky;left:0;text-align:left;background:var(--surface-2);color:var(--text);font-weight:500;cursor:default;z-index:var(--z-raised);border-right:1px solid var(--border)}
+.pp-matrix thead th:first-child{z-index:calc(var(--z-raised) + 1)}
+.pp-matrix .pp-opt{justify-content:center;min-height:var(--pp-tap);min-width:var(--pp-tap)}
+/* live, stat */
+.pp-live{display:inline-flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted)}
+.pp-live i{width:8px;height:8px;border-radius:50%;background:var(--paid)}
+.pp-live.off{color:var(--warning)}.pp-live.off i{background:transparent;border:2px solid var(--warning);width:12px;height:12px;animation:pp-spin 1.2s linear infinite;border-right-color:transparent}
+@media (prefers-reduced-motion:reduce){.pp-live.off i{animation:none}}
+.pp-stat{padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-1);min-width:180px}
+.pp-stat .v{font:700 var(--text-3xl)/var(--leading-3xl) var(--font-sans);color:var(--text-strong);font-variant-numeric:tabular-nums}
+.pp-stat .l{font-size:var(--text-sm);color:var(--muted)}
+.pp-stat .d{font-size:var(--text-xs);color:var(--muted);line-height:var(--leading-xs)}
+.pp-link{color:var(--primary);text-decoration:underline;text-underline-offset:2px}
+/* ---- v1.1 ---- */
+.pp-spool.slicer{outline:1.5px dashed var(--muted);outline-offset:1.5px}
+.pp-hintchip{display:inline-block;padding:0 var(--space-1);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--muted);font-size:var(--text-xs);line-height:var(--leading-xs);border:1px dashed var(--border-strong)}
+.pp-slot{display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4);align-items:center;padding:var(--space-2) var(--space-3) var(--space-2) var(--space-8);border-bottom:1px solid var(--border);background:var(--surface-2);font-size:var(--text-sm)}
+.pp-slot .sw{display:flex;align-items:center;gap:var(--space-2)}
+.pp-slot .pp-btn{margin-left:auto}
+.pp-asset.child{padding-left:var(--space-8);background:var(--surface-2)}
+.pp-qty{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);color:var(--muted)}
+.pp-qty .pp-input{width:64px;min-height:32px;text-align:right}
+.pp-reason{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted);display:flex;gap:var(--space-1);align-items:flex-start}
+@media (max-width:480px){.pp-slot{padding-left:var(--space-5)}.pp-asset.child{padding-left:var(--space-5)}}
+.pp-remaining{white-space:nowrap;font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--unpaid);font-weight:500;font-variant-numeric:tabular-nums}
+/* app shell */
+.pp-device{border:1px solid var(--border-strong);border-radius:var(--radius-xl);overflow:hidden;background:var(--bg);color:var(--text);font:400 var(--text-base)/var(--leading-base) var(--font-sans);position:relative;display:flex;flex-direction:column}
+.pp-device *{box-sizing:border-box}
+.pp-device.phone{width:360px;flex:none}
+.pp-app{display:grid;grid-template-columns:220px minmax(0,1fr);flex:1}
+.pp-side{background:var(--surface);border-right:1px solid var(--border);padding:var(--space-4) var(--space-3);display:flex;flex-direction:column;gap:var(--space-1)}
+.pp-brand{font:700 var(--text-lg)/var(--leading-md) var(--font-sans);color:var(--text-strong);padding:var(--space-1) var(--space-3) var(--space-4)}
+.pp-nav{display:flex;flex-direction:column;gap:2px}
+.pp-nav a{display:flex;align-items:center;gap:var(--space-3);min-height:40px;padding:0 var(--space-3);border-radius:var(--radius-md);color:var(--text);text-decoration:none;font-size:var(--text-base)}
+.pp-nav a:hover{background:var(--primary-tint-soft)}
+.pp-nav a[aria-current=page]{background:var(--primary-tint);color:var(--text-strong);font-weight:600}
+.pp-nav a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.pp-nav .grp{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted);padding:var(--space-4) var(--space-3) var(--space-1)}
+.pp-side .foot{margin-top:auto;display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-3)}
+.pp-main{--pp-pad:var(--space-6);padding:var(--pp-pad);display:flex;flex-direction:column;gap:var(--space-5);min-width:0}
+.pp-ph{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
+.pp-ph h1{margin:0;font:650 var(--text-2xl)/var(--leading-2xl) var(--font-sans);color:var(--text-strong);margin-right:auto}
+.pp-phone-top{display:flex;align-items:center;justify-content:space-between;padding:var(--space-2) var(--space-4);background:var(--surface);border-bottom:1px solid var(--border);min-height:56px}
+.pp-phone-top b{font:700 var(--text-lg)/var(--leading-md) var(--font-sans);color:var(--text-strong)}
+.pp-phone-main{--pp-pad:var(--space-4);padding:var(--pp-pad);display:flex;flex-direction:column;gap:var(--space-4);flex:1;min-width:0}
+.pp-phone-main h1{margin:0;font:650 var(--text-xl)/var(--leading-xl) var(--font-sans);color:var(--text-strong)}
+.pp-bottomnav{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--surface);border-top:1px solid var(--border)}
+.pp-bottomnav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;color:var(--muted);font-size:11px;line-height:14px;text-decoration:none}
+.pp-bottomnav a[aria-current=page]{color:var(--primary);font-weight:600}
+.pp-bottomnav a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+.pp-stage.screens{flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:var(--space-6);padding:var(--space-5)}
+.pp-device.desk{width:980px;flex:none;min-height:640px}
+.pp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--space-4)}
+.pp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4)}
+.phone .pp-stats{grid-template-columns:1fr 1fr}
+@media (max-width:480px){.pp-stats{grid-template-columns:1fr 1fr}}
+.pp-sec{padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3)}
+.pp-sec h2{margin:0;font:600 var(--text-lg)/var(--leading-lg) var(--font-sans);color:var(--text-strong)}
+.pp-kv{display:grid;grid-template-columns:140px 1fr;gap:var(--space-2) var(--space-4);font-size:var(--text-sm)}
+.pp-kv dt{color:var(--muted)}.pp-kv dd{margin:0;color:var(--text-strong)}
+.pp-center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:var(--space-6)}
+.pp-share-head{text-align:center;display:flex;flex-direction:column;gap:var(--space-1);align-items:center;padding:var(--space-6) var(--space-4) var(--space-2)}
+.pp-share-head h1{margin:0;font:700 var(--text-xl)/var(--leading-xl) var(--font-sans);color:var(--text-strong)}
+/* paper (documents) */
+.pp-paper{width:794px;height:1123px;background:#fff;color:#141a33;padding:76px;font:400 13px/19px var(--font-sans);display:flex;flex-direction:column;box-shadow:var(--shadow-md);position:relative;flex:none}
+.pp-paper *{box-sizing:border-box}
+.pp-paper h1{margin:0;font:700 28px/34px var(--font-sans);color:#141a33}
+.pp-paper .hd{display:flex;justify-content:space-between;gap:24px;padding-bottom:20px;border-bottom:2px solid #141a33}
+.pp-paper .co{text-align:right;color:#2b3150}
+.pp-paper .co b{display:block;font-size:16px;color:#141a33}
+.pp-paper .meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;margin:20px 0}
+.pp-paper .meta span{color:#586282}
+.pp-paper table{width:100%;border-collapse:collapse;margin-top:8px}
+.pp-paper th{text-align:left;font-weight:600;border-bottom:1.5px solid #141a33;padding:6px 6px}
+.pp-paper td{padding:6px;border-bottom:1px solid #c9cfdf;vertical-align:top}
+.pp-paper .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pp-paper .tot{margin-left:auto;width:300px;margin-top:16px}
+.pp-paper .tot div{display:flex;justify-content:space-between;padding:4px 6px;font-variant-numeric:tabular-nums}
+.pp-paper .tot .big{border-top:1.5px solid #141a33;font-weight:700;font-size:15px}
+.pp-paper .band{border:1.5px solid #141a33;padding:8px 12px;font-weight:600;margin:12px 0;text-align:center;letter-spacing:.04em}
+.pp-paper .ft{margin-top:auto;border-top:1px solid #8b93ad;padding-top:10px;font-size:11px;line-height:var(--leading-xs);color:#2b3150;display:flex;justify-content:space-between;gap:24px}
+.pp-paper .st{font-weight:600}
+
+.pp-side .foot .pp-row{flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:var(--space-1)}
+.pp-side .foot .pp-btn{justify-content:flex-start}
+/* ===== v1.2 responsive app shell (GAP-015) =====
+   One DOM serves every size: aside.pp-side, header.pp-phone-top, main.pp-main, nav.pp-bottomnav and
+   div.pp-drawer-backdrop[hidden] are children of .pp-app.
+   >900px sidebar | 481-900px 56px icon rail | <=480px top bar + bottom bar + drawer.
+   The preview containers .pp-device.rail and .pp-device.phone force the same rules without a media query. */
+.pp-app>.pp-phone-top,.pp-app>.pp-bottomnav{display:none}
+.pp-brand .ini{display:none}
+.pp-lbl,.pp-nav .lbl{white-space:nowrap}
+@media (max-width:900px){
+.pp-app{grid-template-columns:56px minmax(0,1fr)}
+.pp-side{padding:var(--space-4) var(--space-2);align-items:center}
+.pp-brand{padding:var(--space-1) 0 var(--space-3)}.pp-brand .full{display:none}.pp-brand .ini{display:grid;place-content:center;width:40px;height:40px;border-radius:var(--radius-md);background:var(--primary-tint);color:var(--text-strong);font:700 var(--text-base)/var(--leading-base) var(--font-sans)}
+.pp-nav a{position:relative;justify-content:center;width:40px;padding:0}
+.pp-nav .lbl,.pp-side .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.pp-nav .grp{font-size:0;padding:0;margin:var(--space-2) var(--space-2);height:0;border-top:1px solid var(--border)}
+.pp-nav a::after{content:attr(data-tip);position:absolute;left:calc(100% + var(--space-2));top:50%;transform:translateY(-50%);z-index:var(--z-tooltip);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);background:var(--text-strong);color:var(--bg);font-size:var(--text-xs);line-height:var(--leading-xs);white-space:nowrap;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;transition:opacity var(--motion-fast) var(--motion-ease)}
+.pp-nav a:hover::after,.pp-nav a:focus-visible::after{opacity:1}
+.pp-side .foot{padding:var(--space-2) 0;align-items:center}
+.pp-side .foot .pp-avatar>span:last-child{display:none}
+.pp-side .foot .pp-row{align-items:center}
+.pp-side .foot .pp-btn{padding:0;width:var(--pp-tap);justify-content:center}
+.pp-side .pp-live{font-size:0}
+}
+@media (max-width:480px){
+.pp-app{display:flex;flex-direction:column;min-height:100vh}
+.pp-side{display:none}
+.pp-app>.pp-phone-top{display:flex;position:sticky;top:0;z-index:var(--z-sticky)}
+.pp-app>.pp-bottomnav{display:grid;position:sticky;bottom:0;z-index:var(--z-sticky)}
+.pp-main{flex:1;--pp-pad:var(--space-4);gap:var(--space-4)}
+.pp-ph h1{font:650 var(--text-xl)/var(--leading-xl) var(--font-sans)}
+}
+.pp-device.rail{width:640px;flex:none}
+.pp-device.rail .pp-app{grid-template-columns:56px minmax(0,1fr)}
+.pp-device.rail .pp-side{padding:var(--space-4) var(--space-2);align-items:center}
+.pp-device.rail .pp-brand{padding:var(--space-1) 0 var(--space-3)}.pp-device.rail .pp-brand .full{display:none}.pp-device.rail .pp-brand .ini{display:grid;place-content:center;width:40px;height:40px;border-radius:var(--radius-md);background:var(--primary-tint);color:var(--text-strong);font:700 var(--text-base)/var(--leading-base) var(--font-sans)}
+.pp-device.rail .pp-nav a{position:relative;justify-content:center;width:40px;padding:0}
+.pp-device.rail .pp-nav .lbl,.pp-device.rail .pp-side .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.pp-device.rail .pp-nav .grp{font-size:0;padding:0;margin:var(--space-2);height:0;border-top:1px solid var(--border)}
+.pp-device.rail .pp-nav a::after{content:attr(data-tip);position:absolute;left:calc(100% + var(--space-2));top:50%;transform:translateY(-50%);z-index:var(--z-tooltip);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);background:var(--text-strong);color:var(--bg);font-size:var(--text-xs);line-height:var(--leading-xs);white-space:nowrap;box-shadow:var(--shadow-md);opacity:0;pointer-events:none}
+.pp-device.rail .pp-nav a.tipshown::after{opacity:1}
+.pp-device.rail .pp-side .foot{padding:var(--space-2) 0;align-items:center}
+.pp-device.rail .pp-side .foot .pp-avatar>span:last-child{display:none}
+.pp-device.rail .pp-side .foot .pp-row{align-items:center}
+.pp-device.rail .pp-side .foot .pp-btn{padding:0;width:var(--pp-tap);justify-content:center}
+.pp-device.rail .pp-side .pp-live{font-size:0}
+.pp-device.phone .pp-app{display:flex;flex-direction:column;flex:1}
+.pp-device.phone .pp-side{display:none}
+.pp-device.phone .pp-app>.pp-phone-top{display:flex}
+.pp-device.phone .pp-app>.pp-bottomnav{display:grid}
+.pp-device.phone .pp-main{flex:1;--pp-pad:var(--space-4);gap:var(--space-4)}
+.pp-device.phone .pp-ph h1{font:650 var(--text-xl)/var(--leading-xl) var(--font-sans)}
+/* drawer (phone menu) */
+.pp-drawer-backdrop{position:fixed;inset:0;z-index:var(--z-overlay);background:var(--overlay);display:flex}
+.pp-drawer-backdrop[hidden]{display:none}
+.pp-device .pp-drawer-backdrop{position:absolute}
+.pp-drawer{width:280px;max-width:85%;height:100%;overflow-y:auto;background:var(--surface);border-right:1px solid var(--border);box-shadow:var(--shadow-lg);padding:var(--space-4) var(--space-2);display:flex;flex-direction:column;gap:2px}
+.pp-drawer a{display:flex;align-items:center;gap:var(--space-3);min-height:48px;padding:0 var(--space-3);border-radius:var(--radius-md);color:var(--text);text-decoration:none}
+.pp-drawer a:hover{background:var(--primary-tint-soft)}
+.pp-drawer a[aria-current=page]{background:var(--primary-tint);color:var(--text-strong);font-weight:600}
+/* GAP-181 THE FOURTH PLACE GAP-177 NAMED. 2.15 wrote the ring for `.pp-nav a`,
+   `.pp-bottomnav a` and `.pp-guestnav a` and said "the sidebar, the drawer, the
+   bottom bar and the guest head" -- the drawer never got its selector, so the
+   phone's whole menu still drew the browser's own ring (2.86:1 in dark). Same
+   ring as the sidebar, same 2px offset: the drawer has `space-2` of side padding,
+   so an outset ring is not clipped. */
+.pp-drawer a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.pp-drawer .grp{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted);padding:var(--space-4) var(--space-3) var(--space-1)}
+.pp-drawer .foot{margin-top:auto;display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-3)}
+/* ===== v1.2 auth card, state pages, compact select, small dialog (GAP-017) ===== */
+.pp-auth{width:100%;max-width:380px;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-4)}
+.pp-auth .pp-brand{padding:0}
+.pp-auth h1{margin:0;font:650 var(--text-2xl)/var(--leading-2xl) var(--font-sans);color:var(--text-strong)}
+.pp-auth .or{display:flex;align-items:center;gap:var(--space-3);color:var(--muted);font-size:var(--text-sm);line-height:var(--leading-sm)}
+.pp-auth .or::before,.pp-auth .or::after{content:"";flex:1;border-top:1px solid var(--border)}
+.pp-state{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:var(--space-3);text-align:center;padding:var(--space-6)}
+.pp-state h1{margin:0;font:650 var(--text-xl)/var(--leading-xl) var(--font-sans);color:var(--text-strong)}
+.pp-state p{margin:0;color:var(--muted);max-width:36ch}
+.pp-state.wide p{max-width:44ch}
+.pp-state .pp-illus{width:64px;height:64px;display:grid;place-content:center;color:var(--muted);border-radius:var(--radius-xl);background:var(--surface);border:1px solid var(--border)}
+.pp-state .acts{display:flex;flex-wrap:wrap;gap:var(--space-3);justify-content:center}
+.pp-iwrap.compact{width:130px}
+.pp-dialog.sm{max-width:380px}
+/* ===== v1.2 share link without expiry (GAP-014) ===== */
+.pp-share .never{color:var(--muted)}
+.pp-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.pp-main>h1{margin:0;font:650 var(--text-xl)/var(--leading-xl) var(--font-sans);color:var(--text-strong)}
+.pp-device.rail{min-height:640px}
+.pp-drawer .foot .pp-btn{justify-content:flex-start}
+/* ===== v1.2.1 table / card swap and phone page padding (GAP-023) =====
+   Put BOTH layouts in the DOM, each in a wrapper (no display of its own): <div class="pp-only-wide">table</div> and
+   <div class="pp-only-phone">cards</div>. Above 480px only the first shows, at 480px and below only the second.
+   The wide table keeps its own .pp-scroll box as a fallback. */
+.pp-only-phone{display:none}
+@media (max-width:480px){.pp-only-wide{display:none}.pp-only-phone{display:block}.pp-center{padding:var(--space-4)}}
+.pp-device.phone .pp-only-wide{display:none}
+.pp-device.phone .pp-only-phone{display:block}
+.pp-device.phone .pp-center{padding:var(--space-4)}
+
+/* ===== v1.3 (GAP-024 to GAP-028) ===== */
+/* deleted and archived prints, row flash (GAP-024) */
+.pp-print.is-deleted .pp-thumb{opacity:var(--opacity-deleted)}
+.pp-print.is-archived .pp-thumb{opacity:var(--opacity-archived)}
+.pp-table tr.is-deleted td,.pp-table tr.is-archived td,.pp-table tr.is-deleted td.name,.pp-table tr.is-archived td.name{color:var(--muted)}
+.pp-table tr.flash td{animation:pp-flash 1.6s var(--motion-ease)}
+@media (prefers-reduced-motion:reduce){.pp-table tr.flash td{animation:none;background:var(--primary-tint)}}
+/* customer chips on phones (GAP-025) */
+.pp-chips{display:flex;flex-wrap:nowrap;gap:var(--space-2);overflow-x:auto;scrollbar-width:none}
+.pp-chips::-webkit-scrollbar{display:none}
+.pp-chip{appearance:none;flex:none;display:inline-flex;align-items:center;gap:var(--space-1);min-height:var(--pp-tap);padding:0 var(--space-3);border-radius:var(--radius-pill);border:1px solid transparent;background:var(--surface-2);color:var(--muted);font:500 var(--text-sm)/var(--leading-sm) var(--font-sans);white-space:nowrap;cursor:pointer}
+.pp-chip .n{font-variant-numeric:tabular-nums}
+.pp-chip[aria-pressed=true]{background:var(--info-tint);color:var(--info);border-color:var(--info);font-weight:600}
+.pp-chip:focus-visible,.pp-pal button:focus-visible,.pp-tagpop .row:focus-within{outline:2px solid var(--focus-ring);outline-offset:2px}
+/* customer card (GAP-026) */
+.pp-custs{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:stretch}
+.pp-cust{padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2);min-width:180px}
+.pp-cust .hd{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)}
+.pp-cust .hd b{color:var(--text-strong);font-size:var(--text-md);line-height:var(--leading-base)}
+.pp-cust .end{display:flex;align-items:center;gap:var(--space-1)}
+.pp-cust .cnt{color:var(--muted);font-size:var(--text-sm)}
+.pp-cust .amt{display:flex;align-items:baseline;gap:var(--space-1)}
+.pp-cust .amt .pp-money{font-size:var(--text-md)}
+.pp-cust .amt small{color:var(--muted);font-size:var(--text-xs)}
+.pp-cust .acts{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.pp-cust.is-deleted{background:var(--surface-2)}
+.pp-cust.is-deleted .hd b{color:var(--muted)}
+/* text, spacing and layout classes for screens (audit of dashboard, print detail, asset list) */
+.pp-text-xs{font-size:var(--text-xs);line-height:var(--leading-xs)}
+.pp-text-sm{font-size:var(--text-sm);line-height:var(--leading-sm)}
+.pp-text-md{font-size:var(--text-md);line-height:var(--leading-base)}
+.pp-strong{color:var(--text-strong)}
+.pp-gap-1{gap:var(--space-1)}.pp-gap-2{gap:var(--space-2)}.pp-gap-3{gap:var(--space-3)}.pp-gap-4{gap:var(--space-4)}.pp-gap-5{gap:var(--space-5)}
+.pp-nowrap{flex-wrap:nowrap}.pp-between{justify-content:space-between}.pp-end{justify-content:flex-end}.pp-start{justify-content:flex-start}.pp-push{margin-left:auto}.pp-fill{width:100%}
+.pp-flush{overflow:hidden}
+.pp-card-hd{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-3) var(--space-4)}
+.pp-card-hd.rule{border-bottom:1px solid var(--border)}
+.pp-card-hd b{color:var(--text-strong);font-size:var(--text-md)}
+.pp-card-hd .sub{color:var(--muted);font-size:var(--text-sm)}
+.pp-crumb{color:var(--muted);font-size:var(--text-sm);line-height:var(--leading-sm)}
+.pp-tags{display:flex;flex-wrap:wrap;gap:var(--space-1);align-items:center}
+.pp-detail{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:var(--space-5);align-items:start}
+.pp-detail>div{display:flex;flex-direction:column;gap:var(--space-4);min-width:0}
+@media (max-width:900px){.pp-detail{grid-template-columns:minmax(0,1fr)}}
+.pp-device.phone .pp-detail{grid-template-columns:minmax(0,1fr)}
+.pp-toolbar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
+.pp-filters .klant{width:150px}
+.pp-filters .pp-seg button{padding:0 var(--space-2)}
+.pp-grid .pp-print{width:100%}
+.pp-print .sub{color:var(--muted);font-size:var(--text-sm)}
+.pp-print .nopreview{font-size:var(--text-xs);margin-top:var(--space-1)}
+@media (max-width:480px){.pp-print{width:100%}}
+.pp-device.phone .pp-print{width:100%}
+.pp-device.phone .pp-bulk{position:sticky;bottom:0;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+.pp-viewer.fluid{max-width:none}
+.pp-viewer .full{position:absolute;top:var(--space-2);right:var(--space-2)}
+.pp-asset .body{min-width:0}
+.pp-asset .acts{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3)}
+.pp-spoolbtn{min-width:150px;justify-content:flex-start}
+.pp-spoolbtn .end{margin-left:auto}
+.pp-opt.sm{font-size:var(--text-sm)}
+.pp-plate{display:block;flex:none;width:var(--space-8);height:var(--space-8);border-radius:var(--radius-sm);object-fit:cover;background:var(--surface-2);border:1px solid var(--border)}
+.pp-plate.tinted{background:var(--surface-2);border-color:var(--border)}
+.pp-pop.sm{padding:var(--space-3);width:260px}
+.pp-model.s{width:90px;height:90px}
+/* tag editor and tag management (GAP-027) */
+.pp-tagpop{width:300px;max-width:100%;padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-3)}
+.pp-tagpop .list{display:flex;flex-direction:column;max-height:240px;overflow:auto}
+.pp-tagpop .row{display:flex;align-items:center;gap:var(--space-3);min-height:var(--pp-tap);padding:0 var(--space-1);border-radius:var(--radius-md);cursor:pointer}
+.pp-tagpop .row:hover{background:var(--primary-tint-soft)}
+.pp-tagpop .row.create{margin-top:var(--space-1);border-top:1px solid var(--border);border-radius:0 0 var(--radius-md) var(--radius-md);color:var(--text-strong)}
+.pp-tagpop .empty{color:var(--muted);font-size:var(--text-sm);padding:var(--space-2) var(--space-1)}
+@media (max-width:480px){.pp-tagpop{position:fixed;left:0;right:0;bottom:0;width:auto;max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:var(--z-overlay)}}
+.pp-device.phone .pp-tagpop{position:absolute;left:0;right:0;bottom:0;width:auto;max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:var(--z-popover)}
+.pp-pal{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.pp-pal button{appearance:none;width:var(--pp-tap);height:var(--pp-tap);border-radius:var(--radius-md);border:2px solid transparent;background:var(--tag);color:#141a33;display:grid;place-content:center;cursor:pointer}
+.pp-pal button[aria-checked=true]{border-color:var(--text-strong)}
+.pp-pal button.none{background:repeating-linear-gradient(135deg,var(--surface-2) 0 4px,var(--surface) 4px 8px);border-color:var(--border-strong);color:var(--muted)}
+.pp-pal button.none[aria-checked=true]{border-color:var(--text-strong)}
+.pp-tagrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:var(--space-3);align-items:center;padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border)}
+.pp-tagrow .cnt{color:var(--muted);font-size:var(--text-sm);font-variant-numeric:tabular-nums}
+.pp-tagrow .acts{display:flex;gap:var(--space-1)}
+.pp-tagrow.edit{grid-template-columns:minmax(0,1fr);background:var(--surface-2)}
+@media (max-width:480px){.pp-tagrow{grid-template-columns:minmax(0,1fr) auto}.pp-tagrow .cnt{grid-column:1}}
+/* palette keys: data-c on .pp-tag and on .pp-pal buttons (no inline colour needed) */
+[data-c="rose"]{--tag:var(--tag-rose);--tag-ink:#141a33}
+[data-c="orange"]{--tag:var(--tag-orange);--tag-ink:#141a33}
+[data-c="amber"]{--tag:var(--tag-amber);--tag-ink:#141a33}
+[data-c="lime"]{--tag:var(--tag-lime);--tag-ink:#141a33}
+[data-c="teal"]{--tag:var(--tag-teal);--tag-ink:#141a33}
+[data-c="sky"]{--tag:var(--tag-sky);--tag-ink:#141a33}
+[data-c="blue"]{--tag:var(--tag-blue);--tag-ink:#141a33}
+[data-c="violet"]{--tag:var(--tag-violet);--tag-ink:#141a33}
+[data-c="lilac"]{--tag:var(--tag-lilac);--tag-ink:#141a33}
+[data-c="grey"]{--tag:var(--tag-grey);--tag-ink:#141a33}
+.pp-table td.name .pp-muted{font-weight:400}
+.pp-table th.chk{width:36px}
+.pp-showcase{display:flex;flex-wrap:wrap;gap:var(--space-4);align-items:flex-start;width:100%}
+.pp-showcase .var{width:300px}
+.pp-mt{margin-top:var(--space-2)}
+.pp-empty.sm{width:300px}
+.pp-sec .pp-thumb{border-radius:var(--radius-md)}
+button.pp-tag{appearance:none;font-family:var(--font-sans)}
+
+/* ===== v1.4 ===== */
+/* GAP-029: popover anchor and stacking (z-index only through tokens) */
+.pp-anchor{position:relative;display:inline-block}
+.pp-anchor>.pp-pop{position:absolute;top:calc(100% + var(--space-2));left:0}
+.pp-anchor.end>.pp-pop{left:auto;right:0}
+.pp-anchor.up>.pp-pop{top:auto;bottom:calc(100% + var(--space-2))}
+@media (max-width:480px){.pp-anchor>.pp-pop{position:fixed;top:auto;left:0;right:0;bottom:0;width:auto;max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:var(--z-overlay)}}
+.pp-device.phone .pp-anchor>.pp-pop{position:absolute;top:auto;left:0;right:0;bottom:0;width:auto;max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:var(--z-popover)}
+.pp-cost tr.slot td:first-child,.pp-slotname{padding-left:var(--space-9)}
+/* GAP-036: utilities and settings classes */
+.pp-m0{margin:0}.pp-fw-regular{font-weight:400}.pp-fw-medium{font-weight:500}.pp-fw-bold{font-weight:700}
+.pp-right{text-align:right}.pp-grow{flex:1}.pp-minw-0{min-width:0}.pp-minw-200{min-width:200px}
+.pp-self-start{align-self:flex-start}.pp-items-start{align-items:flex-start}.pp-items-center{align-items:center}.pp-pushr{margin-right:auto}
+.pp-info{color:var(--info)}.pp-dim{opacity:var(--opacity-disabled)}.pp-bg-2{background:var(--surface-2)}.pp-mb-1{margin-bottom:var(--space-1)}
+.pp-w-120{width:120px}.pp-w-160{width:160px}.pp-w-200{width:200px}.pp-w-320{width:320px}.pp-w-340{width:340px}.pp-w-420{width:420px}.pp-w-440{width:440px}.pp-w-480{width:480px}.pp-w-600{width:600px}
+[class*=pp-w-]{max-width:100%}
+.pp-time{width:120px;max-width:100%}
+.pp-minh-64{min-height:64px}.pp-minh-700{min-height:700px}
+.pp-reset{border:0;padding:0;margin:0}.pp-plain{list-style:none;margin:0;padding:0}
+.pp-cols-2{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+@media (max-width:480px){.pp-cols-2{grid-template-columns:1fr}}
+.pp-setrow{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px solid var(--border)}
+.pp-setrow:last-child{border-bottom:0}
+.pp-kv.narrow{grid-template-columns:110px 1fr}
+.pp-kv.tight{grid-template-columns:1fr auto;gap:var(--space-2) var(--space-4)}
+/* GAP-182 A FOLDER PATH IS ONE VALUE, NOT TWO FACTS. The operator's "Deze print"
+   says where the print lives on disk as one string, `klant / project`, in mono --
+   the family this system has used for file names, G-code names and paths since 1.0,
+   so it reads as an address and not as a sentence. `overflow-wrap:anywhere` is what
+   lets the `auto` track shrink: without it the row's min-content width is the whole
+   path and a long project pushes the card sideways at 360px. The separator is
+   `muted` so the two folder names are the ink; both pairs are in the report. */
+.pp-path{font-family:var(--font-mono);font-size:var(--text-sm);line-height:var(--leading-sm);color:var(--text-strong);min-width:0;overflow-wrap:anywhere}
+.pp-path .sep{color:var(--muted)}
+.pp-progress{height:var(--space-2);border-radius:var(--radius-pill);background:var(--surface-2);border:1px solid var(--border);overflow:hidden}
+.pp-progress>.pp-bar{display:block;height:100%;width:var(--v,0%);background:var(--primary)}
+.pp-logo-box{width:72px;height:40px;border:1px dashed var(--border-strong);border-radius:var(--radius-md);display:grid;place-content:center;color:var(--muted)}
+.pp-scrim.sheetframe{width:420px;max-width:100%;padding:0;align-items:flex-end;min-height:760px}
+.pp-hint{display:inline-block;background:linear-gradient(var(--info-tint),var(--info-tint)),var(--surface);color:var(--info);padding:0 var(--space-2);border-radius:var(--radius-sm);font-size:var(--text-xs);line-height:var(--leading-xs)}
+/* GAP-030 */
+.pp-cust.is-selected,.pp-cust:has(button[aria-pressed=true]){border-color:var(--primary);background:var(--primary-tint-soft)}
+.pp-chip.is-deleted{color:var(--muted);border-style:dashed}
+/* GAP-033: Instellingen */
+.pp-printer{display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface)}
+.pp-printer .fields{display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:var(--space-3)}
+.pp-printer .chips{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+@media (max-width:480px){.pp-printer .fields{grid-template-columns:1fr}}
+.pp-mprices{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
+.pp-mprices th{color:var(--muted);font-weight:500;text-align:left;padding:var(--space-2) var(--space-1)}
+.pp-mprices td{padding:var(--space-1);border-top:1px solid var(--border)}
+.pp-mprices td.r{text-align:right;width:var(--space-9)}
+/* GAP-035: orders */
+.pp-orders{display:flex;flex-direction:column;gap:var(--space-4)}
+.pp-order{border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface)}
+.pp-order>summary{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;min-height:var(--pp-tap);padding:var(--space-3) var(--space-4);cursor:pointer;list-style:none;border-radius:var(--radius-lg)}
+.pp-order>summary::-webkit-details-marker{display:none}
+.pp-order>summary:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.pp-order>summary .ttl{display:flex;flex-direction:column;flex:1;min-width:160px}
+.pp-order>summary .ttl b{color:var(--text-strong)}
+.pp-order>summary .sum{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
+.pp-order>summary .chev{display:inline-flex;transition:transform var(--motion-base) var(--motion-ease)}
+.pp-order[open]>summary .chev{transform:rotate(180deg)}
+.pp-order[open]>summary{border-bottom:1px solid var(--border);border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+.pp-order .bd{display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-4)}
+.pp-order.is-open-order{border-color:var(--primary)}
+.pp-pick{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--space-3);align-items:center;min-height:var(--pp-tap);padding:var(--space-1) 0;border-bottom:1px solid var(--border)}
+.pp-pick:last-child{border-bottom:0}
+.pp-pick .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);font-size:var(--text-sm)}
+.pp-pick .pp-qty{margin:0}
+@media (max-width:480px){.pp-pick{grid-template-columns:auto minmax(0,1fr)}.pp-pick .pp-qty{grid-column:2}}
+@media (prefers-reduced-motion:reduce){.pp-order>summary .chev{transition:none}}
+/* GAP-034: bulk dialogs */
+.pp-results{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:var(--space-1)}
+.pp-results li{display:flex;justify-content:space-between;gap:var(--space-3);font-size:var(--text-sm)}
+.pp-results .why{color:var(--muted)}
+.pp-w-260{width:260px}.pp-p3{padding:var(--space-3)}.pp-rel{position:relative}
+.pp-unpaid{color:var(--unpaid)}.pp-p4{padding:var(--space-4)}
+@media (max-width:480px){.pp-order>summary{display:grid;grid-template-columns:minmax(0,1fr) auto}.pp-order>summary .ttl{grid-row:1;grid-column:1;min-width:0}.pp-order>summary .chev{grid-row:1;grid-column:2}.pp-order>summary .sum{grid-row:2;grid-column:1/-1}}
+
+.pp-anchor>.pp-pop{max-width:min(360px,calc(100vw - var(--space-7)))}
+/* ===== v1.5 ===== */
+/* GAP-039: text size helpers for the larger sizes */
+.pp-text-lg{font-size:var(--text-lg);line-height:var(--leading-md)}
+.pp-text-xl{font-size:var(--text-xl);line-height:var(--leading-xl)}
+.pp-text-2xl{font-size:var(--text-2xl);line-height:var(--leading-2xl)}
+.pp-text-3xl{font-size:var(--text-3xl);line-height:var(--leading-3xl)}
+.pp-gap-6{gap:var(--space-6)}.pp-gap-7{gap:var(--space-7)}
+.pp-cust-name{appearance:none;background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:var(--radius-sm)}
+.pp-cust-name:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+/* GAP-043: calendar */
+.pp-pop.pp-calpop{width:296px;padding:var(--space-3)}
+.pp-cal-hd{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);margin-bottom:var(--space-2)}
+.pp-cal-hd b{color:var(--text-strong);font-weight:600}
+.pp-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--space-1);text-align:center;font-size:var(--text-sm);line-height:var(--leading-sm);font-variant-numeric:tabular-nums}
+.pp-cal>*{display:grid;place-content:center;height:var(--pp-tap);border-radius:var(--radius-md)}
+.pp-cal .h{color:var(--muted);font-size:var(--text-xs);line-height:var(--leading-xs);font-weight:500}
+.pp-cal .d{appearance:none;border:0;background:transparent;color:var(--text);font:inherit;cursor:pointer}
+.pp-cal .d:hover{background:var(--primary-tint-soft)}
+.pp-cal .d:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+.pp-cal .t{box-shadow:inset 0 0 0 2px var(--primary)}
+.pp-cal .s,.pp-cal .s:hover{background:var(--primary);color:var(--on-primary)}
+.pp-cal .d:disabled{color:var(--muted);cursor:not-allowed;background:transparent;opacity:var(--opacity-disabled)}
+.pp-cal-ft{display:flex;justify-content:space-between;margin-top:var(--space-2)}
+/* GAP-045: dialog widths and wrapping footer */
+.pp-dialog>footer{flex-wrap:wrap}
+.pp-dialog.lg{max-width:560px}
+.pp-scrim.f-sm{width:428px}.pp-scrim.f-md{width:488px}.pp-scrim.f-lg{width:608px}
+.pp-scrim{max-width:100%}
+/* GAP-044: phone sheet also for .up and .end */
+@media (max-width:480px){.pp-anchor.up>.pp-pop,.pp-anchor.end>.pp-pop{top:auto;bottom:0;left:0;right:0}}
+.pp-device.phone .pp-anchor.up>.pp-pop,.pp-device.phone .pp-anchor.end>.pp-pop{top:auto;bottom:0;left:0;right:0}
+/* GAP-040/041: print detail placement, Nabestelling line names, outstanding dialog */
+.pp-sec-card{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-4)}
+/* Logo in the app shell (GAP: logo) */
+.pp-logo{display:block;max-height:var(--space-7);max-width:100%;width:auto;object-fit:contain}
+.pp-phone-top .pp-logo{max-height:var(--space-6)}
+.pp-drawer .pp-brand .pp-logo{max-height:var(--space-7)}
+.pp-brand.has-logo .full{display:none}
+.pp-brand.has-logo .logo{display:block}
+.pp-brand .logo{display:none}
+@media (max-width:900px) and (min-width:481px){.pp-brand.has-logo .logo{display:none}}
+.pp-device.rail .pp-brand.has-logo .logo{display:none}
+/* GAP: inline cleanup, share page, documents, skeletons */
+.pp-rule-t{border-top:1px solid var(--border)}
+.pp-p0{padding:0}.pp-pb4{padding-bottom:var(--space-4)}.pp-r-xl{border-radius:var(--radius-xl)}.pp-r0{border-radius:0}
+.pp-center-t{text-align:center}.pp-nowrap-t{white-space:nowrap}.pp-maxch{max-width:32ch}
+.pp-w-220{width:220px}.pp-minw-260{min-width:260px}.pp-minh-400{min-height:400px}.pp-minh-520{min-height:520px}
+.pp-ratio-43{aspect-ratio:4/3}
+.pp-vw{width:var(--w)}
+.pp-h12{height:12px}.pp-h14{height:14px}.pp-h16{height:16px}
+.pp-share-line{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:nowrap;gap:var(--space-3);padding:var(--space-3) 0;border-bottom:1px solid var(--border)}
+.pp-share-line:last-child{border-bottom:0}
+.pp-share-amt{display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-1);text-align:right}
+.pp-share-card{padding:var(--space-1) var(--space-4);border-radius:var(--radius-xl)}
+.pp-share-body{display:flex;flex-direction:column;gap:var(--space-3);padding:0 var(--space-4)}
+.pp-share-col{max-width:560px;margin:0 auto;width:100%;padding-top:var(--space-4)}
+.pp-share-cta{min-height:48px;font-size:var(--text-md)}
+.pp-illus-box{display:grid;place-content:center;width:64px;height:64px;color:var(--muted);border-radius:var(--radius-xl)}
+.pp-share-h404{margin:var(--space-2) 0 0;font:700 var(--text-xl)/var(--leading-xl) var(--font-sans);color:var(--text-strong)}
+.pp-doc-sub{color:#586282;margin-top:2px}
+.pp-stage.docs{flex-direction:column;align-items:center;gap:var(--space-7);background:var(--surface-2)}
+.pp-mini .pp-viewer{max-width:240px;flex:1 1 200px}.pp-mini .pp-viewer .pp-ico-24{margin:0 auto}.pp-mini .pp-model{width:90px;height:90px}
+.pp-cards-240 .pp-print{width:240px}
+/* invoice export dialog helpers */
+.pp-field.grow{flex:1;min-width:0}
+
+.pp-viewer.pp-viewer-sm{max-width:240px;flex:1 1 200px}.pp-viewer-sm .pp-ico-24{margin:0 auto}.pp-viewer-sm .pp-model{width:90px;height:90px}
+.pp-device.phone .pp-anchor{position:static}
+
+/* ===== v1.6 ===== */
+.pp-iwrap>.pp-btn.r{position:absolute;right:var(--space-1);top:50%;transform:translateY(-50%);height:calc(var(--pp-tap) - 2px);width:calc(var(--pp-tap) - 2px);padding:0}
+.pp-iwrap>.pp-btn.r:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+.pp-asset.is-locked .pp-qty-text{color:var(--text-strong);font-weight:600}
+.pp-lockhelp{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-4);border-bottom:1px solid var(--border);background:var(--surface-2)}
+.pp-minh-180{min-height:180px}.pp-minh-420{min-height:420px}.pp-minh-560{min-height:560px}.pp-w-980{width:980px}.pp-w-520{max-width:520px}
+.pp-left-t{text-align:left}
+.pp-tree{line-height:26px;color:var(--text-strong)}
+.pp-indent-1{padding-left:var(--space-4)}.pp-indent-2{padding-left:var(--space-7)}.pp-indent-3{padding-left:var(--space-9)}.pp-indent-4{padding-left:calc(var(--space-9) + var(--space-4))}
+.pp-alert.banner{border-radius:0;border-width:0 0 1px 0;align-items:center}
+.pp-state.is-inline{padding:var(--space-6) var(--space-4)}
+.pp-share-amt .pp-muted{white-space:nowrap}
+
+/* ===== v1.7 ===== */
+@media (max-width:480px){.pp-lockhelp{flex-direction:column;align-items:flex-start}}
+.pp-device.phone .pp-lockhelp{flex-direction:column;align-items:flex-start}
+.pp-tree{white-space:nowrap;width:max-content;min-width:100%}
+/* Scalar (api-reference) mapped onto our tokens, GAP-056. Set on the container that holds the renderer. */
+.pp-scalar,.pp-scalar .light-mode,.pp-scalar .dark-mode{
+ --scalar-color-1:var(--text-strong);--scalar-color-2:var(--text);--scalar-color-3:var(--muted);
+ --scalar-color-accent:var(--primary);--scalar-color-alert:var(--warning);--scalar-color-blue:var(--info);
+ --scalar-color-danger:var(--unpaid);--scalar-color-green:var(--paid);--scalar-color-orange:var(--warning);
+ --scalar-color-purple:var(--primary);--scalar-color-query:var(--muted);--scalar-color-red:var(--unpaid);--scalar-color-yellow:var(--warning);
+ --scalar-background-1:var(--surface);--scalar-background-2:var(--surface-2);--scalar-background-3:var(--bg);
+ --scalar-background-accent:var(--primary-tint-soft);--scalar-background-alert:var(--warning-tint);--scalar-background-danger:var(--unpaid-tint);
+ --scalar-sidebar-background-1:var(--surface);--scalar-sidebar-border-color:var(--border);--scalar-sidebar-color-1:var(--text-strong);--scalar-sidebar-color-2:var(--muted);
+ --scalar-sidebar-color-active:var(--primary);--scalar-sidebar-item-active-background:var(--primary-tint);
+ --scalar-sidebar-item-hover-background:var(--primary-tint-soft);--scalar-sidebar-item-hover-color:var(--text-strong);
+ --scalar-sidebar-indent:var(--space-5);--scalar-sidebar-padding:var(--space-3);
+ --scalar-sidebar-indent-border:var(--border);--scalar-sidebar-indent-border-active:var(--primary);--scalar-sidebar-indent-border-hover:var(--border-strong);
+ --scalar-sidebar-search-background:var(--surface-2);--scalar-sidebar-search-border-color:var(--border);--scalar-sidebar-search-color:var(--muted);
+ --scalar-border-color:var(--border);--scalar-border-width:1px;
+ --scalar-radius:var(--radius-md);--scalar-radius-md:var(--radius-md);--scalar-radius-lg:var(--radius-lg);--scalar-radius-xl:var(--radius-xl);--scalar-radius-2xl:var(--radius-xl);--scalar-radius-3xl:var(--radius-xl);--scalar-radius-full:var(--radius-pill);--scalar-radius-max:var(--radius-xl);
+ --scalar-font:var(--font-sans);--scalar-font-code:var(--font-mono);
+ --scalar-font-size-1:var(--text-xl);--scalar-font-size-2:var(--text-md);--scalar-font-size-3:var(--text-sm);--scalar-font-size-4:var(--text-sm);--scalar-font-size-5:var(--text-xs);--scalar-font-size-6:var(--text-xs);--scalar-font-size-7:var(--text-xs);
+ --scalar-line-height-1:var(--leading-2xl);--scalar-line-height-2:var(--leading-md);--scalar-line-height-3:var(--leading-sm);--scalar-line-height-4:var(--leading-sm);--scalar-line-height-5:var(--leading-xs);
+ --scalar-heading-1:var(--text-2xl);--scalar-heading-2:var(--text-xl);--scalar-heading-3:var(--text-md);--scalar-heading-4:var(--text-md);--scalar-heading-5:var(--text-md);--scalar-heading-6:var(--text-md);
+ --scalar-paragraph:var(--text-md);--scalar-page-description:var(--text-md);--scalar-small:var(--text-sm);--scalar-mini:var(--text-sm);--scalar-micro:var(--text-xs);
+ --scalar-shadow-1:var(--shadow-sm);--scalar-shadow-2:var(--shadow-lg);
+ --scalar-button-1:var(--primary);--scalar-button-1-color:var(--on-primary);--scalar-button-1-hover:var(--primary-hover);
+ --scalar-link-color:var(--primary);--scalar-link-color-hover:var(--primary-hover);--scalar-text-decoration:underline;--scalar-focus-color:var(--focus-ring);
+ --scalar-scrollbar-color:var(--border);--scalar-scrollbar-color-active:var(--border-strong);
+ --scalar-address-bar-bg:var(--surface);--scalar-tooltip-background:var(--text-strong);--scalar-tooltip-color:var(--bg);
+}
+.pp-sc{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:420px;background:var(--scalar-background-1);color:var(--scalar-color-2);font-family:var(--scalar-font);font-size:var(--scalar-font-size-3);line-height:var(--scalar-line-height-3)}
+.pp-sc-side{display:flex;flex-direction:column;gap:var(--space-1);padding:var(--scalar-sidebar-padding);background:var(--scalar-sidebar-background-1);border-right:var(--scalar-border-width) solid var(--scalar-sidebar-border-color);color:var(--scalar-sidebar-color-2)}
+.pp-sc-search{padding:var(--space-2) var(--space-3);border:var(--scalar-border-width) solid var(--scalar-sidebar-search-border-color);border-radius:var(--scalar-radius-lg);background:var(--scalar-sidebar-search-background);color:var(--scalar-sidebar-search-color);margin-bottom:var(--space-2)}
+.pp-sc-grp{margin-top:var(--space-2);font-weight:600;color:var(--scalar-sidebar-color-1)}
+.pp-sc-side a{display:block;padding:var(--space-1) var(--space-3);margin-left:var(--scalar-sidebar-indent);border-left:var(--scalar-border-width) solid var(--scalar-sidebar-indent-border);border-radius:0 var(--scalar-radius) var(--scalar-radius) 0;color:var(--scalar-sidebar-color-2);text-decoration:none}
+.pp-sc-side a:hover{background:var(--scalar-sidebar-item-hover-background);color:var(--scalar-sidebar-item-hover-color);border-left-color:var(--scalar-sidebar-indent-border-hover)}
+.pp-sc-side a.on{background:var(--scalar-sidebar-item-active-background);color:var(--scalar-sidebar-color-active);border-left-color:var(--scalar-sidebar-indent-border-active);font-weight:600}
+.pp-sc-main{display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-5);min-width:0}
+.pp-sc-main h2{margin:0;font-size:var(--scalar-heading-2);line-height:var(--scalar-line-height-1);color:var(--scalar-color-1)}
+.pp-sc-main p{margin:0;max-width:60ch}
+.pp-sc-op{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
+.pp-sc-op code,.pp-sc-code{font-family:var(--scalar-font-code);font-size:var(--scalar-font-size-4)}
+.pp-sc-m{padding:0 var(--space-2);border:var(--scalar-border-width) solid currentColor;border-radius:var(--scalar-radius);font-family:var(--scalar-font-code);font-weight:600;font-size:var(--scalar-font-size-5)}
+.pp-sc-m.get{color:var(--scalar-color-blue)}.pp-sc-m.post{color:var(--scalar-color-green)}.pp-sc-m.put{color:var(--scalar-color-orange)}.pp-sc-m.delete{color:var(--scalar-color-red)}
+.pp-sc-code{margin:0;padding:var(--space-3);background:var(--scalar-background-2);border:var(--scalar-border-width) solid var(--scalar-border-color);border-radius:var(--scalar-radius-lg);color:var(--scalar-color-1);overflow:auto;white-space:pre}
+.pp-sc-note{padding:var(--space-3);background:var(--scalar-background-accent);border-radius:var(--scalar-radius-lg);color:var(--scalar-color-2)}
+.pp-sc-btn{align-self:flex-start;padding:var(--space-2) var(--space-4);border:0;border-radius:var(--scalar-radius);background:var(--scalar-button-1);color:var(--scalar-button-1-color);font:600 var(--scalar-font-size-3)/var(--scalar-line-height-3) var(--scalar-font)}
+.pp-sc a.lnk{color:var(--scalar-link-color);text-decoration:var(--scalar-text-decoration)}
+@media (max-width:900px){.pp-sc{grid-template-columns:minmax(0,1fr)}.pp-sc-side{border-right:0;border-bottom:var(--scalar-border-width) solid var(--scalar-sidebar-border-color)}}
+.pp-device.phone .pp-sc,.pp-device.rail .pp-sc{grid-template-columns:minmax(0,1fr)}
+.pp-device.phone .pp-sc-side,.pp-device.rail .pp-sc-side{border-right:0;border-bottom:var(--scalar-border-width) solid var(--scalar-sidebar-border-color)}
+
+/* ===== v1.9 ===== */
+.pp-share-lead{display:flex;align-items:center;gap:var(--space-3);min-width:0}
+.pp-share-lead>div{min-width:0}
+.pp-share-thumb{flex:none;width:48px;height:48px;border-radius:var(--radius-md);background:var(--surface-2);border:1px solid var(--border);color:var(--muted);display:grid;place-content:center;overflow:hidden}
+.pp-share-thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.pp-sharepay{width:100%;box-sizing:border-box;padding:var(--space-4);border-radius:var(--radius-xl);display:flex;flex-direction:column;gap:var(--space-3)}
+.pp-sharepay h2{margin:0;font:700 var(--text-lg)/var(--leading-lg) var(--font-sans);color:var(--text-strong)}
+.pp-sharepay-row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px solid var(--border)}
+.pp-sharepay-row:last-of-type{border-bottom:0}
+.pp-sharepay-row>div{min-width:0}
+.pp-sharepay-row small{display:block;font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted)}
+.pp-sharepay-row b{display:block;font-size:var(--text-md);color:var(--text-strong);font-weight:600;overflow-wrap:anywhere}
+.pp-sharepay-row .pp-mono{font-family:var(--font-mono);letter-spacing:.02em}
+.pp-sharepay-row .pp-btn.done{color:var(--paid)}
+
+/* GAP-063 sidebar sticks, the page scrolls */
+.pp-app>.pp-side{position:sticky;top:0;height:100vh;overflow-y:auto;align-self:start}
+/* GAP-064 viewer on the print detail */
+.pp-viewer.fluid{max-width:560px}
+.pp-viewer.is-empty{aspect-ratio:auto;max-width:none;min-height:72px;padding:var(--space-3) var(--space-4);display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:var(--space-3);color:var(--muted)}
+.pp-viewer.is-empty .pp-ico-24{margin:0;flex:none}
+/* GAP-086 model picker */
+.pp-models{display:flex;gap:var(--space-2);overflow-x:auto;padding:var(--space-1);max-width:560px;scrollbar-width:thin}
+.pp-modelbtn{appearance:none;flex:none;width:var(--pp-modelbtn-w);display:flex;flex-direction:column;gap:var(--space-1);align-items:stretch;padding:var(--space-1);border:1px solid var(--border-strong);border-radius:var(--radius-md);background:var(--surface);color:var(--muted);font:inherit;font-size:var(--text-xs);line-height:var(--leading-xs);cursor:pointer;text-align:center}
+.pp-modelbtn .pp-thumb{width:100%;aspect-ratio:1;border-radius:var(--radius-sm)}
+.pp-modelbtn .nm{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.pp-modelbtn:hover{background:var(--surface-2)}
+.pp-modelbtn[aria-pressed=true]{border-color:var(--primary);background:var(--primary-tint-soft);color:var(--text-strong)}
+.pp-modelbtn:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.pp-model-cap{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);max-width:560px;font-size:var(--text-sm);color:var(--muted)}
+.pp-model-cap b{color:var(--text-strong);font-weight:600;overflow-wrap:anywhere}
+/* GAP-085 video */
+.pp-video{position:relative;aspect-ratio:16/9;width:100%;max-width:720px;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--surface-2);overflow:hidden;display:grid;place-content:center;justify-items:center;gap:var(--space-2);color:var(--muted);text-align:center;font-size:var(--text-sm)}
+.pp-video video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--surface-2)}
+.pp-video .pp-alert{max-width:90%;text-align:left}
+.pp-video.is-error{border-color:var(--unpaid)}
+.pp-thumb .pp-play{position:absolute;right:var(--space-1);bottom:var(--space-1);width:20px;height:20px;border-radius:50%;background:var(--surface);color:var(--text-strong);border:1px solid var(--border-strong);display:grid;place-content:center}
+.pp-thumb .pp-play .pp-ico{width:10px;height:10px}
+.pp-thumb.poster{background:var(--surface-2)}
+/* GAP-075 overflow menu (on Popover) */
+.pp-menu{display:flex;flex-direction:column;padding:var(--space-1);min-width:200px;gap:var(--space-1)}
+.pp-menu [role=menuitem]{appearance:none;display:flex;align-items:center;gap:var(--space-2);width:100%;min-height:var(--pp-tap);padding:0 var(--space-3);border:0;background:none;border-radius:var(--radius-md);color:var(--text-strong);font:inherit;font-size:var(--text-sm);text-align:left;cursor:pointer}
+.pp-menu [role=menuitem]:hover,.pp-menu [role=menuitem].is-hover{background:var(--primary-tint-soft)}
+.pp-menu [role=menuitem]:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+.pp-menu [role=menuitem].danger{color:var(--unpaid)}
+.pp-menu [role=menuitem][aria-disabled=true]{color:var(--muted);cursor:not-allowed}
+.pp-menu .sep{border:0;border-top:1px solid var(--border);margin:var(--space-1) 0}
+/* GAP-074 one order card with sections */
+.pp-order .bd{padding:0;gap:0}
+.pp-order .bd>.pp-alert{margin:var(--space-4) var(--space-4) 0}
+.pp-order .pp-detail{gap:0}
+.pp-order .pp-detail>div{gap:0}
+.pp-order .pp-detail .pp-card{border:0;border-radius:0;background:transparent;box-shadow:none}
+.pp-order .pp-detail>div>.pp-card+.pp-card,.pp-order .pp-detail>div>*+*{border-top:1px solid var(--border)}
+.pp-order .pp-detail>div+div{border-left:1px solid var(--border)}
+.pp-order .pp-pay{max-width:none}
+.pp-order .pp-cost th:first-child,.pp-order .pp-cost td:first-child{padding-left:var(--space-4)}
+.pp-order .pp-cost th:last-child,.pp-order .pp-cost td:last-child{padding-right:var(--space-4)}
+.pp-order .pp-cost tr.sub td:first-child{padding-left:var(--space-7)}
+.pp-order .pp-cost tr.slot td:first-child{padding-left:calc(var(--space-9) + var(--space-3))}
+.pp-order .pp-cost tr:last-child td{border-bottom:0}
+@media (max-width:900px){.pp-order .pp-detail>div+div{border-left:0;border-top:1px solid var(--border)}}
+.pp-device.phone .pp-order .pp-detail>div+div,.pp-device.pp-w-768 .pp-order .pp-detail>div+div{border-left:0;border-top:1px solid var(--border)}
+.pp-device.pp-w-768 .pp-detail{grid-template-columns:minmax(0,1fr)}
+.pp-w-768{width:768px}.pp-w-1280{width:1280px}
+@media (max-width:480px){.pp-order .bd>.pp-alert{margin:var(--space-3) var(--space-3) 0}}
+/* GAP-076 missing input line */
+.pp-missing{display:flex;gap:var(--space-2);align-items:flex-start;padding:var(--space-2) var(--space-4);font-size:var(--text-sm);line-height:var(--leading-sm);color:var(--text);background:var(--surface-2);border-top:1px solid var(--border)}
+.pp-missing .pp-ico{color:var(--warning);flex:none;margin-top:2px}
+/* GAP-070 whole klant tile is the control */
+.pp-cust{position:relative;cursor:pointer}
+.pp-cust:hover{border-color:var(--border-strong)}
+.pp-cust-name::after{content:"";position:absolute;inset:0;border-radius:var(--radius-lg)}
+.pp-cust:has(.pp-cust-name:focus-visible){outline:2px solid var(--focus-ring);outline-offset:2px}
+.pp-cust-name:focus-visible{outline:none}
+.pp-cust .end .pp-btn,.pp-cust .acts .pp-btn,.pp-cust .end .pp-anchor{position:relative;z-index:1}
+/* GAP-067 klant strip: one scrollable row on every width */
+.pp-strip{display:flex;align-items:center;gap:var(--space-2);min-width:0}
+.pp-strip .pp-chips{flex:1 1 auto;min-width:0;padding:var(--space-1) 0}
+.pp-strip .pp-chips.is-overflow{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - var(--space-6)),transparent);mask-image:linear-gradient(to right,#000 calc(100% - var(--space-6)),transparent)}
+.pp-strip>.pp-btn{flex:none}
+.pp-chip .amt{font-weight:400;font-variant-numeric:tabular-nums}
+.pp-allcust{max-width:920px}
+.pp-allcust .pp-body{max-height:min(70vh,560px);overflow:auto}
+.pp-allcust .pp-custs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.pp-scrollframe{max-height:360px;overflow:auto}
+/* GAP-066 sort and status in the FilterBar */
+.pp-filters .sel{width:170px}
+@media (max-width:480px){.pp-filters .sel{flex:1 1 140px;width:auto}}
+.pp-device.phone .pp-filters .sel{flex:1 1 140px;width:auto}
+/* GAP-068 list-view thumbnail */
+.pp-table .pp-thumb.sm{width:40px;aspect-ratio:1;border-radius:var(--radius-sm)}
+.pp-table td.img,.pp-table th.img{width:56px;padding-right:0}
+/* GAP-080 Openstaand: collapsed klant groups */
+.pp-ogrp{overflow:hidden}
+.pp-ogrp>summary{display:grid;grid-template-columns:minmax(0,1fr) auto auto 24px;gap:var(--space-3);align-items:center;min-height:var(--pp-tap);padding:var(--space-3) var(--space-4);cursor:pointer;list-style:none}
+.pp-ogrp>summary::-webkit-details-marker{display:none}
+.pp-ogrp>summary:hover{background:var(--primary-tint-soft)}
+.pp-ogrp>summary:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+.pp-ogrp>summary .ttl{display:flex;flex-direction:column;min-width:0}
+.pp-ogrp>summary h3{margin:0;font:600 var(--text-md)/var(--leading-base) var(--font-sans);color:var(--text-strong)}
+.pp-ogrp>summary .chev{display:inline-flex;transition:transform var(--motion-base) var(--motion-ease)}
+.pp-ogrp[open]>summary{background:var(--surface-2);border-bottom:1px solid var(--border)}
+.pp-ogrp[open]>summary .chev{transform:rotate(180deg)}
+.pp-ogrp+.pp-ogrp{margin-top:var(--space-2)}
+.pp-ogrp-bar{display:flex;flex-wrap:wrap;gap:var(--space-2);justify-content:flex-end;padding:var(--space-2) var(--space-4);border-bottom:1px solid var(--border)}
+.pp-ogrp-more{display:flex;justify-content:center;padding:var(--space-2) var(--space-4)}
+.pp-ogrp-list{display:flex;flex-direction:column;gap:0}
+/* GAP-155 (2.12): THE AGE BADGE IS AS WIDE AS ITS OWN WORDS. 1.9 gave `.age` a 1fr column on the
+   phone and no `justify-self`, so the box filled it: measured on Openstaand at 360px, "oudste 752
+   dagen" painted 124px of text inside a 223px tinted pill, and with ScreenQueue's `.amt` emptied
+   (see OutstandingGroup, *The slots*) the column is wider still. 2.11's own `.pp-line>.pp-badge`
+   rule already carries `justify-self:start`; these two rules describe the same kind of thing and
+   now agree. A status pill is never wider than its words anywhere else in this system. */
+@media (max-width:480px){.pp-ogrp>summary{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-1);padding:var(--space-3)}.pp-ogrp>summary .ttl{grid-column:1;grid-row:1}.pp-ogrp>summary .chev{grid-column:2;grid-row:1;justify-self:end}.pp-ogrp>summary .age{grid-column:1;grid-row:2;justify-self:start}.pp-ogrp>summary .amt{grid-column:2;grid-row:2;justify-self:end}}
+.pp-device.phone .pp-ogrp>summary{grid-template-columns:minmax(0,1fr) auto;row-gap:var(--space-1);padding:var(--space-3)}
+.pp-device.phone .pp-ogrp>summary .ttl{grid-column:1;grid-row:1}.pp-device.phone .pp-ogrp>summary .chev{grid-column:2;grid-row:1;justify-self:end}.pp-device.phone .pp-ogrp>summary .age{grid-column:1;grid-row:2;justify-self:start}.pp-device.phone .pp-ogrp>summary .amt{grid-column:2;grid-row:2;justify-self:end}
+@media (prefers-reduced-motion:reduce){.pp-ogrp>summary .chev{transition:none}}
+.pp-ogrp .pp-money{white-space:nowrap}
+/* GAP-081 Deel-links filter and duplicate hint */
+.pp-sl-tools{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;justify-content:space-between}
+.pp-share .dup{color:var(--muted);font-weight:400}
+/* GAP-083 section with unsaved marker */
+.pp-sec-hd{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);flex-wrap:wrap}
+.pp-sec-hd h2{margin:0}
+.pp-dialog h2{min-width:0;overflow-wrap:anywhere}
+.pp-sec-ft{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
+/* GAP-065 theme control */
+.pp-theme .pp-ico{flex:none}
+.pp-w-720{max-width:720px}
+.pp-w-160{width:160px}
+.pp-warnico{color:var(--warning)}
+.pp-help.dupwarn{display:flex;gap:var(--space-2);align-items:flex-start}
+
+/* ===== v2.0 ===== */
+/* GAP-071 the filament colour marks the object, never the ground behind it.
+   A thumbnail, a plate and a model-strip button sit on surface-2 in both themes; the colour
+   returns as the 4px bar along the bottom edge of a card thumbnail and as the SpoolSwatch.
+   The blend factor the app used to set is gone; nothing reads it any more. */
+.pp-thumb.tinted{background:var(--surface-2);color:var(--muted)}
+.pp-print .pp-thumb.tinted::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;box-sizing:border-box;background:var(--c1);border-top:1px solid var(--border-strong);pointer-events:none}
+.pp-table .pp-thumb.sm.tinted::after,.pp-modelbtn .pp-thumb.tinted::after{content:none}
+
+/* GAP-090 / GAP-106 which files a print lacks. Absent when nothing is missing (58% of tiles).
+   Default: icons only, no pill, on a card or row where width is short. `.has-text` is the
+   worded chip, for the print detail where there is room and the legend is learned. */
+.pp-lacks{display:inline-flex;align-items:center;gap:var(--space-1);color:var(--warning);white-space:nowrap}
+.pp-lacks .pp-ico{color:var(--warning)}
+.pp-lacks .sl{stroke:var(--warning)}
+.pp-lacks .sl-bg{stroke:var(--surface);stroke-width:3}
+.pp-lacks.has-text{padding:2px var(--space-2);border-radius:var(--radius-sm);font:500 var(--text-xs)/var(--leading-xs) var(--font-sans);background:linear-gradient(var(--warning-tint),var(--warning-tint)),var(--surface)}
+
+/* GAP-091 + GAP-093 + GAP-099 one target per tile or row.
+   The tile and the row open the print; the checkbox selects; a cell that opens nothing is not styled like a target. */
+.pp-table tbody tr{position:relative}
+.pp-rowlink{color:inherit;text-decoration:none}
+.pp-rowlink::after{content:"";position:absolute;inset:0}
+.pp-table tbody tr:has(.pp-rowlink:focus-visible){outline:2px solid var(--focus-ring);outline-offset:-2px}
+.pp-rowlink:focus-visible{outline:none}
+.pp-table td .pp-btn,.pp-table td .pp-check,.pp-table td .pp-anchor,.pp-table td .pp-opt{position:relative;z-index:1}
+/* GAP-107 (2.1): the target is --pp-tap, the ink is 24px. A pointer target may be larger
+   than what it paints (WCAG 2.2 2.5.8 is about the target); 2.0 grew both and the chip
+   became the loudest thing on a tile, 24 times a page. */
+.pp-print .pp-sel{background:none;border-radius:0;box-shadow:none;padding:0;width:var(--pp-tap);height:var(--pp-tap);display:grid;place-items:center}
+.pp-print .pp-sel .pp-opt{min-height:var(--pp-tap);min-width:var(--pp-tap);width:var(--pp-tap);height:var(--pp-tap);justify-content:center;align-items:center}
+.pp-print .pp-sel .pp-check{box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--border-strong)}
+.pp-print .pp-sel .pp-check:focus-visible{outline-offset:4px}
+
+/* GAP-098 a popover inside a sticky table: the cell that holds it is raised, not the popover. */
+.pp-matrix th.has-pop,.pp-matrix td.has-pop{z-index:var(--z-popover)}
+.pp-matrix td.has-pop{position:relative}
+
+/* GAP-094 + GAP-096 the media strip: every model and the timelapse, one control at any count. */
+.pp-models.is-overflow{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - var(--space-6)),transparent);mask-image:linear-gradient(to right,#000 calc(100% - var(--space-6)),transparent)}
+.pp-modelbtn .pp-thumb{position:relative}
+.pp-modelbtn.video .pp-thumb{background:var(--surface-2);color:var(--muted)}
+.pp-modelbtn .dur{display:block;font-variant-numeric:tabular-nums}
+/* 2.0.1, GAP-094 reconsidered: above 8 pictures the same strip wraps into a bounded grid
+   and scrolls down instead of sideways. Same buttons, same one control. */
+/* DEPRECATED in 2.3 (GAP-116): the owner chose one sideways-scrolling line at every
+   count, so `wrap` is never applied. Kept defined, scheduled for removal in 3.0. */
+.pp-models.wrap{flex-wrap:wrap;overflow-x:hidden;overflow-y:auto;max-height:304px}
+.pp-models.wrap.is-overflow{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - var(--space-5)),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - var(--space-5)),transparent)}
+
+/* GAP-095 + GAP-097 print detail: the media row carries the print's pictures, the panel beside it its facts. */
+.pp-pdtop{display:grid;grid-template-columns:minmax(0,560px) minmax(260px,1fr);gap:var(--space-5);align-items:start}
+.pp-pdtop>div{display:flex;flex-direction:column;gap:var(--space-3);min-width:0}
+@media (max-width:900px){.pp-pdtop{grid-template-columns:minmax(0,1fr)}}
+.pp-device.phone .pp-pdtop,.pp-device.rail .pp-pdtop,.pp-device.pp-w-768 .pp-pdtop{grid-template-columns:minmax(0,1fr)}
+.pp-pdfiles{min-width:0}
+.pp-pdnew{display:flex;gap:var(--space-2);flex-wrap:wrap}
+.pp-asset .ord{color:var(--muted);font-size:var(--text-xs);line-height:var(--leading-xs);white-space:nowrap}
+@media (max-width:480px){.pp-main>.pp-pdfiles{order:2}.pp-main>.pp-pdnew{order:1}}
+.pp-device.phone .pp-main>.pp-pdfiles{order:2}
+.pp-device.phone .pp-main>.pp-pdnew{order:1}
+/* at 900px and below the order's sections run Betaling, Totaalkosten, In deze bestelling */
+@media (max-width:900px){
+.pp-order .pp-detail>div:last-child{order:-1}
+.pp-order .pp-detail>div+div{border-left:0;border-top:0}
+.pp-order .pp-detail>div:first-child{border-top:1px solid var(--border)}
+}
+.pp-device.phone .pp-order .pp-detail>div:last-child,.pp-device.pp-w-768 .pp-order .pp-detail>div:last-child{order:-1}
+.pp-device.phone .pp-order .pp-detail>div+div,.pp-device.pp-w-768 .pp-order .pp-detail>div+div{border-left:0;border-top:0}
+.pp-device.phone .pp-order .pp-detail>div:first-child,.pp-device.pp-w-768 .pp-order .pp-detail>div:first-child{border-top:1px solid var(--border)}
+
+/* GAP-092 a chip's name carries the weight; count and amount are plain. */
+.pp-chip{color:var(--text)}
+.pp-chip .nm{font-weight:600;color:var(--text-strong)}
+.pp-chip .n,.pp-chip .amt{font-weight:400}
+.pp-chip .n::before,.pp-chip .amt::before{content:"·";margin-right:var(--space-1)}
+.pp-chip[aria-pressed=true]{font-weight:400}
+.pp-chip[aria-pressed=true] .nm{color:inherit}
+.pp-chip.is-deleted .nm{color:var(--muted)}
+
+/* GAP-101 a page of short rows or short fields lays out in columns up to a 1080px measure. */
+/* GAP-101 (2.13): a track is at least 320px AND at least half the row, so a THIRD column cannot
+   fit at any width -- 2.0's prose said "never three" while its own auto-fit made three from 992px
+   up (3x320 + 2x16 = 992 <= 1080). Below 656px the 320px floor still wins and the grid is one
+   column, exactly as before: only the third column is gone. The other half of the fix is the row,
+   and it is markup: a section whose height grows with the owner's data takes `.span-2`, and the
+   fixed-height sections are paired by what they are (ScreenSettings 2.13). */
+.pp-settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(max(320px,50% - var(--space-2)),1fr));gap:var(--space-4);align-items:start;max-width:1080px}
+.pp-settings>.span-2{grid-column:1/-1}
+@media (max-width:480px){.pp-settings{grid-template-columns:minmax(0,1fr)}}
+.pp-device.phone .pp-settings{grid-template-columns:minmax(0,1fr)}
+.pp-taggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin-right:-1px}
+.pp-taggrid>.pp-tagrow{border-right:1px solid var(--border)}
+.pp-taggrid>.pp-tagrow.edit{grid-column:1/-1;border-right:0}
+@media (max-width:480px){.pp-taggrid{grid-template-columns:minmax(0,1fr);margin-right:0}.pp-taggrid>.pp-tagrow{border-right:0}}
+.pp-device.phone .pp-taggrid{grid-template-columns:minmax(0,1fr);margin-right:0}
+.pp-device.phone .pp-taggrid>.pp-tagrow{border-right:0}
+.pp-w-1080{max-width:1080px}
+
+/* GAP-102 a renderer that draws its own frame fills the content area, through the page padding. */
+.pp-bleed{margin:0 calc(-1 * var(--pp-pad)) calc(-1 * var(--pp-pad))}
+
+/* GAP-105 the logo is shown in both themes with no adaptation, so both grounds are shown at once.
+   #ffffff and #1a1b26 are the two `surface` values; a theme-aware var cannot show the other theme. */
+.pp-logo-pair{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center}
+.pp-logo-box.on-light{background:#ffffff;border-style:solid;border-color:var(--border-strong);color:#586282}
+.pp-logo-box.on-dark{background:#1a1b26;border-style:solid;border-color:var(--border-strong);color:#98a2cf}
+
+/* ------------------------------------------------------------------ 2.2 */
+
+/* GAP-112 a floating panel always fits in the window.
+   Until 2.1 `.pp-anchor>.pp-pop` only ever opened downwards, so a spool picker
+   (320x302) on a trigger at y=831 in a 900px window hung 233px below the fold.
+   Three parts, in this order: the app picks the side (.up / .end), the app passes
+   the room that side has in --pp-pop-max and the panel never grows past it, and
+   its own region scrolls instead of the page. Under 240px of room on both sides
+   the panel takes the sheet form at any width (.pp-anchor.sheet).
+   The side modifiers themselves are unchanged; what is new is that they are
+   mandatory and that the height is capped. See README "Floating panels". */
+.pp-anchor>.pp-pop{display:flex;flex-direction:column;max-height:var(--pp-pop-max,calc(100vh - var(--space-7)));overflow-y:auto;overscroll-behavior:contain}
+.pp-anchor>.pp-pop>*{flex:0 0 auto}
+.pp-anchor>.pp-picker,.pp-anchor>.pp-tagpop{overflow-y:hidden}
+.pp-anchor>.pp-picker ul,.pp-anchor>.pp-tagpop .list{flex:1 1 auto;min-height:0}
+.pp-anchor.sheet>.pp-pop{position:fixed;top:auto;left:0;right:0;bottom:0;width:auto;max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:var(--z-overlay)}
+.pp-anchor.sheet>.pp-pop,.pp-anchor.sheet>.pp-picker,.pp-anchor.sheet>.pp-tagpop{max-height:min(70vh,calc(100vh - var(--space-7)))}
+@media (max-width:480px){.pp-anchor>.pp-pop{max-height:min(70vh,calc(100vh - var(--space-7)))}}
+.pp-device.phone .pp-anchor>.pp-pop{max-height:min(70%,calc(100% - var(--space-7)))}
+
+/* GAP-110 the tooltip has a place. `.pp-tip` had no positioning rule at all, so every
+   consumer invented one. Default: above the trigger, left edges aligned, --z-tooltip.
+   `.end` hangs it from its right edge, `.down` puts it below (no room above).
+   `.at` is the required form whenever an ancestor clips or scrolls (`.pp-print` is
+   overflow:hidden, a table lives in `.pp-scroll`): the bubble is placed in the window
+   from the trigger's rect, which also keeps it clear of the sticky-cell paint of GAP-098.
+   The app passes two numbers (--pp-tip-x/--pp-tip-y = the trigger's left/top, or right/bottom
+   with .end/.down); every length stays here. Never interactive, so never hoverable. */
+/* 2.3, GAP-114: the three anchored rules are wrapped in :where() so they weigh nothing,
+   and `.at` resets the edges it does not use. Why both: see the 2.3 section at the end. */
+:where(.pp-anchor)>.pp-tip{position:absolute;left:0;bottom:calc(100% + var(--space-1));z-index:var(--z-tooltip)}
+:where(.pp-anchor.end)>.pp-tip{left:auto;right:0}
+:where(.pp-anchor.down)>.pp-tip{bottom:auto;top:calc(100% + var(--space-1))}
+.pp-tip.at{position:fixed;left:var(--pp-tip-x,0);top:var(--pp-tip-y,0);right:auto;bottom:auto;z-index:var(--z-tooltip);transform:translate(0,calc(-100% - var(--space-1)))}
+.pp-tip.at.end{transform:translate(-100%,calc(-100% - var(--space-1)))}
+.pp-tip.at.down{transform:translate(0,var(--space-1))}
+.pp-tip.at.end.down{transform:translate(-100%,var(--space-1))}
+:where(.pp-anchor)>.pp-tip,.pp-tip.at{pointer-events:none}
+
+/* GAP-111 the file row's name column keeps a floor and the controls column yields.
+   The third track was `auto`, which takes max-content and never gives it back: the
+   controls measure 651px, so just above the 760px container breakpoint the name column
+   was left 75px and the nowrap "Mogelijk dubbel" badge (128px min-content) was drawn
+   over "Aantal keer geprint". minmax(0,auto) on the controls alone is NOT the fix: with
+   a 1fr name column whose minimum is 0, the free space goes to the controls first and the
+   name collapses to nothing. The name column needs the floor; then the controls wrap. */
+:root{--pp-name-min:240px}
+@container (min-width:760px){.pp-asset{grid-template-columns:auto minmax(var(--pp-name-min),1fr) minmax(0,auto)}}
+.pp-asset .acts{min-width:0}
+.pp-asset .ord{white-space:normal}
+
+/* GAP-109 the missing-file icons ride behind the name inside the h3's own line box, so a
+   print with no tags gets no extra line. The group is 16px tall and vertical-align:middle
+   keeps it inside a 22px line box: it adds no height. A flex row around name and icons was
+   tried first and put the icons on a line of their own at some name lengths; an atomic
+   inline box follows the last word instead. */
+.pp-print h3 .pp-lacks{margin-left:var(--space-1);vertical-align:middle}
+
+.pp-w-900{width:900px}
+
+/* ------------------------------------------------------------------ 2.3 */
+
+/* GAP-114, fault 1: a window-placed panel resets the edges it does not use.
+   `.pp-tip.at` set position:fixed with top/left, while `.pp-anchor>.pp-tip` had already
+   set `bottom`. Both selectors weighed two classes, so `bottom` survived into the fixed
+   box, and a fixed box with top AND bottom is sized between them: the bubble collapsed
+   to its own padding, 8px where its text needs 24 (measured in the app). It is the same
+   shape as the squeezed 302px panel of GAP-112, from the other direction.
+   Fixed twice over, because one of the two is not enough:
+   1. `.pp-tip.at` now sets `right:auto;bottom:auto` (above, with the 2.2 rules).
+   2. the anchored rules are wrapped in :where(), which contributes no specificity.
+      `.pp-anchor.end>.pp-tip` weighed three classes and beat `.pp-tip.at` outright, so
+      an `.at` bubble inside an `.end` or `.down` anchor lost its x or its y as well.
+   THE RULE: an `.at` panel is placed from the window and does not belong inside a
+   `.pp-anchor` at all -- the anchor's only job is to be the panel's offset parent, and
+   a window-placed panel has no offset parent. The CSS no longer depends on that being
+   obeyed. If a trigger needs the anchor's *other* effect (sitting above a stretched
+   card or row link), use `.pp-lift` on the trigger's wrapper; that is what the anchor
+   was quietly doing, and losing it is what made the chip unhoverable for one build. */
+.pp-lift{position:relative;z-index:var(--z-raised);min-width:0}
+
+/* GAP-114, fault 2: a popover gets the window-placed form the tooltip has.
+   `.pp-pop` is absolute and the cards it opens inside clip (`.pp-flush`, `.pp-print`,
+   `.pp-group`, `.pp-ogrp` are all overflow:hidden), so the spool picker in the file list
+   was cut off at the card's edge. 2.2 gave the tooltip `.at` for exactly this and gave
+   the popover nothing. "A card must not clip an open panel" is rejected: it puts the
+   obligation on every card in the system, and `.pp-flush` clips on purpose so a table
+   keeps the card's rounded corners. The panel's placement is the panel's problem.
+   Same vocabulary as `.pp-tip.at`: the app passes the trigger's rect in --pp-pop-x /
+   --pp-pop-y (left/bottom by default; right with `.end`, top with `.up`) and the room
+   on the chosen side in --pp-pop-max, exactly as for the anchored form. Every length
+   stays here. Note for the app: an ancestor with a `transform`, `filter` or
+   `backdrop-filter` becomes the containing block of a fixed box and would re-clip the
+   panel -- do not add one above a trigger (`.pp-art`'s filter is on the picture itself,
+   which has no panel inside it). A panel that is open while the page scrolls is
+   re-measured, or closed when its trigger leaves the window; it is not left behind. */
+.pp-pop.at{position:fixed;left:var(--pp-pop-x,0);top:var(--pp-pop-y,0);right:auto;bottom:auto;z-index:var(--z-popover);max-width:min(360px,calc(100vw - var(--space-7)));display:flex;flex-direction:column;max-height:var(--pp-pop-max,calc(100vh - var(--space-7)));overflow-y:auto;overscroll-behavior:contain;transform:translate(0,var(--space-2))}
+.pp-pop.at>*{flex:0 0 auto}
+.pp-pop.at.end{transform:translate(-100%,var(--space-2))}
+.pp-pop.at.up{transform:translate(0,calc(-100% - var(--space-2)))}
+.pp-pop.at.end.up{transform:translate(-100%,calc(-100% - var(--space-2)))}
+.pp-picker.at,.pp-tagpop.at{overflow-y:hidden}
+.pp-picker.at ul,.pp-tagpop.at .list{flex:1 1 auto;min-height:0}
+/* The sheet floor and the phone form are the same as the anchored panel's. */
+.pp-pop.at.sheet,.pp-picker.at.sheet,.pp-tagpop.at.sheet{left:0;right:0;top:auto;bottom:0;width:auto;max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:var(--z-overlay);transform:none;max-height:min(70vh,calc(100vh - var(--space-7)))}
+@media (max-width:480px){.pp-pop.at{left:0;right:0;top:auto;bottom:0;width:auto;max-width:none;border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:var(--z-overlay);transform:none;max-height:min(70vh,calc(100vh - var(--space-7)))}}
+/* In a preview the device frame IS the window, so the window-placed forms are measured
+   against it instead of escaping to the page (`.pp-device` is position:relative). */
+.pp-device .pp-tip.at,.pp-device .pp-pop.at{position:absolute}
+
+/* GAP-071 the silhouette is outlined by the page, not baked into the picture.
+   2.0 asked the renderer to bake a 1px #6f7a96 outline into the PNG. Measured, that rule
+   covered 2 prints of 83: 79 thumbnails are embedded images out of a G-code, 3MF or
+   project file that we only pass through, and we do not rewrite a picture we did not
+   make. Every one of them is a PNG with transparency, so the silhouette's edge is in the
+   alpha channel and the page can draw around it: four 1px drop-shadows in
+   `border-strong`, which is a token, so it is right in both themes (3.69:1 on light
+   `surface-2`, 3.32:1 on dark, against the 3:1 of WCAG 1.4.11) where one baked ink is
+   one value for two grounds. Costs the server nothing, works on the 79 and the 2 alike,
+   and an opaque thumbnail degrades to an outlined rectangle, which is the other half of
+   the same problem. Put `.pp-art` on the picture itself, never on an ancestor of a
+   panel. */
+.pp-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(1px 0 0 var(--border-strong)) drop-shadow(-1px 0 0 var(--border-strong)) drop-shadow(0 1px 0 var(--border-strong)) drop-shadow(0 -1px 0 var(--border-strong))}
+.pp-share-thumb{position:relative}
+
+/* GAP-116 the media strip has one form for all its buttons, and without a picture that
+   form is name-first. Measured: the thumbnail service renders one image per PRINT, not
+   one per model file, so every square in the strip would carry the same type glyph and
+   76px of truncated name -- the state the gap complains about. The square stays
+   specified for the day a per-model render exists; until then `.pp-models.compact` puts
+   the glyph beside the name and gives the name the width. The strip scrolls sideways at
+   every count (the owner's decision over 2.0.1's wrap). */
+:root{--pp-modelbtn-max:240px}
+.pp-models.compact{align-items:center;padding-block:var(--space-1)}
+.pp-models.compact .pp-modelbtn{width:auto;max-width:var(--pp-modelbtn-max);min-width:0;flex-direction:row;align-items:center;gap:var(--space-2);min-height:var(--pp-control-h);padding:0 var(--space-3);text-align:left}
+.pp-models.compact .pp-modelbtn .pp-ico{flex:none}
+.pp-models.compact .pp-modelbtn .nm{font-family:var(--font-mono);font-size:var(--text-xs);min-width:0}
+/* `.dur` is kept for a strip that one day knows a duration; the indexer reads none and
+   reading it in the browser would fetch every video, so 2.3 shows no duration. */
+
+/* ---- 2.4 (2026-10-09) --------------------------------------------------
+   GAP-119 A FILE NAME IS CUT IN THE MIDDLE, AND THE MECHANISM HAS A NAME.
+   `README.md` has said since 1.0 that file names are mono and middle-truncated,
+   and `.pp-asset .fn` has done it with a shrinking head (`.a`) and a fixed tail
+   (`.b`). `.pp-modelbtn .nm` was plain `text-overflow:ellipsis`, which cuts the
+   END: "Honeycomb.stl" read "Honeyco..." and the extension -- on a strip that
+   mixes STL and 3MF, the one thing that tells two buttons apart -- was the first
+   thing lost. Measured: 483 of 501 model and timelapse names (96%) overflow the
+   name box, so that was the normal case and not an edge.
+   `.pp-fname` is the mechanism with a name, for any file name in any component.
+   The APP splits the string, CSS cannot: `.b` is the extension plus the three
+   stem characters before the dot ("_03.stl", "ize.stl"), `.a` is the rest and
+   shrinks. Both measured families survive it -- names that differ at the start
+   (obj_2_... / obj_7_...) keep their head, names that differ at the end
+   (Onderdeel_01 / _03) keep their tail. End truncation keeps only the first.
+   `.pp-asset .fn` already carries identical rules and is left alone; it may take
+   `.pp-fname` as well, with no visual change. */
+.pp-fname{display:flex;flex-wrap:nowrap;min-width:0;max-width:100%;font-family:var(--font-mono)}
+.pp-fname>.a{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-fname>.b{flex:none;white-space:nowrap}
+
+/* GAP-116 THE SQUARE HOLDS A REAL PICTURE NOW, SO IT IS 112px WIDE.
+   281 of 376 model files render (every STL; a 3MF only where it carries a plate
+   image), so the square form is the normal one again and `.pp-models.compact` is
+   the minority -- the strip a print gets when no button can show itself. A 68px
+   square held a glyph; a real render is worth the width.
+   120px of button = 112px of picture and 112px of name, which is 15 mono
+   characters at `text-xs`: 7 + the ellipsis + 7. That is the narrowest width at
+   which both ends of a name stay legible, and the median print (4 pictures)
+   still shows every button inside the 560px strip without scrolling
+   (4x120 + 3x8 = 504). One width at every breakpoint: a picture button is not a
+   36/44px control, and the strip scrolls on a phone as it does on a desktop.
+   `--pp-modelbtn-max` (240px) is the compact form's cap and holds the median
+   name (25 characters, 181px) whole; p90 (57) and the longest (105) cannot be
+   held by any width that leaves the strip a picker, so they truncate and the
+   bubble below carries them. */
+:root{--pp-modelbtn-w:120px}
+.pp-modelbtn .pp-thumb{overflow:hidden}
+.pp-modelbtn[aria-pressed=true] .nm{color:var(--text-strong)}
+.pp-modelbtn .nm.pp-fname{display:flex;justify-content:center}
+.pp-models.compact .pp-modelbtn .nm.pp-fname{justify-content:flex-start}
+/* A per-model render is a picture this app made, so it carries `.pp-art` like a
+   print thumbnail: the page outlines the silhouette from the picture's own alpha
+   in `border-strong` (3.69 light / 3.32 dark on `surface-2`). Nothing is baked
+   into the PNG. A model file the renderer could not read keeps the type glyph on
+   the same `surface-2` well. */
+
+/* GAP-119 THE FULL NAME IS READ WITHOUT CHOOSING THE BUTTON, with the system's
+   own tooltip in the window-placed `.at` form -- only when the name is actually
+   truncated, never when it fits. The bubble IS the button's accessible name
+   ("Model {naam}" already carries the whole name), so it is `aria-hidden="true"`
+   and there is no `aria-describedby` (Tooltip, *Name or description*).
+   THE BUBBLE IS NOT A CHILD OF `.pp-models`. The strip scrolls, and
+   `.pp-models.is-overflow` carries a `mask-image`, which creates a stacking
+   context: a fixed bubble painted over the strip's fading edge fades with it.
+   A mask is the fourth property in the list under *Floating panels* rule 8,
+   beside transform, filter and backdrop-filter. */
+.pp-device.pane{width:600px;flex:none}
+/* `.pp-device.pane` is a preview helper, like `.pp-w-900`: a 600px frame that
+   stands in for the window so a preview can draw a `.at` bubble without it
+   escaping to the page (`.pp-device .pp-tip.at` is absolute). Not app markup. */
+
+/* ===== 2.11: every phone rule gets its preview twin (GAP-151, GAP-152) =====
+   A rule inside @media (max-width:480px) cannot be seen in a preview at all: `.pp-device.phone`
+   is a 360px container at the page's own viewport width, so the query never fires in the frame and
+   the frame draws the DESKTOP layout. That is why GAP-151's row -- a badge eating two thirds of a
+   360px row -- was invisible here and only showed up in the running app. So a phone rule is not
+   delivered until it has a `.pp-device.phone` twin carrying the same declarations.
+   Twins added this round for the reflows a published phone frame actually contains. They change
+   nothing in the app (`.pp-device` is preview markup); they change what five existing frames show
+   -- OrderSection, ScreenPrintDetail, AssetListItem, ScreenSettings, ScreenTags -- which is the
+   point. `.pp-cols-2`, `.pp-pick` and `.pp-slot` are in no phone frame yet; their twins exist so
+   the next frame that uses them is honest. The four phone rules deliberately left without a twin are named in
+   `changelog.md` 2.11 under GAP-153. */
+.pp-device.phone .pp-slot{padding-left:var(--space-5)}
+.pp-device.phone .pp-asset.child{padding-left:var(--space-5)}
+.pp-device.phone .pp-cols-2{grid-template-columns:1fr}
+.pp-device.phone .pp-printer .fields{grid-template-columns:1fr}
+.pp-device.phone .pp-pick{grid-template-columns:auto minmax(0,1fr)}
+.pp-device.phone .pp-pick .pp-qty{grid-column:2}
+.pp-device.phone .pp-tagrow{grid-template-columns:minmax(0,1fr) auto}
+.pp-device.phone .pp-tagrow .cnt{grid-column:1}
+.pp-device.phone .pp-order>summary{display:grid;grid-template-columns:minmax(0,1fr) auto}
+.pp-device.phone .pp-order>summary .ttl{grid-row:1;grid-column:1;min-width:0}
+.pp-device.phone .pp-order>summary .chev{grid-row:1;grid-column:2}
+.pp-device.phone .pp-order>summary .sum{grid-row:2;grid-column:1/-1}
+
+/* ===== 2.11: a print's bron and its notitie (GAP-152) =====
+   `.pp-srcs` is the list, `.pp-src` is one entry, and `.pp-src .pp-link` is REQUIRED inside it:
+   the ellipsis lives on the link, not on the entry (do-dont 2.8 -- name the descendants a scoping
+   class needs). A URL truncates at its END, unlike a file name (`.pp-fname`, middle): the host is
+   the identifying part of a URL and it sits at the front. `.pp-src .pp-hintchip` marks an entry the
+   indexer read out of a `.url` file in the print's folder; a typed one carries no chip, because the
+   chip states provenance and the typed value's provenance is "you". */
+.pp-srcs{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
+.pp-src{display:flex;align-items:center;gap:var(--space-2);min-width:0;font-size:var(--text-sm);line-height:var(--leading-sm)}
+.pp-src>.pp-ico{flex:none;color:var(--muted)}
+.pp-src .pp-link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.pp-src .pp-hintchip{flex:none}
+/* `.pp-note` is the internal note. Required descendants: `.l` (its label) and a `p` (the text,
+   which keeps the operator's own line breaks). A `.pp-help` inside it carries "Niet zichtbaar op de
+   deel-link." -- the note is the one field on a print that never reaches a customer, so the field
+   says so where it is written, not in a help page. */
+.pp-note{display:flex;flex-direction:column;gap:var(--space-1);padding:var(--space-3);border-radius:var(--radius-md);background:var(--surface-2);min-width:0}
+.pp-note .l{font-size:var(--text-xs);line-height:var(--leading-xs);color:var(--muted)}
+.pp-note p{margin:0;font-size:var(--text-sm);line-height:var(--leading-sm);color:var(--text);white-space:pre-line;overflow-wrap:anywhere}
+/* A meta line of a row that must stay on ONE line. The name block owns the whole row width on the
+   phone since GAP-151, and a bron or a note is often longer than it; `.n` is the "+1" counter and
+   never shrinks. */
+.pp-reason.one{min-width:0}
+.pp-reason.one>span,.pp-reason.one>.pp-link{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.pp-reason.one>.n{flex:none;overflow:visible}
+
+
+/* ===== 2.13 ===== */
+
+/* GAP-101: a klant's row in Instellingen carries three things now -- the name, the "Niet
+   factureren" toggle and, since 2.0.1, an optional Betaallink. `.pp-setrow.cust` keeps the name and
+   the toggle on the first line and gives the field the row's full width underneath, at every width,
+   so the row never reflows between a phone and a 1080px section. The field carries `pp-w-420`: a URL
+   field as wide as the card would be a 1000px input for a 60-character value. The sentence that
+   explains what a betaallink is belongs to the SECTION and is written once above the list -- a label
+   belongs to its control, an explanation belongs to the section. */
+.pp-setrow.cust{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--space-2) var(--space-4);padding:var(--space-3) 0}
+.pp-setrow.cust>.pp-field{grid-column:1/-1}
+
+/* GAP-111 (reopened): THE SLOT THAT HAD NO NAME IS THE SLOT THAT WAS MISALIGNED. The row's first
+   cell -- the 20px type icon, or a plate's thumbnail -- had no class, so no rule could place it, and
+   `align-items: center` floated a 20px glyph 44px below the name it belongs to on a row whose name
+   block is 171px tall. `.pp-asset` is now `align-items: start` and `.lead` is a box exactly one line
+   of `--leading-base` tall, with the icon centred IN THAT BOX: the glyph sits on the first line at
+   any row height, and a 40px plate thumbnail still centres on itself because the box grows. */
+.pp-asset>.lead{display:flex;align-items:center;min-height:var(--leading-base);color:var(--muted)}
+
+/* THE BAND. `.acts` has two forms and the row says which, because CSS cannot see what a band holds.
+   An `.acts` of icon buttons only (the print's "Bestanden" card: Downloaden, Afspelen) stays the
+   row's third column -- 36 to 80px beside a long name is right. An `.acts` that carries VALUE
+   controls (an order's "In deze bestelling": the count, the exclude toggle, a spool trigger) takes
+   `.pp-asset.band`: a line of its own under the name block, left-aligned, starting at the name's
+   left edge. Measured by the app at the real container width (794px): those controls want 609px at
+   max-content, the grid reserved all of it, the controls WRAPPED anyway, and the file name was
+   clipped to its 240px floor to pay for a single-line shape that was never drawn. In the band the
+   name gets the row's full width (about 738px at 794) and the controls get 609 on one line.
+   `--pp-name-min` stays: it still floors the name column of the rows that keep three columns. */
+@container (min-width:760px){.pp-asset.band{grid-template-columns:auto minmax(0,1fr)}.pp-asset.band .acts{grid-column:2/-1;justify-content:flex-start}}
+
+/* ROWS AGREE WHEN AT MOST ONE CONTROL'S WIDTH IS DATA, AND IT IS THE LAST ONE. The band is ordered
+   count, exclude toggle, spool trigger, then `.end` with the icon buttons pinned to the row's right
+   edge. The first two carry fixed words, so they start at the same x in every row; the trigger grows
+   with the spool's name but starts at a fixed x; the icon buttons end at a fixed x. Before this the
+   band was right-aligned flex, so "Aantal keer geprint" landed somewhere different in every row. */
+.pp-asset .acts>.end{display:flex;align-items:center;gap:var(--space-2);margin-left:auto}
+
+/* GAP-160: a line's second band is ONE element -- `.pp-badge`, or `.pp-badges` when the line can
+   carry two (Openstaand's age badge beside Gearchiveerd). Both are named by the phone rule now.
+   Before this the wrapper had no class the rule names, so nothing placed it and it landed in the
+   right cell only because grid auto-placement happened to fill that cell next. */
+.pp-badges{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1);min-width:0}
+
+/* GAP-153: the last two twins that can exist. `:root`'s phone query cannot fire inside a 360px
+   CONTAINER, so a phone frame drew 36px tap targets and 15px inputs where the app draws 44px and
+   16px; the app measured 36px inside every published frame. Setting the two tokens on the frame
+   itself makes every rule that reads them -- `.pp-btn`, `.pp-btn-icon`, `.pp-opt`, `.pp-chip`,
+   `.pp-pal button`, the menu items -- draw the phone's size in the frame. The frames get taller;
+   that is the fault being shown, not a regression. `.pp-dialog.sheet` and `.pp-pop.at` still have no
+   twin and cannot have one: both are `position: fixed` against the window, and a 360px container is
+   not a window. A preview can only show those by being a 360px-wide page. */
+.pp-device.phone{--pp-control-h:44px;--pp-tap:44px}
+.pp-device.phone .pp-input,.pp-device.phone .pp-select{font-size:var(--text-md)}
+
+/* ---- 2.14 (2026-10-18) --------------------------------------------------
+   GAP-165 THE SHELL FOR A VISITOR WHO HAS NO ACCOUNT. A deel-link is a key now:
+   a valid token mints an anonymous read-only session for one klant and the
+   visitor walks the real screens. The operator's shell cannot carry that
+   visitor -- its sidebar holds an avatar with a role, a theme cycle, "Uitloggen"
+   and a live dot, and a visitor has no account, no stored preference, nothing to
+   log out of and nothing to do about a reconnect. So the session gets the SAME
+   `.pp-main` and the same screens inside it, with the chrome replaced by one
+   head bar: `.pp-app.guest`. No sidebar, no icon rail, no drawer, no bottom bar
+   -- two destinations do not need a drawer at any width, and a 220px sidebar
+   holding two links is an empty operator costume on a klant.
+   ONE DOM at every size, as AppShell has since 1.0: the head wraps, and below
+   480px the nav drops to its own full-width line as two equal halves of its
+   track. Every phone rule has its `.pp-device.phone` twin (2.11 rule), because a
+   360px frame is a container and the media query cannot fire inside it. */
+.pp-app.guest{display:flex;flex-direction:column;flex:1}
+.pp-app.guest>.pp-main{width:100%;max-width:1080px;margin:0 auto}
+.pp-guesthead{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-4);padding:var(--space-3) var(--space-4);background:var(--surface);border-bottom:1px solid var(--border)}
+.pp-guesthead>.pp-brand{padding:0;margin-right:auto;min-width:0}
+.pp-guesthead .pp-logo{max-height:var(--space-6)}
+/* GAP-169 THE NAV IS A TRACK, SO BOTH DESTINATIONS CARRY INK. 2.14 dressed only
+   the current item, with the pair `.pp-nav a[aria-current=page]` has used since
+   1.0. In a sidebar that is enough -- a column in a known place is self-evidently
+   navigation. In a two-item head bar it inverts: the item you are on holds all
+   the ink and the screen you have never seen holds none, with `:hover` as its
+   only resting cue on the phone a deel-link is opened on. The owner found that by
+   using it ("het is niet duidelijk genoeg dat je ook naar prints kan gaan").
+   So the two items sit in ONE bordered track, as SegmentedControl's do: the track
+   says "two views, pick one" and both items are visibly the same kind of thing.
+   The border is `border-strong` (3.75:1 dark / 4.29:1 light on `surface`),
+   because it is the only boundary that identifies the control -- `border` is
+   1.37:1 / 1.42:1 there and may never carry that job (2.15, README *Colour*).
+   LINKS, NEVER BUTTONS: `nav[aria-label] > a[aria-current=page]`. The look is
+   borrowed; `aria-pressed`, `role=group` and `role=tablist` are not. */
+.pp-guestnav{display:inline-flex;flex-wrap:nowrap;gap:2px;min-width:0;padding:2px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:var(--radius-pill)}
+.pp-guestnav a{display:flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:var(--pp-tap);padding:0 var(--space-3);border-radius:var(--radius-pill);color:var(--text);text-decoration:none;font-size:var(--text-base)}
+.pp-guestnav a:hover{background:var(--primary-tint-soft)}
+.pp-guestnav a[aria-current=page]{background:var(--primary-tint);color:var(--text-strong);font-weight:600}
+.pp-guestnav a:focus-visible{outline:2px solid var(--focus-ring);outline-offset:-2px}
+/* GAP-172 THE HEAD IS ONE HEIGHT AT EVERY STUDIO NAME. Measured by the app at
+   360px: at 16 characters the head is 121px with the exit button beside the
+   brand; from 20 the brand's `margin-right:auto` takes the whole first line, the
+   button drops to a line of its own and the head is 153px; at 48 the brand wraps
+   too and it is 177px -- a fifth of a 844px phone before any content. So on the
+   phone the brand keeps ONE line (the full name stays in the DOM, so nothing is
+   lost to a screen reader) and the exit button is icon-only, named by its own
+   visually hidden `.lbl`, exactly as the icon rail names its footer buttons. */
+.pp-guestexit{flex:none}
+/* GAP-180 THE BRAND SHRINKS BEFORE THE BAR WRAPS. 2.15 gave the brand one line
+   and an ellipsis, which is only reached once the flex item is allowed to be
+   narrower than its text. It is a content-width item with `margin-right:auto`,
+   so up to 29 characters of studio name the head is one height and from 30 the
+   exit button drops to a second line and the head is 32px taller (measured by
+   the app at 360px). `flex:1 1 0` makes the brand the item that gives way, so
+   the ellipsis fires instead of the wrap and the head is one height at every
+   name -- which is what GAP-172 wrote down and did not finish. */
+@media (max-width:480px){
+.pp-guestnav{order:3;width:100%}
+.pp-guestnav a{flex:1 1 0;min-width:0}
+.pp-guesthead>.pp-brand{flex:1 1 0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pp-guestexit{width:var(--pp-tap);min-width:var(--pp-tap);padding:0}
+.pp-guestexit .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+}
+.pp-device.phone .pp-guestnav{order:3;width:100%}
+.pp-device.phone .pp-guestnav a{flex:1 1 0;min-width:0}
+.pp-device.phone .pp-guesthead>.pp-brand{flex:1 1 0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pp-device.phone .pp-guestexit{width:var(--pp-tap);min-width:var(--pp-tap);padding:0}
+.pp-device.phone .pp-guestexit .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* GAP-163 THE TRIGGER'S 200px FLOOR IS A FLOOR FOR THE PANEL, NOT FOR A PHONE.
+   Measured by the app at 360px: the trigger is 314px wide (`min-width` 200px,
+   grown by the name), the row gives it about 302px, and the LAST 32px of the
+   spool name is painted outside `section.pp-card.pp-assetlist.pp-flush` and
+   removed by that card's `overflow: hidden`. So "Creality Skin Hype..." is not
+   an ellipsis at all -- it is a hard clip at the card's edge, and the page stays
+   360px wide precisely because the card absorbs it. Nothing in this file
+   truncated a trigger; the card's clip did, silently, at the end of the name --
+   the worst cut for a spool, whose colour is the last word.
+   At 480px and below the floor is lifted and the name takes the MIDDLE cut that
+   SpoolPicker 2.13 already specifies as the rule: `.pp-fname` with the app's own
+   split, now available in the trigger's sans face through `.pp-fname.sans`. The
+   swatch, the hint chip and the chevron keep their width; only the name pays.
+   Both class names the trigger is built with are covered (`.pp-spoolbtn` in
+   AssetListItem, `.pp-minw-200` in SpoolPicker's own preview), so the rule does
+   not depend on which one the app wrote. Rejected: wrapping the trigger to two
+   lines (a control whose height depends on a spool's name breaks the row
+   agreement GAP-111 just bought, and makes a 44px target 68px), and letting the
+   card scroll its rows sideways (this system scrolls tables, not cards, and a
+   scroll that hides a control is worse than a name that is cut where it can be
+   read). */
+.pp-fname.sans{font-family:inherit}
+.pp-spoolbtn>.nm{min-width:0}
+@media (max-width:480px){
+.pp-asset .acts .pp-spoolbtn,.pp-asset .acts .pp-minw-200{min-width:0;max-width:100%}
+.pp-asset .acts .pp-spoolbtn>.pp-hintchip,.pp-asset .acts .pp-minw-200>.pp-hintchip{flex:none}
+}
+.pp-device.phone .pp-asset .acts .pp-spoolbtn,.pp-device.phone .pp-asset .acts .pp-minw-200{min-width:0;max-width:100%}
+.pp-device.phone .pp-asset .acts .pp-spoolbtn>.pp-hintchip,.pp-device.phone .pp-asset .acts .pp-minw-200>.pp-hintchip{flex:none}

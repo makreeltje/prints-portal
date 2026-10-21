@@ -1,0 +1,43 @@
+<!-- @dsCard height=300 subtitle="3D Prints Portal" -->
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+html,body{margin:0;background:var(--bg);}
+svg{display:block;width:960px;height:300px;font-family:var(--font-sans);}
+.ground{fill:var(--bg)}
+.primary{fill:var(--primary)}
+.ink{fill:var(--text-strong)}
+.paid{fill:var(--paid)}
+.info{fill:var(--info)}
+.tint{fill:var(--primary-tint-strong)}
+.warn{fill:var(--warning)}
+.b-lg{rx:var(--radius-lg);ry:var(--radius-lg)}
+.b-xl{rx:var(--radius-xl);ry:var(--radius-xl)}
+.dot{fill:var(--muted)}
+.name{fill:var(--text-strong);font-size:80px;font-weight:700;letter-spacing:-2px}
+.tag{fill:var(--muted);font-size:14px}
+</style></head><body>
+<svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="3D Prints Portal">
+<!--
+blocks: primary 224x152 (space-6 offsets), text-strong ink slab 96x152, paid 96x72, info 96x64, primary-tint-strong 128x84, warning 80x84
+arrangement: staggered two-row stack right of x=480, upper row tall, lower row short, so it reads as a pile of build-plate tiles
+pattern: dot grid at 24px pitch (a 4px-grid, precise, technical tool) in muted, filling the lower right gap between tiles
+steps/radii: 8/16/24/32 offsets, radius-xl on primary, radius-lg on the rest
+-->
+<rect class="ground" width="960" height="300"/>
+<rect class="primary b-xl" x="496" y="24" width="224" height="152"/>
+<rect class="ink b-lg" x="736" y="24" width="96" height="152"/>
+<rect class="paid b-lg" x="848" y="24" width="96" height="72"/>
+<rect class="info b-lg" x="848" y="112" width="96" height="64"/>
+<rect class="tint b-lg" x="496" y="192" width="128" height="84"/>
+<rect class="warn b-lg" x="640" y="192" width="80" height="84"/>
+<g id="dots"></g>
+<text class="name" x="32" y="178">3D Prints</text>
+<text class="name" x="32" y="250">Portal</text>
+<text class="tag" x="34" y="282">Rustig gereedschap voor print, prijs en betaling.</text>
+</svg>
+<script>
+var g=document.getElementById('dots'),s='';
+for(var x=748;x<=940;x+=24)for(var y=204;y<=276;y+=24)s+='<circle class="dot" cx="'+x+'" cy="'+y+'" r="1.5"/>';
+g.innerHTML=s;
+</script>
+</body></html>

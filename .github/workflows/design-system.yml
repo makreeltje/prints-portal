@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+      - name: tokens.css is what the generator makes of tokens.json
+        run: npm run test:tokens
       - name: Only design-system tokens and components are used
         run: scripts/check-design-tokens.sh
       - name: design-system/ is only changed by imports
