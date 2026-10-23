@@ -112,23 +112,136 @@ MariaDB needs `utf8mb4`; the tables are created with `utf8mb4_bin`.
 
 ## Backups
 
-Back up **`DATA_DIR`** (the `data` volume). It holds:
+`docker compose up -d` also starts a `backup` service (same image, own
+container). Every night it writes a backup of:
 
-- the database, when you use SQLite;
-- `invoices/` — the stored PDF and a JSON snapshot of every final invoice and
-  credit note, which is the part you cannot recreate;
-- `branding/logo.png`;
-- `thumbnails/` — a cache, recreated on demand.
+- the SQLite database, made with SQLite's online backup, so it is consistent
+  while the app keeps writing, and checked with `integrity_check`;
+- `DATA_DIR` without the database files: `invoices/` (the stored PDF and JSON
+  snapshot of every final invoice and credit note, the part you cannot
+  recreate) and `branding/logo.png`. `thumbnails/` is a cache and is skipped.
 
 The prints folder is yours and is never written to, so back it up as you
-already do. With PostgreSQL or MariaDB, back the database up separately.
+already do.
 
-A simple copy while the app runs is fine for the files. For SQLite, stop the
-container or use `sqlite3 prints-portal.db ".backup out.db"` so you do not
-copy a database mid-write.
+### Install
 
-Restoring is the reverse: put the volume back, start the container. The index
-rebuilds itself from the prints folder if anything is missing.
+1. Choose a folder for the backups, preferably on **another disk** than the
+   Docker volume, and give it to the app user (uid 1000):
+
+   ```bash
+   mkdir -p /srv/prints-portal-backups
+   chown 1000:1000 /srv/prints-portal-backups
+   ```
+
+2. Set it in `.env` (the default is `./backups` next to `docker-compose.yml`):
+
+   ```
+   BACKUP_DIR=/srv/prints-portal-backups
+   ```
+
+3. `docker compose up -d`. The service makes a first backup when it starts if
+   there is none from the last day, then one every day at `BACKUP_TIME`.
+
+   ```bash
+   docker compose logs backup        # "backup created: …"
+   docker compose exec backup node backend/dist/cli/backup.js list
+   ```
+
+The backup is a plain folder per run, `prints-portal-<UTC date and time>`,
+holding `manifest.json`, `database/` and `data/`. Copy `BACKUP_DIR` to
+another machine or cloud storage with the tool you already use (rsync, restic,
+rclone): a backup on the same disk does not survive that disk.
+
+### Schedule and retention
+
+| Variable              | Default     | What it does                                                   |
+| --------------------- | ----------- | -------------------------------------------------------------- |
+| `BACKUP_DIR`          | `./backups` | Host folder for the backups (`/backups` inside the container). |
+| `BACKUP_TIME`         | `03:00`     | Time of day, 24-hour clock in `TZ`.                            |
+| `BACKUP_KEEP_DAILY`   | `7`         | Newest backup of each of the last 7 days.                      |
+| `BACKUP_KEEP_WEEKLY`  | `4`         | Newest backup of each of the last 4 weeks.                     |
+| `BACKUP_KEEP_MONTHLY` | `6`         | Newest backup of each of the last 6 months.                    |
+
+A backup that any of the three rules keeps stays; the rest is removed after
+each run. With the defaults that is about 17 backups. Folders in `BACKUP_DIR`
+that are not backups are never touched. The service reports **unhealthy** in
+`docker compose ps` when the newest backup is more than 36 hours old.
+
+The backup folder must not be inside `DATA_DIR`. A backup holds customer names
+and amounts: protect it like the data itself.
+
+### PostgreSQL or MariaDB
+
+The service copies the files only; its log says so. Dump the database
+yourself, from a cron job on the host, into the same place:
+
+```bash
+docker compose exec -T db pg_dump -U prints_portal prints_portal | gzip > prints_portal-$(date +%F).sql.gz
+```
+
+### Run one now, or without the service
+
+```bash
+docker compose exec backup node backend/dist/cli/backup.js run
+```
+
+### Restore
+
+A restore never overwrites: it writes into an empty folder, you check it, and
+then you switch over. It was tested this way on a copy (see the pull request
+that added it), not on production.
+
+1. Pick a backup:
+
+   ```bash
+   docker compose exec backup node backend/dist/cli/backup.js list
+   ```
+
+2. Stop the app, so nothing writes while you swap the data:
+
+   ```bash
+   docker compose stop prints-portal backup
+   ```
+
+3. Restore into an empty volume. Using a named volume `data_restored` and the
+   backup folder from step 1:
+
+   ```bash
+   docker volume create prints-portal_data_restored
+   docker run --rm \
+     -v prints-portal_data_restored:/data \
+     -v "$BACKUP_DIR":/backups:ro \
+     ghcr.io/makreeltje/prints-portal:latest \
+     node backend/dist/cli/backup.js restore prints-portal-20261023T030000Z /data
+   ```
+
+   A new volume mounted at `/data` gets the app user as owner. (With a bind
+   mount for the data, restore into a new empty host folder the same way, and
+   make it yours with `chown -R 1000:1000`.) The command stops
+   with an error if the target is not empty.
+
+4. Check it before you switch: point a throw-away container at the restored
+   volume, or look at the files:
+
+   ```bash
+   docker run --rm -v prints-portal_data_restored:/d alpine ls -l /d /d/invoices
+   ```
+
+5. Switch: in `docker-compose.yml` replace the `data` volume with the restored
+   one (or move the old volume aside and fill `data` from the restored one),
+   then start again:
+
+   ```bash
+   docker compose up -d
+   docker compose logs -f prints-portal   # "prints portal started"
+   ```
+
+6. Keep the old volume until you have looked at a few invoices in the app.
+
+After a restore the index also catches up with the prints folder by itself.
+For PostgreSQL or MariaDB, restore the database dump with the tools of that
+engine and `invoices/` from the backup into the data volume.
 
 ## Upgrading
 
@@ -137,7 +250,7 @@ docker compose pull
 docker compose up -d
 ```
 
-Migrations run automatically at start-up. Back up the data volume first; there
+Migrations run automatically at start-up. Take a backup first (`docker compose exec backup node backend/dist/cli/backup.js run`); there
 is no automatic downgrade, so going back a version means restoring the backup.
 
 Watch the first start after an upgrade:

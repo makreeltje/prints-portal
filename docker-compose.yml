@@ -63,5 +63,33 @@ services:
       # Other origins that may call the API with cookies (rarely needed)
       CORS_ORIGINS: ${CORS_ORIGINS:-}
 
+  # Daily backup of the database and the data volume. Same image, other command.
+  # See docs/DEPLOYMENT.md > Backups. Remove this service to back up another way.
+  backup:
+    image: ghcr.io/makreeltje/prints-portal:latest
+    build: .
+    container_name: prints-portal-backup
+    restart: unless-stopped
+    command: ['node', 'backend/dist/cli/backup.js', 'schedule']
+    depends_on:
+      - prints-portal
+    volumes:
+      - data:/data
+      # Host folder for the backups; it must be writable by uid 1000 (chown 1000:1000).
+      - '${BACKUP_DIR:-./backups}:/backups'
+    environment:
+      TZ: ${TZ:-Europe/Amsterdam}
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///data/prints-portal.db}
+      BACKUP_TIME: ${BACKUP_TIME:-}
+      BACKUP_KEEP_DAILY: ${BACKUP_KEEP_DAILY:-}
+      BACKUP_KEEP_WEEKLY: ${BACKUP_KEEP_WEEKLY:-}
+      BACKUP_KEEP_MONTHLY: ${BACKUP_KEEP_MONTHLY:-}
+    # Unhealthy when the newest backup is more than 36 hours old.
+    healthcheck:
+      test: ['CMD', 'node', 'backend/dist/cli/backup.js', 'check']
+      interval: 1h
+      timeout: 10s
+      start_period: 5m
+
 volumes:
   data:
