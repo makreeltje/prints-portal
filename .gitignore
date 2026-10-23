@@ -10,3 +10,6 @@ coverage/
 *.db-wal
 *.db-shm
 .local/
+
+# Design-system viewer output
+dist-ds-viewer/
