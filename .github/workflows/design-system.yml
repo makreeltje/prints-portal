@@ -41,7 +41,7 @@ jobs:
           fetch-depth: 0
       - name: A pull request changes design-source/ or the rest, not both
         run: |
-          git diff --name-only "origin/${{ github.base_ref }}"...HEAD \
+          git diff --name-only --no-renames "origin/${{ github.base_ref }}"...HEAD \
             | scripts/check-design-source-separation.sh
 
   design-source-generator:
