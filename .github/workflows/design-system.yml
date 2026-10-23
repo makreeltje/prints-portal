@@ -25,7 +25,7 @@ jobs:
         run: |
           git fetch --depth=1 origin "${{ github.base_ref }}"
           changed="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD -- design-system/ \
-            | grep -vE '^design-system/(DESIGN_GAPS|FEEDBACK_PROMPT)\.md$' || true)"
+            | grep -vE '^design-system/(DESIGN_GAPS|FEEDBACK_PROMPT|IMPORTING)\.md$' || true)"
           if [ -n "$changed" ] && ! git log --format=%s "origin/${{ github.base_ref }}"..HEAD | grep -q '^design-system: import v'; then
             echo "design-system/ changed outside an import commit ('design-system: import vX.Y'):"
             echo "$changed"
