@@ -1,31 +1,27 @@
 #!/usr/bin/env bash
 #
-# Apply a design-system export to design-system/.
+# Apply the design source to design-system/.
 #
-# The export now comes from the design system's own Artifact rather than a zip:
-# Claude Code fetches the artifact's "project/" tree with the Artifact tool, then
-# this script applies it. Keeping the apply here means the step is reviewable and
-# repeatable instead of a pile of ad-hoc copies.
+# The source is design-source/ in this repo, which only the designer edits.
+# Keeping the apply here means the step is reviewable and repeatable instead
+# of a pile of ad-hoc copies.
 #
-#   scripts/sync-design-system.sh <dir containing project/>
+#   scripts/sync-design-system.sh design-source
 #
 # Everything in design-system/ is replaced except the three files the repo owns
 # (IMPORTING.md says so): DESIGN_GAPS.md, FEEDBACK_PROMPT.md and IMPORTING.md.
-# VERSION is taken from the export's own tokens.json, so it cannot drift.
+# VERSION is taken from the source's own tokens.json, so it cannot drift.
 #
-# tokens.css is kept too, for a different reason: the design system's page
-# GENERATES it from tokens.json and never publishes it as a file, so it is not
-# in an export at all. Replacing the folder without keeping it deleted it and
-# took the token checker down with it. When tokens change, the new tokens.css
-# has to come from the design system's page; this script only stops it being
-# lost, and the import verifies it still matches tokens.json.
+# tokens.css is kept too, as a safety net: it is generated from tokens.json
+# (node scripts/generate-tokens-css.mjs) and design-source/ ships it, so the
+# copy overwrites it. Were it ever missing from the source, replacing the
+# folder without keeping it would delete it and take the token checker down
+# with it. The import verifies it still matches tokens.json.
 #
 # implementation.md is DROPPED, which is the opposite case: it is our own
-# outbound half of the feedback round, it lives at docs/design-feedback/, and
-# the artifact carries a copy of it inside project/ only so the design system
-# can read it. Copying that copy back in would put a duplicate of a file we
-# own inside a folder that is read-only, where it would go stale the moment
-# the next round rewrites the original.
+# outbound half of the feedback round and lives at docs/design-feedback/. A
+# copy inside the source would go stale the moment the next round rewrites the
+# original, and would put a file we own inside a folder that is read-only.
 set -euo pipefail
 
 SRC="${1:-}"

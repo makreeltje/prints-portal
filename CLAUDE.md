@@ -10,12 +10,14 @@ The **only** visual source of truth is the folder `design-system/`. It is an exp
 1. **Use only what is defined in `design-system/`:**
    - tokens from `design-system/tokens.css`;
    - components and their states as specified in `design-system/components/`;
-   - screen layouts from `design-system/screens/`;
-   - Dutch UI copy from `design-system/copy.*`.
+   - screen layouts from `design-system/components/Screen*`;
+   - Dutch UI copy from `design-system/copy-deck.md`.
 2. **Never invent visual values.** No raw hex/rgb/hsl colours, px/rem lengths (except `0` and `1px` hairlines), font stacks, shadows, radii, z-index scales or animation timings. Every value comes from a token.
 3. **Never edit `design-system/`.** It is read-only and is only replaced by a new export. Do not add tokens anywhere else either (no new `--custom-properties` outside `tokens.css`).
 4. **Implement components exactly as specified:** anatomy, variants, states (hover, focus-visible, active, disabled, loading, error, empty), accessibility notes and copy. If the spec and these instructions conflict, the spec wins for visuals, and you ask me.
 5. **No third-party UI kits or CSS frameworks** that bring their own visual language (Bootstrap, MUI, Chakra, Tailwind presets, …), unless I approve it **and** they are configured to use only our tokens. Icon set: only the one named in the design system.
+
+**`design-source/` belongs to the designer alone.** It is the editable source that `design-system/` is imported from. No other agent changes anything in it; the designer works there on a `design/vX.Y` branch and delivers a PR that touches only `design-source/`.
 
 ### When something is missing, unclear or looks wrong: stop and ask
 Treat this as a hard stop for that piece of UI, not a reason to improvise.
@@ -47,4 +49,4 @@ When I replace `design-system/` with a new version:
 ### Enforcement (don't disable or work around it)
 - `scripts/check-design-tokens.sh` runs automatically after every file edit (Claude Code hook in `.claude/settings.json`) and in CI.
 - If it reports violations, fix them with tokens/components, or log a gap and stop. Never weaken the script, the hook or the CI step, and never change `DS_SRC_DIR` to dodge a check.
-- Before saying a UI task is done: run the checker over the whole frontend and compare the screen against the matching design in `design-system/screens/` (light and dark, phone and desktop).
+- Before saying a UI task is done: run the checker over the whole frontend and compare the screen against the matching design in `design-system/components/Screen*` (light and dark, phone and desktop).

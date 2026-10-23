@@ -32,29 +32,25 @@ Since v1.1 the screens and documents are delivered as component folders, not a `
 
 ## How to import or update
 
-The design system lives in its own Artifact, and Claude Code can read it
-directly, so there is no zip to download or unpack:
+The editable source lives in `design-source/` in this repo, and only the
+designer changes it (on a `design/vX.Y` branch, merged as a PR that touches
+nothing else). Importing copies it into `design-system/`:
 
-1. Tell Claude Code the new version is published (a link is useful the first
-   time; the artifact keeps the same URL afterwards).
-2. Claude Code fetches the artifact's `project/` tree and runs
-   `scripts/sync-design-system.sh <dir>`, which replaces everything in
+1. Make sure the `design-source/` change is merged to `main` and branch from there.
+2. Run `scripts/sync-design-system.sh design-source`. It replaces everything in
    `design-system/` **except** `DESIGN_GAPS.md`, `FEEDBACK_PROMPT.md` and
-   `IMPORTING.md`, and takes `VERSION` from the export's own `tokens.json` so
-   the two cannot disagree.
-3. `node scripts/check-design-export.mjs` checks the export against its own
+   `IMPORTING.md`, and takes `VERSION` from `design-source/tokens.json` so the
+   two cannot disagree. `tokens.css` comes along from `design-source/`, where
+   it is generated from `tokens.json`.
+3. `node scripts/check-design-export.mjs` checks the import against its own
    changelog: every class and copy key it claims must really be there, "no
    token changes" must be true, every gap in its table must exist in the log.
-   It also lists the gaps the export does **not** settle (those marked
+   It also lists the gaps the import does **not** settle (those marked
    proposed, or waiting on a measurement), so they are not mistaken for
-   delivered. A problem goes back to the design system before anything is
-   built on it.
+   delivered. A problem goes back to the designer before anything is built on it.
 4. Add a changelog entry below, listing which `GAP-###` entries it resolves.
 5. Commit the import on its own, e.g. `design-system: import v1.1`.
 6. Then follow "After a new export arrives" in `CLAUDE.md`.
-
-The old way (a zip pasted into the repo root) still works: point
-`sync-design-system.sh` at the unpacked folder.
 
 The whole loop is owned by the `design-system-steward` agent
 (`.claude/agents/design-system-steward.md`): it imports, checks, maps the
