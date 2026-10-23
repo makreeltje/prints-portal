@@ -31,3 +31,25 @@ jobs:
             echo "$changed"
             exit 1
           fi
+
+  design-source-separation:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: A pull request changes design-source/ or the rest, not both
+        run: |
+          git diff --name-only "origin/${{ github.base_ref }}"...HEAD \
+            | scripts/check-design-source-separation.sh
+
+  design-source-generator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+      - name: Each tokens.css is what the generator makes of its own tokens.json
+        run: npm run test:tokens
