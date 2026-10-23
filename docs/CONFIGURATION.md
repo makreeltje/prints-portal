@@ -67,6 +67,16 @@ OIDC on, local sign-in is switched off.
 | `SPOOLMAN_TIMEOUT_MS`            | `3000`  | How long to wait for Spoolman before giving up.                                                                                      |
 | `ELECTRICITY_TARIFF_EUR_PER_KWH` | —       | Seeds the tariff **on the first start only**; after that it is a setting in the app. A number between 0 and 10; a comma is accepted. |
 
+## Backups
+
+Read by the `backup` service only (see [DEPLOYMENT.md](DEPLOYMENT.md#backups)), not by the app.
+
+| Variable                                                         | Default       | What it does                                              |
+| ---------------------------------------------------------------- | ------------- | --------------------------------------------------------- |
+| `BACKUP_DIR`                                                     | `./backups`   | Host folder for the backups. Not inside `DATA_DIR`.       |
+| `BACKUP_TIME`                                                    | `03:00`       | Time of day for the daily backup, in `TZ`.                |
+| `BACKUP_KEEP_DAILY`, `BACKUP_KEEP_WEEKLY`, `BACKUP_KEEP_MONTHLY` | `7`, `4`, `6` | How many days, weeks and months keep their newest backup. |
+
 ## Logging and time
 
 | Variable    | Default                   | What it does                                                                                                      |

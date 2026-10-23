@@ -13,3 +13,4 @@ coverage/
 
 # Design-system viewer output
 dist-ds-viewer/
+/backups/
