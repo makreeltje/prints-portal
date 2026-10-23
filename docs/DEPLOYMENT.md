@@ -18,6 +18,28 @@ value counts as unset.
 The image is published to `ghcr.io/makreeltje/prints-portal` on every green
 push to `main`, tagged with the version, the commit and `latest`.
 
+## Preview instance (Node, no Docker)
+
+A preview runs the newest `main` straight from a checkout, on **test data** (fictitious customers, built from the gcode files in `backend/test/fixtures`) and with local sign-in. It is a systemd **user** service, so no root is needed except once for lingering. It is meant for looking at the app on the LAN, not for real prints.
+
+Everything lives in `~/prints-portal-preview` (override with `PREVIEW_HOME`): `app/` (the checkout), `data/` (SQLite and other app data), `prints/` (the test data) and `preview.env` (mode 600, with a generated `SESSION_SECRET` and the admin sign-in `ADMIN_EMAIL`/`ADMIN_PASSWORD`). The port is 8080 (`PORT`).
+
+```bash
+# once, as root, so the service starts at boot and survives logging out
+loginctl enable-linger <user>
+
+# first time: checkout, build, test data, env file, enable and start the service
+curl -fsSL https://raw.githubusercontent.com/makreeltje/prints-portal/main/scripts/preview/preview.sh | bash -s install
+
+# update to the newest main (one command)
+~/prints-portal-preview/app/scripts/preview/preview.sh update
+
+# stop and remove the service (the data stays; delete ~/prints-portal-preview to remove it too)
+~/prints-portal-preview/app/scripts/preview/preview.sh uninstall
+```
+
+Day to day: `systemctl --user status|restart|stop prints-portal-preview` and `journalctl --user -u prints-portal-preview`.
+
 ## Behind a reverse proxy
 
 Three things matter: forward the `X-Forwarded-*` headers, allow the WebSocket
