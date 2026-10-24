@@ -35,7 +35,7 @@ user_systemctl() {
 # Fetch the ref and check it out detached. A ref is a branch, a PR (pr/25 or
 # #25) or a commit hash.
 checkout() {
-  local ref="$1" target
+  local ref="$1" target src
   if [ ! -d "$APP_DIR/.git" ]; then
     git clone --quiet "$REPO_URL" "$APP_DIR"
   fi
@@ -56,7 +56,9 @@ checkout() {
   fi
   echo "$ref" >"$REF_FILE"
   # Keep a copy outside the checkout: an older branch has no such script.
-  [ "$(realpath "$0")" = "$PREVIEW_HOME/preview.sh" ] || cp "$0" "$PREVIEW_HOME/preview.sh"
+  # (Piped from curl there is no file; the copy comes from the checkout then.)
+  if [ -f "$0" ]; then src="$0"; else src="$APP_DIR/scripts/preview/preview.sh"; fi
+  [ "$(realpath "$src")" = "$(realpath -m "$PREVIEW_HOME/preview.sh")" ] || cp "$src" "$PREVIEW_HOME/preview.sh"
   echo "$ref at $(git -C "$APP_DIR" rev-parse --short HEAD)"
 }
 
