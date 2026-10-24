@@ -20,23 +20,28 @@ push to `main`, tagged with the version, the commit and `latest`.
 
 ## Preview instance (Node, no Docker)
 
-A preview runs the newest `main` straight from a checkout, on **test data** (fictitious customers, built from the gcode files in `backend/test/fixtures`) and with local sign-in. It is a systemd **user** service, so no root is needed except once for lingering. It is meant for looking at the app on the LAN, not for real prints.
+A preview runs any **branch or pull request** straight from a checkout, so a feature can be tried on the LAN before it is merged. It uses **test data** (fictitious customers, built from the gcode files in `backend/test/fixtures`) and local sign-in, as a systemd **user** service, so no root is needed except once for lingering. It is not for real prints.
 
-Everything lives in `~/prints-portal-preview` (override with `PREVIEW_HOME`): `app/` (the checkout), `data/` (SQLite and other app data), `prints/` (the test data) and `preview.env` (mode 600, with a generated `SESSION_SECRET` and the admin sign-in `ADMIN_EMAIL`/`ADMIN_PASSWORD`). The port is 8080 (`PORT`).
+Everything lives in `~/prints-portal-preview` (override with `PREVIEW_HOME`): `app/` (the checkout), `data/` (SQLite and other app data), `prints/` (the test data), `preview.sh` (the script itself), `ref` (what is deployed) and `preview.env` (mode 600, with a generated `SESSION_SECRET` and the admin sign-in `ADMIN_EMAIL`/`ADMIN_PASSWORD`). The port is 8080 (`PORT`).
 
 ```bash
 # once, as root, so the service starts at boot and survives logging out
 loginctl enable-linger <user>
 
-# first time: checkout, build, test data, env file, enable and start the service
+# first time: checkout (default main), build, test data, env file, enable and start
 curl -fsSL https://raw.githubusercontent.com/makreeltje/prints-portal/main/scripts/preview/preview.sh | bash -s install
 
-# update to the newest main (one command)
-~/prints-portal-preview/app/scripts/preview/preview.sh update
-
-# stop and remove the service (the data stays; delete ~/prints-portal-preview to remove it too)
-~/prints-portal-preview/app/scripts/preview/preview.sh uninstall
+P=~/prints-portal-preview/preview.sh   # a copy kept outside the checkout
+$P deploy feat/some-feature   # switch to a branch (or pr/25, or a commit hash)
+$P deploy main                # back to the merged state
+$P update                     # newest commit of the ref that is deployed now
+$P status                     # which ref and commit is running
+$P uninstall                  # remove the service (the data stays; delete ~/prints-portal-preview to remove it too)
 ```
+
+Switching to a different ref resets `data/`, because a branch may carry other database migrations; the test data is re-created from `prints/`. `update` on the same ref keeps the data.
+
+To compare two features at once, run a second instance with its own name and port: `PREVIEW_NAME=prints-portal-preview-b PORT=8081 .../preview.sh install feat/other`. It gets its own directory, env file and service.
 
 Day to day: `systemctl --user status|restart|stop prints-portal-preview` and `journalctl --user -u prints-portal-preview`.
 
