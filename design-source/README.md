@@ -503,3 +503,16 @@ thing 2.16 changed rather than added; and the `.mkv` question is **answered at 2
 `.mp4`, 98%), so the unsupported-format state stays as specified and conversion is not urgent
 (VideoPlayer 2.17). **No token, class or copy key changes; `bundle.css` is byte-identical to 2.16;
 no breaking change.** Details: `changelog.md`.
+
+## Versie 2.18 (2026-10-23)
+
+**One alert gets the keys its preview already drew, and one loses a bold it should not have had
+(GAP-183).** The finalize-blocked alert in ScreenInvoiceExport is now
+`<strong>{invoice.finalize.blockedTitle}</strong> {invoice.finalize.blockedBody}` plus the link
+`invoice.toSettings`; the combined `invoice.finalize.blocked` is **retired**, because the alert was
+its only use and the app should not cut a title off a string. `invoice.omitted` is one sentence
+ending in a list of names, so it is **not** split: its preview drops the bold and the app keeps
+rendering it plain. The rule is in `changelog.md`: a bold lead is a sentence with its own key, and
+a one-sentence alert has none. **Three copy keys added to the deck (two already existed as
+component copy), one retired, no token or class change, `bundle.css` byte-identical to 2.17, no
+breaking change.** Details: `changelog.md`.

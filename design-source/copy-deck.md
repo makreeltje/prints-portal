@@ -981,3 +981,29 @@ this print's files are. One word per fact.
 ships it is not broken by the export, nobody re-invents the sentence under a new name, and if a
 read-only payment form ever returns for an account holder this is the key it uses. **The app should
 stop rendering it.** No key is deleted in this version.
+
+## Added in 2.18
+
+**The finalize-blocked alert in its own three strings (GAP-183).** **Three new keys**, one retired,
+nothing renamed and nothing removed.
+
+| key | text |
+|---|---|
+| invoice.finalize.blockedTitle | Naam en IBAN ontbreken. |
+| invoice.finalize.blockedBody | Vul ze in bij Instellingen, Bedrijfsgegevens. Een concept kan wel worden gedownload, zonder betaalzin. |
+| invoice.toSettings | Naar Instellingen |
+
+The alert renders `<strong>{invoice.finalize.blockedTitle}</strong> {invoice.finalize.blockedBody}`
+and then the link `invoice.toSettings` (ScreenInvoiceExport 2.18). The two text keys join with one
+space and share no word or punctuation, so the app never cuts or glues a string to get the bold.
+`blockedTitle` and `toSettings` were already in the component's copy line and in the app; they now
+have rows here, with the strings unchanged.
+
+**Retired in 2.18:** `invoice.finalize.blocked` (row in *Added in 1.5*, string unchanged). The
+alert was its only use, and it is exactly `blockedTitle` + one space + `blockedBody`; keeping it as
+a plain form would be one sentence in two places. The button's `aria-describedby` reads the alert's
+text, so no separate accessible string is needed. **The app should stop rendering it.** It is not
+listed again in a table here, so the key keeps exactly one row in this deck.
+
+**Not split: `invoice.omitted`.** It is one sentence ending in a list of names, so it stays one key
+and renders plain; the bold in the 2.17 preview is removed rather than given a key.

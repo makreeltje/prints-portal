@@ -1,3 +1,37 @@
+# Changelog 2.18
+
+**The spec drew two strings and named one.** The ScreenInvoiceExport preview shows the
+finalize-blocked alert with a bold lead, `Naam en IBAN ontbreken.`, but the deck had only the
+whole paragraph, so the build could either repeat the title or cut it off the full string in code
+(GAP-183). The same preview also put a bold lead on `invoice.omitted`, which is a different shape:
+one sentence with a plural and a list of names. 2.18 gives the first its keys and takes the bold
+off the second. Nothing else changes. Version 2.17 follows below.
+
+| GAP | About | Decision | Status |
+|---|---|---|---|
+| GAP-183 | `invoice.finalize.blocked`: no key for the text after the bold title | **Two text keys and the link, rendered as `<strong>{invoice.finalize.blockedTitle}</strong> {invoice.finalize.blockedBody}` + `invoice.toSettings`**, the title/body shape `video.error.*` already has. The strings join with one space and share no word or punctuation. `invoice.finalize.blocked` is **retired**, not kept as a "plain/aria form": the alert was its only use, the button's `aria-describedby` already reads title, body and link as one description, and a third copy of the sentence would drift. Splitting on the title in code is **rejected**: the app does not derive copy | **resolved** |
+| GAP-183 | `invoice.omitted`: the same bold lead, the same missing split | **Not split; the bold goes.** It is one sentence (plural clause, colon, names). A split would leave a key holding `{names}.` and give one sentence's grammar to two strings. Every other bold lead here ends at a full stop, and the sibling `invoice.omittedDeclined` has always been plain. The preview drops the `<strong>` in all three dialogs; the app already renders it as one plain string | **resolved** |
+
+## New and changed
+
+- **Tokens:** none. `tokens.json` `version` is **2.18**. No token added, renamed, changed or removed; `tokens.css` regenerated and unchanged.
+- **Classes:** none. `bundle.css` is **byte-identical to 2.17**; the bold uses `.pp-alert strong`, which already exists.
+- **Copy** `invoice.finalize.blockedTitle`, `invoice.finalize.blockedBody`, `invoice.toSettings` (new in the deck under *Added in 2.18*; `blockedTitle` and `toSettings` were already component copy with the same strings).
+- **Retired** `invoice.finalize.blocked`. Its row stays in *Added in 1.5* with the string unchanged; the app should stop rendering it.
+- **Components changed:** ScreenInvoiceExport (README: *States*, *Dutch copy*, new section 2.18; preview: `invoice.omitted` no longer bold, three times).
+- **Pages changed:** `changelog.md`, `copy-deck.md`, `README.md` (the version note), `tokens.json`, `design-system.json`.
+- **Breaking changes: none.** No key is removed and no string changes; one key is retired.
+
+## The rule this leaves
+
+**A bold lead in an alert is a sentence of its own with its own key**, followed by a body key. The
+app never cuts a key apart and never puts bold on part of a key. **A one-sentence alert has no bold
+lead.** Other alerts in previews have the bold-lead look (CostBreakdown, PaymentPanel,
+ScreenPrintDetail, ScreenSettings, ScreenShareLinks, TokenReveal, Toast, ScreenSystemStates), and
+some of them have only one combined key in the deck (for example `share.onceWarning`). They are
+**not** changed in this round, because no gap was raised for them; if the build finds the same
+problem there, log it and it gets the same answer.
+
 # Changelog 2.17
 
 **A name sweep is only as good as the list it is given, and 2.16's list was four strings against a
